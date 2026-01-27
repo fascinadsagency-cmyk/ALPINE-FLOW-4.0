@@ -365,6 +365,8 @@ async def create_item(item: ItemCreate, current_user: dict = Depends(get_current
         "purchase_price": item.purchase_price,
         "purchase_date": item.purchase_date,
         "location": item.location or "",
+        "category": item.category or "MEDIA",
+        "maintenance_interval": item.maintenance_interval or 30,
         "days_used": 0,
         "amortization": 0,
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -376,6 +378,7 @@ async def create_item(item: ItemCreate, current_user: dict = Depends(get_current
 async def get_items(
     status: Optional[str] = None,
     item_type: Optional[str] = None,
+    category: Optional[str] = None,
     search: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
@@ -384,11 +387,14 @@ async def get_items(
         query["status"] = status
     if item_type:
         query["item_type"] = item_type
+    if category:
+        query["category"] = category
     if search:
         query["$or"] = [
             {"barcode": {"$regex": search, "$options": "i"}},
             {"brand": {"$regex": search, "$options": "i"}},
-            {"model": {"$regex": search, "$options": "i"}}
+            {"model": {"$regex": search, "$options": "i"}},
+            {"size": {"$regex": search, "$options": "i"}}
         ]
     
     items = await db.items.find(query, {"_id": 0}).to_list(500)
