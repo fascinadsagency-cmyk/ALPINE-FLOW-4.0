@@ -10,6 +10,8 @@ import Inventory from "@/pages/Inventory";
 import Tariffs from "@/pages/Tariffs";
 import Reports from "@/pages/Reports";
 import Maintenance from "@/pages/Maintenance";
+import CashRegister from "@/pages/CashRegister";
+import Integrations from "@/pages/Integrations";
 import Layout from "@/components/Layout";
 
 const ProtectedRoute = ({ children }) => {
@@ -50,6 +52,8 @@ function AppRoutes() {
         <Route path="tarifas" element={<Tariffs />} />
         <Route path="reportes" element={<Reports />} />
         <Route path="mantenimiento" element={<Maintenance />} />
+        <Route path="caja" element={<CashRegister />} />
+        <Route path="integraciones" element={<Integrations />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
