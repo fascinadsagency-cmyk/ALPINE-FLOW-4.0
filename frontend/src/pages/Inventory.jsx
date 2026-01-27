@@ -359,7 +359,6 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                     <TableHead>Estado</TableHead>
                     <TableHead>Días Uso</TableHead>
                     <TableHead>Ubicación</TableHead>
-                    <TableHead>Ubicación</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -371,15 +370,17 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                           {ITEM_TYPES.find(t => t.value === item.item_type)?.label || item.item_type}
                         </Badge>
                       </TableCell>
+                      <TableCell>
+                        <Badge className={getCategoryBadge(item.category || 'MEDIA')}>
+                          {item.category || 'MEDIA'}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="font-medium">
                         {item.brand} {item.model}
                       </TableCell>
                       <TableCell>{item.size}</TableCell>
                       <TableCell>{getStatusBadge(item.status)}</TableCell>
                       <TableCell>{item.days_used}</TableCell>
-                      <TableCell className="font-mono">
-                        €{item.amortization?.toFixed(2) || '0.00'}
-                      </TableCell>
                       <TableCell>{item.location || '-'}</TableCell>
                     </TableRow>
                   ))}
