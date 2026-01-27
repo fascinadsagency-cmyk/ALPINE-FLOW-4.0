@@ -190,7 +190,7 @@ export default function Inventory() {
     toast.success("Código copiado");
   };
 
-  const useGeneratedBarcode = (barcode) => {
+  const selectGeneratedBarcode = (barcode) => {
     setNewItem({ ...newItem, barcode });
     setShowGenerateDialog(false);
     setShowAddDialog(true);
@@ -629,7 +629,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                       <Button variant="ghost" size="icon" onClick={() => copyBarcode(barcode)}>
                         <Copy className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => useGeneratedBarcode(barcode)}>
+                      <Button variant="ghost" size="sm" onClick={() => selectGeneratedBarcode(barcode)}>
                         Usar
                       </Button>
                     </div>
