@@ -233,10 +233,10 @@ export default function Inventory() {
   };
 
   const downloadTemplate = () => {
-    const template = `barcode,item_type,brand,model,size,purchase_price,purchase_date,location,maintenance_interval
-SKI001,ski,Salomon,X-Max,170,350,2024-01-15,Estante A1,30
-SKI002,boots,Atomic,Hawx,27.5,200,2024-01-15,Estante B2,50
-SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
+    const template = `barcode,item_type,brand,model,size,purchase_price,purchase_date,location,maintenance_interval,category
+SKI001,ski,Salomon,X-Max,170,350,2024-01-15,Estante A1,30,ALTA
+SKI002,boots,Atomic,Hawx,27.5,200,2024-01-15,Estante B2,50,MEDIA
+SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
     
     const blob = new Blob([template], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
