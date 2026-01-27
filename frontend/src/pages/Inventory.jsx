@@ -135,7 +135,8 @@ export default function Inventory() {
       purchase_price: "",
       purchase_date: new Date().toISOString().split('T')[0],
       location: "",
-      maintenance_interval: "30"
+      maintenance_interval: "30",
+      category: "MEDIA"
     });
   };
 
