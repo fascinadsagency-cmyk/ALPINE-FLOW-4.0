@@ -1,0 +1,225 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { reportApi } from "@/lib/api";
+import { 
+  BarChart3, 
+  Calendar, 
+  DollarSign, 
+  TrendingUp, 
+  Clock, 
+  AlertTriangle,
+  Loader2,
+  CreditCard,
+  Banknote,
+  Globe
+} from "lucide-react";
+import { toast } from "sonner";
+
+export default function Reports() {
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [report, setReport] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadReport();
+  }, [date]);
+
+  const loadReport = async () => {
+    setLoading(true);
+    try {
+      const response = await reportApi.getDaily(date);
+      setReport(response.data);
+    } catch (error) {
+      toast.error("Error al cargar reporte");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 lg:p-8" data-testid="reports-page">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+            Reportes
+          </h1>
+          <p className="text-slate-500 mt-1">Cierre de día y estadísticas</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-slate-400" />
+          <Input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="w-40 h-11"
+            data-testid="report-date"
+          />
+        </div>
+      </div>
+
+      {report && (
+        <>
+          {/* Revenue Summary */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <Card className="border-slate-200">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-500">Total Ingresos</p>
+                    <p className="text-3xl font-bold text-slate-900">€{report.total_revenue.toFixed(2)}</p>
+                  </div>
+                  <div className="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+                    <DollarSign className="h-6 w-6 text-emerald-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-500">Nuevos Alquileres</p>
+                    <p className="text-3xl font-bold text-slate-900">{report.new_rentals}</p>
+                  </div>
+                  <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center">
+                    <TrendingUp className="h-6 w-6 text-blue-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-500">Devoluciones</p>
+                    <p className="text-3xl font-bold text-slate-900">{report.returns}</p>
+                  </div>
+                  <div className="h-12 w-12 rounded-xl bg-purple-100 flex items-center justify-center">
+                    <Clock className="h-6 w-6 text-purple-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-500">Uso Inventario</p>
+                    <p className="text-3xl font-bold text-slate-900">{report.inventory_usage}%</p>
+                  </div>
+                  <div className="h-12 w-12 rounded-xl bg-amber-100 flex items-center justify-center">
+                    <BarChart3 className="h-6 w-6 text-amber-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Revenue by Payment Method */}
+          <Card className="border-slate-200 mb-6">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <DollarSign className="h-5 w-5 text-slate-500" />
+                Desglose por Método de Pago
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="p-4 rounded-xl bg-emerald-50 text-center">
+                  <Banknote className="h-8 w-8 mx-auto mb-2 text-emerald-600" />
+                  <p className="text-2xl font-bold text-emerald-700">€{report.cash_revenue.toFixed(2)}</p>
+                  <p className="text-sm text-slate-600">Efectivo</p>
+                </div>
+                <div className="p-4 rounded-xl bg-blue-50 text-center">
+                  <CreditCard className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                  <p className="text-2xl font-bold text-blue-700">€{report.card_revenue.toFixed(2)}</p>
+                  <p className="text-sm text-slate-600">Tarjeta</p>
+                </div>
+                <div className="p-4 rounded-xl bg-purple-50 text-center">
+                  <Globe className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+                  <p className="text-2xl font-bold text-purple-700">€{report.online_revenue.toFixed(2)}</p>
+                  <p className="text-sm text-slate-600">Online</p>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-100 text-center">
+                  <DollarSign className="h-8 w-8 mx-auto mb-2 text-slate-500" />
+                  <p className="text-2xl font-bold text-slate-700">€{report.other_revenue.toFixed(2)}</p>
+                  <p className="text-sm text-slate-600">Otros</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Pending Returns */}
+          <Card className="border-slate-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-500" />
+                Devoluciones Pendientes ({report.pending_returns.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {report.pending_returns.length === 0 ? (
+                <p className="text-center py-8 text-slate-500">
+                  No hay devoluciones pendientes
+                </p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Cliente</TableHead>
+                      <TableHead>DNI</TableHead>
+                      <TableHead>Fecha Fin</TableHead>
+                      <TableHead>Artículos</TableHead>
+                      <TableHead>Pendiente</TableHead>
+                      <TableHead>Estado</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {report.pending_returns.map((rental) => {
+                      const isOverdue = new Date(rental.end_date) < new Date(date);
+                      return (
+                        <TableRow key={rental.rental_id} className={isOverdue ? 'bg-red-50' : ''}>
+                          <TableCell className="font-medium">{rental.customer_name}</TableCell>
+                          <TableCell className="font-mono">{rental.customer_dni}</TableCell>
+                          <TableCell>{rental.end_date}</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">{rental.pending_items}</Badge>
+                          </TableCell>
+                          <TableCell className={rental.pending_amount > 0 ? 'text-red-600 font-semibold' : ''}>
+                            €{rental.pending_amount.toFixed(2)}
+                          </TableCell>
+                          <TableCell>
+                            {isOverdue ? (
+                              <Badge variant="destructive">Vencido</Badge>
+                            ) : (
+                              <Badge variant="outline">Activo</Badge>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
+    </div>
+  );
+}
