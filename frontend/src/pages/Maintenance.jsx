@@ -8,8 +8,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { maintenanceApi, itemApi } from "@/lib/api";
-import { Wrench, Plus, Check, Loader2, AlertTriangle } from "lucide-react";
+import { Wrench, Plus, Check, Loader2, AlertTriangle, Clock, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 
 const MAINTENANCE_TYPES = [
@@ -22,6 +24,8 @@ const MAINTENANCE_TYPES = [
 
 export default function Maintenance() {
   const [records, setRecords] = useState([]);
+  const [alertItems, setAlertItems] = useState([]);
+  const [upcomingItems, setUpcomingItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("pending");
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -35,16 +39,43 @@ export default function Maintenance() {
   });
 
   useEffect(() => {
-    loadRecords();
+    loadData();
   }, [filterStatus]);
 
-  const loadRecords = async () => {
+  const loadData = async () => {
     setLoading(true);
     try {
-      const response = await maintenanceApi.getAll(filterStatus);
-      setRecords(response.data);
+      const [recordsRes, itemsRes] = await Promise.all([
+        maintenanceApi.getAll(filterStatus),
+        itemApi.getAll({})
+      ]);
+      
+      setRecords(recordsRes.data);
+      
+      // Calculate maintenance alerts
+      const items = itemsRes.data;
+      const needsMaintenance = [];
+      const upcoming = [];
+      
+      items.forEach(item => {
+        const interval = item.maintenance_interval || 30;
+        const daysUsed = item.days_used || 0;
+        const remaining = interval - (daysUsed % interval);
+        
+        if (item.status !== 'maintenance' && item.status !== 'retired') {
+          if (remaining <= 0 || daysUsed >= interval) {
+            needsMaintenance.push({ ...item, remaining: 0, progress: 100 });
+          } else if (remaining <= 5) {
+            upcoming.push({ ...item, remaining, progress: ((daysUsed % interval) / interval) * 100 });
+          }
+        }
+      });
+      
+      setAlertItems(needsMaintenance);
+      setUpcomingItems(upcoming.sort((a, b) => a.remaining - b.remaining));
+      
     } catch (error) {
-      toast.error("Error al cargar mantenimientos");
+      toast.error("Error al cargar datos de mantenimiento");
     } finally {
       setLoading(false);
     }
@@ -59,8 +90,14 @@ export default function Maintenance() {
     }
   };
 
-  const openAddDialog = () => {
+  const openAddDialog = (preselectedItem = null) => {
     loadAvailableItems();
+    if (preselectedItem) {
+      setNewMaintenance({
+        ...newMaintenance,
+        item_id: preselectedItem.id
+      });
+    }
     setShowAddDialog(true);
   };
 
@@ -84,7 +121,7 @@ export default function Maintenance() {
         cost: "",
         scheduled_date: ""
       });
-      loadRecords();
+      loadData();
     } catch (error) {
       toast.error(error.response?.data?.detail || "Error al crear mantenimiento");
     }
@@ -94,11 +131,23 @@ export default function Maintenance() {
     try {
       await maintenanceApi.complete(id);
       toast.success("Mantenimiento completado");
-      loadRecords();
+      loadData();
     } catch (error) {
       toast.error("Error al completar mantenimiento");
     }
   };
+
+  const sendToMaintenance = async (item) => {
+    openAddDialog(item);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 lg:p-8" data-testid="maintenance-page">
@@ -107,42 +156,107 @@ export default function Maintenance() {
           <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans' }}>
             Mantenimiento
           </h1>
-          <p className="text-slate-500 mt-1">Gestiona el mantenimiento de los equipos</p>
+          <p className="text-slate-500 mt-1">Gestión y alertas de mantenimiento de equipos</p>
         </div>
-        <div className="flex gap-2">
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-36 h-11" data-testid="filter-maintenance-status">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="pending">Pendientes</SelectItem>
-              <SelectItem value="completed">Completados</SelectItem>
-              <SelectItem value="">Todos</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button onClick={openAddDialog} data-testid="add-maintenance-btn">
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo
-          </Button>
-        </div>
+        <Button onClick={() => openAddDialog()} data-testid="add-maintenance-btn">
+          <Plus className="h-4 w-4 mr-2" />
+          Nuevo Mantenimiento
+        </Button>
       </div>
 
+      {/* Alert Cards */}
+      {(alertItems.length > 0 || upcomingItems.length > 0) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          {/* Needs Maintenance NOW */}
+          {alertItems.length > 0 && (
+            <Card className="border-red-200 bg-red-50/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2 text-red-700">
+                  <AlertTriangle className="h-5 w-5" />
+                  Requieren Mantenimiento AHORA ({alertItems.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {alertItems.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-red-200">
+                      <div>
+                        <p className="font-medium text-slate-900">{item.brand} {item.model}</p>
+                        <p className="text-sm text-slate-500">
+                          <span className="font-mono">{item.barcode}</span> • {item.days_used} días de uso
+                        </p>
+                      </div>
+                      <Button size="sm" variant="destructive" onClick={() => sendToMaintenance(item)}>
+                        <Wrench className="h-4 w-4 mr-1" />
+                        Enviar
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Upcoming Maintenance */}
+          {upcomingItems.length > 0 && (
+            <Card className="border-amber-200 bg-amber-50/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2 text-amber-700">
+                  <Clock className="h-5 w-5" />
+                  Próximo Mantenimiento ({upcomingItems.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {upcomingItems.map((item) => (
+                    <div key={item.id} className="p-3 bg-white rounded-lg border border-amber-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <p className="font-medium text-slate-900">{item.brand} {item.model}</p>
+                          <p className="text-xs text-slate-500 font-mono">{item.barcode}</p>
+                        </div>
+                        <Badge variant="outline" className="text-amber-700 border-amber-300">
+                          En {item.remaining} salidas
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Progress value={item.progress} className="h-2 flex-1" />
+                        <span className="text-xs text-slate-500">{Math.round(item.progress)}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* Maintenance Records */}
       <Card className="border-slate-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Wrench className="h-5 w-5 text-slate-500" />
-            Registros de Mantenimiento ({records.length})
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Wrench className="h-5 w-5 text-slate-500" />
+              Registros de Mantenimiento
+            </CardTitle>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-36 h-10" data-testid="filter-maintenance-status">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pendientes</SelectItem>
+                <SelectItem value="completed">Completados</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : records.length === 0 ? (
+          {records.length === 0 ? (
             <div className="text-center py-12 text-slate-500">
-              <Wrench className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>No hay registros de mantenimiento</p>
+              <CheckCircle className="h-12 w-12 mx-auto mb-3 opacity-50 text-emerald-500" />
+              <p>No hay registros de mantenimiento pendientes</p>
             </div>
           ) : (
             <Table>
@@ -226,6 +340,11 @@ export default function Maintenance() {
                       {item.barcode} - {item.brand} {item.model}
                     </SelectItem>
                   ))}
+                  {alertItems.map(item => (
+                    <SelectItem key={item.id} value={item.id}>
+                      ⚠️ {item.barcode} - {item.brand} {item.model}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -252,6 +371,7 @@ export default function Maintenance() {
                 onChange={(e) => setNewMaintenance({ ...newMaintenance, description: e.target.value })}
                 className="mt-1"
                 rows={3}
+                placeholder="Describe el mantenimiento a realizar..."
                 data-testid="maintenance-description"
               />
             </div>
