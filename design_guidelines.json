@@ -1,0 +1,131 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "AlpineFlow",
+      "archetype": "The Performance Pro",
+      "vibe": "Efficient, Clean, Reliable, High-Velocity",
+      "principles": [
+        "Speed is the primary feature: 60-90s rental time target",
+        "Density with Clarity: High information density without clutter",
+        "Keyboard First: Optimized for scanner and keyboard operation",
+        "Visual Feedback: Instant confirmation for every scan/action"
+      ]
+    },
+    "typography": {
+      "font_family": {
+        "headings": "Plus Jakarta Sans, sans-serif",
+        "body": "Inter, sans-serif",
+        "mono": "JetBrains Mono, monospace"
+      },
+      "scale": {
+        "h1": "text-4xl font-bold tracking-tight",
+        "h2": "text-3xl font-semibold tracking-tight",
+        "h3": "text-2xl font-semibold",
+        "h4": "text-xl font-medium",
+        "body_lg": "text-lg leading-relaxed",
+        "body_base": "text-base leading-normal",
+        "body_sm": "text-sm leading-normal text-muted-foreground",
+        "caption": "text-xs font-medium uppercase tracking-wider text-muted-foreground"
+      }
+    },
+    "colors": {
+      "theme": "light",
+      "palette": {
+        "background": "#FFFFFF",
+        "surface": "#F8FAFC",
+        "surface_highlight": "#F1F5F9",
+        "primary": "#2563EB",
+        "primary_foreground": "#FFFFFF",
+        "secondary": "#F1F5F9",
+        "secondary_foreground": "#0F172A",
+        "accent": "#0F172A",
+        "border": "#E2E8F0",
+        "text_main": "#0F172A",
+        "text_muted": "#64748B"
+      },
+      "status": {
+        "success": "#22C55E",
+        "warning": "#EAB308",
+        "critical": "#EF4444",
+        "info": "#3B82F6"
+      }
+    },
+    "layout": {
+      "spacing_scale": "px-4 py-2 gap-4",
+      "container_padding": "p-6 md:p-8 lg:p-10",
+      "grid_system": {
+        "dashboard": "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6",
+        "rental_flow": "grid grid-cols-12 gap-6 h-[calc(100vh-4rem)]"
+      },
+      "border_radius": {
+        "default": "rounded-xl",
+        "button": "rounded-lg",
+        "card": "rounded-xl"
+      }
+    },
+    "components": {
+      "buttons": {
+        "primary": "bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-8 shadow-sm transition-all active:scale-95",
+        "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80 h-11 px-6",
+        "ghost": "hover:bg-accent hover:text-accent-foreground",
+        "destructive": "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+      },
+      "cards": {
+        "base": "bg-white border border-border shadow-sm hover:shadow-md transition-shadow duration-200",
+        "interactive": "cursor-pointer hover:border-primary/50 hover:ring-1 hover:ring-primary/50"
+      },
+      "inputs": {
+        "default": "h-11 bg-white border-input focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0"
+      }
+    },
+    "motion": {
+      "duration": {
+        "fast": "150ms",
+        "normal": "250ms",
+        "slow": "400ms"
+      },
+      "easing": "ease-out",
+      "micro_interactions": "hover:translate-y-[-1px] active:translate-y-[1px]"
+    }
+  },
+  "assets": {
+    "images": {
+      "login_bg": "https://images.unsplash.com/photo-1630516749888-c65c762118f0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2ODl8MHwxfHNlYXJjaHwxfHxzbm93eSUyMG1vdW50YWluJTIwbGFuZHNjYXBlJTIwbWluaW1hbGlzdHxlbnwwfHx8fDE3Njk1NDcyNzV8MA&ixlib=rb-4.1.0&q=85",
+      "inventory_header": "https://images.unsplash.com/photo-1572349213424-44d6129638c9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjh8MHwxfHNlYXJjaHwzfHxzbm93Ym9hcmQlMjBlcXVpcG1lbnQlMjByZW50YWwlMjBnZWFyfGVufDB8fHx8MTc2OTU0NzI3M3ww&ixlib=rb-4.1.0&q=85",
+      "shop_interior": "https://images.unsplash.com/photo-1721396187263-c38021c8818e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNTl8MHwxfHNlYXJjaHwyfHxza2klMjBzaG9wJTIwaW50ZXJpb3IlMjBtb2Rlcm58ZW58MHx8fHwxNzY5NTQ3MjY5fDA&ixlib=rb-4.1.0&q=85"
+    },
+    "icons": "lucide-react"
+  },
+  "page_strategies": {
+    "dashboard": {
+      "layout": "Bento Grid Mode B (High Density)",
+      "key_elements": [
+        "KPI Cards (Top Row): Active Rentals, Returns Due, Revenue Today",
+        "Main Chart (Col-span-2): Hourly Rental Volume",
+        "Recent Activity Feed (Right Col): Live log of rentals/returns",
+        "Quick Actions: Big buttons for 'New Rental' and 'Return'"
+      ]
+    },
+    "rental_process": {
+      "layout": "Split View (Focus Mode)",
+      "left_panel": "Customer Search & Profile (30% width) - Auto-focus search bar",
+      "right_panel": "Cart & Scanned Items (70% width) - Large typography for item names",
+      "bottom_bar": "Sticky Footer with Total Price & 'Complete Rental' (Enter key) button",
+      "ux_rules": "No mouse needed. Scanner input auto-adds to cart. 'Enter' confirms."
+    },
+    "inventory": {
+      "layout": "Data Table with Filters",
+      "features": "Status badges (Available/Rented/Maintenance), Bulk Actions, Barcode Search"
+    }
+  },
+  "universal_guidelines": [
+    "Use 'Plus Jakarta Sans' for all Headings and 'Inter' for body text.",
+    "Primary Action buttons must be #2563EB (Blue-600).",
+    "All interactive elements must have `data-testid` attributes.",
+    "Use `sonner` for all toast notifications.",
+    "Do not use gradients for backgrounds; stick to solid whites and subtle grays.",
+    "Ensure high contrast for text (Slate-900 on White).",
+    "Input fields should be large (h-11 or h-12) for touch friendliness.",
+    "Use Lucide React icons for all iconography."
+  ]
+}
