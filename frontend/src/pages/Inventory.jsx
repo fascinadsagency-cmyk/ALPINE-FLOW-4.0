@@ -24,7 +24,7 @@ const ITEM_TYPES = [
 ];
 
 const STATUS_OPTIONS = [
-  { value: "", label: "Todos" },
+  { value: "all", label: "Todos" },
   { value: "available", label: "Disponible" },
   { value: "rented", label: "Alquilado" },
   { value: "maintenance", label: "Mantenimiento" },
@@ -35,8 +35,8 @@ export default function Inventory() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
-  const [filterType, setFilterType] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterType, setFilterType] = useState("all");
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
@@ -67,8 +67,8 @@ export default function Inventory() {
     setLoading(true);
     try {
       const params = {};
-      if (filterStatus) params.status = filterStatus;
-      if (filterType) params.item_type = filterType;
+      if (filterStatus && filterStatus !== "all") params.status = filterStatus;
+      if (filterType && filterType !== "all") params.item_type = filterType;
       if (searchTerm) params.search = searchTerm;
       
       const response = await itemApi.getAll(params);
@@ -287,7 +287,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                   <SelectValue placeholder="Tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   {ITEM_TYPES.map(type => (
                     <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
                   ))}
