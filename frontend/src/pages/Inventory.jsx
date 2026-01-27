@@ -456,6 +456,24 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                 />
               </div>
               <div>
+                <Label>Categoría</Label>
+                <Select 
+                  value={newItem.category} 
+                  onValueChange={(v) => setNewItem({ ...newItem, category: v })}
+                >
+                  <SelectTrigger className="h-11 mt-1" data-testid="new-item-category">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="SUPERIOR">Gama Superior</SelectItem>
+                    <SelectItem value="ALTA">Gama Alta</SelectItem>
+                    <SelectItem value="MEDIA">Gama Media</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
                 <Label>Precio Coste (€)</Label>
                 <Input
                   type="number"
@@ -463,18 +481,6 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                   onChange={(e) => setNewItem({ ...newItem, purchase_price: e.target.value })}
                   className="h-11 mt-1"
                   data-testid="new-item-price"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Fecha Compra</Label>
-                <Input
-                  type="date"
-                  value={newItem.purchase_date}
-                  onChange={(e) => setNewItem({ ...newItem, purchase_date: e.target.value })}
-                  className="h-11 mt-1"
-                  data-testid="new-item-date"
                 />
               </div>
               <div>
