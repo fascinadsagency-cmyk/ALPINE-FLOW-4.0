@@ -60,6 +60,7 @@ class CustomerCreate(BaseModel):
     phone: Optional[str] = ""
     address: Optional[str] = ""
     city: Optional[str] = ""
+    source: Optional[str] = ""  # Proveedor/Fuente
 
 class CustomerResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -69,6 +70,7 @@ class CustomerResponse(BaseModel):
     phone: str
     address: str
     city: str
+    source: str = ""
     created_at: str
     total_rentals: int = 0
 
@@ -82,6 +84,7 @@ class ItemCreate(BaseModel):
     purchase_date: str
     location: str = ""
     maintenance_interval: int = 30  # days between maintenance
+    category: str = "MEDIA"  # SUPERIOR, ALTA, MEDIA
 
 class BulkItemCreate(BaseModel):
     items: List[ItemCreate]
@@ -104,6 +107,8 @@ class ItemResponse(BaseModel):
     location: str
     days_used: int
     amortization: float
+    category: str = "MEDIA"
+    maintenance_interval: int = 30
     created_at: str
 
 class TariffCreate(BaseModel):
