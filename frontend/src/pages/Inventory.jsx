@@ -353,11 +353,12 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                   <TableRow>
                     <TableHead>Código</TableHead>
                     <TableHead>Tipo</TableHead>
+                    <TableHead>Categoría</TableHead>
                     <TableHead>Marca / Modelo</TableHead>
                     <TableHead>Talla</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead>Días Uso</TableHead>
-                    <TableHead>Amortización</TableHead>
+                    <TableHead>Ubicación</TableHead>
                     <TableHead>Ubicación</TableHead>
                   </TableRow>
                 </TableHeader>
