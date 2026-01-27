@@ -591,6 +591,57 @@ async def get_tariff(item_type: str, current_user: dict = Depends(get_current_us
         raise HTTPException(status_code=404, detail="Tariff not found")
     return TariffResponse(**tariff)
 
+# ==================== PACK ROUTES ====================
+
+class PackCreate(BaseModel):
+    name: str
+    description: Optional[str] = ""
+    items: List[str]  # List of item types
+    price_1_day: float
+    price_2_3_days: float
+    price_4_7_days: float
+    price_week: float
+
+class PackResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name: str
+    description: str
+    items: List[str]
+    price_1_day: float
+    price_2_3_days: float
+    price_4_7_days: float
+    price_week: float
+
+@api_router.post("/packs", response_model=PackResponse)
+async def create_pack(pack: PackCreate, current_user: dict = Depends(get_current_user)):
+    pack_id = str(uuid.uuid4())
+    doc = {
+        "id": pack_id,
+        "name": pack.name,
+        "description": pack.description or "",
+        "items": pack.items,
+        "price_1_day": pack.price_1_day,
+        "price_2_3_days": pack.price_2_3_days,
+        "price_4_7_days": pack.price_4_7_days,
+        "price_week": pack.price_week,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.packs.insert_one(doc)
+    return PackResponse(**doc)
+
+@api_router.get("/packs", response_model=List[PackResponse])
+async def get_packs(current_user: dict = Depends(get_current_user)):
+    packs = await db.packs.find({}, {"_id": 0}).to_list(50)
+    return [PackResponse(**p) for p in packs]
+
+@api_router.delete("/packs/{pack_id}")
+async def delete_pack(pack_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.packs.delete_one({"id": pack_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Pack not found")
+    return {"message": "Pack deleted"}
+
 # ==================== RENTAL ROUTES ====================
 
 def calculate_days(start_date: str, end_date: str) -> int:
