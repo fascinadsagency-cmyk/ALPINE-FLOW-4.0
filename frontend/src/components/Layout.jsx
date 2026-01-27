@@ -27,8 +27,10 @@ const navItems = [
   { to: "/clientes", icon: Users, label: "Clientes" },
   { to: "/inventario", icon: Package, label: "Inventario" },
   { to: "/tarifas", icon: DollarSign, label: "Tarifas" },
+  { to: "/caja", icon: Wallet, label: "Caja" },
   { to: "/mantenimiento", icon: Wrench, label: "Mantenimiento" },
   { to: "/reportes", icon: BarChart3, label: "Reportes" },
+  { to: "/integraciones", icon: Settings, label: "Integraciones" },
 ];
 
 export default function Layout() {
