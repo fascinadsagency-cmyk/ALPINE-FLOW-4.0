@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Query
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,10 +7,11 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+from typing import List, Optional
 import uuid
-from datetime import datetime, timezone
-
+from datetime import datetime, timezone, timedelta
+import bcrypt
+import jwt
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -19,54 +21,807 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
-app = FastAPI()
+# JWT Settings
+JWT_SECRET = os.environ.get('JWT_SECRET', 'alpineflow-secret-key-2024')
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION_HOURS = 24
 
-# Create a router with the /api prefix
+app = FastAPI(title="AlpineFlow API")
 api_router = APIRouter(prefix="/api")
+security = HTTPBearer()
 
+# ==================== MODELS ====================
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    role: str = "employee"
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class UserResponse(BaseModel):
+    id: str
+    username: str
+    role: str
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
+class CustomerCreate(BaseModel):
+    dni: str
+    name: str
+    phone: Optional[str] = ""
+    address: Optional[str] = ""
+    city: Optional[str] = ""
+
+class CustomerResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    dni: str
+    name: str
+    phone: str
+    address: str
+    city: str
+    created_at: str
+    total_rentals: int = 0
+
+class ItemCreate(BaseModel):
+    barcode: str
+    item_type: str  # ski, snowboard, boots, helmet, poles
+    brand: str
+    model: str
+    size: str
+    purchase_price: float
+    purchase_date: str
+    location: str = ""
+
+class ItemResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    barcode: str
+    item_type: str
+    brand: str
+    model: str
+    size: str
+    status: str  # available, rented, maintenance, retired
+    purchase_price: float
+    purchase_date: str
+    location: str
+    days_used: int
+    amortization: float
+    created_at: str
+
+class TariffCreate(BaseModel):
+    item_type: str
+    days_1: float
+    days_2_3: float
+    days_4_7: float
+    week: float
+    season: float
+
+class TariffResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    item_type: str
+    days_1: float
+    days_2_3: float
+    days_4_7: float
+    week: float
+    season: float
+
+class RentalItemInput(BaseModel):
+    barcode: str
+    person_name: Optional[str] = ""
+
+class RentalCreate(BaseModel):
+    customer_id: str
+    start_date: str
+    end_date: str
+    items: List[RentalItemInput]
+    payment_method: str  # cash, card, pending, online, other
+    total_amount: float
+    paid_amount: float = 0
+    deposit: float = 0
+    notes: Optional[str] = ""
+
+class RentalResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    customer_id: str
+    customer_name: str
+    customer_dni: str
+    start_date: str
+    end_date: str
+    days: int
+    items: List[dict]
+    payment_method: str
+    total_amount: float
+    paid_amount: float
+    pending_amount: float
+    deposit: float
+    status: str  # active, returned, partial
+    notes: str
+    created_at: str
+
+class ReturnInput(BaseModel):
+    barcodes: List[str]
+
+class MaintenanceCreate(BaseModel):
+    item_id: str
+    maintenance_type: str
+    description: str
+    cost: float = 0
+    scheduled_date: Optional[str] = None
+
+class MaintenanceResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    item_id: str
+    item_barcode: str
+    item_description: str
+    maintenance_type: str
+    description: str
+    cost: float
+    status: str
+    scheduled_date: Optional[str]
+    completed_date: Optional[str]
+    created_at: str
+
+class DailyReportResponse(BaseModel):
+    date: str
+    total_revenue: float
+    cash_revenue: float
+    card_revenue: float
+    online_revenue: float
+    other_revenue: float
+    new_rentals: int
+    returns: int
+    active_rentals: int
+    pending_returns: List[dict]
+    inventory_usage: float
+
+# ==================== AUTH HELPERS ====================
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+def verify_password(password: str, hashed: str) -> bool:
+    return bcrypt.checkpw(password.encode(), hashed.encode())
+
+def create_token(user_id: str, username: str, role: str) -> str:
+    payload = {
+        "sub": user_id,
+        "username": username,
+        "role": role,
+        "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    try:
+        payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+# ==================== AUTH ROUTES ====================
+
+@api_router.post("/auth/register", response_model=TokenResponse)
+async def register(user: UserCreate):
+    existing = await db.users.find_one({"username": user.username})
+    if existing:
+        raise HTTPException(status_code=400, detail="Username already exists")
     
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    user_id = str(uuid.uuid4())
+    user_doc = {
+        "id": user_id,
+        "username": user.username,
+        "password": hash_password(user.password),
+        "role": user.role,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.users.insert_one(user_doc)
+    
+    token = create_token(user_id, user.username, user.role)
+    return TokenResponse(
+        access_token=token,
+        user=UserResponse(id=user_id, username=user.username, role=user.role)
+    )
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+@api_router.post("/auth/login", response_model=TokenResponse)
+async def login(user: UserLogin):
+    db_user = await db.users.find_one({"username": user.username})
+    if not db_user or not verify_password(user.password, db_user["password"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    token = create_token(db_user["id"], db_user["username"], db_user["role"])
+    return TokenResponse(
+        access_token=token,
+        user=UserResponse(id=db_user["id"], username=db_user["username"], role=db_user["role"])
+    )
 
-# Add your routes to the router instead of directly to app
+@api_router.get("/auth/me", response_model=UserResponse)
+async def get_me(current_user: dict = Depends(get_current_user)):
+    return UserResponse(
+        id=current_user["sub"],
+        username=current_user["username"],
+        role=current_user["role"]
+    )
+
+# ==================== CUSTOMER ROUTES ====================
+
+@api_router.post("/customers", response_model=CustomerResponse)
+async def create_customer(customer: CustomerCreate, current_user: dict = Depends(get_current_user)):
+    existing = await db.customers.find_one({"dni": customer.dni})
+    if existing:
+        raise HTTPException(status_code=400, detail="Customer with this DNI already exists")
+    
+    customer_id = str(uuid.uuid4())
+    doc = {
+        "id": customer_id,
+        "dni": customer.dni.upper(),
+        "name": customer.name,
+        "phone": customer.phone or "",
+        "address": customer.address or "",
+        "city": customer.city or "",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "total_rentals": 0
+    }
+    await db.customers.insert_one(doc)
+    return CustomerResponse(**doc)
+
+@api_router.get("/customers", response_model=List[CustomerResponse])
+async def get_customers(
+    search: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    query = {}
+    if search:
+        query = {
+            "$or": [
+                {"dni": {"$regex": search, "$options": "i"}},
+                {"name": {"$regex": search, "$options": "i"}},
+                {"phone": {"$regex": search, "$options": "i"}}
+            ]
+        }
+    customers = await db.customers.find(query, {"_id": 0}).to_list(100)
+    return [CustomerResponse(**c) for c in customers]
+
+@api_router.get("/customers/{customer_id}", response_model=CustomerResponse)
+async def get_customer(customer_id: str, current_user: dict = Depends(get_current_user)):
+    customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    return CustomerResponse(**customer)
+
+@api_router.get("/customers/dni/{dni}", response_model=CustomerResponse)
+async def get_customer_by_dni(dni: str, current_user: dict = Depends(get_current_user)):
+    customer = await db.customers.find_one({"dni": dni.upper()}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    return CustomerResponse(**customer)
+
+@api_router.get("/customers/{customer_id}/history")
+async def get_customer_history(customer_id: str, current_user: dict = Depends(get_current_user)):
+    rentals = await db.rentals.find({"customer_id": customer_id}, {"_id": 0}).sort("created_at", -1).to_list(50)
+    
+    # Get preferred sizes from history
+    sizes = {}
+    for rental in rentals:
+        for item in rental.get("items", []):
+            item_type = item.get("item_type", "")
+            size = item.get("size", "")
+            if item_type and size:
+                if item_type not in sizes:
+                    sizes[item_type] = []
+                if size not in sizes[item_type]:
+                    sizes[item_type].append(size)
+    
+    return {
+        "rentals": rentals,
+        "preferred_sizes": sizes,
+        "total_rentals": len(rentals)
+    }
+
+# ==================== INVENTORY ROUTES ====================
+
+@api_router.post("/items", response_model=ItemResponse)
+async def create_item(item: ItemCreate, current_user: dict = Depends(get_current_user)):
+    existing = await db.items.find_one({"barcode": item.barcode})
+    if existing:
+        raise HTTPException(status_code=400, detail="Item with this barcode already exists")
+    
+    item_id = str(uuid.uuid4())
+    doc = {
+        "id": item_id,
+        "barcode": item.barcode,
+        "item_type": item.item_type,
+        "brand": item.brand,
+        "model": item.model,
+        "size": item.size,
+        "status": "available",
+        "purchase_price": item.purchase_price,
+        "purchase_date": item.purchase_date,
+        "location": item.location or "",
+        "days_used": 0,
+        "amortization": 0,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.items.insert_one(doc)
+    return ItemResponse(**doc)
+
+@api_router.get("/items", response_model=List[ItemResponse])
+async def get_items(
+    status: Optional[str] = None,
+    item_type: Optional[str] = None,
+    search: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    query = {}
+    if status:
+        query["status"] = status
+    if item_type:
+        query["item_type"] = item_type
+    if search:
+        query["$or"] = [
+            {"barcode": {"$regex": search, "$options": "i"}},
+            {"brand": {"$regex": search, "$options": "i"}},
+            {"model": {"$regex": search, "$options": "i"}}
+        ]
+    
+    items = await db.items.find(query, {"_id": 0}).to_list(500)
+    return [ItemResponse(**i) for i in items]
+
+@api_router.get("/items/barcode/{barcode}", response_model=ItemResponse)
+async def get_item_by_barcode(barcode: str, current_user: dict = Depends(get_current_user)):
+    item = await db.items.find_one({"barcode": barcode}, {"_id": 0})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return ItemResponse(**item)
+
+@api_router.put("/items/{item_id}", response_model=ItemResponse)
+async def update_item(item_id: str, item: ItemCreate, current_user: dict = Depends(get_current_user)):
+    existing = await db.items.find_one({"id": item_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    update_doc = item.model_dump()
+    await db.items.update_one({"id": item_id}, {"$set": update_doc})
+    
+    updated = await db.items.find_one({"id": item_id}, {"_id": 0})
+    return ItemResponse(**updated)
+
+@api_router.put("/items/{item_id}/status")
+async def update_item_status(item_id: str, status: str = Query(...), current_user: dict = Depends(get_current_user)):
+    result = await db.items.update_one({"id": item_id}, {"$set": {"status": status}})
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return {"message": "Status updated"}
+
+@api_router.get("/items/stats")
+async def get_inventory_stats(current_user: dict = Depends(get_current_user)):
+    pipeline = [
+        {"$group": {
+            "_id": "$status",
+            "count": {"$sum": 1}
+        }}
+    ]
+    stats = await db.items.aggregate(pipeline).to_list(10)
+    
+    result = {"available": 0, "rented": 0, "maintenance": 0, "retired": 0, "total": 0}
+    for s in stats:
+        if s["_id"] in result:
+            result[s["_id"]] = s["count"]
+        result["total"] += s["count"]
+    
+    return result
+
+# ==================== TARIFF ROUTES ====================
+
+@api_router.post("/tariffs", response_model=TariffResponse)
+async def create_tariff(tariff: TariffCreate, current_user: dict = Depends(get_current_user)):
+    existing = await db.tariffs.find_one({"item_type": tariff.item_type})
+    if existing:
+        await db.tariffs.update_one({"item_type": tariff.item_type}, {"$set": tariff.model_dump()})
+        updated = await db.tariffs.find_one({"item_type": tariff.item_type}, {"_id": 0})
+        return TariffResponse(**updated)
+    
+    tariff_id = str(uuid.uuid4())
+    doc = {"id": tariff_id, **tariff.model_dump()}
+    await db.tariffs.insert_one(doc)
+    return TariffResponse(**doc)
+
+@api_router.get("/tariffs", response_model=List[TariffResponse])
+async def get_tariffs(current_user: dict = Depends(get_current_user)):
+    tariffs = await db.tariffs.find({}, {"_id": 0}).to_list(20)
+    return [TariffResponse(**t) for t in tariffs]
+
+@api_router.get("/tariffs/{item_type}", response_model=TariffResponse)
+async def get_tariff(item_type: str, current_user: dict = Depends(get_current_user)):
+    tariff = await db.tariffs.find_one({"item_type": item_type}, {"_id": 0})
+    if not tariff:
+        raise HTTPException(status_code=404, detail="Tariff not found")
+    return TariffResponse(**tariff)
+
+# ==================== RENTAL ROUTES ====================
+
+def calculate_days(start_date: str, end_date: str) -> int:
+    start = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+    end = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+    return max(1, (end - start).days + 1)
+
+@api_router.post("/rentals", response_model=RentalResponse)
+async def create_rental(rental: RentalCreate, current_user: dict = Depends(get_current_user)):
+    # Validate customer
+    customer = await db.customers.find_one({"id": rental.customer_id}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    # Validate and get items
+    items_data = []
+    for item_input in rental.items:
+        item = await db.items.find_one({"barcode": item_input.barcode}, {"_id": 0})
+        if not item:
+            raise HTTPException(status_code=404, detail=f"Item {item_input.barcode} not found")
+        if item["status"] != "available":
+            raise HTTPException(status_code=400, detail=f"Item {item_input.barcode} is not available")
+        
+        items_data.append({
+            "item_id": item["id"],
+            "barcode": item["barcode"],
+            "item_type": item["item_type"],
+            "brand": item["brand"],
+            "model": item["model"],
+            "size": item["size"],
+            "person_name": item_input.person_name or "",
+            "returned": False
+        })
+        
+        # Mark item as rented
+        await db.items.update_one({"id": item["id"]}, {"$set": {"status": "rented"}})
+    
+    days = calculate_days(rental.start_date, rental.end_date)
+    rental_id = str(uuid.uuid4())
+    
+    doc = {
+        "id": rental_id,
+        "customer_id": rental.customer_id,
+        "customer_name": customer["name"],
+        "customer_dni": customer["dni"],
+        "start_date": rental.start_date,
+        "end_date": rental.end_date,
+        "days": days,
+        "items": items_data,
+        "payment_method": rental.payment_method,
+        "total_amount": rental.total_amount,
+        "paid_amount": rental.paid_amount,
+        "pending_amount": rental.total_amount - rental.paid_amount,
+        "deposit": rental.deposit,
+        "status": "active",
+        "notes": rental.notes or "",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.rentals.insert_one(doc)
+    await db.customers.update_one({"id": rental.customer_id}, {"$inc": {"total_rentals": 1}})
+    
+    return RentalResponse(**doc)
+
+@api_router.get("/rentals", response_model=List[RentalResponse])
+async def get_rentals(
+    status: Optional[str] = None,
+    customer_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    query = {}
+    if status:
+        query["status"] = status
+    if customer_id:
+        query["customer_id"] = customer_id
+    
+    rentals = await db.rentals.find(query, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return [RentalResponse(**r) for r in rentals]
+
+@api_router.get("/rentals/{rental_id}", response_model=RentalResponse)
+async def get_rental(rental_id: str, current_user: dict = Depends(get_current_user)):
+    rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
+    if not rental:
+        raise HTTPException(status_code=404, detail="Rental not found")
+    return RentalResponse(**rental)
+
+@api_router.get("/rentals/barcode/{barcode}")
+async def get_rental_by_barcode(barcode: str, current_user: dict = Depends(get_current_user)):
+    rental = await db.rentals.find_one(
+        {"items.barcode": barcode, "status": {"$in": ["active", "partial"]}},
+        {"_id": 0}
+    )
+    if not rental:
+        raise HTTPException(status_code=404, detail="No active rental found for this item")
+    return RentalResponse(**rental)
+
+@api_router.post("/rentals/{rental_id}/return")
+async def process_return(rental_id: str, return_input: ReturnInput, current_user: dict = Depends(get_current_user)):
+    rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
+    if not rental:
+        raise HTTPException(status_code=404, detail="Rental not found")
+    
+    returned_items = []
+    pending_items = []
+    days = rental["days"]
+    
+    for item in rental["items"]:
+        if item["barcode"] in return_input.barcodes:
+            item["returned"] = True
+            returned_items.append(item)
+            # Update item status and days used
+            await db.items.update_one(
+                {"id": item["item_id"]},
+                {"$set": {"status": "available"}, "$inc": {"days_used": days}}
+            )
+            # Update amortization
+            item_doc = await db.items.find_one({"id": item["item_id"]})
+            if item_doc:
+                tariff = await db.tariffs.find_one({"item_type": item_doc["item_type"]})
+                if tariff:
+                    daily_rate = tariff.get("days_1", 0)
+                    amortization = item_doc.get("days_used", 0) * daily_rate
+                    await db.items.update_one(
+                        {"id": item["item_id"]},
+                        {"$set": {"amortization": amortization}}
+                    )
+        elif not item.get("returned", False):
+            pending_items.append(item)
+    
+    # Update rental status
+    new_status = "returned" if len(pending_items) == 0 else "partial"
+    await db.rentals.update_one(
+        {"id": rental_id},
+        {"$set": {"items": rental["items"], "status": new_status}}
+    )
+    
+    return {
+        "message": "Return processed",
+        "returned_items": returned_items,
+        "pending_items": pending_items,
+        "status": new_status,
+        "pending_amount": rental["pending_amount"]
+    }
+
+@api_router.post("/rentals/{rental_id}/payment")
+async def process_payment(rental_id: str, amount: float = Query(...), current_user: dict = Depends(get_current_user)):
+    rental = await db.rentals.find_one({"id": rental_id})
+    if not rental:
+        raise HTTPException(status_code=404, detail="Rental not found")
+    
+    new_paid = rental["paid_amount"] + amount
+    new_pending = rental["total_amount"] - new_paid
+    
+    await db.rentals.update_one(
+        {"id": rental_id},
+        {"$set": {"paid_amount": new_paid, "pending_amount": max(0, new_pending)}}
+    )
+    
+    return {"message": "Payment processed", "paid_amount": new_paid, "pending_amount": max(0, new_pending)}
+
+# ==================== MAINTENANCE ROUTES ====================
+
+@api_router.post("/maintenance", response_model=MaintenanceResponse)
+async def create_maintenance(maintenance: MaintenanceCreate, current_user: dict = Depends(get_current_user)):
+    item = await db.items.find_one({"id": maintenance.item_id}, {"_id": 0})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    maintenance_id = str(uuid.uuid4())
+    doc = {
+        "id": maintenance_id,
+        "item_id": maintenance.item_id,
+        "item_barcode": item["barcode"],
+        "item_description": f"{item['brand']} {item['model']} - {item['size']}",
+        "maintenance_type": maintenance.maintenance_type,
+        "description": maintenance.description,
+        "cost": maintenance.cost,
+        "status": "pending",
+        "scheduled_date": maintenance.scheduled_date,
+        "completed_date": None,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.maintenance.insert_one(doc)
+    await db.items.update_one({"id": maintenance.item_id}, {"$set": {"status": "maintenance"}})
+    
+    return MaintenanceResponse(**doc)
+
+@api_router.get("/maintenance", response_model=List[MaintenanceResponse])
+async def get_maintenance(
+    status: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    query = {}
+    if status:
+        query["status"] = status
+    
+    records = await db.maintenance.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return [MaintenanceResponse(**r) for r in records]
+
+@api_router.post("/maintenance/{maintenance_id}/complete")
+async def complete_maintenance(maintenance_id: str, current_user: dict = Depends(get_current_user)):
+    maintenance = await db.maintenance.find_one({"id": maintenance_id})
+    if not maintenance:
+        raise HTTPException(status_code=404, detail="Maintenance not found")
+    
+    await db.maintenance.update_one(
+        {"id": maintenance_id},
+        {"$set": {"status": "completed", "completed_date": datetime.now(timezone.utc).isoformat()}}
+    )
+    await db.items.update_one({"id": maintenance["item_id"]}, {"$set": {"status": "available"}})
+    
+    return {"message": "Maintenance completed"}
+
+# ==================== REPORTS ROUTES ====================
+
+@api_router.get("/reports/daily", response_model=DailyReportResponse)
+async def get_daily_report(date: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    if not date:
+        date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    start = f"{date}T00:00:00"
+    end = f"{date}T23:59:59"
+    
+    # Get rentals for the day
+    rentals = await db.rentals.find({
+        "created_at": {"$gte": start, "$lte": end}
+    }, {"_id": 0}).to_list(500)
+    
+    # Calculate revenue by payment method
+    cash_revenue = sum(r["paid_amount"] for r in rentals if r["payment_method"] == "cash")
+    card_revenue = sum(r["paid_amount"] for r in rentals if r["payment_method"] == "card")
+    online_revenue = sum(r["paid_amount"] for r in rentals if r["payment_method"] in ["online", "pago_online"])
+    other_revenue = sum(r["paid_amount"] for r in rentals if r["payment_method"] in ["pending", "other"])
+    
+    # Get returns for the day
+    returns_count = await db.rentals.count_documents({
+        "status": "returned",
+        "created_at": {"$gte": start, "$lte": end}
+    })
+    
+    # Get active rentals
+    active_rentals = await db.rentals.count_documents({"status": "active"})
+    
+    # Get pending returns
+    pending_returns = await db.rentals.find(
+        {"status": {"$in": ["active", "partial"]}},
+        {"_id": 0}
+    ).to_list(100)
+    
+    pending_list = []
+    for r in pending_returns:
+        pending_items = [i for i in r["items"] if not i.get("returned", False)]
+        if pending_items:
+            pending_list.append({
+                "rental_id": r["id"],
+                "customer_name": r["customer_name"],
+                "customer_dni": r["customer_dni"],
+                "end_date": r["end_date"],
+                "pending_items": len(pending_items),
+                "pending_amount": r["pending_amount"]
+            })
+    
+    # Inventory usage
+    total_items = await db.items.count_documents({})
+    rented_items = await db.items.count_documents({"status": "rented"})
+    usage = (rented_items / total_items * 100) if total_items > 0 else 0
+    
+    return DailyReportResponse(
+        date=date,
+        total_revenue=cash_revenue + card_revenue + online_revenue + other_revenue,
+        cash_revenue=cash_revenue,
+        card_revenue=card_revenue,
+        online_revenue=online_revenue,
+        other_revenue=other_revenue,
+        new_rentals=len(rentals),
+        returns=returns_count,
+        active_rentals=active_rentals,
+        pending_returns=pending_list,
+        inventory_usage=round(usage, 1)
+    )
+
+@api_router.get("/reports/stats")
+async def get_stats(current_user: dict = Depends(get_current_user)):
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    start = f"{today}T00:00:00"
+    end = f"{today}T23:59:59"
+    
+    # Today's rentals
+    today_rentals = await db.rentals.count_documents({
+        "created_at": {"$gte": start, "$lte": end}
+    })
+    
+    # Today's revenue
+    rentals = await db.rentals.find({
+        "created_at": {"$gte": start, "$lte": end}
+    }, {"_id": 0, "paid_amount": 1}).to_list(500)
+    today_revenue = sum(r["paid_amount"] for r in rentals)
+    
+    # Active rentals
+    active_rentals = await db.rentals.count_documents({"status": "active"})
+    
+    # Pending returns (overdue)
+    overdue = await db.rentals.count_documents({
+        "status": {"$in": ["active", "partial"]},
+        "end_date": {"$lt": today}
+    })
+    
+    # Inventory stats
+    inventory = await get_inventory_stats(current_user)
+    
+    return {
+        "today_rentals": today_rentals,
+        "today_revenue": today_revenue,
+        "active_rentals": active_rentals,
+        "overdue_returns": overdue,
+        "inventory": inventory
+    }
+
+# ==================== DASHBOARD ROUTES ====================
+
+@api_router.get("/dashboard")
+async def get_dashboard(current_user: dict = Depends(get_current_user)):
+    stats = await get_stats(current_user)
+    
+    # Recent activity
+    recent_rentals = await db.rentals.find({}, {"_id": 0}).sort("created_at", -1).to_list(10)
+    
+    # Alerts
+    alerts = []
+    
+    # Items needing maintenance
+    maintenance_alerts = await db.items.find(
+        {"days_used": {"$gte": 30}, "status": "available"},
+        {"_id": 0, "barcode": 1, "brand": 1, "model": 1, "days_used": 1}
+    ).to_list(10)
+    for item in maintenance_alerts:
+        alerts.append({
+            "type": "maintenance",
+            "message": f"{item['brand']} {item['model']} ({item['barcode']}) - {item['days_used']} días de uso",
+            "severity": "warning"
+        })
+    
+    # Overdue rentals
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    overdue_rentals = await db.rentals.find(
+        {"status": {"$in": ["active", "partial"]}, "end_date": {"$lt": today}},
+        {"_id": 0}
+    ).to_list(10)
+    for rental in overdue_rentals:
+        alerts.append({
+            "type": "overdue",
+            "message": f"Alquiler vencido: {rental['customer_name']} - {rental['end_date']}",
+            "severity": "critical"
+        })
+    
+    return {
+        "stats": stats,
+        "recent_activity": recent_rentals[:5],
+        "alerts": alerts
+    }
+
+# ==================== HEALTH CHECK ====================
+
+@api_router.get("/health")
+async def health_check():
+    return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
+
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "AlpineFlow API v1.0"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
-
-# Include the router in the main app
+# Include router
 app.include_router(api_router)
 
 app.add_middleware(
@@ -77,7 +832,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
