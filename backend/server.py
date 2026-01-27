@@ -1026,6 +1026,247 @@ async def health_check():
 async def root():
     return {"message": "AlpineFlow API v1.0"}
 
+# ==================== SOURCES (PROVEEDORES) ROUTES ====================
+
+class SourceCreate(BaseModel):
+    name: str
+    is_favorite: bool = False
+
+class SourceResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name: str
+    is_favorite: bool
+    customer_count: int = 0
+
+@api_router.post("/sources", response_model=SourceResponse)
+async def create_source(source: SourceCreate, current_user: dict = Depends(get_current_user)):
+    existing = await db.sources.find_one({"name": source.name})
+    if existing:
+        raise HTTPException(status_code=400, detail="Source already exists")
+    
+    source_id = str(uuid.uuid4())
+    doc = {
+        "id": source_id,
+        "name": source.name,
+        "is_favorite": source.is_favorite,
+        "customer_count": 0,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.sources.insert_one(doc)
+    return SourceResponse(**doc)
+
+@api_router.get("/sources", response_model=List[SourceResponse])
+async def get_sources(current_user: dict = Depends(get_current_user)):
+    sources = await db.sources.find({}, {"_id": 0}).sort([("is_favorite", -1), ("name", 1)]).to_list(100)
+    
+    # Count customers per source
+    for source in sources:
+        count = await db.customers.count_documents({"source": source["name"]})
+        source["customer_count"] = count
+    
+    return [SourceResponse(**s) for s in sources]
+
+@api_router.delete("/sources/{source_id}")
+async def delete_source(source_id: str, current_user: dict = Depends(get_current_user)):
+    source = await db.sources.find_one({"id": source_id})
+    if not source:
+        raise HTTPException(status_code=404, detail="Source not found")
+    
+    # Check if source is used
+    count = await db.customers.count_documents({"source": source["name"]})
+    if count > 0:
+        raise HTTPException(status_code=400, detail=f"Cannot delete: {count} customers using this source")
+    
+    await db.sources.delete_one({"id": source_id})
+    return {"message": "Source deleted"}
+
+# ==================== CASH REGISTER (CAJA) ROUTES ====================
+
+class CashMovementCreate(BaseModel):
+    movement_type: str  # income, expense
+    amount: float
+    payment_method: str  # cash, card, transfer
+    category: str
+    concept: str
+    reference_id: Optional[str] = None  # rental_id if from rental
+    notes: Optional[str] = ""
+
+class CashMovementResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    movement_type: str
+    amount: float
+    payment_method: str
+    category: str
+    concept: str
+    reference_id: Optional[str]
+    notes: str
+    created_at: str
+    created_by: str
+
+class CashClosingCreate(BaseModel):
+    date: str
+    physical_cash: float
+    notes: Optional[str] = ""
+
+class CashClosingResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    date: str
+    total_income: float
+    total_expense: float
+    expected_balance: float
+    physical_cash: float
+    difference: float
+    notes: str
+    closed_by: str
+    closed_at: str
+
+@api_router.post("/cash/movements")
+async def create_cash_movement(movement: CashMovementCreate, current_user: dict = Depends(get_current_user)):
+    movement_id = str(uuid.uuid4())
+    doc = {
+        "id": movement_id,
+        "movement_type": movement.movement_type,
+        "amount": movement.amount,
+        "payment_method": movement.payment_method,
+        "category": movement.category,
+        "concept": movement.concept,
+        "reference_id": movement.reference_id,
+        "notes": movement.notes or "",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": current_user["username"]
+    }
+    await db.cash_movements.insert_one(doc)
+    return CashMovementResponse(**doc)
+
+@api_router.get("/cash/movements")
+async def get_cash_movements(
+    date: Optional[str] = None,
+    movement_type: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    if not date:
+        date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    start = f"{date}T00:00:00"
+    end = f"{date}T23:59:59"
+    
+    query = {"created_at": {"$gte": start, "$lte": end}}
+    if movement_type:
+        query["movement_type"] = movement_type
+    
+    movements = await db.cash_movements.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return [CashMovementResponse(**m) for m in movements]
+
+@api_router.get("/cash/summary")
+async def get_cash_summary(date: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    if not date:
+        date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    start = f"{date}T00:00:00"
+    end = f"{date}T23:59:59"
+    
+    movements = await db.cash_movements.find(
+        {"created_at": {"$gte": start, "$lte": end}},
+        {"_id": 0}
+    ).to_list(500)
+    
+    total_income = sum(m["amount"] for m in movements if m["movement_type"] == "income")
+    total_expense = sum(m["amount"] for m in movements if m["movement_type"] == "expense")
+    
+    # Group by payment method
+    by_method = {}
+    for m in movements:
+        method = m["payment_method"]
+        if method not in by_method:
+            by_method[method] = {"income": 0, "expense": 0}
+        by_method[method][m["movement_type"]] += m["amount"]
+    
+    return {
+        "date": date,
+        "total_income": total_income,
+        "total_expense": total_expense,
+        "balance": total_income - total_expense,
+        "by_payment_method": by_method,
+        "movements_count": len(movements)
+    }
+
+@api_router.post("/cash/close")
+async def close_cash_register(closing: CashClosingCreate, current_user: dict = Depends(get_current_user)):
+    # Check if already closed
+    existing = await db.cash_closings.find_one({"date": closing.date})
+    if existing:
+        raise HTTPException(status_code=400, detail="Cash register already closed for this date")
+    
+    # Get summary
+    summary = await get_cash_summary(closing.date, current_user)
+    
+    closing_id = str(uuid.uuid4())
+    doc = {
+        "id": closing_id,
+        "date": closing.date,
+        "total_income": summary["total_income"],
+        "total_expense": summary["total_expense"],
+        "expected_balance": summary["balance"],
+        "physical_cash": closing.physical_cash,
+        "difference": closing.physical_cash - summary["balance"],
+        "notes": closing.notes or "",
+        "closed_by": current_user["username"],
+        "closed_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.cash_closings.insert_one(doc)
+    return CashClosingResponse(**doc)
+
+@api_router.get("/cash/closings")
+async def get_cash_closings(current_user: dict = Depends(get_current_user)):
+    closings = await db.cash_closings.find({}, {"_id": 0}).sort("date", -1).to_list(100)
+    return [CashClosingResponse(**c) for c in closings]
+
+# ==================== INTEGRATIONS CONFIG ROUTES ====================
+
+class IntegrationConfig(BaseModel):
+    integration_type: str  # whatsapp, tpv, email, calendar
+    enabled: bool = False
+    config: dict = {}
+
+@api_router.post("/integrations/config")
+async def save_integration_config(config: IntegrationConfig, current_user: dict = Depends(get_current_user)):
+    existing = await db.integrations.find_one({"integration_type": config.integration_type})
+    
+    doc = {
+        "integration_type": config.integration_type,
+        "enabled": config.enabled,
+        "config": config.config,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "updated_by": current_user["username"]
+    }
+    
+    if existing:
+        await db.integrations.update_one(
+            {"integration_type": config.integration_type},
+            {"$set": doc}
+        )
+    else:
+        doc["id"] = str(uuid.uuid4())
+        doc["created_at"] = datetime.now(timezone.utc).isoformat()
+        await db.integrations.insert_one(doc)
+    
+    return {"message": "Configuration saved", "integration_type": config.integration_type}
+
+@api_router.get("/integrations/config")
+async def get_integrations_config(current_user: dict = Depends(get_current_user)):
+    configs = await db.integrations.find({}, {"_id": 0}).to_list(20)
+    return configs
+
+@api_router.get("/integrations/config/{integration_type}")
+async def get_integration_config(integration_type: str, current_user: dict = Depends(get_current_user)):
+    config = await db.integrations.find_one({"integration_type": integration_type}, {"_id": 0})
+    if not config:
+        return {"integration_type": integration_type, "enabled": False, "config": {}}
+    return config
+
 # Include router
 app.include_router(api_router)
 
