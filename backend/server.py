@@ -12,6 +12,9 @@ import uuid
 from datetime import datetime, timezone, timedelta
 import bcrypt
 import jwt
+import csv
+import io
+from fastapi import UploadFile, File
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -78,6 +81,14 @@ class ItemCreate(BaseModel):
     purchase_price: float
     purchase_date: str
     location: str = ""
+    maintenance_interval: int = 30  # days between maintenance
+
+class BulkItemCreate(BaseModel):
+    items: List[ItemCreate]
+
+class GenerateBarcodeRequest(BaseModel):
+    prefix: str = "SKI"
+    count: int = 1
 
 class ItemResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -403,6 +414,137 @@ async def update_item_status(item_id: str, status: str = Query(...), current_use
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Item not found")
     return {"message": "Status updated"}
+
+@api_router.post("/items/bulk")
+async def create_items_bulk(data: BulkItemCreate, current_user: dict = Depends(get_current_user)):
+    """Create multiple items at once"""
+    created = []
+    errors = []
+    
+    for item in data.items:
+        existing = await db.items.find_one({"barcode": item.barcode})
+        if existing:
+            errors.append({"barcode": item.barcode, "error": "Already exists"})
+            continue
+        
+        item_id = str(uuid.uuid4())
+        doc = {
+            "id": item_id,
+            "barcode": item.barcode,
+            "item_type": item.item_type,
+            "brand": item.brand,
+            "model": item.model,
+            "size": item.size,
+            "status": "available",
+            "purchase_price": item.purchase_price,
+            "purchase_date": item.purchase_date,
+            "location": item.location or "",
+            "maintenance_interval": item.maintenance_interval,
+            "days_used": 0,
+            "amortization": 0,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.items.insert_one(doc)
+        created.append(doc)
+    
+    return {"created": len(created), "errors": errors}
+
+@api_router.post("/items/import-csv")
+async def import_items_csv(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    """Import items from CSV file"""
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="File must be CSV")
+    
+    content = await file.read()
+    decoded = content.decode('utf-8')
+    reader = csv.DictReader(io.StringIO(decoded))
+    
+    created = []
+    errors = []
+    
+    for row in reader:
+        try:
+            barcode = row.get('barcode', row.get('codigo', '')).strip()
+            if not barcode:
+                errors.append({"row": row, "error": "Missing barcode"})
+                continue
+            
+            existing = await db.items.find_one({"barcode": barcode})
+            if existing:
+                errors.append({"barcode": barcode, "error": "Already exists"})
+                continue
+            
+            item_id = str(uuid.uuid4())
+            doc = {
+                "id": item_id,
+                "barcode": barcode,
+                "item_type": row.get('item_type', row.get('tipo', 'ski')).strip().lower(),
+                "brand": row.get('brand', row.get('marca', '')).strip(),
+                "model": row.get('model', row.get('modelo', '')).strip(),
+                "size": row.get('size', row.get('talla', '')).strip(),
+                "status": "available",
+                "purchase_price": float(row.get('purchase_price', row.get('precio_coste', 0)) or 0),
+                "purchase_date": row.get('purchase_date', row.get('fecha_compra', datetime.now().strftime('%Y-%m-%d'))).strip(),
+                "location": row.get('location', row.get('ubicacion', '')).strip(),
+                "maintenance_interval": int(row.get('maintenance_interval', row.get('mantenimiento_cada', 30)) or 30),
+                "days_used": 0,
+                "amortization": 0,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.items.insert_one(doc)
+            created.append({"barcode": barcode})
+        except Exception as e:
+            errors.append({"barcode": row.get('barcode', 'unknown'), "error": str(e)})
+    
+    return {"created": len(created), "errors": errors, "total_rows": len(created) + len(errors)}
+
+@api_router.post("/items/generate-barcodes")
+async def generate_barcodes(data: GenerateBarcodeRequest, current_user: dict = Depends(get_current_user)):
+    """Generate unique barcodes"""
+    barcodes = []
+    timestamp = datetime.now().strftime('%y%m%d')
+    
+    for i in range(data.count):
+        # Get last barcode with prefix
+        last = await db.items.find_one(
+            {"barcode": {"$regex": f"^{data.prefix}"}},
+            sort=[("barcode", -1)]
+        )
+        
+        if last:
+            try:
+                last_num = int(last["barcode"][-6:])
+                next_num = last_num + 1
+            except:
+                next_num = 1
+        else:
+            next_num = 1
+        
+        barcode = f"{data.prefix}{timestamp}{next_num:06d}"
+        barcodes.append(barcode)
+    
+    return {"barcodes": barcodes}
+
+@api_router.get("/items/export-csv")
+async def export_items_csv(current_user: dict = Depends(get_current_user)):
+    """Export all items as CSV"""
+    items = await db.items.find({}, {"_id": 0}).to_list(10000)
+    
+    output = io.StringIO()
+    fieldnames = ['barcode', 'item_type', 'brand', 'model', 'size', 'status', 
+                  'purchase_price', 'purchase_date', 'location', 'maintenance_interval', 
+                  'days_used', 'amortization']
+    writer = csv.DictWriter(output, fieldnames=fieldnames, extrasaction='ignore')
+    writer.writeheader()
+    for item in items:
+        writer.writerow(item)
+    
+    from fastapi.responses import Response
+    return Response(
+        content=output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=inventario.csv"}
+    )
 
 @api_router.get("/items/stats")
 async def get_inventory_stats(current_user: dict = Depends(get_current_user)):
