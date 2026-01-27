@@ -73,12 +73,13 @@ export default function Inventory() {
     purchase_price: "",
     purchase_date: new Date().toISOString().split('T')[0],
     location: "",
-    maintenance_interval: "30"
+    maintenance_interval: "30",
+    category: "MEDIA"
   });
 
   useEffect(() => {
     loadItems();
-  }, [filterStatus, filterType]);
+  }, [filterStatus, filterType, filterCategory]);
 
   const loadItems = async () => {
     setLoading(true);
@@ -86,6 +87,7 @@ export default function Inventory() {
       const params = {};
       if (filterStatus && filterStatus !== "all") params.status = filterStatus;
       if (filterType && filterType !== "all") params.item_type = filterType;
+      if (filterCategory && filterCategory !== "all") params.category = filterCategory;
       if (searchTerm) params.search = searchTerm;
       
       const response = await itemApi.getAll(params);
