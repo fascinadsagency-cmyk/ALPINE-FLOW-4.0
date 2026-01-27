@@ -20,8 +20,8 @@ import {
   Calendar,
   Clock,
   ArrowRight,
-  Percent,
-  Edit2
+  Edit2,
+  X
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -34,11 +34,35 @@ const PAYMENT_METHODS = [
   { value: "other", label: "Otros" },
 ];
 
+const ITEM_TYPES = [
+  { value: "", label: "Todos" },
+  { value: "ski", label: "Esquís" },
+  { value: "snowboard", label: "Snowboard" },
+  { value: "boots", label: "Botas" },
+  { value: "helmet", label: "Casco" },
+  { value: "poles", label: "Bastones" },
+];
+
+const CATEGORIES = [
+  { value: "", label: "Todas" },
+  { value: "SUPERIOR", label: "Gama Superior" },
+  { value: "ALTA", label: "Gama Alta" },
+  { value: "MEDIA", label: "Gama Media" },
+];
+
+const getCategoryBadge = (category) => {
+  const styles = {
+    SUPERIOR: "bg-purple-100 text-purple-700 border-purple-200",
+    ALTA: "bg-blue-100 text-blue-700 border-blue-200",
+    MEDIA: "bg-emerald-100 text-emerald-700 border-emerald-200"
+  };
+  return styles[category] || styles.MEDIA;
+};
+
 // Helper: Get smart start date based on time
 const getSmartStartDate = () => {
   const now = new Date();
   const hour = now.getHours();
-  // If after 3 PM, start tomorrow
   if (hour >= 15) {
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -47,14 +71,12 @@ const getSmartStartDate = () => {
   return now.toISOString().split('T')[0];
 };
 
-// Helper: Add days to date
 const addDays = (dateStr, days) => {
   const date = new Date(dateStr);
-  date.setDate(date.getDate() + days - 1); // -1 because day 1 is the start date
+  date.setDate(date.getDate() + days - 1);
   return date.toISOString().split('T')[0];
 };
 
-// Helper: Calculate days between dates
 const calculateDaysBetween = (start, end) => {
   const startDate = new Date(start);
   const endDate = new Date(end);
@@ -63,7 +85,6 @@ const calculateDaysBetween = (start, end) => {
   return Math.max(1, diffDays);
 };
 
-// Helper: Format date for display
 const formatDateDisplay = (dateStr) => {
   const date = new Date(dateStr);
   return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
@@ -80,7 +101,6 @@ export default function NewRental() {
   const [numDays, setNumDays] = useState(1);
   const [startDate, setStartDate] = useState(getSmartStartDate());
   const [endDate, setEndDate] = useState(getSmartStartDate());
-  const [dateMode, setDateMode] = useState('days'); // 'days', 'startDays', 'manual'
   const [showTimeHint, setShowTimeHint] = useState(true);
   
   const [paymentMethod, setPaymentMethod] = useState("cash");
@@ -88,45 +108,56 @@ export default function NewRental() {
   const [deposit, setDeposit] = useState("");
   const [notes, setNotes] = useState("");
   const [tariffs, setTariffs] = useState([]);
-  const [packs, setPacks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [showNewCustomer, setShowNewCustomer] = useState(false);
-  const [newCustomer, setNewCustomer] = useState({ dni: "", name: "", phone: "", address: "", city: "" });
+  const [newCustomer, setNewCustomer] = useState({ dni: "", name: "", phone: "", address: "", city: "", source: "" });
+  
+  // Item search modal
+  const [showItemSearch, setShowItemSearch] = useState(false);
+  const [itemSearchTerm, setItemSearchTerm] = useState("");
+  const [itemSearchType, setItemSearchType] = useState("");
+  const [itemSearchCategory, setItemSearchCategory] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchingItems, setSearchingItems] = useState(false);
   
   // Price editing
-  const [discountType, setDiscountType] = useState('none'); // 'none', 'percent', 'fixed'
+  const [discountType, setDiscountType] = useState('none');
   const [discountValue, setDiscountValue] = useState("");
-  const [manualTotal, setManualTotal] = useState("");
   const [discountReason, setDiscountReason] = useState("");
   const [editingItemPrice, setEditingItemPrice] = useState(null);
+  
+  // Sources
+  const [sources, setSources] = useState([]);
   
   const barcodeRef = useRef(null);
   const searchRef = useRef(null);
   const daysRef = useRef(null);
 
-  // Initialize dates on mount
   useEffect(() => {
     loadTariffs();
-    loadPacks();
-    // Hide time hint after 5 seconds
+    loadSources();
     const timer = setTimeout(() => setShowTimeHint(false), 5000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Focus days input when customer is selected
   useEffect(() => {
     if (customer && daysRef.current) {
       daysRef.current.focus();
     }
   }, [customer]);
 
-  // Focus barcode when days are set and items empty
+  // Keyboard shortcut for item search (F3 or Alt+B)
   useEffect(() => {
-    if (customer && numDays > 0 && items.length === 0 && barcodeRef.current) {
-      // Small delay to allow user to see dates
-    }
-  }, [customer, numDays, items.length]);
+    const handleKeyDown = (e) => {
+      if (e.key === 'F3' || (e.altKey && e.key === 'b')) {
+        e.preventDefault();
+        setShowItemSearch(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const loadTariffs = async () => {
     try {
@@ -137,12 +168,17 @@ export default function NewRental() {
     }
   };
 
-  const loadPacks = async () => {
+  const loadSources = async () => {
     try {
-      const response = await tariffApi.getPacks?.() || { data: [] };
-      setPacks(response.data || []);
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/sources`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSources(data);
+      }
     } catch (error) {
-      console.log("Packs not available yet");
+      console.log("Sources not loaded");
     }
   };
 
@@ -151,9 +187,6 @@ export default function NewRental() {
     const days = Math.max(1, parseInt(value) || 1);
     setNumDays(days);
     setEndDate(addDays(startDate, days));
-    setDateMode('days');
-    
-    // Warn for long rentals
     if (days > 30) {
       toast.info("Alquiler de larga duración: " + days + " días");
     }
@@ -162,24 +195,18 @@ export default function NewRental() {
   const handleStartDateChange = (value) => {
     setStartDate(value);
     setEndDate(addDays(value, numDays));
-    setDateMode('startDays');
   };
 
   const handleEndDateChange = (value) => {
     setEndDate(value);
     const calculatedDays = calculateDaysBetween(startDate, value);
     setNumDays(calculatedDays);
-    setDateMode('manual');
   };
 
   const handleDaysKeyDown = (e) => {
     if (e.key === 'Enter' && barcodeRef.current) {
       e.preventDefault();
       barcodeRef.current.focus();
-    }
-    // Quick access 1-9 days
-    if (/^[1-9]$/.test(e.key) && e.target.value === '') {
-      handleNumDaysChange(e.key);
     }
   };
 
@@ -206,9 +233,7 @@ export default function NewRental() {
         loadCustomerHistory(response.data.id);
         toast.success(`Cliente encontrado: ${response.data.name}`);
         return;
-      } catch (e) {
-        // Not found by DNI
-      }
+      } catch (e) {}
       
       const response = await customerApi.getAll(searchTerm);
       if (response.data.length === 1) {
@@ -248,11 +273,51 @@ export default function NewRental() {
       const response = await customerApi.create(newCustomer);
       setCustomer(response.data);
       setShowNewCustomer(false);
-      setNewCustomer({ dni: "", name: "", phone: "", address: "", city: "" });
+      setNewCustomer({ dni: "", name: "", phone: "", address: "", city: "", source: "" });
       toast.success("Cliente creado correctamente");
     } catch (error) {
       toast.error(error.response?.data?.detail || "Error al crear cliente");
     }
+  };
+
+  // Item search functions
+  const searchItems = async () => {
+    setSearchingItems(true);
+    try {
+      const params = new URLSearchParams();
+      params.append('status', 'available');
+      if (itemSearchTerm) params.append('search', itemSearchTerm);
+      if (itemSearchType) params.append('item_type', itemSearchType);
+      if (itemSearchCategory) params.append('category', itemSearchCategory);
+      
+      const response = await itemApi.getAll({
+        status: 'available',
+        search: itemSearchTerm || undefined,
+        item_type: itemSearchType || undefined,
+        category: itemSearchCategory || undefined
+      });
+      
+      // Filter out already added items
+      const addedBarcodes = items.map(i => i.barcode);
+      setSearchResults(response.data.filter(i => !addedBarcodes.includes(i.barcode)));
+    } catch (error) {
+      toast.error("Error al buscar artículos");
+    } finally {
+      setSearchingItems(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showItemSearch) {
+      searchItems();
+    }
+  }, [showItemSearch, itemSearchTerm, itemSearchType, itemSearchCategory]);
+
+  const addItemFromSearch = (item) => {
+    setItems([...items, { ...item, customPrice: null }]);
+    toast.success(`${item.brand} ${item.model} añadido`);
+    // Update search results
+    setSearchResults(searchResults.filter(i => i.barcode !== item.barcode));
   };
 
   const addItemByBarcode = async (e) => {
@@ -274,10 +339,7 @@ export default function NewRental() {
         return;
       }
       
-      // Calculate price for this item
-      const itemPrice = getItemPrice(item);
-      
-      setItems([...items, { ...item, person_name: "", customPrice: null }]);
+      setItems([...items, { ...item, customPrice: null }]);
       toast.success(`${item.brand} ${item.model} añadido`);
       setBarcodeInput("");
     } catch (error) {
@@ -300,7 +362,6 @@ export default function NewRental() {
   };
 
   const getItemPrice = (item) => {
-    // If custom price is set, use it
     if (item.customPrice !== null && item.customPrice !== undefined) {
       return item.customPrice;
     }
@@ -319,14 +380,8 @@ export default function NewRental() {
   };
 
   const calculateTotal = () => {
-    // If manual total is set, use it
-    if (manualTotal && parseFloat(manualTotal) > 0) {
-      return parseFloat(manualTotal);
-    }
-    
     const subtotal = calculateSubtotal();
     
-    // Apply discount
     if (discountType === 'percent' && discountValue) {
       const discount = subtotal * (parseFloat(discountValue) / 100);
       return subtotal - discount;
@@ -357,7 +412,7 @@ export default function NewRental() {
         customer_id: customer.id,
         start_date: startDate,
         end_date: endDate,
-        items: items.map(i => ({ barcode: i.barcode, person_name: i.person_name })),
+        items: items.map(i => ({ barcode: i.barcode, person_name: "" })),
         payment_method: paymentMethod,
         total_amount: total,
         paid_amount: paid,
@@ -366,8 +421,6 @@ export default function NewRental() {
       });
       
       toast.success("Alquiler completado correctamente");
-      
-      // Reset form
       resetForm();
       
     } catch (error) {
@@ -390,7 +443,6 @@ export default function NewRental() {
     setEndDate(getSmartStartDate());
     setDiscountType('none');
     setDiscountValue("");
-    setManualTotal("");
     setDiscountReason("");
     
     if (searchRef.current) searchRef.current.focus();
@@ -446,6 +498,9 @@ export default function NewRental() {
                       <p className="font-semibold text-slate-900">{customer.name}</p>
                       <p className="text-sm text-slate-500 font-mono">{customer.dni}</p>
                       {customer.phone && <p className="text-sm text-slate-500">{customer.phone}</p>}
+                      {customer.source && (
+                        <Badge variant="outline" className="mt-1 text-xs">{customer.source}</Badge>
+                      )}
                     </div>
                     <Badge variant="secondary">{customer.total_rentals || 0} alquileres</Badge>
                   </div>
@@ -488,7 +543,6 @@ export default function NewRental() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Main: Number of Days */}
               <div className="bg-primary/5 rounded-xl p-4">
                 <Label className="text-sm font-medium text-slate-700">Número de días</Label>
                 <div className="flex items-center gap-3 mt-2">
@@ -515,7 +569,6 @@ export default function NewRental() {
                 </div>
               </div>
 
-              {/* Time hint */}
               {showTimeHint && (
                 <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 p-2 rounded-lg animate-fade-in">
                   <Clock className="h-3 w-3" />
@@ -523,7 +576,6 @@ export default function NewRental() {
                 </div>
               )}
 
-              {/* Secondary: Manual date inputs */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs text-slate-500">Desde</Label>
@@ -547,7 +599,6 @@ export default function NewRental() {
                 </div>
               </div>
 
-              {/* Quick day buttons */}
               <div className="flex gap-2">
                 {[1, 2, 3, 5, 7].map(d => (
                   <Button
@@ -575,6 +626,7 @@ export default function NewRental() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Barcode + Manual Search */}
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <Barcode className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -588,7 +640,17 @@ export default function NewRental() {
                     data-testid="barcode-input"
                   />
                 </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowItemSearch(true)}
+                  className="h-12 px-4"
+                  data-testid="manual-search-btn"
+                >
+                  <Search className="h-4 w-4 mr-2" />
+                  Buscar
+                </Button>
               </div>
+              <p className="text-xs text-slate-500">Escanea el código o pulsa F3 / Alt+B para buscar manualmente</p>
 
               <div className="min-h-[200px] max-h-[400px] overflow-y-auto">
                 {items.length === 0 ? (
@@ -606,6 +668,9 @@ export default function NewRental() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <Badge variant="outline">{item.item_type}</Badge>
+                            <Badge className={getCategoryBadge(item.category || 'MEDIA')}>
+                              {item.category || 'MEDIA'}
+                            </Badge>
                             <span className="font-mono text-sm text-slate-500">{item.barcode}</span>
                           </div>
                           <p className="font-medium text-slate-900 mt-1">
@@ -614,7 +679,6 @@ export default function NewRental() {
                           <p className="text-sm text-slate-500">Talla: {item.size}</p>
                         </div>
                         <div className="flex items-center gap-3">
-                          {/* Editable price */}
                           {editingItemPrice === item.barcode ? (
                             <Input
                               type="number"
@@ -623,12 +687,8 @@ export default function NewRental() {
                               autoFocus
                               onBlur={(e) => updateItemPrice(item.barcode, e.target.value)}
                               onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  updateItemPrice(item.barcode, e.target.value);
-                                }
-                                if (e.key === 'Escape') {
-                                  setEditingItemPrice(null);
-                                }
+                                if (e.key === 'Enter') updateItemPrice(item.barcode, e.target.value);
+                                if (e.key === 'Escape') setEditingItemPrice(null);
                               }}
                             />
                           ) : (
@@ -637,7 +697,7 @@ export default function NewRental() {
                               className="text-lg font-bold text-slate-900 hover:text-primary flex items-center gap-1"
                             >
                               €{getItemPrice(item).toFixed(2)}
-                              <Edit2 className="h-3 w-3 opacity-0 group-hover:opacity-100" />
+                              <Edit2 className="h-3 w-3 opacity-50" />
                             </button>
                           )}
                           <Button
@@ -725,7 +785,6 @@ export default function NewRental() {
                 </div>
               </div>
 
-              {/* Discount reason */}
               {hasDiscount && (
                 <div className="mb-4">
                   <Input
@@ -737,7 +796,6 @@ export default function NewRental() {
                 </div>
               )}
 
-              {/* Total section */}
               <div className="flex items-center justify-between p-4 rounded-xl bg-primary/5 mt-4">
                 <div>
                   {hasDiscount && (
@@ -817,17 +875,40 @@ export default function NewRental() {
                 value={newCustomer.address}
                 onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
                 className="h-11 mt-1"
-                data-testid="new-customer-address"
               />
             </div>
-            <div>
-              <Label>Población</Label>
-              <Input
-                value={newCustomer.city}
-                onChange={(e) => setNewCustomer({ ...newCustomer, city: e.target.value })}
-                className="h-11 mt-1"
-                data-testid="new-customer-city"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Población</Label>
+                <Input
+                  value={newCustomer.city}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, city: e.target.value })}
+                  className="h-11 mt-1"
+                />
+              </div>
+              <div>
+                <Label>Proveedor/Fuente</Label>
+                <Select 
+                  value={newCustomer.source} 
+                  onValueChange={(v) => setNewCustomer({ ...newCustomer, source: v })}
+                >
+                  <SelectTrigger className="h-11 mt-1">
+                    <SelectValue placeholder="Seleccionar..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Sin especificar</SelectItem>
+                    <SelectItem value="Web propia">Web propia</SelectItem>
+                    <SelectItem value="Booking.com">Booking.com</SelectItem>
+                    <SelectItem value="Expedia">Expedia</SelectItem>
+                    <SelectItem value="Hotel">Hotel</SelectItem>
+                    <SelectItem value="Recomendación">Recomendación</SelectItem>
+                    <SelectItem value="Walk-in">Walk-in (pie de tienda)</SelectItem>
+                    {sources.map(s => (
+                      <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -836,6 +917,94 @@ export default function NewRental() {
             </Button>
             <Button onClick={createNewCustomer} data-testid="save-new-customer-btn">
               Guardar Cliente
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manual Item Search Dialog */}
+      <Dialog open={showItemSearch} onOpenChange={setShowItemSearch}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Buscar Artículo Manualmente</DialogTitle>
+          </DialogHeader>
+          
+          {/* Search Filters */}
+          <div className="grid grid-cols-3 gap-3 py-4">
+            <Input
+              placeholder="Código, marca, modelo..."
+              value={itemSearchTerm}
+              onChange={(e) => setItemSearchTerm(e.target.value)}
+              className="h-11"
+              autoFocus
+            />
+            <Select value={itemSearchType} onValueChange={setItemSearchType}>
+              <SelectTrigger className="h-11">
+                <SelectValue placeholder="Tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                {ITEM_TYPES.map(t => (
+                  <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={itemSearchCategory} onValueChange={setItemSearchCategory}>
+              <SelectTrigger className="h-11">
+                <SelectValue placeholder="Categoría" />
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORIES.map(c => (
+                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Results */}
+          <div className="max-h-96 overflow-y-auto">
+            {searchingItems ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            ) : searchResults.length === 0 ? (
+              <p className="text-center py-8 text-slate-500">No se encontraron artículos disponibles</p>
+            ) : (
+              <div className="space-y-2">
+                {searchResults.map((item) => (
+                  <div 
+                    key={item.barcode}
+                    className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer"
+                    onClick={() => addItemFromSearch(item)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center">
+                        <Package className="h-5 w-5 text-slate-400" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs">{item.item_type}</Badge>
+                          <Badge className={`${getCategoryBadge(item.category || 'MEDIA')} text-xs`}>
+                            {item.category || 'MEDIA'}
+                          </Badge>
+                          <span className="font-mono text-xs text-slate-400">{item.barcode}</span>
+                        </div>
+                        <p className="font-medium text-slate-900">
+                          {item.brand} {item.model} - {item.size}
+                        </p>
+                      </div>
+                    </div>
+                    <Button size="sm" variant="ghost">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowItemSearch(false)}>
+              Cerrar
             </Button>
           </DialogFooter>
         </DialogContent>
