@@ -286,6 +286,7 @@ async def create_customer(customer: CustomerCreate, current_user: dict = Depends
         "phone": customer.phone or "",
         "address": customer.address or "",
         "city": customer.city or "",
+        "source": customer.source or "",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "total_rentals": 0
     }
