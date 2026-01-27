@@ -504,22 +504,22 @@ async def generate_barcodes(data: GenerateBarcodeRequest, current_user: dict = D
     barcodes = []
     timestamp = datetime.now().strftime('%y%m%d')
     
+    # Get last barcode with prefix
+    last = await db.items.find_one(
+        {"barcode": {"$regex": f"^{data.prefix}"}},
+        sort=[("barcode", -1)]
+    )
+    
+    if last:
+        try:
+            last_num = int(last["barcode"][-6:])
+        except:
+            last_num = 0
+    else:
+        last_num = 0
+    
     for i in range(data.count):
-        # Get last barcode with prefix
-        last = await db.items.find_one(
-            {"barcode": {"$regex": f"^{data.prefix}"}},
-            sort=[("barcode", -1)]
-        )
-        
-        if last:
-            try:
-                last_num = int(last["barcode"][-6:])
-                next_num = last_num + 1
-            except:
-                next_num = 1
-        else:
-            next_num = 1
-        
+        next_num = last_num + i + 1
         barcode = f"{data.prefix}{timestamp}{next_num:06d}"
         barcodes.append(barcode)
     
