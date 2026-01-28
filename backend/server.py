@@ -375,6 +375,57 @@ async def get_customer_history(customer_id: str, current_user: dict = Depends(ge
         "total_rentals": len(rentals)
     }
 
+@api_router.put("/customers/{customer_id}", response_model=CustomerResponse)
+async def update_customer(
+    customer_id: str,
+    customer: CustomerCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    existing = await db.customers.find_one({"id": customer_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    # Check if DNI is being changed and if new DNI already exists
+    if customer.dni.upper() != existing["dni"]:
+        dni_exists = await db.customers.find_one({"dni": customer.dni.upper()})
+        if dni_exists:
+            raise HTTPException(status_code=400, detail="Customer with this DNI already exists")
+    
+    update_doc = {
+        "dni": customer.dni.upper(),
+        "name": customer.name,
+        "phone": customer.phone or "",
+        "address": customer.address or "",
+        "city": customer.city or "",
+        "source": customer.source or "",
+        "notes": customer.notes or ""
+    }
+    
+    await db.customers.update_one({"id": customer_id}, {"$set": update_doc})
+    updated_customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+    return CustomerResponse(**updated_customer)
+
+@api_router.delete("/customers/{customer_id}")
+async def delete_customer(customer_id: str, current_user: dict = Depends(get_current_user)):
+    existing = await db.customers.find_one({"id": customer_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    # Check if customer has active rentals
+    active_rentals = await db.rentals.count_documents({
+        "customer_id": customer_id,
+        "status": "active"
+    })
+    
+    if active_rentals > 0:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Cannot delete customer with {active_rentals} active rental(s). Please complete or cancel them first."
+        )
+    
+    await db.customers.delete_one({"id": customer_id})
+    return {"message": "Customer deleted successfully"}
+
 # ==================== INVENTORY ROUTES ====================
 
 @api_router.post("/items", response_model=ItemResponse)
