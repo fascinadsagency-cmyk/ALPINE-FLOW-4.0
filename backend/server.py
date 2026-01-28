@@ -1657,23 +1657,6 @@ async def get_range_report(
     )
 
 # ==================== DAILY REPORT ENDPOINT ====================
-    total_items = await db.items.count_documents({})
-    rented_items = await db.items.count_documents({"status": "rented"})
-    usage = (rented_items / total_items * 100) if total_items > 0 else 0
-    
-    return DailyReportResponse(
-        date=date,
-        total_revenue=cash_revenue + card_revenue + online_revenue + other_revenue,
-        cash_revenue=cash_revenue,
-        card_revenue=card_revenue,
-        online_revenue=online_revenue,
-        other_revenue=other_revenue,
-        new_rentals=len(rentals),
-        returns=returns_count,
-        active_rentals=active_rentals,
-        pending_returns=pending_list,
-        inventory_usage=round(usage, 1)
-    )
 
 @api_router.get("/reports/stats")
 async def get_stats(current_user: dict = Depends(get_current_user)):
