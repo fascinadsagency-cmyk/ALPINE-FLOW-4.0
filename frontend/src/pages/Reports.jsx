@@ -268,61 +268,149 @@ export default function Reports() {
 
       {report && (
         <>
-          {/* Revenue Summary */}
+          {/* KPI Cards with Comparison */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <Card className="border-slate-200">
+            {/* Total Revenue */}
+            <Card className={`border-slate-200 ${compareMode ? 'hover:shadow-lg transition-shadow' : ''}`}>
               <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex-1">
                     <p className="text-sm font-medium text-slate-500">Total Ingresos</p>
-                    <p className="text-3xl font-bold text-slate-900">€{report.total_revenue.toFixed(2)}</p>
+                    <p className="text-2xl font-bold text-slate-900">{formatCurrency(report.total_revenue)}</p>
                   </div>
-                  <div className="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+                  <div className="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
                     <DollarSign className="h-6 w-6 text-emerald-600" />
                   </div>
                 </div>
+                {compareMode && previousYearReport && (
+                  <div className="flex items-center gap-2 mt-2 pt-2 border-t">
+                    {(() => {
+                      const growth = calculateGrowth(report.total_revenue, previousYearReport.total_revenue);
+                      return (
+                        <>
+                          {growth.direction === 'up' && <ArrowUpRight className="h-4 w-4 text-emerald-600" />}
+                          {growth.direction === 'down' && <ArrowDownRight className="h-4 w-4 text-red-600" />}
+                          {growth.direction === 'neutral' && <Minus className="h-4 w-4 text-slate-400" />}
+                          <span className={`text-sm font-semibold ${
+                            growth.direction === 'up' ? 'text-emerald-600' :
+                            growth.direction === 'down' ? 'text-red-600' : 'text-slate-500'
+                          }`}>
+                            {growth.direction === 'up' ? '+' : growth.direction === 'down' ? '-' : ''}{growth.percentage}%
+                          </span>
+                          <span className="text-xs text-slate-500">vs año anterior</span>
+                        </>
+                      );
+                    })()}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            <Card className="border-slate-200">
+            {/* New Rentals */}
+            <Card className={`border-slate-200 ${compareMode ? 'hover:shadow-lg transition-shadow' : ''}`}>
               <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex-1">
                     <p className="text-sm font-medium text-slate-500">Nuevos Alquileres</p>
-                    <p className="text-3xl font-bold text-slate-900">{report.new_rentals}</p>
+                    <p className="text-2xl font-bold text-slate-900">{report.new_rentals}</p>
                   </div>
-                  <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center">
+                  <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
                     <TrendingUp className="h-6 w-6 text-blue-600" />
                   </div>
                 </div>
+                {compareMode && previousYearReport && (
+                  <div className="flex items-center gap-2 mt-2 pt-2 border-t">
+                    {(() => {
+                      const growth = calculateGrowth(report.new_rentals, previousYearReport.new_rentals);
+                      return (
+                        <>
+                          {growth.direction === 'up' && <ArrowUpRight className="h-4 w-4 text-emerald-600" />}
+                          {growth.direction === 'down' && <ArrowDownRight className="h-4 w-4 text-red-600" />}
+                          {growth.direction === 'neutral' && <Minus className="h-4 w-4 text-slate-400" />}
+                          <span className={`text-sm font-semibold ${
+                            growth.direction === 'up' ? 'text-emerald-600' :
+                            growth.direction === 'down' ? 'text-red-600' : 'text-slate-500'
+                          }`}>
+                            {growth.direction === 'up' ? '+' : growth.direction === 'down' ? '-' : ''}{growth.percentage}%
+                          </span>
+                          <span className="text-xs text-slate-500">vs año anterior</span>
+                        </>
+                      );
+                    })()}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            <Card className="border-slate-200">
+            {/* Returns */}
+            <Card className={`border-slate-200 ${compareMode ? 'hover:shadow-lg transition-shadow' : ''}`}>
               <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex-1">
                     <p className="text-sm font-medium text-slate-500">Devoluciones</p>
-                    <p className="text-3xl font-bold text-slate-900">{report.returns}</p>
+                    <p className="text-2xl font-bold text-slate-900">{report.returns}</p>
                   </div>
-                  <div className="h-12 w-12 rounded-xl bg-purple-100 flex items-center justify-center">
+                  <div className="h-12 w-12 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
                     <Clock className="h-6 w-6 text-purple-600" />
                   </div>
                 </div>
+                {compareMode && previousYearReport && (
+                  <div className="flex items-center gap-2 mt-2 pt-2 border-t">
+                    {(() => {
+                      const growth = calculateGrowth(report.returns, previousYearReport.returns);
+                      return (
+                        <>
+                          {growth.direction === 'up' && <ArrowUpRight className="h-4 w-4 text-emerald-600" />}
+                          {growth.direction === 'down' && <ArrowDownRight className="h-4 w-4 text-red-600" />}
+                          {growth.direction === 'neutral' && <Minus className="h-4 w-4 text-slate-400" />}
+                          <span className={`text-sm font-semibold ${
+                            growth.direction === 'up' ? 'text-emerald-600' :
+                            growth.direction === 'down' ? 'text-red-600' : 'text-slate-500'
+                          }`}>
+                            {growth.direction === 'up' ? '+' : growth.direction === 'down' ? '-' : ''}{growth.percentage}%
+                          </span>
+                          <span className="text-xs text-slate-500">vs año anterior</span>
+                        </>
+                      );
+                    })()}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            <Card className="border-slate-200">
+            {/* External Repairs */}
+            <Card className={`border-slate-200 ${compareMode ? 'hover:shadow-lg transition-shadow' : ''}`}>
               <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-slate-500">Uso Inventario</p>
-                    <p className="text-3xl font-bold text-slate-900">{report.inventory_usage}%</p>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-slate-500">Reparaciones</p>
+                    <p className="text-2xl font-bold text-slate-900">{formatCurrency(report.repairs_revenue)}</p>
                   </div>
-                  <div className="h-12 w-12 rounded-xl bg-amber-100 flex items-center justify-center">
-                    <BarChart3 className="h-6 w-6 text-amber-600" />
+                  <div className="h-12 w-12 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <Wrench className="h-6 w-6 text-amber-600" />
                   </div>
                 </div>
+                {compareMode && previousYearReport && (
+                  <div className="flex items-center gap-2 mt-2 pt-2 border-t">
+                    {(() => {
+                      const growth = calculateGrowth(report.repairs_revenue, previousYearReport.repairs_revenue);
+                      return (
+                        <>
+                          {growth.direction === 'up' && <ArrowUpRight className="h-4 w-4 text-emerald-600" />}
+                          {growth.direction === 'down' && <ArrowDownRight className="h-4 w-4 text-red-600" />}
+                          {growth.direction === 'neutral' && <Minus className="h-4 w-4 text-slate-400" />}
+                          <span className={`text-sm font-semibold ${
+                            growth.direction === 'up' ? 'text-emerald-600' :
+                            growth.direction === 'down' ? 'text-red-600' : 'text-slate-500'
+                          }`}>
+                            {growth.direction === 'up' ? '+' : growth.direction === 'down' ? '-' : ''}{growth.percentage}%
+                          </span>
+                          <span className="text-xs text-slate-500">vs año anterior</span>
+                        </>
+                      );
+                    })()}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
