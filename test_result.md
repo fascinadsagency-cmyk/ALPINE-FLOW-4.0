@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the new editable item types system in Inventory: default types (Esquís, Snowboard, Botas, Casco, Bastones), create custom types (Snowblade, Trineo), verify types appear in filters and selectors, test persistence, and validate complete workflow from type creation to item creation"
+user_problem_statement: "Test the automatic pricing system and non-intrusive pack detection in New Rental: silent pack detection without toasts, discrete 'Tarifa: Pack' indicator with badge, compact pack suggestions (1 line format), automatic pack completion without interruptions, price calculations and visual elements validation"
 
 backend:
   - task: "Inventory Internal Code Flow"
