@@ -141,9 +141,14 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 
 ## Última Actualización
 Fecha: 2026-01-28
-Versión: 1.5.0
+Versión: 1.6.0
 
 ## Changelog
+- **v1.6.0** (2026-01-28): ✅ Sugerencias Inteligentes de Packs (Upselling)
+  - Detección en tiempo real de packs incompletos
+  - Mensaje dinámico con ahorro potencial
+  - Botón "Ver Disponibles" con filtro automático por tipo y categoría
+  - Cierre automático al completar el pack
 - **v1.5.0** (2026-01-28): ✅ Historial de Transacciones en ficha de cliente
   - Resumen financiero: Total Pagado, Devoluciones, Ingreso Neto
   - Lista cronológica de pagos y reembolsos
