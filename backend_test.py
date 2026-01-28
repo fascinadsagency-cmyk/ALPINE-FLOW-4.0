@@ -360,6 +360,269 @@ class AlpineFlowAPITester:
             self.log_test("Daily Report", False, f"Status: {status}")
             return False, {}
 
+    # ==================== FASE 1 FUNCTIONALITY TESTS ====================
+    
+    def test_edit_item(self):
+        """Test editing an existing item (PUT /api/items/{item_id})"""
+        if not self.test_item_ids:
+            self.log_test("Edit Item", False, "No test items available")
+            return False, {}
+        
+        item_id = self.test_item_ids[0]
+        
+        # Updated item data
+        updated_data = {
+            "barcode": f"EDITED{datetime.now().strftime('%H%M%S')}",
+            "item_type": "ski",
+            "brand": "Updated Brand",
+            "model": "Updated Model",
+            "size": "175",
+            "purchase_price": 400.0,
+            "purchase_date": "2024-01-20",
+            "location": "Updated Location",
+            "maintenance_interval": 45
+        }
+        
+        success, data, status = self.make_request('PUT', f'items/{item_id}', updated_data)
+        
+        if success and data.get('brand') == 'Updated Brand':
+            self.log_test("Edit Item", True, f"Successfully updated item {item_id}")
+            return True, data
+        else:
+            self.log_test("Edit Item", False, f"Status: {status}, Response: {data}")
+            return False, {}
+
+    def test_delete_rented_item(self):
+        """Test deleting a rented item (should fail)"""
+        # First create a rental to have a rented item
+        if not self.test_rental_id:
+            self.log_test("Delete Rented Item", False, "No active rental available")
+            return False, {}
+        
+        # Get rental details to find rented item
+        success, rental_data, status = self.make_request('GET', f'rentals/{self.test_rental_id}')
+        if not success or not rental_data.get('items'):
+            self.log_test("Delete Rented Item", False, "Could not get rental details")
+            return False, {}
+        
+        # Find the rented item ID
+        rented_barcode = rental_data['items'][0]['barcode']
+        success, items, status = self.make_request('GET', 'items')
+        if not success:
+            self.log_test("Delete Rented Item", False, "Could not fetch items")
+            return False, {}
+        
+        rented_item_id = None
+        for item in items:
+            if item['barcode'] == rented_barcode and item['status'] == 'rented':
+                rented_item_id = item['id']
+                break
+        
+        if not rented_item_id:
+            self.log_test("Delete Rented Item", False, "Could not find rented item")
+            return False, {}
+        
+        # Try to delete the rented item (should fail)
+        success, data, status = self.make_request('DELETE', f'items/{rented_item_id}')
+        
+        if not success and status == 400:
+            self.log_test("Delete Rented Item", True, "Correctly prevented deletion of rented item")
+            return True, data
+        else:
+            self.log_test("Delete Rented Item", False, f"Should have failed but got Status: {status}")
+            return False, {}
+
+    def test_delete_available_item(self):
+        """Test deleting an available item (should succeed and set to retired)"""
+        # Create a new item specifically for deletion
+        barcode = f"DELETE{datetime.now().strftime('%H%M%S')}"
+        item_data = {
+            "barcode": barcode,
+            "item_type": "helmet",
+            "brand": "Delete Test",
+            "model": "Test Model",
+            "size": "M",
+            "purchase_price": 50.0,
+            "purchase_date": "2024-01-15",
+            "location": "Test Location",
+            "maintenance_interval": 30
+        }
+        
+        success, created_item, status = self.make_request('POST', 'items', item_data)
+        if not success:
+            self.log_test("Delete Available Item", False, "Could not create test item")
+            return False, {}
+        
+        item_id = created_item['id']
+        
+        # Delete the item
+        success, data, status = self.make_request('DELETE', f'items/{item_id}')
+        
+        if success:
+            # Verify item is retired
+            success_check, item_check, status_check = self.make_request('GET', f'items/barcode/{barcode}')
+            if success_check and item_check.get('status') == 'retired':
+                self.log_test("Delete Available Item", True, f"Item {barcode} successfully retired")
+                return True, data
+            else:
+                self.log_test("Delete Available Item", False, "Item not properly retired")
+                return False, {}
+        else:
+            self.log_test("Delete Available Item", False, f"Status: {status}, Response: {data}")
+            return False, {}
+
+    def test_pending_returns(self):
+        """Test pending returns endpoint (GET /api/rentals/pending/returns)"""
+        success, data, status = self.make_request('GET', 'rentals/pending/returns')
+        
+        if success and 'today' in data and 'other_days' in data:
+            today_count = len(data.get('today', []))
+            other_count = len(data.get('other_days', []))
+            
+            # Check if we have overdue items
+            overdue_count = 0
+            for rental in data.get('other_days', []):
+                if rental.get('days_overdue', 0) > 0:
+                    overdue_count += 1
+            
+            self.log_test("Pending Returns", True, 
+                         f"Today: {today_count}, Other days: {other_count}, Overdue: {overdue_count}")
+            return True, data
+        else:
+            self.log_test("Pending Returns", False, f"Status: {status}, Response: {data}")
+            return False, {}
+
+    def test_update_rental_days(self):
+        """Test updating rental days (PATCH /api/rentals/{rental_id}/days)"""
+        if not self.test_rental_id:
+            self.log_test("Update Rental Days", False, "No test rental available")
+            return False, {}
+        
+        # Get current rental details
+        success, rental_data, status = self.make_request('GET', f'rentals/{self.test_rental_id}')
+        if not success:
+            self.log_test("Update Rental Days", False, "Could not get rental details")
+            return False, {}
+        
+        current_days = rental_data.get('days', 3)
+        new_days = current_days + 2
+        new_total = 150.0
+        
+        update_data = {
+            "days": new_days,
+            "new_total": new_total
+        }
+        
+        success, data, status = self.make_request('PATCH', f'rentals/{self.test_rental_id}/days', update_data)
+        
+        if success and data.get('days') == new_days and data.get('total_amount') == new_total:
+            self.log_test("Update Rental Days", True, 
+                         f"Updated rental from {current_days} to {new_days} days, total: €{new_total}")
+            return True, data
+        else:
+            self.log_test("Update Rental Days", False, f"Status: {status}, Response: {data}")
+            return False, {}
+
+    def test_update_returned_rental_days(self):
+        """Test updating days on a returned rental (should fail)"""
+        # First process return to have a returned rental
+        if not self.test_rental_id:
+            self.log_test("Update Returned Rental Days", False, "No test rental available")
+            return False, {}
+        
+        # Process return first
+        success, rental_data, status = self.make_request('GET', f'rentals/{self.test_rental_id}')
+        if success and rental_data.get('items'):
+            barcodes = [item['barcode'] for item in rental_data['items']]
+            return_data = {"barcodes": barcodes}
+            self.make_request('POST', f'rentals/{self.test_rental_id}/return', return_data)
+        
+        # Now try to update days (should fail)
+        update_data = {"days": 10, "new_total": 200.0}
+        success, data, status = self.make_request('PATCH', f'rentals/{self.test_rental_id}/days', update_data)
+        
+        if not success and status == 400:
+            self.log_test("Update Returned Rental Days", True, "Correctly prevented updating closed rental")
+            return True, data
+        else:
+            self.log_test("Update Returned Rental Days", False, f"Should have failed but got Status: {status}")
+            return False, {}
+
+    def test_create_provider_source(self):
+        """Test creating a provider/source with discount (POST /api/sources)"""
+        timestamp = datetime.now().strftime('%H%M%S')
+        source_data = {
+            "name": f"Hotel Test {timestamp}",
+            "is_favorite": False,
+            "discount_percent": 15.0,
+            "commission_percent": 5.0,
+            "contact_person": "Test Contact",
+            "email": "test@hotel.com",
+            "phone": "123456789",
+            "notes": "Test provider for FASE 1",
+            "active": True
+        }
+        
+        success, data, status = self.make_request('POST', 'sources', source_data)
+        
+        if success and 'id' in data:
+            self.test_source_id = data['id']
+            self.log_test("Create Provider Source", True, 
+                         f"Created provider '{source_data['name']}' with {source_data['discount_percent']}% discount")
+            return True, data
+        else:
+            self.log_test("Create Provider Source", False, f"Status: {status}, Response: {data}")
+            return False, {}
+
+    def test_get_sources(self):
+        """Test getting all sources/providers (GET /api/sources)"""
+        success, data, status = self.make_request('GET', 'sources')
+        
+        if success and isinstance(data, list):
+            # Check if our test source exists
+            test_source_found = False
+            if hasattr(self, 'test_source_id'):
+                for source in data:
+                    if source.get('id') == self.test_source_id:
+                        test_source_found = True
+                        break
+            
+            self.log_test("Get Sources", True, 
+                         f"Found {len(data)} sources" + (" (including test source)" if test_source_found else ""))
+            return True, data
+        else:
+            self.log_test("Get Sources", False, f"Status: {status}")
+            return False, []
+
+    def test_update_provider_discount(self):
+        """Test updating provider discount (PUT /api/sources/{source_id})"""
+        if not hasattr(self, 'test_source_id'):
+            self.log_test("Update Provider Discount", False, "No test source available")
+            return False, {}
+        
+        # Update the provider with new discount
+        updated_data = {
+            "name": f"Hotel Test Updated {datetime.now().strftime('%H%M%S')}",
+            "is_favorite": True,
+            "discount_percent": 20.0,  # Changed from 15% to 20%
+            "commission_percent": 7.0,  # Changed from 5% to 7%
+            "contact_person": "Updated Contact",
+            "email": "updated@hotel.com",
+            "phone": "987654321",
+            "notes": "Updated test provider",
+            "active": True
+        }
+        
+        success, data, status = self.make_request('PUT', f'sources/{self.test_source_id}', updated_data)
+        
+        if success and data.get('discount_percent') == 20.0:
+            self.log_test("Update Provider Discount", True, 
+                         f"Updated provider discount to {data.get('discount_percent')}%")
+            return True, data
+        else:
+            self.log_test("Update Provider Discount", False, f"Status: {status}, Response: {data}")
+            return False, {}
+
     def run_all_tests(self):
         """Run comprehensive test suite"""
         print("🚀 Starting AlpineFlow API Test Suite")
