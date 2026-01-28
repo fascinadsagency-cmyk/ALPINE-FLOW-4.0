@@ -581,50 +581,198 @@ export default function NewRental() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  ref={searchRef}
-                  placeholder="DNI, nombre o teléfono..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && searchCustomer()}
-                  className="h-11"
-                  data-testid="customer-search-input"
-                  autoFocus
-                />
-                <Button 
-                  onClick={searchCustomer} 
-                  disabled={searchLoading}
-                  className="h-11 px-4"
-                  data-testid="customer-search-btn"
-                >
-                  {searchLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                </Button>
+              {/* Smart Autocomplete Search */}
+              <div className="relative">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      ref={searchRef}
+                      placeholder="Busca por nombre o DNI (mínimo 2 caracteres)..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      onFocus={() => searchTerm.length >= 2 && setShowSuggestions(true)}
+                      className="h-11 pr-10"
+                      data-testid="customer-search-input"
+                      autoFocus
+                      disabled={!!customer}
+                    />
+                    {searchTerm && !customer && (
+                      <button
+                        onClick={() => {
+                          setSearchTerm("");
+                          setShowSuggestions(false);
+                          searchRef.current?.focus();
+                        }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                  {!customer && (
+                    <Button 
+                      onClick={searchCustomer} 
+                      disabled={searchLoading}
+                      className="h-11 px-4"
+                      data-testid="customer-search-btn"
+                    >
+                      {searchLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                    </Button>
+                  )}
+                </div>
+
+                {/* Suggestions Dropdown */}
+                {showSuggestions && customerSuggestions.length > 0 && !customer && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-80 overflow-y-auto">
+                    <div className="p-2">
+                      <p className="text-xs text-slate-500 px-2 py-1 mb-1">
+                        {customerSuggestions.length} cliente(s) encontrado(s)
+                      </p>
+                      {customerSuggestions.map((suggestion, index) => (
+                        <button
+                          key={suggestion.id}
+                          onClick={() => selectCustomer(suggestion)}
+                          className={`w-full text-left px-3 py-2.5 rounded-md transition-colors ${
+                            index === selectedIndex 
+                              ? 'bg-primary text-white' 
+                              : 'hover:bg-slate-50'
+                          }`}
+                          data-testid={`suggestion-${index}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1 min-w-0">
+                              <p className={`font-semibold truncate ${
+                                index === selectedIndex ? 'text-white' : 'text-slate-900'
+                              }`}>
+                                {suggestion.name}
+                              </p>
+                              <p className={`text-sm font-mono ${
+                                index === selectedIndex ? 'text-white/90' : 'text-slate-500'
+                              }`}>
+                                {suggestion.dni}
+                              </p>
+                              {suggestion.phone && (
+                                <p className={`text-xs ${
+                                  index === selectedIndex ? 'text-white/80' : 'text-slate-400'
+                                }`}>
+                                  📞 {suggestion.phone}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 ml-3">
+                              {suggestion.source && (
+                                <Badge variant={index === selectedIndex ? "secondary" : "outline"} className="text-xs whitespace-nowrap">
+                                  {suggestion.source}
+                                </Badge>
+                              )}
+                              <Badge variant="secondary" className="text-xs">
+                                {suggestion.total_rentals || 0}
+                              </Badge>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
+              {/* Selected Customer Card */}
               {customer && (
-                <div className="p-4 rounded-xl bg-slate-50 animate-fade-in">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-semibold text-slate-900">{customer.name}</p>
-                      <p className="text-sm text-slate-500 font-mono">{customer.dni}</p>
-                      {customer.phone && <p className="text-sm text-slate-500">{customer.phone}</p>}
+                <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20 animate-fade-in">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <p className="font-bold text-slate-900 text-lg">{customer.name}</p>
+                        {customerHistory?.has_alerts && (
+                          <Badge variant="destructive" className="animate-pulse">
+                            ⚠️ ALERTA
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-slate-600 font-mono font-semibold">{customer.dni}</p>
+                      <div className="flex items-center gap-3 mt-2 text-sm text-slate-600">
+                        {customer.phone && (
+                          <span className="flex items-center gap-1">
+                            📞 {customer.phone}
+                          </span>
+                        )}
+                        {customer.city && (
+                          <span className="flex items-center gap-1">
+                            📍 {customer.city}
+                          </span>
+                        )}
+                      </div>
                       {customer.source && (
-                        <Badge variant="outline" className="mt-1 text-xs">{customer.source}</Badge>
+                        <div className="mt-2">
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                            {customer.source}
+                            {getProviderDiscount() > 0 && (
+                              <span className="ml-1 font-bold">-{getProviderDiscount()}%</span>
+                            )}
+                          </Badge>
+                        </div>
                       )}
                     </div>
-                    <Badge variant="secondary">{customer.total_rentals || 0} alquileres</Badge>
+                    <div className="flex flex-col items-end gap-2">
+                      <Badge variant="secondary" className="font-semibold">
+                        {customer.total_rentals || 0} alquileres
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setCustomer(null);
+                          setCustomerHistory(null);
+                          setSearchTerm("");
+                          setTimeout(() => searchRef.current?.focus(), 100);
+                        }}
+                        className="h-7 px-2"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Cambiar
+                      </Button>
+                    </div>
                   </div>
                   
-                  {customerHistory?.preferred_sizes && Object.keys(customerHistory.preferred_sizes).length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-slate-200">
-                      <p className="text-xs font-medium text-slate-500 mb-2 flex items-center gap-1">
-                        <History className="h-3 w-3" /> Tallas preferidas
+                  {/* Alerts Section */}
+                  {customerHistory?.has_alerts && customerHistory.overdue_rentals > 0 && (
+                    <div className="mb-3 p-3 rounded-lg bg-red-50 border border-red-200">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-semibold text-red-900">
+                            Cliente con {customerHistory.overdue_rentals} alquiler(es) vencido(s)
+                          </p>
+                          <p className="text-xs text-red-700 mt-1">
+                            Verifica el estado antes de proceder con un nuevo alquiler
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Customer Notes */}
+                  {customer.notes && (
+                    <div className="mb-3 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                      <p className="text-xs font-semibold text-amber-900 mb-1 flex items-center gap-1">
+                        📝 Observaciones
                       </p>
-                      <div className="flex flex-wrap gap-1">
+                      <p className="text-sm text-amber-800">{customer.notes}</p>
+                    </div>
+                  )}
+
+                  {/* Preferred Sizes */}
+                  {customerHistory?.preferred_sizes && Object.keys(customerHistory.preferred_sizes).length > 0 && (
+                    <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                      <p className="text-xs font-semibold text-emerald-900 mb-2 flex items-center gap-1">
+                        <History className="h-3 w-3" /> Tallas Habituales (histórico)
+                      </p>
+                      <div className="flex flex-wrap gap-2">
                         {Object.entries(customerHistory.preferred_sizes).map(([type, sizes]) => (
-                          <Badge key={type} variant="outline" className="text-xs">
-                            {type}: {sizes.join(", ")}
+                          <Badge key={type} className="bg-emerald-100 text-emerald-800 border-emerald-300">
+                            <strong>{type}:</strong>&nbsp;{sizes.join(", ")}
                           </Badge>
                         ))}
                       </div>
@@ -633,15 +781,21 @@ export default function NewRental() {
                 </div>
               )}
 
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={() => setShowNewCustomer(true)}
-                data-testid="new-customer-btn"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Nuevo Cliente
-              </Button>
+              {/* Create New Customer Button */}
+              {!customer && (
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => {
+                    setShowNewCustomer(true);
+                    setNewCustomer({ ...newCustomer, dni: searchTerm.toUpperCase() });
+                  }}
+                  data-testid="new-customer-btn"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Crear Nuevo Cliente
+                </Button>
+              )}
             </CardContent>
           </Card>
 
