@@ -1540,6 +1540,119 @@ async def get_daily_report(date: Optional[str] = None, current_user: dict = Depe
                 "customer_name": r["customer_name"],
                 "customer_dni": r["customer_dni"],
                 "end_date": r["end_date"],
+
+@api_router.get("/reports/range", response_model=RangeReportResponse)
+async def get_range_report(
+    start_date: str,
+    end_date: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get comprehensive report for a date range including:
+    - Revenue breakdown by payment method
+    - Rentals and returns
+    - External repairs revenue
+    - Commission summary by provider
+    - Pending returns
+    """
+    start_dt = f"{start_date}T00:00:00"
+    end_dt = f"{end_date}T23:59:59"
+    
+    # Get rentals in the range
+    rentals = await db.rentals.find({
+        "created_at": {"$gte": start_dt, "$lte": end_dt}
+    }, {"_id": 0}).to_list(5000)
+    
+    # Calculate revenue by payment method
+    cash_revenue = sum(r.get("paid_amount", 0) for r in rentals if r.get("payment_method") == "cash")
+    card_revenue = sum(r.get("paid_amount", 0) for r in rentals if r.get("payment_method") == "card")
+    online_revenue = sum(r.get("paid_amount", 0) for r in rentals if r.get("payment_method") in ["online", "pago_online"])
+    other_revenue = sum(r.get("paid_amount", 0) for r in rentals if r.get("payment_method") in ["pending", "other"])
+    
+    # Get returns in the range
+    returns_count = await db.rentals.count_documents({
+        "status": "returned",
+        "created_at": {"$gte": start_dt, "$lte": end_dt}
+    })
+    
+    # Get external repairs revenue
+    repairs = await db.external_repairs.find({
+        "created_at": {"$gte": start_dt, "$lte": end_dt},
+        "status": {"$in": ["completed", "delivered"]}
+    }, {"_id": 0, "price": 1}).to_list(1000)
+    repairs_revenue = sum(r.get("price", 0) for r in repairs)
+    
+    # Calculate commissions by provider
+    sources = await db.sources.find({}, {"_id": 0}).to_list(100)
+    commissions_list = []
+    
+    for source in sources:
+        if source.get("commission_percent", 0) > 0:
+            # Get customers from this source
+            source_customers = await db.customers.find(
+                {"source_id": source["id"]},
+                {"_id": 0, "id": 1}
+            ).to_list(1000)
+            
+            customer_ids = [c["id"] for c in source_customers]
+            
+            if customer_ids:
+                # Get rentals from these customers in the date range
+                source_rentals = await db.rentals.find({
+                    "customer_id": {"$in": customer_ids},
+                    "created_at": {"$gte": start_dt, "$lte": end_dt}
+                }, {"_id": 0, "paid_amount": 1}).to_list(1000)
+                
+                revenue_generated = sum(r.get("paid_amount", 0) for r in source_rentals)
+                
+                if revenue_generated > 0:
+                    commission_amount = revenue_generated * (source.get("commission_percent", 0) / 100)
+                    
+                    commissions_list.append(CommissionSummary(
+                        provider_name=source["name"],
+                        provider_id=source["id"],
+                        commission_percent=source.get("commission_percent", 0),
+                        customer_count=len(customer_ids),
+                        revenue_generated=revenue_generated,
+                        commission_amount=commission_amount
+                    ))
+    
+    # Get pending returns (all active/partial rentals)
+    pending_returns = await db.rentals.find(
+        {"status": {"$in": ["active", "partial"]}},
+        {"_id": 0}
+    ).to_list(200)
+    
+    pending_list = []
+    for r in pending_returns:
+        pending_items = [i for i in r.get("items", []) if not i.get("returned", False)]
+        if pending_items:
+            pending_list.append({
+                "rental_id": r["id"],
+                "customer_name": r.get("customer_name", ""),
+                "customer_dni": r.get("customer_dni", ""),
+                "end_date": r.get("end_date", ""),
+                "pending_items": len(pending_items),
+                "pending_amount": r.get("pending_amount", 0)
+            })
+    
+    total_revenue = cash_revenue + card_revenue + online_revenue + other_revenue + repairs_revenue
+    
+    return RangeReportResponse(
+        start_date=start_date,
+        end_date=end_date,
+        total_revenue=total_revenue,
+        cash_revenue=cash_revenue,
+        card_revenue=card_revenue,
+        online_revenue=online_revenue,
+        other_revenue=other_revenue,
+        repairs_revenue=repairs_revenue,
+        new_rentals=len(rentals),
+        returns=returns_count,
+        pending_returns=pending_list,
+        commissions=commissions_list
+    )
+
                 "pending_items": len(pending_items),
                 "pending_amount": r["pending_amount"]
             })
