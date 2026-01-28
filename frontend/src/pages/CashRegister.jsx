@@ -112,7 +112,7 @@ export default function CashRegister() {
     }
 
     try {
-      await axios.post(`${API}/cash/movements`, {
+      const response = await axios.post(`${API}/cash/movements`, {
         movement_type: movementType,
         amount: parseFloat(newMovement.amount),
         payment_method: newMovement.payment_method,
@@ -123,6 +123,22 @@ export default function CashRegister() {
       
       toast.success(movementType === "income" ? "Entrada registrada" : "Salida registrada");
       setShowAddDialog(false);
+      
+      // Show print option for new movement
+      const createdMovement = {
+        ...response.data,
+        id: response.data.id || response.data._id,
+        movement_type: movementType,
+        amount: parseFloat(newMovement.amount),
+        payment_method: newMovement.payment_method,
+        category: newMovement.category,
+        concept: newMovement.concept,
+        notes: newMovement.notes,
+        created_at: new Date().toISOString()
+      };
+      setSelectedMovement(createdMovement);
+      setShowTicketDialog(true);
+      
       setNewMovement({ amount: "", payment_method: "cash", category: "", concept: "", notes: "" });
       loadData();
     } catch (error) {
