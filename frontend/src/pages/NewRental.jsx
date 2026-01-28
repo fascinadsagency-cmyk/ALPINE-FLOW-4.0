@@ -369,10 +369,21 @@ export default function NewRental() {
     const tariff = tariffs.find(t => t.item_type === item.item_type);
     if (!tariff) return 0;
     
-    if (numDays === 1) return tariff.days_1;
-    if (numDays <= 3) return tariff.days_2_3;
-    if (numDays <= 7) return tariff.days_4_7;
-    return tariff.week;
+    // Use daily pricing if available (day_1 to day_10, then day_11_plus)
+    if (numDays <= 10 && tariff[`day_${numDays}`] !== null && tariff[`day_${numDays}`] !== undefined) {
+      return tariff[`day_${numDays}`];
+    }
+    if (numDays > 10 && tariff.day_11_plus !== null && tariff.day_11_plus !== undefined) {
+      return tariff.day_11_plus;
+    }
+    
+    // Fallback to legacy pricing structure
+    if (numDays === 1 && tariff.days_1) return tariff.days_1;
+    if (numDays <= 3 && tariff.days_2_3) return tariff.days_2_3;
+    if (numDays <= 7 && tariff.days_4_7) return tariff.days_4_7;
+    if (tariff.week) return tariff.week;
+    
+    return 0;
   };
 
   const calculateSubtotal = () => {
