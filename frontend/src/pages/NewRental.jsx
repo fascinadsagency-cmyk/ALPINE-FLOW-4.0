@@ -1196,56 +1196,36 @@ export default function NewRental() {
                       </div>
                     )}
 
-                    {/* SMART UPSELLING: Pack Suggestions */}
+                    {/* SMART UPSELLING: Pack Suggestions (Discrete Version) */}
                     {packSuggestions.length > 0 && detectedPacks.length === 0 && (
-                      <div className="mb-4 space-y-2">
-                        {packSuggestions.map((suggestion, idx) => (
-                          <div 
-                            key={idx}
-                            className="p-4 rounded-xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border-2 border-amber-300 animate-fade-in"
-                            data-testid={`pack-suggestion-${idx}`}
-                          >
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Sparkles className="h-5 w-5 text-amber-600" />
-                                  <span className="font-semibold text-amber-900">
-                                    ¡Completa el Pack!
-                                  </span>
-                                  <Badge variant="outline" className="bg-white border-amber-300 text-amber-700">
-                                    {suggestion.category}
-                                  </Badge>
-                                </div>
-                                <p className="text-sm text-amber-800">
-                                  Añade <strong className="text-amber-900">
-                                    {suggestion.missingItems.map(t => {
-                                      const typeLabel = ITEM_TYPES.find(it => it.value === t)?.label || t;
-                                      return typeLabel;
-                                    }).join(" + ")}
-                                  </strong> para completar el pack <strong>"{suggestion.packName}"</strong>
-                                </p>
-                                <div className="flex items-center gap-2 mt-2">
-                                  <Badge className="bg-emerald-500 text-white">
-                                    Ahorras €{suggestion.potentialSavings.toFixed(2)}
-                                  </Badge>
-                                  <span className="text-xs text-amber-600">
-                                    Precio pack: €{suggestion.packPrice.toFixed(2)}
-                                  </span>
-                                </div>
-                              </div>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-amber-400 text-amber-700 hover:bg-amber-100 whitespace-nowrap"
-                                onClick={() => openSearchForMissingItem(suggestion.missingItems[0], suggestion.category)}
-                                data-testid={`view-available-${idx}`}
-                              >
-                                <Search className="h-4 w-4 mr-1" />
-                                Ver Disponibles
-                              </Button>
+                      <div className="mb-3">
+                        <div className="p-3 rounded-lg bg-amber-50/50 border border-amber-200/50">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2 flex-1">
+                              <Sparkles className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                              <span className="text-sm text-amber-800">
+                                Completa pack: añade <strong>
+                                  {packSuggestions[0].missingItems.map(t => {
+                                    const typeLabel = ITEM_TYPES.find(it => it.value === t)?.label || t;
+                                    return typeLabel;
+                                  }).join(" + ")}
+                                </strong>
+                              </span>
+                              <Badge variant="outline" className="bg-white border-amber-300 text-amber-700 text-xs">
+                                Ahorras €{packSuggestions[0].potentialSavings.toFixed(2)}
+                              </Badge>
                             </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-amber-700 hover:bg-amber-100 h-8"
+                              onClick={() => openSearchForMissingItem(packSuggestions[0].missingItems[0], packSuggestions[0].category)}
+                            >
+                              <Search className="h-3.5 w-3.5 mr-1" />
+                              Buscar
+                            </Button>
                           </div>
-                        ))}
+                        </div>
                       </div>
                     )}
 
