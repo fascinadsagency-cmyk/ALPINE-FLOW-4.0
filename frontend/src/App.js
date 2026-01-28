@@ -12,6 +12,7 @@ import Reports from "@/pages/Reports";
 import Maintenance from "@/pages/Maintenance";
 import CashRegister from "@/pages/CashRegister";
 import Integrations from "@/pages/Integrations";
+import ActiveRentals from "@/pages/ActiveRentals";
 import Layout from "@/components/Layout";
 
 const ProtectedRoute = ({ children }) => {
