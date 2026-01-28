@@ -253,6 +253,60 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
     toast.success("Plantilla descargada");
   };
 
+  const openEditDialog = (item) => {
+    setEditingItem({
+      ...item,
+      purchase_price: item.purchase_price.toString(),
+      maintenance_interval: item.maintenance_interval.toString()
+    });
+    setShowEditDialog(true);
+  };
+
+  const updateItem = async () => {
+    if (!editingItem.barcode || !editingItem.brand || !editingItem.model || !editingItem.size) {
+      toast.error("Completa todos los campos obligatorios");
+      return;
+    }
+    
+    try {
+      await axios.put(`${API}/items/${editingItem.id}`, {
+        barcode: editingItem.barcode,
+        item_type: editingItem.item_type,
+        brand: editingItem.brand,
+        model: editingItem.model,
+        size: editingItem.size,
+        purchase_price: parseFloat(editingItem.purchase_price) || 0,
+        purchase_date: editingItem.purchase_date,
+        location: editingItem.location || "",
+        maintenance_interval: parseInt(editingItem.maintenance_interval) || 30,
+        category: editingItem.category
+      });
+      toast.success("Artículo actualizado correctamente");
+      setShowEditDialog(false);
+      setEditingItem(null);
+      loadItems();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al actualizar artículo");
+    }
+  };
+
+  const openDeleteDialog = (item) => {
+    setDeletingItem(item);
+    setShowDeleteDialog(true);
+  };
+
+  const deleteItem = async () => {
+    try {
+      await axios.delete(`${API}/items/${deletingItem.id}`);
+      toast.success("Artículo eliminado correctamente");
+      setShowDeleteDialog(false);
+      setDeletingItem(null);
+      loadItems();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al eliminar artículo");
+    }
+  };
+
   return (
     <div className="p-6 lg:p-8" data-testid="inventory-page">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
