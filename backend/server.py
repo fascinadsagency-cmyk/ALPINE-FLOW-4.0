@@ -380,7 +380,10 @@ async def get_customer_history(customer_id: str, current_user: dict = Depends(ge
     return {
         "rentals": rentals,
         "preferred_sizes": sizes,
-        "total_rentals": len(rentals)
+        "total_rentals": len(rentals),
+        "active_rentals": len(active_rentals),
+        "overdue_rentals": len(overdue_rentals),
+        "has_alerts": len(overdue_rentals) > 0
     }
 
 @api_router.put("/customers/{customer_id}", response_model=CustomerResponse)
