@@ -555,25 +555,46 @@ export default function Tariffs() {
         </TabsContent>
       </Tabs>
 
-      {/* Create Pack Dialog */}
-      <Dialog open={showPackDialog} onOpenChange={setShowPackDialog}>
-        <DialogContent className="sm:max-w-lg">
+      {/* Create/Edit Pack Dialog */}
+      <Dialog open={showPackDialog} onOpenChange={() => {
+        setShowPackDialog(false);
+        setEditingPack(null);
+      }}>
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Crear Pack / Combo</DialogTitle>
+            <DialogTitle>{editingPack ? "Editar Pack" : "Crear Pack / Combo"}</DialogTitle>
             <DialogDescription>
-              Define un pack con precio especial para varios artículos
+              Define un pack con precios por día
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            <div>
-              <Label>Nombre del Pack *</Label>
-              <Input
-                value={newPack.name}
-                onChange={(e) => setNewPack({ ...newPack, name: e.target.value })}
-                placeholder="Ej: Pack Ski Completo"
-                className="h-11 mt-1"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Nombre del Pack *</Label>
+                <Input
+                  value={newPack.name}
+                  onChange={(e) => setNewPack({ ...newPack, name: e.target.value })}
+                  placeholder="Ej: Pack Ski Completo"
+                  className="h-11 mt-1"
+                />
+              </div>
+              <div>
+                <Label>Categoría</Label>
+                <Select 
+                  value={newPack.category} 
+                  onValueChange={(v) => setNewPack({ ...newPack, category: v })}
+                >
+                  <SelectTrigger className="h-11 mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="SUPERIOR">🟣 Gama Superior</SelectItem>
+                    <SelectItem value="ALTA">🔵 Gama Alta</SelectItem>
+                    <SelectItem value="MEDIA">🟢 Gama Media</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             
             <div>
@@ -614,41 +635,82 @@ export default function Tariffs() {
                   ))}
                 </div>
               )}
-              {individualPrice > 0 && (
-                <p className="text-sm text-slate-500 mt-2">
-                  Precio individual total: €{individualPrice.toFixed(2)}/día
-                </p>
-              )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Precio 1 día (€)</Label>
-                <Input
-                  type="number"
-                  value={newPack.price_1_day}
-                  onChange={(e) => setNewPack({ ...newPack, price_1_day: e.target.value })}
-                  placeholder={individualPrice > 0 ? (individualPrice * 0.9).toFixed(0) : "0"}
-                  className="h-11 mt-1"
-                />
+            <div>
+              <Label className="text-base font-semibold">Precios por Día (€)</Label>
+              <div className="grid grid-cols-5 gap-3 mt-2">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(day => (
+                  <div key={day}>
+                    <Label className="text-xs text-slate-500">Día {day}</Label>
+                    <Input
+                      type="number"
+                      value={newPack[`day_${day}`]}
+                      onChange={(e) => setNewPack({ ...newPack, [`day_${day}`]: e.target.value })}
+                      className="h-9 mt-1"
+                      placeholder="0"
+                    />
+                  </div>
+                ))}
               </div>
-              <div>
-                <Label>Precio 2-3 días (€)</Label>
-                <Input
-                  type="number"
-                  value={newPack.price_2_3_days}
-                  onChange={(e) => setNewPack({ ...newPack, price_2_3_days: e.target.value })}
-                  className="h-11 mt-1"
-                />
+            </div>
+
+            <div>
+              <Label>Precio Día 11+ (€)</Label>
+              <Input
+                type="number"
+                value={newPack.day_11_plus}
+                onChange={(e) => setNewPack({ ...newPack, day_11_plus: e.target.value })}
+                className="h-11 mt-1"
+                placeholder="Precio para día 11 en adelante"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowPackDialog(false);
+              setEditingPack(null);
+            }}>
+              Cancelar
+            </Button>
+            <Button onClick={editingPack ? updatePack : createPack}>
+              {editingPack ? "Actualizar" : "Crear"} Pack
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Pack Confirmation */}
+      {deletingPack && (
+        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Eliminar Pack</DialogTitle>
+              <DialogDescription>
+                ¿Estás seguro de que quieres eliminar este pack?
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <div className="bg-slate-50 rounded-lg p-4">
+                <p className="font-medium text-slate-900">{deletingPack.name}</p>
+                <Badge className={`${getCategoryBadge(deletingPack.category)} mt-2`}>
+                  {getCategoryIcon(deletingPack.category)} Gama {deletingPack.category}
+                </Badge>
               </div>
-              <div>
-                <Label>Precio 4-7 días (€)</Label>
-                <Input
-                  type="number"
-                  value={newPack.price_4_7_days}
-                  onChange={(e) => setNewPack({ ...newPack, price_4_7_days: e.target.value })}
-                  className="h-11 mt-1"
-                />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+                Cancelar
+              </Button>
+              <Button variant="destructive" onClick={deletePack}>
+                <Trash2 className="h-4 w-4 mr-2" />
+                Eliminar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
               </div>
               <div>
                 <Label>Precio Semana (€)</Label>
