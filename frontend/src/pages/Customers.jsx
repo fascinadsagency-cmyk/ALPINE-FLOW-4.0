@@ -158,6 +158,7 @@ export default function Customers() {
                   <TableHead>DNI</TableHead>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Teléfono</TableHead>
+                  <TableHead>Proveedor</TableHead>
                   <TableHead>Población</TableHead>
                   <TableHead>Alquileres</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
@@ -169,6 +170,15 @@ export default function Customers() {
                     <TableCell className="font-mono">{customer.dni}</TableCell>
                     <TableCell className="font-medium">{customer.name}</TableCell>
                     <TableCell>{customer.phone || '-'}</TableCell>
+                    <TableCell>
+                      {customer.source ? (
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          {customer.source}
+                        </Badge>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
+                    </TableCell>
                     <TableCell>{customer.city || '-'}</TableCell>
                     <TableCell>
                       <Badge variant="secondary">{customer.total_rentals}</Badge>
