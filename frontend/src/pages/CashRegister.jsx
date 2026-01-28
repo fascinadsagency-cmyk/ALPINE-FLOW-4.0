@@ -105,6 +105,30 @@ export default function CashRegister() {
     }
   };
 
+  const loadClosureHistory = async () => {
+    try {
+      const res = await axios.get(`${API}/cash/closings`);
+      setClosureHistory(res.data);
+      setShowHistoryDialog(true);
+    } catch (error) {
+      toast.error("Error al cargar historial de cierres");
+    }
+  };
+
+  const revertClosure = async (closingDate) => {
+    if (!window.confirm(`¿Seguro que quieres revertir el cierre del ${closingDate}? Esto permitirá modificar los movimientos de ese día.`)) {
+      return;
+    }
+    try {
+      await axios.delete(`${API}/cash/closings/${closingDate}`);
+      toast.success(`Cierre del ${closingDate} revertido correctamente`);
+      loadClosureHistory();
+      loadData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al revertir cierre");
+    }
+  };
+
   const createMovement = async () => {
     if (!newMovement.amount || !newMovement.concept || !newMovement.category) {
       toast.error("Completa todos los campos obligatorios");
