@@ -1268,6 +1268,106 @@ class UpdateRentalDaysRequest(BaseModel):
     days: int
     new_total: float
 
+class ModifyDurationRequest(BaseModel):
+    new_days: int
+    new_total: float
+    payment_method: str
+    difference_amount: float
+
+@api_router.patch("/rentals/{rental_id}/modify-duration")
+async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Modify rental duration with mandatory cash register entry.
+    Creates a cash movement for any price difference.
+    """
+    rental = await db.rentals.find_one({"id": rental_id})
+    if not rental:
+        raise HTTPException(status_code=404, detail="Rental not found")
+    
+    if rental["status"] not in ["active", "partial"]:
+        raise HTTPException(status_code=400, detail="Cannot modify closed rental")
+    
+    old_days = rental["days"]
+    old_total = rental["total_amount"]
+    old_end_date = rental["end_date"]
+    
+    # Calculate new end date
+    start_date = datetime.fromisoformat(rental["start_date"].replace('Z', '+00:00'))
+    
+    if data.new_days == 0:
+        # Same day return
+        new_end_date = start_date
+        new_status = "returned"  # Close the rental if 0 days
+    else:
+        new_end_date = start_date + timedelta(days=data.new_days - 1)
+        new_status = rental["status"]
+    
+    # Update rental
+    new_pending = data.new_total - rental["paid_amount"]
+    update_fields = {
+        "days": data.new_days,
+        "end_date": new_end_date.isoformat(),
+        "total_amount": data.new_total,
+        "pending_amount": max(0, new_pending)
+    }
+    
+    # If 0 days, mark all items as returned
+    if data.new_days == 0:
+        update_fields["status"] = "returned"
+        update_fields["actual_return_date"] = datetime.now(timezone.utc).isoformat()
+        # Mark all items as returned
+        returned_items = []
+        for item in rental.get("items", []):
+            item["returned"] = True
+            item["return_date"] = datetime.now(timezone.utc).isoformat()
+            returned_items.append(item)
+            # Update item status in inventory
+            await db.items.update_one(
+                {"id": item["id"]},
+                {"$set": {"status": "available"}}
+            )
+        update_fields["items"] = returned_items
+    
+    await db.rentals.update_one(
+        {"id": rental_id},
+        {"$set": update_fields}
+    )
+    
+    # Create cash movement (MANDATORY)
+    cash_movement_id = None
+    if data.difference_amount != 0:
+        customer_name = rental.get("customer_name", "Cliente")
+        movement_type = "income" if data.difference_amount > 0 else "refund"
+        
+        concept = f"Ajuste días Alquiler ID: {rental_id[:8].upper()} (De {old_days} días a {data.new_days} días)"
+        
+        cash_movement_id = str(uuid.uuid4())
+        cash_doc = {
+            "id": cash_movement_id,
+            "movement_type": movement_type,
+            "amount": abs(data.difference_amount),
+            "payment_method": data.payment_method,
+            "category": "rental",
+            "concept": concept,
+            "notes": f"Modificación de duración: {old_days}→{data.new_days} días. Total: €{old_total:.2f}→€{data.new_total:.2f}",
+            "rental_id": rental_id,
+            "customer_name": customer_name,
+            "created_by": current_user["username"],
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.cash_movements.insert_one(cash_doc)
+    
+    updated = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
+    return {
+        "rental": RentalResponse(**updated),
+        "cash_movement_id": cash_movement_id,
+        "old_days": old_days,
+        "new_days": data.new_days,
+        "old_total": old_total,
+        "new_total": data.new_total,
+        "difference": data.difference_amount
+    }
+
 @api_router.patch("/rentals/{rental_id}/days")
 async def update_rental_days(rental_id: str, update_data: UpdateRentalDaysRequest, current_user: dict = Depends(get_current_user)):
     rental = await db.rentals.find_one({"id": rental_id})
