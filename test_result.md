@@ -101,3 +101,87 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Test all FASE 1 functionalities that were just implemented: Edit/Delete items in inventory, Pending returns endpoint, Update rental days, Provider discount"
+
+backend:
+  - task: "Edit/Delete Items in Inventory"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test PUT /api/items/{item_id} and DELETE /api/items/{item_id} endpoints"
+
+  - task: "Pending Returns Endpoint"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test GET /api/rentals/pending/returns endpoint with grouping by date"
+
+  - task: "Update Rental Days"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test PATCH /api/rentals/{rental_id}/days endpoint"
+
+  - task: "Provider Discount Management"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test POST /api/sources, GET /api/sources, PUT /api/sources/{source_id} endpoints"
+
+frontend:
+  - task: "Frontend Integration"
+    implemented: false
+    working: "NA"
+    file: "N/A"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Frontend testing not required for this phase"
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Edit/Delete Items in Inventory"
+    - "Pending Returns Endpoint"
+    - "Update Rental Days"
+    - "Provider Discount Management"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "testing"
+      message: "Starting FASE 1 functionality testing. Will test all 4 backend endpoints as requested."
