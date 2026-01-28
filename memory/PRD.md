@@ -133,8 +133,13 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 
 ## Última Actualización
 Fecha: 2026-01-28
-Versión: 1.3.0
+Versión: 1.4.0
 
 ## Changelog
-- **v1.3.0** (2026-01-28): ✅ Auto-Combo implementado y verificado funcionalmente
-- **v1.2.x** (2026-01-27): Dashboard estratégico, Autocompletado clientes, Gestión de caja, UI integraciones
+- **v1.4.0** (2026-01-28): ✅ Flujo Financiero Completo implementado
+  - Vinculación Nuevo Alquiler → Caja (asientos automáticos)
+  - Reembolso Parcial en Devoluciones (abono por días no disfrutados)
+  - Asientos negativos en Caja para devoluciones
+  - Saldo Neto = Entradas - Salidas - Devoluciones
+- **v1.3.0** (2026-01-28): ✅ Auto-Combo implementado y verificado
+- **v1.2.x** (2026-01-27): Dashboard estratégico, Autocompletado clientes, UI integraciones
