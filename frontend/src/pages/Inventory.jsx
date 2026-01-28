@@ -70,6 +70,7 @@ export default function Inventory() {
   
   const [newItem, setNewItem] = useState({
     barcode: "",
+    internal_code: "",
     item_type: "ski",
     brand: "",
     model: "",
