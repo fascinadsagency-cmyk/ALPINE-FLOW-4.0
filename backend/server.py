@@ -654,7 +654,22 @@ async def update_item(item_id: str, item: ItemCreate, current_user: dict = Depen
 
 @api_router.delete("/items/{item_id}")
 async def delete_item(item_id: str, current_user: dict = Depends(get_current_user)):
-
+    """Delete an item (or retire if rented)"""
+    item = await db.items.find_one({"id": item_id})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    # Check if item is currently rented
+    if item.get("status") == "rented":
+        raise HTTPException(status_code=400, detail="Cannot delete rented item")
+    
+    # Instead of deleting, mark as retired
+    await db.items.update_one(
+        {"id": item_id}, 
+        {"$set": {"status": "retired", "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Item retired successfully"}
 
 # ==================== ITEM TYPES ROUTES ====================
 
