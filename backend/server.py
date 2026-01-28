@@ -113,21 +113,47 @@ class ItemResponse(BaseModel):
 
 class TariffCreate(BaseModel):
     item_type: str
-    days_1: float
-    days_2_3: float
-    days_4_7: float
-    week: float
-    season: float
+    # Daily prices for first 10 days
+    day_1: Optional[float] = None
+    day_2: Optional[float] = None
+    day_3: Optional[float] = None
+    day_4: Optional[float] = None
+    day_5: Optional[float] = None
+    day_6: Optional[float] = None
+    day_7: Optional[float] = None
+    day_8: Optional[float] = None
+    day_9: Optional[float] = None
+    day_10: Optional[float] = None
+    day_11_plus: Optional[float] = None
+    # Legacy fields (kept for backward compatibility)
+    days_1: Optional[float] = None
+    days_2_3: Optional[float] = None
+    days_4_7: Optional[float] = None
+    week: Optional[float] = None
+    season: Optional[float] = None
 
 class TariffResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
     item_type: str
-    days_1: float
-    days_2_3: float
-    days_4_7: float
-    week: float
-    season: float
+    # Daily prices for first 10 days
+    day_1: Optional[float] = None
+    day_2: Optional[float] = None
+    day_3: Optional[float] = None
+    day_4: Optional[float] = None
+    day_5: Optional[float] = None
+    day_6: Optional[float] = None
+    day_7: Optional[float] = None
+    day_8: Optional[float] = None
+    day_9: Optional[float] = None
+    day_10: Optional[float] = None
+    day_11_plus: Optional[float] = None
+    # Legacy fields (kept for backward compatibility)
+    days_1: Optional[float] = None
+    days_2_3: Optional[float] = None
+    days_4_7: Optional[float] = None
+    week: Optional[float] = None
+    season: Optional[float] = None
 
 class RentalItemInput(BaseModel):
     barcode: str
