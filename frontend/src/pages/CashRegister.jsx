@@ -691,6 +691,90 @@ export default function CashRegister() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Print Ticket Dialog */}
+      <Dialog open={showTicketDialog} onOpenChange={setShowTicketDialog}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Printer className="h-5 w-5" />
+              Imprimir Comprobante
+            </DialogTitle>
+            <DialogDescription>
+              Vista previa del ticket de caja
+            </DialogDescription>
+          </DialogHeader>
+          {selectedMovement && (
+            <div className="py-4">
+              <div className="bg-slate-50 rounded-lg p-4 font-mono text-sm space-y-2">
+                <div className="text-center border-b border-dashed border-slate-300 pb-3 mb-3">
+                  <p className="font-bold text-lg">COMPROBANTE</p>
+                  <p className="text-xs text-slate-500">Movimiento de Caja</p>
+                </div>
+                
+                <div className="flex justify-center mb-3">
+                  <Badge className={`${
+                    selectedMovement.movement_type === 'income' 
+                      ? 'bg-emerald-100 text-emerald-700' 
+                      : selectedMovement.movement_type === 'refund'
+                      ? 'bg-orange-100 text-orange-700'
+                      : 'bg-red-100 text-red-700'
+                  }`}>
+                    {selectedMovement.movement_type === 'income' ? 'ENTRADA' : 
+                     selectedMovement.movement_type === 'refund' ? 'DEVOLUCIÓN' : 'SALIDA'}
+                  </Badge>
+                </div>
+                
+                <p className="text-center font-semibold text-base py-2">{selectedMovement.concept}</p>
+                
+                <div className="space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Fecha:</span>
+                    <span>{selectedMovement.created_at.split('T')[0]}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Hora:</span>
+                    <span>{selectedMovement.created_at.split('T')[1].substring(0, 5)}</span>
+                  </div>
+                  {selectedMovement.customer_name && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Cliente:</span>
+                      <span>{selectedMovement.customer_name}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Método:</span>
+                    <span>{PAYMENT_METHODS.find(p => p.value === selectedMovement.payment_method)?.label || selectedMovement.payment_method}</span>
+                  </div>
+                </div>
+                
+                <div className={`text-center text-2xl font-bold pt-3 mt-3 border-t border-dashed border-slate-300 ${
+                  selectedMovement.movement_type === 'income' 
+                    ? 'text-emerald-600' 
+                    : selectedMovement.movement_type === 'refund'
+                    ? 'text-orange-600'
+                    : 'text-red-600'
+                }`}>
+                  {selectedMovement.movement_type === 'income' ? '+' : '-'}€{selectedMovement.amount.toFixed(2)}
+                </div>
+                
+                <div className="text-center text-xs text-slate-400 pt-3 border-t border-dashed border-slate-300 mt-3">
+                  <p>Ref: {selectedMovement.id ? selectedMovement.id.substring(0, 8).toUpperCase() : 'N/A'}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowTicketDialog(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={printTicket} data-testid="confirm-print-ticket">
+              <Printer className="h-4 w-4 mr-2" />
+              Imprimir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
