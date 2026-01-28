@@ -252,8 +252,7 @@ export default function Providers() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nombre</TableHead>
-                    <TableHead>Descuento</TableHead>
-                    <TableHead>Comisión</TableHead>
+                    <TableHead>Condiciones</TableHead>
                     <TableHead>Clientes</TableHead>
                     <TableHead>Contacto</TableHead>
                     <TableHead>Estado</TableHead>
@@ -277,25 +276,29 @@ export default function Providers() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {provider.discount_percent > 0 ? (
-                          <Badge className="bg-emerald-100 text-emerald-700">
-                            -{provider.discount_percent}%
-                          </Badge>
-                        ) : (
-                          <span className="text-slate-400">-</span>
-                        )}
+                        <div className="flex items-center gap-3">
+                          {provider.discount_percent > 0 && (
+                            <Badge className="bg-emerald-100 text-emerald-700 text-xs">
+                              -{provider.discount_percent}%
+                            </Badge>
+                          )}
+                          {provider.commission_percent > 0 && (
+                            <Badge className="bg-blue-100 text-blue-700 text-xs">
+                              +{provider.commission_percent}%
+                            </Badge>
+                          )}
+                          {provider.discount_percent === 0 && provider.commission_percent === 0 && (
+                            <span className="text-slate-400 text-sm">Sin config.</span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
-                        {provider.commission_percent > 0 ? (
-                          <Badge className="bg-blue-100 text-blue-700">
-                            {provider.commission_percent}%
-                          </Badge>
-                        ) : (
-                          <span className="text-slate-400">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-2">
+                          <div className={`h-2 w-2 rounded-full ${
+                            provider.customer_count > 10 ? 'bg-emerald-500' :
+                            provider.customer_count > 5 ? 'bg-blue-500' :
+                            provider.customer_count > 0 ? 'bg-amber-500' : 'bg-slate-300'
+                          }`} />
                           <Users className="h-4 w-4 text-slate-400" />
                           <span className="font-medium">{provider.customer_count || 0}</span>
                         </div>
