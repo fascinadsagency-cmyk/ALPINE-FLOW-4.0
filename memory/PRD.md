@@ -96,8 +96,26 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 - Historial de mantenimientos
 - Tipos: afilado, encerado, reparación, inspección
 
-### 9. Gestión de Caja (FLUJO FINANCIERO COMPLETO)
+### 9. TALLER EXTERNO (Módulo de Reparaciones)
+- **✅ Selector de Modo**: Botones grandes "MI FLOTA" (azul) y "TALLER EXTERNO" (naranja)
+- **✅ Contadores visuales**: Badges con número de pendientes en cada modo
+- **MI FLOTA**:
+  - Lista de equipos propios por usos
+  - Botón "PUESTA A PUNTO LISTA" (resetea usos sin cobrar)
+  - Alertas de mantenimiento urgente y próximo
+- **TALLER EXTERNO**:
+  - Formulario con precio MANUAL (sin tarifas fijas)
+  - Campo "Descripción del Trabajo" libre
+  - Prioridad visual (verde/naranja/rojo con barra lateral)
+  - Botón flotante "+ NUEVA REPARACIÓN" (solo en este modo)
+  - Tarjetas diferenciadas con estado (pendiente/listo/atrasado)
+  - Botón WhatsApp para avisar al cliente
+  - **Precio editable en el momento de cobrar** (descuentos/recargos)
+  - Integración con Caja como "Servicio Taller"
+
+### 10. Gestión de Caja (FLUJO FINANCIERO COMPLETO)
 - **✅ Vinculación automática con Alquileres**: Todo cobro genera asiento
+- **✅ Vinculación automática con Taller**: Servicios externos generan asiento
 - **✅ Columna Cliente**: Muestra el nombre del cliente en cada movimiento
 - **✅ Tarjeta de Devoluciones**: Suma total de reembolsos del día (naranja)
 - **✅ Saldo Neto**: Entradas - Salidas - Devoluciones = Dinero real en caja
@@ -106,12 +124,12 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 - Desglose por método de pago
 - Exportación a CSV
 
-### 10. Reportes
+### 11. Reportes
 - Cierre de día con desglose por método de pago
 - Lista de devoluciones pendientes
 - Porcentaje de ocupación del inventario
 
-### 11. Integraciones (UI preparada)
+### 12. Integraciones (UI preparada)
 - **VeriFactu**: Configuración de certificado y credenciales
 - **Email SMTP**: Configuración para notificaciones
 - **Google Calendar**: Preparado para sincronización
