@@ -15,16 +15,22 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 - Login/Registro con JWT
 - Roles: admin, employee
 
-### 2. Dashboard
+### 2. Dashboard Estratégico
 - KPIs en tiempo real (ingresos, alquileres, ocupación)
 - Alertas de devoluciones vencidas
 - Estado del inventario
 - Actividad reciente
+- **Ocupación por Gamas** (Superior, Alta, Media)
+- **Salud del Inventario** (alertas de mantenimiento)
 
-### 3. Gestión de Clientes
+### 3. Gestión de Clientes (Base de Datos Profesional)
 - Búsqueda rápida por DNI/nombre/teléfono
+- **Autocompletado inteligente** con búsqueda predictiva
 - Historial de alquileres
 - Tallas preferidas automáticas
+- **Campo de Observaciones/Notas**
+- **Alertas de seguridad** (clientes con alquileres vencidos)
+- Asociación con proveedores/colaboradores
 
 ### 4. Proceso de Alquiler (Optimizado)
 - **Sistema de fechas inteligente**:
@@ -33,27 +39,39 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
   - Botones rápidos 1d, 2d, 3d, 5d, 7d
   - Cálculo bidireccional días ↔ fechas
 - Escaneo de artículos por código de barras
+- Búsqueda manual de artículos (F3 / Alt+B)
 - Sistema de descuentos (%, € fijo, manual)
+- **Descuento automático de proveedor**
 - Múltiples métodos de pago
 - Precios editables por artículo
+- **✅ AUTO-COMBO**: Detección automática de packs
+  - Detecta cuando los artículos forman un pack configurado
+  - Aplica precio del pack automáticamente
+  - Muestra badge "Pack Detectado" y "En Pack"
+  - Recalcula al añadir/quitar artículos
+  - Actualiza precio al cambiar días
 
 ### 5. Devoluciones Ultra-Rápidas
 - Escanear cualquier artículo → encuentra alquiler
 - Vista de artículos pendientes vs devueltos
 - Alertas de pagos pendientes
+- **Auto-actualización** del panel
+- **Botones de contacto** rápido
 
 ### 6. Inventario
 - **Importación CSV masiva**
 - **Exportación a CSV**
-- **Generación de códigos de barras**
+- **Generación de códigos de barras** (manual/automática)
 - Estados: disponible, alquilado, mantenimiento, baja
 - Filtros por tipo y estado
 - Contador de días de uso
 - Cálculo de amortización
+- **Código Interno** personalizable
+- **Usos para Mantenimiento** con cálculo automático
 
 ### 7. Tarifas
-- **Precios individuales** por tipo y duración (1d, 2-3d, 4-7d, semana, temporada)
-- **Sistema de Packs/Combos** con precios especiales
+- **Precios individuales** por tipo y duración (day_1 a day_10, day_11_plus)
+- **Sistema de Packs/Combos** con precios especiales por día
 - Creador visual de packs
 
 ### 8. Mantenimiento
@@ -63,31 +81,48 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 - Historial de mantenimientos
 - Tipos: afilado, encerado, reparación, inspección
 
-### 9. Reportes
+### 9. Gestión de Caja
+- Registro de entradas/salidas de dinero
+- Cierres de caja diarios
+- Desglose por método de pago
+
+### 10. Reportes
 - Cierre de día con desglose por método de pago
 - Lista de devoluciones pendientes
 - Porcentaje de ocupación del inventario
 
+### 11. Integraciones (UI preparada)
+- **VeriFactu**: Configuración de certificado y credenciales
+- **Email SMTP**: Configuración para notificaciones
+- **Google Calendar**: Preparado para sincronización
+
 ## Próximas Funcionalidades (Backlog)
 
-### P0 - Alta Prioridad
+### P1 - Alta Prioridad
+- [ ] **Integraciones - Lógica de Backend**: VeriFactu, Email, Google Calendar
+- [ ] **Dashboard - Interactividad**: Botones funcionales en widgets
 - [ ] Importación de datos históricos
 - [ ] Histórico de pagos con contraseña admin
 
-### P1 - Media Prioridad
+### P2 - Media Prioridad
 - [ ] Integración WhatsApp para avisos
+- [ ] Integración TPV bancario
 - [ ] Reimprimir tickets de TPV
 - [ ] Reservas con calendario visual
 
-### P2 - Baja Prioridad  
-- [ ] Integración TPV bancario automática
+### P3 - Baja Prioridad  
 - [ ] OCR para escaneo de DNI
 - [ ] Generación de PDFs
+- [ ] Módulo de Reportes Avanzados
 
 ## Credenciales de Prueba
-- Usuario: admin
-- Contraseña: admin123
+- Usuario: test_combo
+- Contraseña: test123456
 
 ## Última Actualización
-Fecha: 2026-01-27
-Versión: 1.2.0
+Fecha: 2026-01-28
+Versión: 1.3.0
+
+## Changelog
+- **v1.3.0** (2026-01-28): ✅ Auto-Combo implementado y verificado funcionalmente
+- **v1.2.x** (2026-01-27): Dashboard estratégico, Autocompletado clientes, Gestión de caja, UI integraciones
