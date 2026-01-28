@@ -1164,81 +1164,14 @@ export default function NewRental() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {/* Pack Detection Badges */}
-                    {detectedPacks.length > 0 && (
-                      <div className="mb-4 space-y-2">
-                        {detectedPacks.map((detected, idx) => (
-                          <div 
-                            key={idx}
-                            className="p-3 rounded-xl bg-gradient-to-r from-emerald-50 to-emerald-100 border-2 border-emerald-300 animate-fade-in"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <Badge className="bg-emerald-600 text-white">
-                                  🎁 Pack Detectado
-                                </Badge>
-                                <span className="font-semibold text-emerald-900">
-                                  {detected.pack.name}
-                                </span>
-                                <Badge variant="outline" className="bg-white">
-                                  {detected.category}
-                                </Badge>
-                              </div>
-                              <span className="text-sm font-semibold text-emerald-700">
-                                €{getPackPrice(detected.pack).toFixed(2)} (ahorro aplicado)
-                              </span>
-                            </div>
-                            <p className="text-xs text-emerald-700 mt-1">
-                              Componentes: {detected.pack.items.join(" + ")} • Precio automático aplicado
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* SMART UPSELLING: Pack Suggestions (Discrete Version) */}
-                    {packSuggestions.length > 0 && detectedPacks.length === 0 && (
-                      <div className="mb-3">
-                        <div className="p-3 rounded-lg bg-amber-50/50 border border-amber-200/50">
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-2 flex-1">
-                              <Sparkles className="h-4 w-4 text-amber-500 flex-shrink-0" />
-                              <span className="text-sm text-amber-800">
-                                Completa pack: añade <strong>
-                                  {packSuggestions[0].missingItems.map(t => {
-                                    const typeLabel = ITEM_TYPES.find(it => it.value === t)?.label || t;
-                                    return typeLabel;
-                                  }).join(" + ")}
-                                </strong>
-                              </span>
-                              <Badge variant="outline" className="bg-white border-amber-300 text-amber-700 text-xs">
-                                Ahorras €{packSuggestions[0].potentialSavings.toFixed(2)}
-                              </Badge>
-                            </div>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="text-amber-700 hover:bg-amber-100 h-8"
-                              onClick={() => openSearchForMissingItem(packSuggestions[0].missingItems[0], packSuggestions[0].category)}
-                            >
-                              <Search className="h-3.5 w-3.5 mr-1" />
-                              Buscar
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
+                    {/* Items List - Clean without pack banners */}
                     {items.map((item, index) => {
-                      const isInPack = detectedPacks.some(dp => dp.items.includes(item.barcode));
                       const itemPrice = getItemPriceWithPack(item);
                       
                       return (
                         <div 
                           key={item.barcode}
-                          className={`flex items-center justify-between p-4 rounded-xl animate-fade-in ${
-                            isInPack ? 'bg-emerald-50 border-2 border-emerald-200' : 'bg-slate-50'
-                          }`}
+                          className="flex items-center justify-between p-4 rounded-xl bg-slate-50 animate-fade-in"
                         >
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
