@@ -150,6 +150,131 @@ export default function Tariffs() {
       await axios.post(`${API}/packs`, {
         name: newPack.name,
         description: newPack.description,
+        category: newPack.category,
+        items: newPack.items,
+        day_1: parseFloat(newPack.day_1) || 0,
+        day_2: parseFloat(newPack.day_2) || 0,
+        day_3: parseFloat(newPack.day_3) || 0,
+        day_4: parseFloat(newPack.day_4) || 0,
+        day_5: parseFloat(newPack.day_5) || 0,
+        day_6: parseFloat(newPack.day_6) || 0,
+        day_7: parseFloat(newPack.day_7) || 0,
+        day_8: parseFloat(newPack.day_8) || 0,
+        day_9: parseFloat(newPack.day_9) || 0,
+        day_10: parseFloat(newPack.day_10) || 0,
+        day_11_plus: parseFloat(newPack.day_11_plus) || 0
+      });
+      toast.success(editingPack ? "Pack actualizado" : "Pack creado correctamente");
+      setShowPackDialog(false);
+      setEditingPack(null);
+      setNewPack({
+        name: "",
+        description: "",
+        category: "MEDIA",
+        day_1: "", day_2: "", day_3: "", day_4: "", day_5: "",
+        day_6: "", day_7: "", day_8: "", day_9: "", day_10: "",
+        day_11_plus: "",
+        items: []
+      });
+      loadData();
+    } catch (error) {
+      toast.error("Error al crear pack");
+    }
+  };
+
+  const updatePack = async () => {
+    if (!newPack.name || newPack.items.length === 0) {
+      toast.error("Nombre y al menos un artículo son obligatorios");
+      return;
+    }
+
+    try {
+      await axios.put(`${API}/packs/${editingPack.id}`, {
+        name: newPack.name,
+        description: newPack.description,
+        category: newPack.category,
+        items: newPack.items,
+        day_1: parseFloat(newPack.day_1) || 0,
+        day_2: parseFloat(newPack.day_2) || 0,
+        day_3: parseFloat(newPack.day_3) || 0,
+        day_4: parseFloat(newPack.day_4) || 0,
+        day_5: parseFloat(newPack.day_5) || 0,
+        day_6: parseFloat(newPack.day_6) || 0,
+        day_7: parseFloat(newPack.day_7) || 0,
+        day_8: parseFloat(newPack.day_8) || 0,
+        day_9: parseFloat(newPack.day_9) || 0,
+        day_10: parseFloat(newPack.day_10) || 0,
+        day_11_plus: parseFloat(newPack.day_11_plus) || 0
+      });
+      toast.success("Pack actualizado correctamente");
+      setShowPackDialog(false);
+      setEditingPack(null);
+      setNewPack({
+        name: "",
+        description: "",
+        category: "MEDIA",
+        day_1: "", day_2: "", day_3: "", day_4: "", day_5: "",
+        day_6: "", day_7: "", day_8: "", day_9: "", day_10: "",
+        day_11_plus: "",
+        items: []
+      });
+      loadData();
+    } catch (error) {
+      toast.error("Error al actualizar pack");
+    }
+  };
+
+  const openEditPack = (pack) => {
+    setEditingPack(pack);
+    setNewPack({
+      name: pack.name,
+      description: pack.description || "",
+      category: pack.category || "MEDIA",
+      day_1: pack.day_1?.toString() || "",
+      day_2: pack.day_2?.toString() || "",
+      day_3: pack.day_3?.toString() || "",
+      day_4: pack.day_4?.toString() || "",
+      day_5: pack.day_5?.toString() || "",
+      day_6: pack.day_6?.toString() || "",
+      day_7: pack.day_7?.toString() || "",
+      day_8: pack.day_8?.toString() || "",
+      day_9: pack.day_9?.toString() || "",
+      day_10: pack.day_10?.toString() || "",
+      day_11_plus: pack.day_11_plus?.toString() || "",
+      items: pack.items || []
+    });
+    setShowPackDialog(true);
+  };
+
+  const openDeletePack = (pack) => {
+    setDeletingPack(pack);
+    setShowDeleteDialog(true);
+  };
+
+  const getCategoryBadge = (category) => {
+    const badges = {
+      SUPERIOR: "bg-purple-100 text-purple-700 border-purple-300",
+      ALTA: "bg-blue-100 text-blue-700 border-blue-300",
+      MEDIA: "bg-emerald-100 text-emerald-700 border-emerald-300"
+    };
+    return badges[category] || badges.MEDIA;
+  };
+
+  const getCategoryIcon = (category) => {
+    const icons = {
+      SUPERIOR: "🟣",
+      ALTA: "🔵",
+      MEDIA: "🟢"
+    };
+    return icons[category] || icons.MEDIA;
+  };
+      return;
+    }
+
+    try {
+      await axios.post(`${API}/packs`, {
+        name: newPack.name,
+        description: newPack.description,
         items: newPack.items,
         price_1_day: parseFloat(newPack.price_1_day) || 0,
         price_2_3_days: parseFloat(newPack.price_2_3_days) || 0,
