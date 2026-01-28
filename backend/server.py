@@ -517,6 +517,7 @@ async def update_item(item_id: str, item: ItemCreate, current_user: dict = Depen
     
     update_doc = {
         "barcode": item.barcode,
+        "internal_code": item.internal_code or "",
         "item_type": item.item_type,
         "brand": item.brand,
         "model": item.model,
