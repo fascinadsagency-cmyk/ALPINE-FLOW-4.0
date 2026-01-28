@@ -390,7 +390,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Dashboard Historical Date Range Filter"
+    - "Providers Page - CRUD Operations"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
