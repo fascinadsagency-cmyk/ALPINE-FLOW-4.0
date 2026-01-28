@@ -1132,31 +1132,30 @@ export default function NewRental() {
                               <button
                                 onClick={() => !isInPack && setEditingItemPrice(item.barcode)}
                                 disabled={isInPack}
-                                className={`font-semibold text-lg ${
+                                className={`font-semibold text-lg flex items-center gap-1 ${
                                   isInPack 
                                     ? 'text-emerald-700 cursor-not-allowed' 
                                     : 'text-slate-900 hover:text-primary cursor-pointer'
                                 }`}
                                 title={isInPack ? "Precio del pack aplicado automáticamente" : "Click para editar precio"}
                               >
-                              className="text-lg font-bold text-slate-900 hover:text-primary flex items-center gap-1"
+                                €{itemPrice.toFixed(2)}
+                                {!isInPack && <Edit2 className="h-3 w-3 opacity-50" />}
+                              </button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeItem(item.barcode)}
+                              className="text-slate-400 hover:text-red-500"
+                              data-testid={`remove-item-${index}`}
                             >
-                              €{getItemPrice(item).toFixed(2)}
-                              <Edit2 className="h-3 w-3 opacity-50" />
-                            </button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeItem(item.barcode)}
-                            className="text-slate-400 hover:text-red-500"
-                            data-testid={`remove-item-${index}`}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
