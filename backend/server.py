@@ -78,6 +78,7 @@ class CustomerResponse(BaseModel):
 
 class ItemCreate(BaseModel):
     barcode: str
+    internal_code: Optional[str] = ""  # NEW: Internal shop code
     item_type: str  # ski, snowboard, boots, helmet, poles
     brand: str
     model: str
@@ -99,6 +100,7 @@ class ItemResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
     barcode: str
+    internal_code: str = ""  # NEW: Internal shop code
     item_type: str
     brand: str
     model: str
