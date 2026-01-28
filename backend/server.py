@@ -487,6 +487,7 @@ async def get_items(
     if search:
         query["$or"] = [
             {"barcode": {"$regex": search, "$options": "i"}},
+            {"internal_code": {"$regex": search, "$options": "i"}},
             {"brand": {"$regex": search, "$options": "i"}},
             {"model": {"$regex": search, "$options": "i"}},
             {"size": {"$regex": search, "$options": "i"}}
