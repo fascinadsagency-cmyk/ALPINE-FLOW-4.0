@@ -913,7 +913,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {ITEM_TYPES.filter(t => t.value !== "").map(type => (
+                      {itemTypes.map(type => (
                         <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
                       ))}
                     </SelectContent>
