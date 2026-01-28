@@ -342,11 +342,36 @@ export default function Returns() {
                     </div>
                   </div>
 
+                  {/* Rental Info Summary */}
+                  <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-blue-700 font-medium">Total alquiler</span>
+                      <span className="font-bold text-blue-900">€{rental.total_amount.toFixed(2)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-blue-700">Pagado</span>
+                      <span className="font-semibold text-blue-800">€{rental.paid_amount.toFixed(2)}</span>
+                    </div>
+                  </div>
+
                   {rental.pending_amount > 0 && (
                     <div className="p-3 rounded-lg bg-red-50 flex items-center gap-2">
                       <AlertTriangle className="h-5 w-5 text-red-500" />
                       <span className="text-red-700 font-medium">Pago pendiente</span>
                     </div>
+                  )}
+
+                  {/* Refund Button */}
+                  {rental.status !== 'returned' && maxRefundDays > 0 && rental.paid_amount > 0 && (
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-orange-300 text-orange-700 hover:bg-orange-50"
+                      onClick={openRefundDialog}
+                      data-testid="refund-btn"
+                    >
+                      <Banknote className="h-4 w-4 mr-2" />
+                      Reembolso Parcial ({maxRefundDays} día{maxRefundDays !== 1 ? 's' : ''} disponible{maxRefundDays !== 1 ? 's' : ''})
+                    </Button>
                   )}
                 </CardContent>
               </Card>
