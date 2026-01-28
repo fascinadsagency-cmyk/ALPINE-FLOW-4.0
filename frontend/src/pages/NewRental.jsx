@@ -602,7 +602,7 @@ export default function NewRental() {
   };
 
   const calculateSubtotal = () => {
-    return items.reduce((sum, item) => sum + getItemPrice(item), 0);
+    return items.reduce((sum, item) => sum + getItemPriceWithPack(item), 0);
   };
 
   const getProviderDiscount = () => {
