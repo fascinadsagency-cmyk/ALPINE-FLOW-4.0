@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { dashboardApi } from "@/lib/api";
 import { 
   ShoppingCart, 
@@ -13,7 +14,9 @@ import {
   Clock,
   TrendingUp,
   Users,
-  Loader2
+  Loader2,
+  Wrench,
+  ExternalLink
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -47,8 +50,26 @@ export default function Dashboard() {
 
   const stats = data?.stats || {};
   const inventory = stats?.inventory || {};
+  const occupancy = data?.occupancy_by_category || {};
   const alerts = data?.alerts || [];
   const recentActivity = data?.recent_activity || [];
+
+  // Split alerts into maintenance and overdue
+  const maintenanceAlerts = alerts.filter(a => a.type === 'maintenance');
+  const overdueAlerts = alerts.filter(a => a.type === 'overdue');
+
+  // Category colors
+  const categoryColors = {
+    SUPERIOR: { bg: 'bg-purple-50', bar: 'bg-purple-500', text: 'text-purple-700', border: 'border-purple-200' },
+    ALTA: { bg: 'bg-blue-50', bar: 'bg-blue-500', text: 'text-blue-700', border: 'border-blue-200' },
+    MEDIA: { bg: 'bg-emerald-50', bar: 'bg-emerald-500', text: 'text-emerald-700', border: 'border-emerald-200' }
+  };
+
+  const categoryLabels = {
+    SUPERIOR: 'Gama Superior',
+    ALTA: 'Gama Alta',
+    MEDIA: 'Gama Media'
+  };
 
   return (
     <div className="p-6 lg:p-8 space-y-6" data-testid="dashboard">
@@ -65,7 +86,7 @@ export default function Dashboard() {
         <div className="flex gap-3">
           <Button 
             size="lg" 
-            onClick={() => navigate('/nuevo-alquiler')}
+            onClick={() => navigate('/alquiler/nuevo')}
             className="h-12 px-6 font-semibold shadow-sm"
             data-testid="quick-new-rental-btn"
           >
@@ -186,39 +207,125 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
+      {/* Occupancy by Category (NEW) */}
+      <Card className="border-slate-200">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-slate-500" />
+            Ocupación por Gamas
+          </CardTitle>
+          <p className="text-sm text-slate-500 mt-1">Equipos alquilados vs disponibles</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {Object.entries(occupancy).map(([category, data]) => {
+            const colors = categoryColors[category] || categoryColors.MEDIA;
+            return (
+              <div key={category} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge className={`${colors.bg} ${colors.text} border ${colors.border}`}>
+                      {categoryLabels[category]}
+                    </Badge>
+                    <span className="text-sm text-slate-600">
+                      {data.rented} / {data.total} equipos
+                    </span>
+                  </div>
+                  <span className="text-sm font-semibold text-slate-900">
+                    {data.percentage}%
+                  </span>
+                </div>
+                <Progress 
+                  value={data.percentage} 
+                  className="h-3"
+                  indicatorClassName={colors.bar}
+                />
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
+
       {/* Alerts and Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Alerts */}
+        {/* Maintenance Alerts (NEW - Enhanced) */}
         <Card className="border-slate-200">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
-              Alertas
+              <Wrench className="h-5 w-5 text-amber-500" />
+              Salud del Inventario
             </CardTitle>
+            <p className="text-sm text-slate-500">Equipos que requieren mantenimiento</p>
           </CardHeader>
           <CardContent>
-            {alerts.length === 0 ? (
-              <p className="text-slate-500 text-center py-8">No hay alertas pendientes</p>
+            {maintenanceAlerts.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-emerald-100 mb-3">
+                  <Package className="h-6 w-6 text-emerald-600" />
+                </div>
+                <p className="text-slate-500">Todo el inventario está en buen estado</p>
+              </div>
             ) : (
-              <div className="space-y-3 max-h-64 overflow-y-auto">
-                {alerts.map((alert, index) => (
-                  <div 
-                    key={index}
-                    className={`p-3 rounded-lg flex items-start gap-3 ${
-                      alert.severity === 'critical' ? 'bg-red-50' : 'bg-amber-50'
-                    }`}
-                  >
-                    <AlertTriangle className={`h-5 w-5 mt-0.5 flex-shrink-0 ${
-                      alert.severity === 'critical' ? 'text-red-500' : 'text-amber-500'
-                    }`} />
-                    <div>
-                      <Badge variant={alert.severity === 'critical' ? 'destructive' : 'secondary'} className="mb-1">
-                        {alert.type === 'overdue' ? 'Vencido' : 'Mantenimiento'}
-                      </Badge>
-                      <p className="text-sm text-slate-700">{alert.message}</p>
+              <div className="space-y-3 max-h-80 overflow-y-auto">
+                {maintenanceAlerts.map((alert, index) => {
+                  const colors = categoryColors[alert.category] || categoryColors.MEDIA;
+                  return (
+                    <div 
+                      key={index}
+                      className={`p-4 rounded-lg border ${colors.border} ${colors.bg}`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge className={`${colors.text} bg-white border ${colors.border}`}>
+                              {categoryLabels[alert.category]}
+                            </Badge>
+                            <Badge variant="outline">
+                              {alert.item_type}
+                            </Badge>
+                          </div>
+                          <p className="text-sm font-medium text-slate-900 mb-1">
+                            {alert.count} {alert.count === 1 ? 'equipo requiere' : 'equipos requieren'} {alert.service_type}
+                          </p>
+                          <p className="text-xs text-slate-600">
+                            Han superado el intervalo de mantenimiento
+                          </p>
+                        </div>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => navigate('/inventario', { state: { filter: alert.category } })}
+                          className="flex-shrink-0"
+                        >
+                          Ver Equipos
+                          <ExternalLink className="ml-1 h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
+              </div>
+            )}
+            
+            {/* Overdue Alerts */}
+            {overdueAlerts.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-slate-200">
+                <p className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-red-500" />
+                  Alquileres Vencidos
+                </p>
+                <div className="space-y-2">
+                  {overdueAlerts.map((alert, index) => (
+                    <div 
+                      key={index}
+                      className="p-3 rounded-lg bg-red-50 border border-red-200"
+                    >
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0 text-red-500" />
+                        <p className="text-sm text-red-800">{alert.message}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </CardContent>
@@ -236,9 +343,9 @@ export default function Dashboard() {
             {recentActivity.length === 0 ? (
               <p className="text-slate-500 text-center py-8">No hay actividad reciente</p>
             ) : (
-              <div className="space-y-3 max-h-64 overflow-y-auto">
+              <div className="space-y-3 max-h-80 overflow-y-auto">
                 {recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                  <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
                     <div className="flex items-center gap-3">
                       <div className={`h-2 w-2 rounded-full ${
                         activity.status === 'active' ? 'bg-emerald-500' : 
@@ -250,14 +357,13 @@ export default function Dashboard() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-slate-900">€{activity.total_amount?.toFixed(2)}</p>
-                      <Badge variant={
-                        activity.status === 'active' ? 'default' : 
-                        activity.status === 'returned' ? 'secondary' : 'outline'
-                      } className="text-xs">
+                      <Badge variant={activity.status === 'active' ? 'default' : 'secondary'}>
                         {activity.status === 'active' ? 'Activo' : 
                          activity.status === 'returned' ? 'Devuelto' : 'Parcial'}
                       </Badge>
+                      <p className="text-xs text-slate-500 mt-1">
+                        €{(activity.total_amount || 0).toFixed(2)}
+                      </p>
                     </div>
                   </div>
                 ))}
