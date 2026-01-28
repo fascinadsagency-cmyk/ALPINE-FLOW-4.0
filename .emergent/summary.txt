@@ -1,0 +1,186 @@
+<analysis>**original_problem_statement:**
+Crear un sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowboard. El sistema debe priorizar la velocidad y la precisión en las operaciones diarias.
+
+**PRODUCT REQUIREMENTS (PHASE 1 - MVP):**
+1.  **Gestión de clientes:** Registro (manual, OCR en fase 2), búsqueda, histórico de alquileres.
+2.  **Proceso de alquiler:** Flujo rápido en pantalla única, escaneo de DNI y artículos, cálculo de precios, gestión de pagos.
+3.  **Proceso de devolución:** Flujo ultra-rápido, escaneo de artículos para abrir ficha, estado de devolución en tiempo real.
+4.  **Gestión de inventario:** Código de barras único, tipo, marca, estado, contador de uso (fase 2), amortización (fase 2).
+5.  **Tarifas y precios:** Sistema de tarifas flexible por días y paquetes.
+6.  **Reportes:** Cierre de día con ingresos y artículos pendientes.
+
+**User's preferred language**: Spanish
+
+**what currently exists?**
+Se ha desarrollado la base de una aplicación full-stack (FastAPI + React + MongoDB) para la gestión de alquiler de esquí. La aplicación incluye autenticación de usuarios mediante JWT y una estructura de navegación con las siguientes páginas: Dashboard, Nuevo Alquiler, Devoluciones, Clientes, Inventario, Tarifas, Mantenimiento, Reportes, Caja e Integraciones.
+
+Funcionalidades implementadas:
+- **Autenticación:** Sistema de login/registro con JWT.
+- **Inventario:** Gestión de artículos con campos para tipo, marca, modelo, talla y una nueva  (Gama Alta/Media/Superior). Incluye funcionalidades para importar/exportar vía CSV y generar códigos de barras. Se ha añadido la búsqueda manual de artículos.
+- **Nuevo Alquiler:** Página con un sistema de fechas inteligentes que calcula automáticamente las fechas de inicio/fin y permite la búsqueda manual de artículos.
+- **Tarifas:** Sistema dual para configurar precios individuales por artículo y crear Packs/Combos con precios especiales.
+- **Clientes:** Creación de clientes con un campo para  (proveedor/fuente).
+- **Backend:** Endpoints API para soportar las funcionalidades mencionadas, incluyendo CRUD para artículos, clientes, tarifas, packs, y las nuevas entidades  (proveedores) y  (caja).
+- **UI:** Se han creado los componentes básicos de la interfaz para las nuevas páginas de Caja e Integraciones, y se ha actualizado el layout principal para incluirlas en la navegación.
+
+**Last working item**:
+-   **Last item agent was working**: Implementación de un nuevo conjunto de funcionalidades solicitadas por el usuario, catalogadas como urgentes. El agente comenzó por la planificación y la modificación del backend para soportar la gestión de Proveedores (Sources) con descuentos automáticos, que es una parte del requisito Campo colaborador/proveedor con descuento automático.
+-   **Status**: IN PROGRESS
+-   **Agent Testing Done**: N
+-   **Which testing method agent to use?**: both
+-   **User Testing Done**: N
+
+**All Pending/In progress Issue list**:
+-   **Issue 1**: (P1) El hook  se llamó incorrectamente dentro de un callback en , causando un error de React. El agente intentó corregirlo renombrando la función a , pero el error fue reportado de nuevo por el usuario. El agente verificó que el código había sido modificado y asumió que estaba resuelto sin una nueva validación, pasando a implementar otras funcionalidades. Es posible que el problema persista o que la solución no haya sido completa.
+    -   **Attempted fixes**: Se renombró el hook a una función normal para evitar la violación de las reglas de los hooks.
+    -   **Next debug checklist**:
+        -   Revisar el archivo .
+        -   Verificar la consola del navegador en la página de Inventario para cualquier error de React, especialmente en las líneas relacionadas con la generación de códigos de barras.
+        -   Ejecutar yarn run v1.22.22
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command. en el directorio  para detectar problemas de ESLint.
+        -   Asegurarse de que ninguna función que comience con use (indicando un hook) se llame dentro de callbacks, condicionales o bucles.
+    -   **Why fix this issue and what will be achieved with the fix?**: Un error de React Hooks puede causar un comportamiento impredecible en el componente, bloqueando la funcionalidad de la página de inventario, que es crítica para la aplicación.
+    -   **Status**: TESTING PENDING
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: frontend
+    -   **Blocked on other issue**: None
+
+**In progress Task List**:
+-   **Task 1**: (P0) Finalizar la implementación de las funcionalidades URGENTES.
+    -   **Where to resume**: El agente acaba de añadir las rutas de backend para  (proveedores) y  (caja). El siguiente paso es implementar completamente la lógica para:
+        1.  **Proveedores (Sources) con Descuento:** Completar el backend para que los proveedores tengan un campo de descuento. Actualizar el frontend ( y ) para permitir la selección de un proveedor y aplicar el descuento automáticamente en el alquiler.
+        2.  **Editar/Eliminar Artículos:** Añadir botones de editar y eliminar en cada fila de la tabla de  y conectar sus respectivas acciones a los endpoints del backend.
+        3.  **Modificar Días de Alquiler:** Añadir la funcionalidad en la ficha de un alquiler activo para poder modificar el número de días, recalculando el precio.
+        4.  **Entrada Manual en Devoluciones:** Implementar la entrada manual de códigos en la página .
+    -   **What will be achieved with this?**: Se completarán las funcionalidades más críticas solicitadas por el usuario, mejorando significativamente la usabilidad del sistema.
+    -   **Status**: IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?**: both
+    -   **Blocked on something**: None
+
+**Upcoming and Future Tasks**
+-   **Upcoming Tasks (High Priority):**
+    -   (P1) **Gestión de Proveedores:** Crear una página dedicada para la gestión completa de proveedores, incluyendo estadísticas de rendimiento (clientes, ingresos, comisiones).
+    -   (P1) **Tarifas por Día:** Modificar el sistema de tarifas para permitir precios individuales para cada uno de los primeros 10 días, en lugar de rangos.
+    -   (P1) **Mejoras en Packs/Combos:** Permitir la edición de packs, asignarles categorías (Gama Superior/Alta/Media) con colores, y definir precios por día.
+    -   (P1) **Panel de Devoluciones Pendientes:** Mejorar la página de devoluciones para mostrar un panel persistente y claro con las devoluciones pendientes para hoy y otros días.
+
+-   **Future Tasks (Medium/Low Priority):**
+    -   (P2) **Integración VeriFactu:** Preparar la estructura en la UI para la futura integración con el sistema de facturación VeriFactu.
+    -   (P2) **Gestión de Caja:** Implementar completamente la funcionalidad de la página Caja, incluyendo entradas/salidas manuales y cierre de caja diario.
+    -   (P2) **Integración WhatsApp:** Desarrollar la integración para enviar notificaciones automáticas.
+    -   (P2) **Integración TPV:** Desarrollar la integración con terminales de punto de venta bancarios.
+    -   (P2) **Importación de Datos Históricos:** Crear la funcionalidad para importar datos de facturación de sistemas anteriores.
+    -   (P2) **Integración con escáner OCR:** Integrar un escáner OCR para la captura automática de datos de clientes desde DNI/Pasaporte (requisito original).
+
+**Completed work in this session**
+-   **Initial Setup:** Creación de la estructura del proyecto full-stack (React/FastAPI/MongoDB) con páginas base y autenticación JWT.
+-   **Inventory Management (, ):**
+    -   Implementación de carga/descarga de inventario vía CSV.
+    -   Añadido el campo  para los artículos.
+    -   Funcionalidad para generar códigos de barras.
+-   **Rental Process ():**
+    -   Implementación del sistema de fechas inteligentes.
+    -   Añadida la búsqueda manual de artículos como alternativa al escáner.
+-   **Tariff System (, ):**
+    -   Creada la doble pestaña para gestionar Precios Individuales y Packs/Combos.
+-   **New Pages:**
+    -   Creación de los archivos base para las páginas de  e .
+-   **Navigation:**
+    -   Actualización de  y  para incluir las nuevas secciones en el menú y el enrutador.
+-   **Customer Management:**
+    -   Añadido el campo  (proveedor) al modelo de cliente.
+
+**Earlier issues found/mentioned but not fixed**
+-   **Issue 1**: Un error inicial The path /app/test_reports/iteration_1.json does not exist ocurrió cuando el agente intentó ver el primer informe de pruebas. El agente asumió que no se habían generado informes y continuó, lo que podría indicar un problema intermitente con el agente de pruebas o la generación de informes.
+    -   **Debug checklist**: Si el error de report not found vuelve a ocurrir, verificar los logs del  para entender por qué no se creó el archivo.
+    -   **Why to solve this issue and what will be achieved with this?**: Asegurar que los informes de prueba se generen y lean de manera fiable es crucial para un ciclo de desarrollo robusto.
+    -   **Should Test frontend/backend/both after fix**: N/A (es un problema de tooling)
+    -   **Is recurring issue?**: N (Ocurrió una vez)
+
+**Known issue recurrence from previous fork**
+-   None.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+-   **Frontend:** React con Hooks, React Router, Context API para estado global (auth), TailwindCSS para estilos, y componentes pre-construidos de Shadcn/UI.
+-   **Backend:** FastAPI con Pydantic para la validación de modelos, JWT para la autenticación y motor-asyncio para la comunicación asíncrona con MongoDB.
+-   **Database:** MongoDB como base de datos NoSQL.
+-   **Architecture:** Arquitectura de aplicación de página única (SPA) con un backend de API RESTful.
+
+**key DB schema**
+-   **users:** 
+-   **customers:** 
+-   **items:** 
+-   **rentals:** 
+-   **tariffs:** 
+-   **packs:** 
+-   **sources:** 
+-   **cash_entries:** 
+
+**changes in tech stack**
+-   None.
+
+**All files of reference**
+-   : Creado y modificado extensivamente para añadir todos los modelos de datos y endpoints de la API.
+-   : Creado y modificado para definir las rutas de la aplicación.
+-   : Creado y modificado para añadir los enlaces de navegación a las nuevas páginas.
+-   : Se han creado y modificado múltiples páginas para implementar las funcionalidades de la aplicación (Inventory, NewRental, Tariffs, etc.).
+-   , : Creados como placeholders para futuras funcionalidades.
+-   : Creado para documentar los requisitos del proyecto.
+
+**Areas that need refactoring**:
+-   El archivo  está creciendo mucho y contiene toda la lógica del backend (modelos, rutas, lógica de negocio). Podría ser refactorizado en el futuro para separar los modelos, las rutas y los servicios en diferentes módulos/archivos para una mejor mantenibilidad.
+
+**key api endpoints**
+-    (POST): Login de usuario.
+-   : Obtener usuario actual.
+-    (GET, POST): Gestión de clientes.
+-    (GET, POST): Gestión de inventario.
+-    (POST): Importar inventario.
+-    (POST): Generar códigos de barras.
+-    (GET, POST): Gestión de tarifas.
+-    (GET, POST): Gestión de packs.
+-    (GET, POST): Gestión de proveedores.
+-    (GET, POST): Gestión de caja.
+-    (GET, POST): Gestión de alquileres.
+
+**Critical Info for New Agent**
+-   El usuario proporciona requisitos muy detallados y estructurados en formato Markdown. Es crucial leerlos detenidamente y seguir las prioridades indicadas (URGENTE, ALTA, MEDIA).
+-   El proyecto avanza a un ritmo rápido. Es importante completar una serie de funcionalidades y luego usar el  para asegurar la estabilidad antes de pasar a la siguiente gran solicitud.
+-   El archivo  está convirtiéndose en un monolito. Ten cuidado al añadir nuevas rutas y modelos para no introducir conflictos.
+-   Hay un problema potencial sin resolver con un Hook de React en . Debería ser la primera cosa a verificar y probar antes de continuar con nuevas implementaciones.
+
+**documents and test reports created in this job**
+-   
+-   
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **User**: Proporciona una lista detallada de nuevas mejoras (Búsqueda manual de artículos, campo Categoría en inventario, Pestaña Integraciones, Pestaña Caja, Campo Proveedor en clientes). Pide implementarlas con un orden de prioridad.
+2.  **Agent**: Confirma que implementará las mejoras en orden, empezando por la búsqueda manual y el campo categoría.
+3.  **Agent**: Realiza múltiples ediciones en paralelo en  y .
+4.  **Agent**: Modifica el backend () para añadir las nuevas rutas y campos.
+5.  **Agent**: Crea las nuevas páginas  e .
+6.  **Agent**: Actualiza  y  con las nuevas rutas.
+7.  **Agent**: Realiza más ediciones en  para integrar el campo .
+8.  **Agent**: Reinicia el backend y toma un screenshot, confirmando que la UI carga.
+9.  **User**: Proporciona otra lista masiva de mejoras y ajustes (Editar/eliminar artículos, entrada manual en devoluciones, proveedor con descuento, gestión de proveedores con estadísticas, precios por 10 días, mejoras en packs, integración VeriFactu, etc.), de nuevo con prioridades.
+10. **Agent**: Confirma que implementará las mejoras urgentes y comienza actualizando el backend para la gestión de proveedores.
+
+**Project Health Check:**
+-   **Broken:** La funcionalidad de generación de códigos de barras en la página de inventario podría estar afectada por el problema recurrente del hook de React.
+-   **Mocked:** Las páginas de  y  son actualmente placeholders sin funcionalidad completa.
+
+**3rd Party Integrations**
+-   Ninguna integración está actualmente implementada.
+-   **Planeadas:** WhatsApp Business, TPV Bancario, VeriFactu. No se ha solicitado el uso de Emergent LLM Key.
+
+**Testing status**
+-   **Testing agent used after significant changes**: YES
+-   **Troubleshoot agent used after agent stuck in loop**: NO
+-   **Test files created**: None
+-   **Known regressions**: Potencial regresión en la página de inventario debido a un error de React Hook que podría no estar completamente solucionado.
+
+**Credentials to test flow:**
+-   No se han establecido credenciales de prueba. Se puede registrar un nuevo usuario en la página de login para probar el flujo.</analysis>
