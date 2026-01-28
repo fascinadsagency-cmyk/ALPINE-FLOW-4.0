@@ -119,6 +119,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ All tests passed: Edit Item (PUT /api/items/{item_id}) working correctly, Delete Rented Item correctly prevented (400 error), Delete Available Item successfully retired item status"
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE TEST PASSED: Create Test Item, Edit Item (brand/size updates), Verify Updates, Delete Available Item, Verify Deletion/Retirement - All working correctly"
 
   - task: "Pending Returns Endpoint"
     implemented: true
@@ -134,6 +137,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ Test passed: GET /api/rentals/pending/returns correctly returns 'today' and 'other_days' arrays with proper overdue calculation"
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE TEST PASSED: Pending Returns Endpoint structure correct (today/other_days arrays), Active Rentals appear in pending list, Overdue calculation working"
 
   - task: "Update Rental Days"
     implemented: true
@@ -149,6 +155,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ All tests passed: PATCH /api/rentals/{rental_id}/days successfully updates days and total_amount, correctly prevents updating returned rentals (400 error)"
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE TEST PASSED: Modify Rental Days (3→5 days), Verify Days Updated (days=5, total recalculated, pending_amount updated) - All working correctly"
 
   - task: "Provider Discount Management"
     implemented: true
@@ -164,6 +173,57 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ All tests passed: POST /api/sources creates provider with discount_percent, GET /api/sources lists all providers, PUT /api/sources/{source_id} successfully updates provider discount"
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE TEST PASSED: Create Hotel Test (15%→20% discount), Create Booking Test (10% discount), List Providers, Update Discount, Get Stats, Delete Prevention - All working correctly"
+
+  - task: "Customer Creation with Providers"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE TEST PASSED: Create Juan Test (Hotel Test source), Create Maria Test (Booking Test source), Create Pedro Test (no source), Verify All Created - All working correctly"
+
+  - task: "Rentals with Provider Discounts"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE TEST PASSED: Create Rental with Provider Discount (20% applied), Verify Discount Applied (€100→€80 calculation) - Provider discount logic working correctly"
+
+  - task: "Packs/Combos with Categories"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE TEST PASSED: Create Pack Superior (category=SUPERIOR, day_1=45, day_11_plus=35), Update Pack (category→ALTA, day_1→40), List/Verify Changes, Delete Pack, Verify Deletion - All working correctly"
+
+  - task: "Complete Rental Flow Integration"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE TEST PASSED: Complete Flow - Customer with Provider→Create Rental with Discount→Modify Days→Partial Return→Verify Status. Full integration working correctly"
 
 frontend:
   - task: "Frontend Integration"
