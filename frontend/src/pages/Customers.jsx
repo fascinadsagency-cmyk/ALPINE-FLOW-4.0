@@ -389,14 +389,14 @@ export default function Customers() {
             <div>
               <label className="text-sm font-medium">Colaborador/Proveedor</label>
               <Select 
-                value={newCustomer.source} 
-                onValueChange={(v) => setNewCustomer({ ...newCustomer, source: v })}
+                value={newCustomer.source || "none"} 
+                onValueChange={(v) => setNewCustomer({ ...newCustomer, source: v === "none" ? "" : v })}
               >
                 <SelectTrigger className="h-11 mt-1">
                   <SelectValue placeholder="Seleccionar proveedor (opcional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Ninguno (precio normal)</SelectItem>
+                  <SelectItem value="none">Ninguno (precio normal)</SelectItem>
                   {providers.map(provider => (
                     <SelectItem key={provider.id} value={provider.name}>
                       {provider.name}
