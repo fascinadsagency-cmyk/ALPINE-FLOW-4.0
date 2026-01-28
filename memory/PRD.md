@@ -48,6 +48,8 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
   - Detecta cuando los artículos forman un pack configurado
   - Aplica precio del pack automáticamente
   - Muestra badge "Pack Detectado" y "En Pack"
+- **✅ VINCULACIÓN CON CAJA**: Genera asiento automático al cobrar
+  - Registra: Hora, Cliente, Concepto (Alquiler #ID), Método de Pago, Monto
   - Recalcula al añadir/quitar artículos
   - Actualiza precio al cambiar días
 
