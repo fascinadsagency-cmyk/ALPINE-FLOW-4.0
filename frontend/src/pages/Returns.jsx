@@ -411,6 +411,15 @@ export default function Returns() {
                               <Button 
                                 variant="outline" 
                                 size="sm"
+                                onClick={() => contactCustomer(rental.customer_phone)}
+                                className="gap-1"
+                              >
+                                <Phone className="h-3 w-3" />
+                                Contactar
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
                                 onClick={() => loadRentalById(rental.id)}
                               >
                                 Ver
