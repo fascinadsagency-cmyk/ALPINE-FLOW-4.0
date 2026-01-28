@@ -31,6 +31,11 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 - **Campo de Observaciones/Notas**
 - **Alertas de seguridad** (clientes con alquileres vencidos)
 - Asociación con proveedores/colaboradores
+- **✅ HISTORIAL DE TRANSACCIONES**:
+  - Resumen financiero: Total Pagado, Devoluciones, Ingreso Neto
+  - Lista cronológica de pagos y reembolsos
+  - Referencia al alquiler correspondiente
+  - Notas de cada transacción
 
 ### 4. Proceso de Alquiler (Optimizado)
 - **Sistema de fechas inteligente**:
