@@ -1692,6 +1692,186 @@ async def get_dashboard(current_user: dict = Depends(get_current_user)):
         "alerts": alerts
     }
 
+@api_router.get("/dashboard/analytics")
+async def get_dashboard_analytics(period: str = "week", current_user: dict = Depends(get_current_user)):
+    """
+    Get advanced analytics for dashboard:
+    - Weekly availability calendar
+    - Top rented items
+    - Top revenue items
+    - Stale stock
+    """
+    today = datetime.now(timezone.utc)
+    today_str = today.strftime("%Y-%m-%d")
+    
+    # Calculate date range based on period
+    if period == "today":
+        start_date = today_str
+        end_date = today_str
+    elif period == "week":
+        start_date = today_str
+        end_date = (today + timedelta(days=6)).strftime("%Y-%m-%d")
+    else:  # month
+        start_date = today.replace(day=1).strftime("%Y-%m-%d")
+        end_date = (today.replace(day=28) + timedelta(days=4)).replace(day=1).strftime("%Y-%m-%d")
+    
+    # ============ WEEKLY AVAILABILITY CALENDAR ============
+    weekly_calendar = []
+    
+    # Get all items by category
+    all_items = await db.items.find(
+        {"status": {"$in": ["available", "rented"]}},
+        {"_id": 0, "id": 1, "category": 1, "status": 1}
+    ).to_list(1000)
+    
+    # Count total by category
+    totals_by_cat = {"SUPERIOR": 0, "ALTA": 0, "MEDIA": 0}
+    for item in all_items:
+        cat = item.get("category", "MEDIA")
+        if cat in totals_by_cat:
+            totals_by_cat[cat] += 1
+    
+    # Get active rentals
+    active_rentals = await db.rentals.find(
+        {"status": {"$in": ["active", "partial"]}},
+        {"_id": 0, "items": 1, "start_date": 1, "end_date": 1}
+    ).to_list(500)
+    
+    # Build 7-day calendar
+    for day_offset in range(7):
+        target_date = today + timedelta(days=day_offset)
+        target_str = target_date.strftime("%Y-%m-%d")
+        day_name = target_date.strftime("%a")
+        day_num = target_date.day
+        
+        # Count rented items by category for this day
+        rented_by_cat = {"SUPERIOR": 0, "ALTA": 0, "MEDIA": 0}
+        deliveries = 0
+        returns = 0
+        
+        for rental in active_rentals:
+            rental_start = rental.get("start_date", "")[:10]
+            rental_end = rental.get("end_date", "")[:10]
+            
+            # Check if rental is active on this day
+            if rental_start <= target_str <= rental_end:
+                for item in rental.get("items", []):
+                    cat = item.get("category", "MEDIA")
+                    if cat in rented_by_cat:
+                        rented_by_cat[cat] += 1
+            
+            # Count deliveries (start date)
+            if rental_start == target_str:
+                deliveries += 1
+            
+            # Count returns (end date)
+            if rental_end == target_str:
+                returns += 1
+        
+        # Calculate availability percentages
+        day_categories = {}
+        for cat in ["SUPERIOR", "ALTA", "MEDIA"]:
+            total = totals_by_cat[cat]
+            rented = rented_by_cat[cat]
+            available = total - rented
+            percentage = round((available / total * 100), 1) if total > 0 else 100
+            
+            # Determine status color
+            if percentage >= 50:
+                status = "high"  # Green
+            elif percentage >= 20:
+                status = "medium"  # Yellow
+            else:
+                status = "low"  # Red
+            
+            day_categories[cat] = {
+                "total": total,
+                "rented": rented,
+                "available": available,
+                "percentage": percentage,
+                "status": status
+            }
+        
+        weekly_calendar.append({
+            "date": target_str,
+            "day_name": day_name,
+            "day_num": day_num,
+            "is_today": day_offset == 0,
+            "categories": day_categories,
+            "deliveries": deliveries,
+            "returns": returns
+        })
+    
+    # ============ TOP RENTED ITEMS ============
+    # Get rental counts from completed rentals
+    rental_stats_period = today - timedelta(days=30 if period == "month" else 7 if period == "week" else 1)
+    
+    # Aggregate rental item counts
+    rental_item_counts = {}
+    rentals_for_stats = await db.rentals.find(
+        {"created_at": {"$gte": rental_stats_period.isoformat()}},
+        {"_id": 0, "items": 1, "total_amount": 1, "days": 1}
+    ).to_list(500)
+    
+    for rental in rentals_for_stats:
+        items = rental.get("items", [])
+        total = rental.get("total_amount", 0)
+        per_item_revenue = total / len(items) if items else 0
+        
+        for item in items:
+            barcode = item.get("barcode", "")
+            if barcode:
+                if barcode not in rental_item_counts:
+                    rental_item_counts[barcode] = {
+                        "barcode": barcode,
+                        "brand": item.get("brand", ""),
+                        "model": item.get("model", ""),
+                        "item_type": item.get("item_type", ""),
+                        "size": item.get("size", ""),
+                        "category": item.get("category", "MEDIA"),
+                        "rental_count": 0,
+                        "total_revenue": 0
+                    }
+                rental_item_counts[barcode]["rental_count"] += 1
+                rental_item_counts[barcode]["total_revenue"] += per_item_revenue
+    
+    # Sort for top rented
+    all_items_stats = list(rental_item_counts.values())
+    top_rented = sorted(all_items_stats, key=lambda x: x["rental_count"], reverse=True)[:5]
+    top_revenue = sorted(all_items_stats, key=lambda x: x["total_revenue"], reverse=True)[:5]
+    
+    # ============ STALE STOCK ============
+    # Items not rented recently
+    all_item_barcodes = set(item.get("barcode") for item in all_items if item.get("status") == "available")
+    recently_rented_barcodes = set(rental_item_counts.keys())
+    stale_barcodes = all_item_barcodes - recently_rented_barcodes
+    
+    stale_items = []
+    if stale_barcodes:
+        stale_item_data = await db.items.find(
+            {"barcode": {"$in": list(stale_barcodes)}, "status": "available"},
+            {"_id": 0}
+        ).to_list(10)
+        
+        for item in stale_item_data[:3]:
+            stale_items.append({
+                "barcode": item.get("barcode"),
+                "brand": item.get("brand", ""),
+                "model": item.get("model", ""),
+                "item_type": item.get("item_type", ""),
+                "size": item.get("size", ""),
+                "category": item.get("category", "MEDIA"),
+                "days_idle": 30 if period == "month" else 7  # Approximation
+            })
+    
+    return {
+        "weekly_calendar": weekly_calendar,
+        "top_rented": top_rented,
+        "top_revenue": top_revenue,
+        "stale_stock": stale_items,
+        "period": period
+    }
+
 # ==================== HEALTH CHECK ====================
 
 @api_router.get("/health")
