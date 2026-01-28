@@ -325,6 +325,113 @@ export default function Customers() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* New Customer Dialog */}
+      <Dialog open={showNewCustomerDialog} onOpenChange={setShowNewCustomerDialog}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Nuevo Cliente</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div>
+              <label className="text-sm font-medium">Nombre Completo *</label>
+              <Input
+                value={newCustomer.name}
+                onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+                placeholder="Ej: Juan García López"
+                className="h-11 mt-1"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">DNI/Pasaporte *</label>
+              <Input
+                value={newCustomer.dni}
+                onChange={(e) => setNewCustomer({ ...newCustomer, dni: e.target.value.toUpperCase() })}
+                placeholder="Ej: 12345678A"
+                className="h-11 mt-1"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Teléfono</label>
+              <Input
+                type="tel"
+                value={newCustomer.phone}
+                onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
+                placeholder="Ej: +34 600 000 000"
+                className="h-11 mt-1"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Dirección</label>
+              <Input
+                value={newCustomer.address}
+                onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
+                placeholder="Ej: Calle Mayor 123"
+                className="h-11 mt-1"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Población</label>
+              <Input
+                value={newCustomer.city}
+                onChange={(e) => setNewCustomer({ ...newCustomer, city: e.target.value })}
+                placeholder="Ej: Madrid"
+                className="h-11 mt-1"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Colaborador/Proveedor</label>
+              <Select 
+                value={newCustomer.source} 
+                onValueChange={(v) => setNewCustomer({ ...newCustomer, source: v })}
+              >
+                <SelectTrigger className="h-11 mt-1">
+                  <SelectValue placeholder="Seleccionar proveedor (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Ninguno (precio normal)</SelectItem>
+                  {providers.map(provider => (
+                    <SelectItem key={provider.id} value={provider.name}>
+                      {provider.name}
+                      {provider.discount_percent > 0 && ` (${provider.discount_percent}% desc.)`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {newCustomer.source && providers.find(p => p.name === newCustomer.source)?.discount_percent > 0 && (
+                <p className="text-xs text-blue-600 mt-1">
+                  ℹ️ Se aplicará automáticamente {providers.find(p => p.name === newCustomer.source)?.discount_percent}% de descuento en alquileres
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => {
+              setShowNewCustomerDialog(false);
+              setNewCustomer({
+                name: "",
+                dni: "",
+                phone: "",
+                address: "",
+                city: "",
+                source: ""
+              });
+            }}>
+              Cancelar
+            </Button>
+            <Button onClick={createCustomer}>
+              Crear Cliente
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
