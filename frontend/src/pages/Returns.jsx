@@ -624,6 +624,149 @@ export default function Returns() {
           </>
         )}
       </div>
+
+      {/* Refund Dialog */}
+      <Dialog open={showRefundDialog} onOpenChange={setShowRefundDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Banknote className="h-5 w-5 text-orange-600" />
+              Reembolso Parcial
+            </DialogTitle>
+            <DialogDescription>
+              Devuelve el importe por días no disfrutados
+            </DialogDescription>
+          </DialogHeader>
+          
+          {rental && (
+            <div className="space-y-4 py-4">
+              {/* Rental Info */}
+              <div className="p-4 rounded-xl bg-slate-50">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-slate-600">Cliente</span>
+                  <span className="font-semibold">{rental.customer_name}</span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-slate-600">Días contratados</span>
+                  <span className="font-semibold">{rental.days} días</span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-slate-600">Importe total</span>
+                  <span className="font-semibold">€{rental.total_amount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-600">Ya pagado</span>
+                  <span className="font-semibold text-emerald-600">€{rental.paid_amount.toFixed(2)}</span>
+                </div>
+              </div>
+
+              {/* Days to refund */}
+              <div>
+                <Label>Días a reembolsar (máx. {maxRefundDays})</Label>
+                <div className="flex items-center gap-3 mt-2">
+                  <Input
+                    type="number"
+                    min="1"
+                    max={maxRefundDays}
+                    value={refundDays}
+                    onChange={(e) => handleRefundDaysChange(e.target.value)}
+                    className="h-12 w-24 text-xl text-center font-bold"
+                  />
+                  <div className="flex gap-1">
+                    {[1, 2, 3].filter(d => d <= maxRefundDays).map(d => (
+                      <Button
+                        key={d}
+                        variant={refundDays === d ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handleRefundDaysChange(d)}
+                      >
+                        {d}d
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Refund Amount */}
+              <div>
+                <Label>Importe a devolver</Label>
+                <div className="relative mt-2">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-semibold text-slate-500">€</span>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={refundAmount.toFixed(2)}
+                    onChange={(e) => setRefundAmount(parseFloat(e.target.value) || 0)}
+                    className="h-12 pl-8 text-xl font-bold text-orange-600"
+                  />
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Calculado: €{(rental.total_amount / rental.days).toFixed(2)}/día × {refundDays} días
+                </p>
+              </div>
+
+              {/* Payment Method */}
+              <div>
+                <Label>Método de devolución</Label>
+                <Select value={refundMethod} onValueChange={setRefundMethod}>
+                  <SelectTrigger className="h-11 mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAYMENT_METHODS.map(m => (
+                      <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Reason */}
+              <div>
+                <Label>Motivo (opcional)</Label>
+                <Textarea
+                  value={refundReason}
+                  onChange={(e) => setRefundReason(e.target.value)}
+                  placeholder="Ej: Devuelve antes por mal tiempo..."
+                  className="mt-1"
+                  rows={2}
+                />
+              </div>
+
+              {/* Summary */}
+              <div className="p-4 rounded-xl bg-orange-50 border border-orange-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-orange-700">Reembolso a realizar</p>
+                    <p className="text-2xl font-bold text-orange-700">€{refundAmount.toFixed(2)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-orange-700">Nuevo período</p>
+                    <p className="text-lg font-semibold text-orange-800">{rental.days - refundDays} días</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRefundDialog(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={processRefund} 
+              disabled={processingRefund || refundAmount <= 0}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              {processingRefund ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Banknote className="h-4 w-4 mr-2" />
+              )}
+              Confirmar Reembolso
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
