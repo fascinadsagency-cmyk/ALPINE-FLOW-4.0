@@ -451,6 +451,7 @@ async def create_item(item: ItemCreate, current_user: dict = Depends(get_current
     doc = {
         "id": item_id,
         "barcode": item.barcode,
+        "internal_code": item.internal_code or "",
         "item_type": item.item_type,
         "brand": item.brand,
         "model": item.model,
