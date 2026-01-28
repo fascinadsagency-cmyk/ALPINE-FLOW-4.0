@@ -357,6 +357,14 @@ async def get_customer_by_dni(dni: str, current_user: dict = Depends(get_current
 async def get_customer_history(customer_id: str, current_user: dict = Depends(get_current_user)):
     rentals = await db.rentals.find({"customer_id": customer_id}, {"_id": 0}).sort("created_at", -1).to_list(50)
     
+    # Check for active/pending rentals (for alerts)
+    active_rentals = [r for r in rentals if r.get("status") in ["active", "partial"]]
+    overdue_rentals = []
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    for rental in active_rentals:
+        if rental.get("end_date", "") < today:
+            overdue_rentals.append(rental)
+    
     # Get preferred sizes from history
     sizes = {}
     for rental in rentals:
