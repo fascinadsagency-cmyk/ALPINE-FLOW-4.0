@@ -53,10 +53,13 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
   - Detecta cuando los artículos forman un pack configurado
   - Aplica precio del pack automáticamente
   - Muestra badge "Pack Detectado" y "En Pack"
+- **✅ SUGERENCIAS INTELIGENTES (Upselling)**:
+  - Detecta packs incompletos en tiempo real
+  - Muestra mensaje: "Añade [artículo] para completar el pack y ahorrar €X"
+  - Botón "Ver Disponibles" abre búsqueda filtrada por tipo y categoría
+  - Al completar el pack, la sugerencia desaparece automáticamente
 - **✅ VINCULACIÓN CON CAJA**: Genera asiento automático al cobrar
   - Registra: Hora, Cliente, Concepto (Alquiler #ID), Método de Pago, Monto
-  - Recalcula al añadir/quitar artículos
-  - Actualiza precio al cambiar días
 
 ### 5. Devoluciones Ultra-Rápidas
 - Escanear cualquier artículo → encuentra alquiler
