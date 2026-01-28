@@ -15,13 +15,20 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 - Login/Registro con JWT
 - Roles: admin, employee
 
-### 2. Dashboard Estratégico
-- KPIs en tiempo real (ingresos, alquileres, ocupación)
-- Alertas de devoluciones vencidas
-- Estado del inventario
-- Actividad reciente
-- **Ocupación por Gamas** (Superior, Alta, Media)
-- **Salud del Inventario** (alertas de mantenimiento)
+### 2. Dashboard Estratégico y Analítico
+- KPIs en tiempo real (ingresos, alquileres, ocupación, devoluciones)
+- **✅ Vista Semanal de Ocupación**:
+  - 7 días en columnas con barras por gama (S/A/M)
+  - Colores: Verde (alta disp.), Amarillo (pocos), Rojo (crítico)
+  - Click en día para ver desglose de entregas/devoluciones
+  - Disponibilidad media calculada automáticamente
+- **✅ Panel de Rendimiento de Inventario**:
+  - "Más Alquilados": Top 5 artículos con más rotación
+  - "Más Rentables": Top 5 artículos por ingresos totales
+  - Filtro temporal: Hoy / Esta Semana / Este Mes
+- **✅ Alerta de Stock Parado**: Artículos sin alquilar en el período
+- **✅ Alertas Urgentes**: Devoluciones vencidas + Mantenimiento con navegación rápida
+- Ocupación por Gamas (Superior, Alta, Media) con barras de progreso
 
 ### 3. Gestión de Clientes (Base de Datos Profesional)
 - Búsqueda rápida por DNI/nombre/teléfono
