@@ -126,6 +126,7 @@ export default function NewRental() {
   const [itemSearchCategory, setItemSearchCategory] = useState("all");
   const [searchResults, setSearchResults] = useState([]);
   const [searchingItems, setSearchingItems] = useState(false);
+  const [searchFilter, setSearchFilter] = useState(null); // For upselling suggestion filter
   
   // Price editing
   const [discountType, setDiscountType] = useState('none');
