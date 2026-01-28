@@ -246,15 +246,18 @@ backend:
 frontend:
   - task: "Automatic Pack Pricing System - Silent Detection"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/pages/NewRental.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "testing"
           comment: "Need to test automatic pack pricing system: silent pack detection (no toasts), discrete 'Tarifa: Pack' indicator with badge, compact pack suggestions (1 line format), automatic pack completion without interruptions, price calculations and visual elements validation"
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE AUTOMATIC PACK PRICING SYSTEM TEST COMPLETED (10/10): Silent Pack Detection ✅ (no 'Pack detectado' or 'Pack completado' toasts, background processing), Discrete Visual Indicators ✅ ('Tarifa: Pack' badge with Gift icon, emerald styling bg-emerald-50/text-emerald-700, pack name below total), Compact Pack Suggestions ✅ (single-line format with Sparkles icon, 'Completa pack: añade [tipo]' text, savings badge, small 'Buscar' button h-8), Automatic Pack Completion ✅ (silent detection when items form pack, automatic price calculation, suggestion banner disappears), Pack Dissolution ✅ (silent removal when item deleted, badge disappears, suggestion reappears), Visual Elements ✅ (Gift icon h-3 w-3, Sparkles icon, proper color schemes, compact layouts), Non-Intrusive Workflow ✅ (no interruptions, smooth transitions, operator can work fluidly), Item Addition/Search ✅ (manual search working, barcode input functional), Customer Management ✅ (selection and creation working), Price Calculations ✅ (pack pricing applied automatically). ALL PACK PRICING FUNCTIONALITY WORKING EXACTLY AS SPECIFIED IN REQUIREMENTS - COMPLETELY SILENT AND NON-INTRUSIVE SYSTEM."
 
   - task: "Dashboard Historical Date Range Filter"
     implemented: true
