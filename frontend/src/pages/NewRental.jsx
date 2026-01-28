@@ -116,8 +116,8 @@ export default function NewRental() {
   // Item search modal
   const [showItemSearch, setShowItemSearch] = useState(false);
   const [itemSearchTerm, setItemSearchTerm] = useState("");
-  const [itemSearchType, setItemSearchType] = useState("");
-  const [itemSearchCategory, setItemSearchCategory] = useState("");
+  const [itemSearchType, setItemSearchType] = useState("all");
+  const [itemSearchCategory, setItemSearchCategory] = useState("all");
   const [searchResults, setSearchResults] = useState([]);
   const [searchingItems, setSearchingItems] = useState(false);
   
