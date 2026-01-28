@@ -415,6 +415,62 @@ export default function Reports() {
             </Card>
           </div>
 
+          {/* Comparison Chart */}
+          {compareMode && previousYearReport && (
+            <Card className="border-slate-200 mb-6">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  Comparativa Interanual
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart
+                    data={[
+                      {
+                        name: 'Ingresos',
+                        [format(dateRange.from, 'yyyy', { locale: es })]: report.total_revenue,
+                        [format(subYears(dateRange.from, 1), 'yyyy', { locale: es })]: previousYearReport.total_revenue
+                      },
+                      {
+                        name: 'Alquileres',
+                        [format(dateRange.from, 'yyyy', { locale: es })]: report.new_rentals,
+                        [format(subYears(dateRange.from, 1), 'yyyy', { locale: es })]: previousYearReport.new_rentals
+                      },
+                      {
+                        name: 'Devoluciones',
+                        [format(dateRange.from, 'yyyy', { locale: es })]: report.returns,
+                        [format(subYears(dateRange.from, 1), 'yyyy', { locale: es })]: previousYearReport.returns
+                      },
+                      {
+                        name: 'Reparaciones (€)',
+                        [format(dateRange.from, 'yyyy', { locale: es })]: report.repairs_revenue,
+                        [format(subYears(dateRange.from, 1), 'yyyy', { locale: es })]: previousYearReport.repairs_revenue
+                      }
+                    ]}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar 
+                      dataKey={format(subYears(dateRange.from, 1), 'yyyy', { locale: es })} 
+                      fill="#94a3b8" 
+                      name={`Año ${format(subYears(dateRange.from, 1), 'yyyy', { locale: es })}`}
+                    />
+                    <Bar 
+                      dataKey={format(dateRange.from, 'yyyy', { locale: es })} 
+                      fill="#3b82f6" 
+                      name={`Año ${format(dateRange.from, 'yyyy', { locale: es })}`}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Revenue by Payment Method */}
           <Card className="border-slate-200 mb-6">
             <CardHeader className="pb-3">
@@ -427,23 +483,55 @@ export default function Reports() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="p-4 rounded-xl bg-emerald-50 text-center">
                   <Banknote className="h-8 w-8 mx-auto mb-2 text-emerald-600" />
-                  <p className="text-2xl font-bold text-emerald-700">€{report.cash_revenue.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-emerald-700">{formatCurrency(report.cash_revenue)}</p>
                   <p className="text-sm text-slate-600">Efectivo</p>
+                  {compareMode && previousYearReport && (
+                    <p className={`text-xs mt-1 font-semibold ${
+                      report.cash_revenue > previousYearReport.cash_revenue ? 'text-emerald-600' : 'text-red-600'
+                    }`}>
+                      {calculateGrowth(report.cash_revenue, previousYearReport.cash_revenue).direction === 'up' ? '+' : '-'}
+                      {calculateGrowth(report.cash_revenue, previousYearReport.cash_revenue).percentage}%
+                    </p>
+                  )}
                 </div>
                 <div className="p-4 rounded-xl bg-blue-50 text-center">
                   <CreditCard className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                  <p className="text-2xl font-bold text-blue-700">€{report.card_revenue.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-blue-700">{formatCurrency(report.card_revenue)}</p>
                   <p className="text-sm text-slate-600">Tarjeta</p>
+                  {compareMode && previousYearReport && (
+                    <p className={`text-xs mt-1 font-semibold ${
+                      report.card_revenue > previousYearReport.card_revenue ? 'text-emerald-600' : 'text-red-600'
+                    }`}>
+                      {calculateGrowth(report.card_revenue, previousYearReport.card_revenue).direction === 'up' ? '+' : '-'}
+                      {calculateGrowth(report.card_revenue, previousYearReport.card_revenue).percentage}%
+                    </p>
+                  )}
                 </div>
                 <div className="p-4 rounded-xl bg-purple-50 text-center">
                   <Globe className="h-8 w-8 mx-auto mb-2 text-purple-600" />
-                  <p className="text-2xl font-bold text-purple-700">€{report.online_revenue.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-purple-700">{formatCurrency(report.online_revenue)}</p>
                   <p className="text-sm text-slate-600">Online</p>
+                  {compareMode && previousYearReport && (
+                    <p className={`text-xs mt-1 font-semibold ${
+                      report.online_revenue > previousYearReport.online_revenue ? 'text-emerald-600' : 'text-red-600'
+                    }`}>
+                      {calculateGrowth(report.online_revenue, previousYearReport.online_revenue).direction === 'up' ? '+' : '-'}
+                      {calculateGrowth(report.online_revenue, previousYearReport.online_revenue).percentage}%
+                    </p>
+                  )}
                 </div>
                 <div className="p-4 rounded-xl bg-slate-100 text-center">
                   <DollarSign className="h-8 w-8 mx-auto mb-2 text-slate-500" />
-                  <p className="text-2xl font-bold text-slate-700">€{report.other_revenue.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-slate-700">{formatCurrency(report.other_revenue)}</p>
                   <p className="text-sm text-slate-600">Otros</p>
+                  {compareMode && previousYearReport && (
+                    <p className={`text-xs mt-1 font-semibold ${
+                      report.other_revenue > previousYearReport.other_revenue ? 'text-emerald-600' : 'text-red-600'
+                    }`}>
+                      {calculateGrowth(report.other_revenue, previousYearReport.other_revenue).direction === 'up' ? '+' : '-'}
+                      {calculateGrowth(report.other_revenue, previousYearReport.other_revenue).percentage}%
+                    </p>
+                  )}
                 </div>
               </div>
             </CardContent>
