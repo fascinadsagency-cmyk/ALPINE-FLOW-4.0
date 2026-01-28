@@ -107,51 +107,63 @@ user_problem_statement: "Test all FASE 1 functionalities that were just implemen
 backend:
   - task: "Edit/Delete Items in Inventory"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "testing"
           comment: "Need to test PUT /api/items/{item_id} and DELETE /api/items/{item_id} endpoints"
+        - working: true
+          agent: "testing"
+          comment: "✅ All tests passed: Edit Item (PUT /api/items/{item_id}) working correctly, Delete Rented Item correctly prevented (400 error), Delete Available Item successfully retired item status"
 
   - task: "Pending Returns Endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "testing"
           comment: "Need to test GET /api/rentals/pending/returns endpoint with grouping by date"
+        - working: true
+          agent: "testing"
+          comment: "✅ Test passed: GET /api/rentals/pending/returns correctly returns 'today' and 'other_days' arrays with proper overdue calculation"
 
   - task: "Update Rental Days"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "testing"
           comment: "Need to test PATCH /api/rentals/{rental_id}/days endpoint"
+        - working: true
+          agent: "testing"
+          comment: "✅ All tests passed: PATCH /api/rentals/{rental_id}/days successfully updates days and total_amount, correctly prevents updating returned rentals (400 error)"
 
   - task: "Provider Discount Management"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "testing"
           comment: "Need to test POST /api/sources, GET /api/sources, PUT /api/sources/{source_id} endpoints"
+        - working: true
+          agent: "testing"
+          comment: "✅ All tests passed: POST /api/sources creates provider with discount_percent, GET /api/sources lists all providers, PUT /api/sources/{source_id} successfully updates provider discount"
 
 frontend:
   - task: "Frontend Integration"
