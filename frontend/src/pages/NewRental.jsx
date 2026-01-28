@@ -385,17 +385,20 @@ export default function NewRental() {
     return Object.values(bestByCategory);
   };
 
-  // State for pack suggestions
-  const [packSuggestions, setPackSuggestions] = useState([]);
-
   // Update suggestions when items change
   useEffect(() => {
-    const suggestions = detectPartialPacks(items);
-    setPackSuggestions(suggestions);
+    if (items.length > 0 && packs.length > 0) {
+      const suggestions = detectPartialPacks(items);
+      setPackSuggestions(suggestions);
+    } else {
+      setPackSuggestions([]);
+    }
   }, [items, packs, numDays]);
 
   // Open item search with pre-filter for missing item
   const openSearchForMissingItem = (itemType, category) => {
+    setItemSearchType(itemType);
+    setItemSearchCategory(category);
     setSearchFilter({ type: itemType, category: category });
     setShowItemSearch(true);
   };
