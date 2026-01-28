@@ -1176,6 +1176,37 @@ export default function NewRental() {
                         >
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
+                              <span className="text-sm text-slate-600">{item.brand} {item.model}</span>
+                              <Badge variant="outline" className="text-xs">
+                                {item.size}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-xs text-slate-500">{item.barcode}</span>
+                              <Badge className={`${
+                                item.category === 'ALTA' ? 'bg-purple-100 text-purple-700' :
+                                item.category === 'MEDIA' ? 'bg-blue-100 text-blue-700' :
+                                'bg-green-100 text-green-700'
+                              } text-xs`}>
+                                {item.category}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <div 
+                              className="cursor-pointer hover:bg-slate-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2"
+                              onClick={() => setEditingItemPrice(item.barcode)}
+                              title="Click para editar precio"
+                            >
+                              <div className="text-right">
+                                <p className="text-lg font-semibold text-slate-900">
+                                  €{itemPrice.toFixed(2)}
+                                </p>
+                                <p className="text-xs text-slate-500">{numDays}d × €{(itemPrice/numDays).toFixed(2)}</p>
+                              </div>
+                              <Edit2 className="h-3 w-3 opacity-50" />
+                            </div>
+                            <div className="flex items-center gap-2">
                               <Badge variant="outline">{item.item_type}</Badge>
                               <Badge className={getCategoryBadge(item.category || 'MEDIA')}>
                                 {item.category || 'MEDIA'}
