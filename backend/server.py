@@ -78,7 +78,7 @@ class CustomerResponse(BaseModel):
 
 class ItemCreate(BaseModel):
     barcode: str
-    internal_code: Optional[str] = ""  # NEW: Internal shop code
+    internal_code: str  # Internal shop code (REQUIRED - main identifier)
     item_type: str  # ski, snowboard, boots, helmet, poles
     brand: str
     model: str
@@ -100,7 +100,7 @@ class ItemResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
     barcode: str
-    internal_code: str = ""  # NEW: Internal shop code
+    internal_code: str  # Internal shop code (main identifier)
     item_type: str
     brand: str
     model: str
@@ -511,15 +511,21 @@ async def delete_customer(customer_id: str, current_user: dict = Depends(get_cur
 
 @api_router.post("/items", response_model=ItemResponse)
 async def create_item(item: ItemCreate, current_user: dict = Depends(get_current_user)):
-    existing = await db.items.find_one({"barcode": item.barcode})
-    if existing:
-        raise HTTPException(status_code=400, detail="Item with this barcode already exists")
+    # Check for duplicate internal_code (primary identifier)
+    existing_internal = await db.items.find_one({"internal_code": item.internal_code})
+    if existing_internal:
+        raise HTTPException(status_code=400, detail=f"Item with internal code '{item.internal_code}' already exists")
+    
+    # Check for duplicate barcode
+    existing_barcode = await db.items.find_one({"barcode": item.barcode})
+    if existing_barcode:
+        raise HTTPException(status_code=400, detail=f"Item with barcode '{item.barcode}' already exists")
     
     item_id = str(uuid.uuid4())
     doc = {
         "id": item_id,
         "barcode": item.barcode,
-        "internal_code": item.internal_code or "",
+        "internal_code": item.internal_code,
         "item_type": item.item_type,
         "brand": item.brand,
         "model": item.model,
@@ -553,9 +559,10 @@ async def get_items(
     if category:
         query["category"] = category
     if search:
+        # Prioritize internal_code search first
         query["$or"] = [
-            {"barcode": {"$regex": search, "$options": "i"}},
             {"internal_code": {"$regex": search, "$options": "i"}},
+            {"barcode": {"$regex": search, "$options": "i"}},
             {"brand": {"$regex": search, "$options": "i"}},
             {"model": {"$regex": search, "$options": "i"}},
             {"size": {"$regex": search, "$options": "i"}}
