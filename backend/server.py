@@ -1099,6 +1099,13 @@ async def create_source(source: SourceCreate, current_user: dict = Depends(get_c
         "id": source_id,
         "name": source.name,
         "is_favorite": source.is_favorite,
+        "discount_percent": source.discount_percent,
+        "commission_percent": source.commission_percent,
+        "contact_person": source.contact_person or "",
+        "email": source.email or "",
+        "phone": source.phone or "",
+        "notes": source.notes or "",
+        "active": source.active,
         "customer_count": 0,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
