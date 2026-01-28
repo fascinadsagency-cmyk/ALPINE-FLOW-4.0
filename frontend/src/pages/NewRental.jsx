@@ -1753,6 +1753,51 @@ export default function NewRental() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Success Dialog with Print Button */}
+      <Dialog open={showSuccessDialog} onOpenChange={closeSuccessDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-emerald-600 text-xl">
+              <CheckCircle className="h-7 w-7" />
+              ¡Alquiler Completado!
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-6 space-y-4">
+            <div className="p-4 rounded-lg bg-emerald-50 border-2 border-emerald-200">
+              <p className="text-sm font-semibold text-emerald-900">
+                <strong>Cliente:</strong> {completedRental?.customer_name}
+              </p>
+              <p className="text-sm font-semibold text-emerald-900 mt-2">
+                <strong>Total pagado:</strong> €{completedRental?.paid_amount?.toFixed(2)}
+              </p>
+              <p className="text-xs text-emerald-700 mt-2">
+                ID: {completedRental?.id?.substring(0, 8)}
+              </p>
+            </div>
+            
+            <Button 
+              onClick={printRentalTicket}
+              className="w-full h-16 text-xl font-bold bg-primary hover:bg-primary/90 shadow-lg"
+              size="lg"
+            >
+              <Printer className="h-6 w-6 mr-3" />
+              🖨️ IMPRIMIR TICKET DE ALQUILER
+            </Button>
+          </div>
+
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={closeSuccessDialog} 
+              className="w-full"
+            >
+              Continuar sin imprimir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
