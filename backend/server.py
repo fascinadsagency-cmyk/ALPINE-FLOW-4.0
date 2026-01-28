@@ -262,6 +262,28 @@ class DailyReportResponse(BaseModel):
     pending_returns: List[dict]
     inventory_usage: float
 
+class CommissionSummary(BaseModel):
+    provider_name: str
+    provider_id: str
+    commission_percent: float
+    customer_count: int
+    revenue_generated: float
+    commission_amount: float
+
+class RangeReportResponse(BaseModel):
+    start_date: str
+    end_date: str
+    total_revenue: float
+    cash_revenue: float
+    card_revenue: float
+    online_revenue: float
+    other_revenue: float
+    repairs_revenue: float
+    new_rentals: int
+    returns: int
+    pending_returns: List[dict]
+    commissions: List[CommissionSummary]
+
 # ==================== AUTH HELPERS ====================
 
 def hash_password(password: str) -> str:
