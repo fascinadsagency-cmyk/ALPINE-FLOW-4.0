@@ -333,15 +333,18 @@ frontend:
 
   - task: "Complete Rental Flow with Provider Discount"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/pages/NewRental.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "testing"
           comment: "Need to test complete rental flow with provider discount application, discount banner display, and total calculations"
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED SUCCESSFULLY: New rental page customer search works, customer search by DNI (12345678T) functions correctly, rental days configuration available, provider discount system integrated (discount banner appears when customer with provider is selected), complete rental flow structure in place"
 
 metadata:
   created_by: "testing_agent"
