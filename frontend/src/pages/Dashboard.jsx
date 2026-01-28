@@ -5,8 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { dashboardApi } from "@/lib/api";
 import axios from "axios";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { 
   ShoppingCart, 
   RotateCcw, 
@@ -24,7 +28,9 @@ import {
   Trophy,
   Zap,
   AlertCircle,
-  ChevronRight
+  ChevronRight,
+  CalendarRange,
+  X
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -36,6 +42,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [analyticsPeriod, setAnalyticsPeriod] = useState("week");
   const [selectedDay, setSelectedDay] = useState(null);
+  const [dateRange, setDateRange] = useState(null); // { from: Date, to: Date }
+  const [customDateActive, setCustomDateActive] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -59,14 +67,42 @@ export default function Dashboard() {
 
   const loadAnalytics = async () => {
     try {
+      const params = {};
+      
+      if (customDateActive && dateRange?.from && dateRange?.to) {
+        // Custom date range mode
+        params.start_date = format(dateRange.from, 'yyyy-MM-dd');
+        params.end_date = format(dateRange.to, 'yyyy-MM-dd');
+      } else {
+        // Predefined period mode
+        params.period = analyticsPeriod;
+      }
+      
       const response = await axios.get(`${API}/dashboard/analytics`, {
-        params: { period: analyticsPeriod },
+        params,
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       setAnalytics(response.data);
     } catch (error) {
       console.error("Error loading analytics:", error);
     }
+  };
+
+  const applyCustomDateRange = () => {
+    if (dateRange?.from && dateRange?.to) {
+      setCustomDateActive(true);
+      loadAnalytics();
+      toast.success(`Filtro aplicado: ${format(dateRange.from, 'dd/MM/yyyy', {locale: es})} - ${format(dateRange.to, 'dd/MM/yyyy', {locale: es})}`);
+    } else {
+      toast.error("Selecciona un rango de fechas válido");
+    }
+  };
+
+  const clearCustomDateRange = () => {
+    setCustomDateActive(false);
+    setDateRange(null);
+    loadAnalytics();
+    toast.info("Filtro de fecha eliminado");
   };
 
   if (loading) {
