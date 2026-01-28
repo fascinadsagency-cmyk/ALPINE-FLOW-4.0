@@ -477,6 +477,100 @@ export default function Customers() {
                 </Card>
               )}
 
+              {/* Financial Summary & Transaction History */}
+              <Card className="border-slate-200">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Banknote className="h-5 w-5 text-slate-600" />
+                    Historial de Transacciones
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Financial Summary */}
+                  {customerHistory?.financial_summary && (
+                    <div className="grid grid-cols-3 gap-4 p-4 rounded-lg bg-slate-50">
+                      <div className="text-center">
+                        <p className="text-xs text-slate-500 mb-1">Total Pagado</p>
+                        <p className="text-xl font-bold text-emerald-600">
+                          €{customerHistory.financial_summary.total_paid?.toFixed(2) || '0.00'}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-slate-500 mb-1">Devoluciones</p>
+                        <p className="text-xl font-bold text-orange-600">
+                          €{customerHistory.financial_summary.total_refunded?.toFixed(2) || '0.00'}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-slate-500 mb-1">Ingreso Neto</p>
+                        <p className="text-xl font-bold text-slate-900">
+                          €{customerHistory.financial_summary.net_revenue?.toFixed(2) || '0.00'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Transactions List */}
+                  {!customerHistory?.transactions || customerHistory.transactions.length === 0 ? (
+                    <p className="text-slate-500 text-center py-4 text-sm">Sin transacciones registradas</p>
+                  ) : (
+                    <div className="max-h-[250px] overflow-y-auto space-y-2">
+                      {customerHistory.transactions.map((tx, idx) => (
+                        <div 
+                          key={idx}
+                          className={`flex items-center justify-between p-3 rounded-lg border ${
+                            tx.type === 'income' 
+                              ? 'bg-emerald-50 border-emerald-200' 
+                              : 'bg-orange-50 border-orange-200'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            {tx.type === 'income' ? (
+                              <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center">
+                                <ArrowUpRight className="h-4 w-4 text-emerald-600" />
+                              </div>
+                            ) : (
+                              <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
+                                <ArrowDownLeft className="h-4 w-4 text-orange-600" />
+                              </div>
+                            )}
+                            <div>
+                              <p className={`font-medium text-sm ${
+                                tx.type === 'income' ? 'text-emerald-900' : 'text-orange-900'
+                              }`}>
+                                {tx.type === 'income' ? 'Pago Alquiler' : 'Devolución'}
+                              </p>
+                              <p className="text-xs text-slate-500">
+                                {new Date(tx.date).toLocaleDateString('es-ES', { 
+                                  day: '2-digit', 
+                                  month: '2-digit',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })} • {tx.payment_method}
+                              </p>
+                              {tx.notes && tx.notes.trim() && (
+                                <p className="text-xs text-slate-500 mt-0.5 italic">{tx.notes}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className={`font-bold ${
+                              tx.type === 'income' ? 'text-emerald-700' : 'text-orange-700'
+                            }`}>
+                              {tx.type === 'income' ? '+' : '-'}€{tx.amount.toFixed(2)}
+                            </p>
+                            <Badge variant="outline" className="text-xs mt-1">
+                              #{tx.reference_id?.slice(0, 8)}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* Rental History */}
               <Card className="border-slate-200">
                 <CardHeader className="pb-3">
