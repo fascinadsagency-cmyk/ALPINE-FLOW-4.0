@@ -573,8 +573,13 @@ async def get_items(
 
 @api_router.get("/items/barcode/{barcode}", response_model=ItemResponse)
 async def get_item_by_barcode(barcode: str, current_user: dict = Depends(get_current_user)):
-    item = await db.items.find_one({"barcode": barcode}, {"_id": 0})
+    # Try internal_code first, then barcode
+    item = await db.items.find_one({"internal_code": barcode}, {"_id": 0})
     if not item:
+        item = await db.items.find_one({"barcode": barcode}, {"_id": 0})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return ItemResponse(**item)
         raise HTTPException(status_code=404, detail="Item not found")
     return ItemResponse(**item)
 
