@@ -477,17 +477,10 @@ export default function Tariffs() {
                   ))}
                 </div>
               )}
-                            )}
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => deletePack(pack.id)}
-                            className="text-slate-400 hover:text-red-500"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
                         <div className="flex flex-wrap gap-1 mt-3">
                           {pack.items?.map(item => (
                             <Badge key={item} variant="outline">
