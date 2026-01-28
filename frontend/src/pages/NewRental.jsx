@@ -759,7 +759,7 @@ export default function NewRental() {
       const total = calculateTotal();
       const paid = parseFloat(paidAmount) || (paymentMethod !== 'pending' ? total : 0);
       
-      await rentalApi.create({
+      const response = await rentalApi.create({
         customer_id: customer.id,
         start_date: startDate,
         end_date: endDate,
@@ -771,14 +771,97 @@ export default function NewRental() {
         notes: notes + (discountReason ? ` | Descuento: ${discountReason}` : '')
       });
       
-      toast.success("Alquiler completado correctamente");
-      resetForm();
+      // Store rental data for printing
+      setCompletedRental({
+        ...response.data,
+        customer_name: customer.name,
+        customer_dni: customer.dni,
+        items_detail: items,
+        total_amount: total,
+        paid_amount: paid
+      });
+      
+      // Show success dialog with print button
+      setShowSuccessDialog(true);
+      
+      // Check if auto-print is enabled
+      const autoPrint = localStorage.getItem('auto_print_enabled') === 'true';
+      if (autoPrint) {
+        setTimeout(() => printRentalTicket(), 500);
+      }
       
     } catch (error) {
       toast.error(error.response?.data?.detail || "Error al crear alquiler");
     } finally {
       setLoading(false);
     }
+  };
+
+  const printRentalTicket = () => {
+    if (!completedRental) return;
+    
+    const printWindow = window.open('', '_blank', 'width=300,height=600');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Ticket de Alquiler</title>
+          <style>
+            @page { size: 80mm auto; margin: 5mm; }
+            body { font-family: monospace; font-size: 12px; margin: 0; padding: 5mm; width: 70mm; }
+            .center { text-align: center; }
+            .bold { font-weight: bold; }
+            .line { border-bottom: 1px dashed #000; margin: 5px 0; }
+            .right { text-align: right; }
+            table { width: 100%; border-collapse: collapse; }
+            td { padding: 2px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="center bold">
+            <h2 style="margin:5px 0;">TICKET DE ALQUILER</h2>
+            <p>ID: ${completedRental.id?.substring(0, 8) || 'N/A'}</p>
+          </div>
+          <div class="line"></div>
+          
+          <table>
+            <tr><td>Cliente:</td><td class="right bold">${completedRental.customer_name}</td></tr>
+            <tr><td>DNI:</td><td class="right">${completedRental.customer_dni}</td></tr>
+            <tr><td>Fecha inicio:</td><td class="right">${completedRental.start_date}</td></tr>
+            <tr><td>Fecha fin:</td><td class="right">${completedRental.end_date}</td></tr>
+          </table>
+          
+          <div class="line"></div>
+          <p class="bold">ARTÍCULOS:</p>
+          ${completedRental.items_detail.map(item => `
+            <table style="margin-bottom: 5px;">
+              <tr><td colspan="2" class="bold">${item.brand} ${item.model}</td></tr>
+              <tr><td>Talla: ${item.size}</td><td class="right">€${(item.custom_price || item.price_per_day * numDays).toFixed(2)}</td></tr>
+            </table>
+          `).join('')}
+          
+          <div class="line"></div>
+          <table>
+            <tr><td>Subtotal:</td><td class="right">€${calculateSubtotal().toFixed(2)}</td></tr>
+            ${total < subtotal ? `<tr><td>Descuento:</td><td class="right">-€${(subtotal - total).toFixed(2)}</td></tr>` : ''}
+            <tr><td class="bold">TOTAL:</td><td class="right bold">€${completedRental.total_amount.toFixed(2)}</td></tr>
+            <tr><td>Pagado:</td><td class="right">€${completedRental.paid_amount.toFixed(2)}</td></tr>
+            <tr><td>Método:</td><td class="right">${PAYMENT_METHODS.find(p => p.value === paymentMethod)?.label || paymentMethod}</td></tr>
+          </table>
+          
+          <div class="line"></div>
+          <p class="center" style="font-size: 10px;">¡Gracias por confiar en nosotros!</p>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+  };
+
+  const closeSuccessDialog = () => {
+    setShowSuccessDialog(false);
+    setCompletedRental(null);
+    resetForm();
   };
 
   const resetForm = () => {
