@@ -92,6 +92,9 @@ const formatDateDisplay = (dateStr) => {
 
 export default function NewRental() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [customerSuggestions, setCustomerSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const [customer, setCustomer] = useState(null);
   const [customerHistory, setCustomerHistory] = useState(null);
   const [items, setItems] = useState([]);
