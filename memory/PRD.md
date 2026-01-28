@@ -166,21 +166,22 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 
 ## Última Actualización
 Fecha: 2026-01-28
-Versión: 1.7.0
+Versión: 1.8.0
 
 ## Changelog
+- **v1.8.0** (2026-01-28): ✅ Dashboard Analítico Completo
+  - Vista Semanal de Ocupación (7 días con barras por gama)
+  - Click en día para desglose de entregas/devoluciones
+  - Panel de Rendimiento: "Más Alquilados" y "Más Rentables"
+  - Filtro temporal: Hoy / Esta Semana / Este Mes
+  - Alerta de Stock Parado
+  - Navegación rápida desde alertas urgentes
 - **v1.7.0** (2026-01-28): ✅ Módulo Taller Externo completo
   - Selector de modo: "MI FLOTA" (azul) vs "TALLER EXTERNO" (naranja)
   - Precios manuales sin tarifas fijas
-  - Botón flotante "+ NUEVA REPARACIÓN" solo en modo externo
   - Precio editable al momento de cobrar
   - Integración con Caja como "Servicio Taller"
-  - Prioridades visuales (verde/naranja/rojo)
-  - Botón WhatsApp para avisar clientes
 - **v1.6.0** (2026-01-28): ✅ Sugerencias Inteligentes de Packs (Upselling)
-  - Detección en tiempo real de packs incompletos
-  - Mensaje dinámico con ahorro potencial
-  - Botón "Ver Disponibles" con filtro automático
 - **v1.5.0** (2026-01-28): ✅ Historial de Transacciones en ficha de cliente
 - **v1.4.0** (2026-01-28): ✅ Flujo Financiero Completo (Alquileres ↔ Caja ↔ Devoluciones)
 - **v1.3.0** (2026-01-28): ✅ Auto-Combo implementado
