@@ -848,6 +848,40 @@ async def process_payment(rental_id: str, amount: float = Query(...), current_us
     
     return {"message": "Payment processed", "paid_amount": new_paid, "pending_amount": max(0, new_pending)}
 
+class UpdateRentalDaysRequest(BaseModel):
+    days: int
+    new_total: float
+
+@api_router.patch("/rentals/{rental_id}/days")
+async def update_rental_days(rental_id: str, update_data: UpdateRentalDaysRequest, current_user: dict = Depends(get_current_user)):
+    rental = await db.rentals.find_one({"id": rental_id})
+    if not rental:
+        raise HTTPException(status_code=404, detail="Rental not found")
+    
+    if rental["status"] not in ["active", "partial"]:
+        raise HTTPException(status_code=400, detail="Cannot modify closed rental")
+    
+    # Calculate new end date
+    start_date = datetime.fromisoformat(rental["start_date"].replace('Z', '+00:00'))
+    new_end_date = start_date + timedelta(days=update_data.days - 1)
+    
+    # Update rental
+    new_pending = update_data.new_total - rental["paid_amount"]
+    await db.rentals.update_one(
+        {"id": rental_id},
+        {
+            "$set": {
+                "days": update_data.days,
+                "end_date": new_end_date.isoformat(),
+                "total_amount": update_data.new_total,
+                "pending_amount": new_pending
+            }
+        }
+    )
+    
+    updated = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
+    return RentalResponse(**updated)
+
 # ==================== MAINTENANCE ROUTES ====================
 
 @api_router.post("/maintenance", response_model=MaintenanceResponse)
