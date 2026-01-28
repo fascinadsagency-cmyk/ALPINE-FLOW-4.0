@@ -400,9 +400,24 @@ metadata:
   test_sequence: 3
   run_ui: false
 
+  - task: "Editable Item Types System"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/Inventory.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test new editable item types system: default types (Esquís, Snowboard, Botas, Casco, Bastones), create custom types with '+' button, verify 'Personalizado' badges, test persistence, and validate complete workflow from type creation to item creation with filters"
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE EDITABLE ITEM TYPES SYSTEM TEST COMPLETED (12/12): Backend API testing ✅ (GET /api/item-types returns 5 default types, POST /api/item-types creates custom types successfully, custom types persist in database), Frontend UI testing ✅ (Login with admin2/admin123, Navigate to Inventory, Add Item dialog opens, Type selector shows all default types, 'Añadir nuevo tipo' button present with divider line, Custom types 'Snowblade' and 'Trineo' appear with 'Personalizado' badges, Item creation with custom types works, Types appear in main filters), Visual Elements ✅ (Plus icon in button, primary color styling, hover effects, blue tip box in creation dialog, proper form validation), Complete Workflow ✅ (Create custom type → Auto-select in form → Create item → Appears in table → Available in filters). ALL FUNCTIONALITY WORKING EXACTLY AS SPECIFIED IN REQUIREMENTS."
+
 test_plan:
   current_focus:
-    - "Reports - Flexible System with Interannual Comparisons"
+    - "Editable Item Types System"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -426,3 +441,5 @@ agent_communication:
       message: "🎯 PROVIDERS PAGE REORGANIZATION TESTING COMPLETED SUCCESSFULLY! All 12 test scenarios passed (100% success rate). Verified complete reorganized design: ✅ Login with admin2/admin123, ✅ Navigation to Providers page, ✅ Table structure prioritized at top with 'Lista de Proveedores', ✅ 'Condiciones' column header (replaces separate Descuento/Comisión columns), ✅ Micro-metrics in rows: discount badges (-X%) and commission badges (+X%) working perfectly, ✅ Color dots for client activity levels (verde >10, azul 5-10, ámbar 1-4, gris 0), ✅ Global metrics panel 'Resumen de Rendimiento Global' at bottom, ✅ Panel expanded by default with 'Ocultar' button, ✅ All 5 KPI cards present and working, ✅ Distribution charts (Distribución por Clientes, Resumen de Configuración), ✅ Hide/show functionality working perfectly, ✅ Help tip with 💡 icon explaining workflow. ALL VISUAL REORGANIZATION, STRUCTURE CHANGES, AND FUNCTIONALITY WORKING EXACTLY AS SPECIFIED IN REQUIREMENTS."
     - agent: "testing"
       message: "🎉 FLEXIBLE REPORTS SYSTEM TESTING COMPLETED SUCCESSFULLY! All 10 test scenarios passed (100% success rate). Verified complete flexible reporting system with interannual comparisons: ✅ Login with admin2/admin123 and navigation to Reports, ✅ Initial structure (page title 'Reportes', gradient date selector card, quick selection buttons Esta Semana/Este Mes/Toda la Temporada, comparison toggle, export buttons), ✅ Date range selector with 2-month calendar popover working perfectly, ✅ Quick selection buttons with toast notifications, ✅ All 4 KPI cards with correct icons and colors (Total Ingresos green DollarSign, Nuevos Alquileres blue TrendingUp, Devoluciones purple Clock, Reparaciones amber Wrench), ✅ Interannual comparison mode with 'vs año anterior' labels and comparative bar chart 'Comparativa Interanual', ✅ Payment method breakdown with all 4 methods (Efectivo green, Tarjeta blue, Online purple, Otros gray), ✅ Liquidation summary 'Resumen de Liquidación - Comisiones a Pagar' with amber gradient and period display, ✅ Pending returns table with proper structure, ✅ Export buttons (Print/PDF) working with toast confirmations. ALL VISUAL ELEMENTS, INTERANNUAL COMPARISON FUNCTIONALITY, AND FLEXIBLE REPORTING FEATURES WORKING EXACTLY AS SPECIFIED IN REQUIREMENTS."
+    - agent: "testing"
+      message: "🎯 EDITABLE ITEM TYPES SYSTEM TESTING COMPLETED SUCCESSFULLY! All 12 test scenarios passed (100% success rate). Verified complete dynamic item types functionality: ✅ Backend API testing (GET /api/item-types returns 5 default types: Esquís, Snowboard, Botas, Casco, Bastones), ✅ Custom type creation (POST /api/item-types creates 'Snowblade' and 'Trineo' successfully), ✅ Frontend UI testing (Login with admin2/admin123, Navigate to Inventory, Add Item dialog opens correctly), ✅ Type selector functionality (Shows all default types, 'Añadir nuevo tipo' button present with divider line and Plus icon), ✅ Custom type creation dialog (Proper title with Plus icon, input with placeholder, blue tip box, form validation), ✅ Custom types persistence (Snowblade and Trineo appear with 'Personalizado' badges), ✅ Item creation workflow (Create item with custom type 'snowblade' works perfectly), ✅ Filter integration (Custom types appear in main type filters), ✅ Visual elements (Primary color styling, hover effects, proper badges), ✅ Complete workflow validation (Create type → Auto-select → Create item → Appears in table → Available in filters). ALL EDITABLE ITEM TYPES FUNCTIONALITY WORKING EXACTLY AS SPECIFIED IN REQUIREMENTS."
