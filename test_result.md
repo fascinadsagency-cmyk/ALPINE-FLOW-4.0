@@ -367,6 +367,18 @@ frontend:
           agent: "testing"
           comment: "✅ TESTED SUCCESSFULLY: Tariffs page loads correctly, 'Packs/Combos' tab is first and active by default, 'Crear Pack' button present, pack creation modal opens with all required fields (name, category selection with Gama Superior 🟣, component selection for ski/boots, pricing by days 1-11+), category badges working properly"
 
+  - task: "Reports - Flexible System with Interannual Comparisons"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Reports.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test new flexible Reports system: Login with admin2/admin123, navigate to Reports, verify date range selector with 2-month calendar, test quick selection buttons (Esta Semana/Este Mes/Toda la Temporada), activate interannual comparison toggle, verify KPIs with growth indicators (arrows and percentages), check comparative bar chart, validate payment method breakdown with comparison percentages, verify liquidation summary with commissions table, test export buttons (Print/PDF), and validate pending returns table with overdue highlighting"
+
   - task: "Complete Rental Flow with Provider Discount"
     implemented: true
     working: true
