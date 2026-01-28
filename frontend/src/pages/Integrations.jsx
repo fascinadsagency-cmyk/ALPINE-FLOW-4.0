@@ -172,6 +172,38 @@ export default function Integrations() {
     }
   };
 
+  const saveEmailConfig = async () => {
+    setSaving(true);
+    try {
+      await axios.post(`${API}/integrations/config`, {
+        integration_type: "email",
+        enabled: emailConfig.enabled,
+        config: emailConfig
+      });
+      toast.success("Configuración de Email guardada");
+    } catch (error) {
+      toast.error("Error al guardar configuración");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveCalendarConfig = async () => {
+    setSaving(true);
+    try {
+      await axios.post(`${API}/integrations/config`, {
+        integration_type: "calendar",
+        enabled: calendarConfig.enabled,
+        config: calendarConfig
+      });
+      toast.success("Configuración de Calendario guardada");
+    } catch (error) {
+      toast.error("Error al guardar configuración");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const testConnection = async (type) => {
     toast.info(`Probando conexión con ${type}...`);
     // Simulated test - in real implementation would call actual API
