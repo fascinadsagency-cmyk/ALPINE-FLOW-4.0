@@ -250,7 +250,7 @@ class InventoryInternalCodeTester:
 
     def test_search_with_filter_internal_code(self):
         """Test search with filter prioritizing internal_code"""
-        success, data, status = self.make_request('GET', 'items', params={'search': 'SKI-001'})
+        success, data, status = self.make_request('GET', 'items', params={'search': self.test_internal_code})
         
         if success and isinstance(data, list) and len(data) > 0:
             # Check if the first result matches our internal_code (priority search)
@@ -270,7 +270,7 @@ class InventoryInternalCodeTester:
 
     def test_search_with_filter_barcode(self):
         """Test search with filter using barcode"""
-        success, data, status = self.make_request('GET', 'items', params={'search': 'BC-SKI-001'})
+        success, data, status = self.make_request('GET', 'items', params={'search': self.test_barcode})
         
         if success and isinstance(data, list) and len(data) > 0:
             # Check if we find the item by barcode
