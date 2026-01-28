@@ -14,6 +14,7 @@ import CashRegister from "@/pages/CashRegister";
 import Integrations from "@/pages/Integrations";
 import ActiveRentals from "@/pages/ActiveRentals";
 import Providers from "@/pages/Providers";
+import Settings from "@/pages/Settings";
 import Layout from "@/components/Layout";
 
 const ProtectedRoute = ({ children }) => {
