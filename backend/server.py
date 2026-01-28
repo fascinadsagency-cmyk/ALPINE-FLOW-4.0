@@ -589,6 +589,12 @@ async def update_item(item_id: str, item: ItemCreate, current_user: dict = Depen
     if not existing:
         raise HTTPException(status_code=404, detail="Item not found")
     
+    # Check if internal_code changed and new code exists
+    if item.internal_code != existing.get("internal_code", ""):
+        code_exists = await db.items.find_one({"internal_code": item.internal_code, "id": {"$ne": item_id}})
+        if code_exists:
+            raise HTTPException(status_code=400, detail=f"Internal code '{item.internal_code}' already exists")
+    
     # Check if barcode changed and new barcode exists
     if item.barcode != existing["barcode"]:
         barcode_exists = await db.items.find_one({"barcode": item.barcode, "id": {"$ne": item_id}})
@@ -597,7 +603,7 @@ async def update_item(item_id: str, item: ItemCreate, current_user: dict = Depen
     
     update_doc = {
         "barcode": item.barcode,
-        "internal_code": item.internal_code or "",
+        "internal_code": item.internal_code,
         "item_type": item.item_type,
         "brand": item.brand,
         "model": item.model,
