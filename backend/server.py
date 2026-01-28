@@ -1709,27 +1709,38 @@ async def get_dashboard(current_user: dict = Depends(get_current_user)):
     }
 
 @api_router.get("/dashboard/analytics")
-async def get_dashboard_analytics(period: str = "week", current_user: dict = Depends(get_current_user)):
+async def get_dashboard_analytics(
+    period: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
     """
     Get advanced analytics for dashboard:
     - Weekly availability calendar
     - Top rented items
     - Top revenue items
     - Stale stock
+    
+    Supports both predefined periods (today/week/month) and custom date ranges
     """
     today = datetime.now(timezone.utc)
     today_str = today.strftime("%Y-%m-%d")
     
-    # Calculate date range based on period
-    if period == "today":
-        start_date = today_str
-        end_date = today_str
+    # Calculate date range based on parameters
+    if start_date and end_date:
+        # Custom date range mode
+        analysis_start = start_date
+        analysis_end = end_date
+    elif period == "today":
+        analysis_start = today_str
+        analysis_end = today_str
     elif period == "week":
-        start_date = today_str
-        end_date = (today + timedelta(days=6)).strftime("%Y-%m-%d")
-    else:  # month
-        start_date = today.replace(day=1).strftime("%Y-%m-%d")
-        end_date = (today.replace(day=28) + timedelta(days=4)).replace(day=1).strftime("%Y-%m-%d")
+        analysis_start = today_str
+        analysis_end = (today + timedelta(days=6)).strftime("%Y-%m-%d")
+    else:  # month or default
+        analysis_start = today.replace(day=1).strftime("%Y-%m-%d")
+        analysis_end = (today.replace(day=28) + timedelta(days=4)).replace(day=1).strftime("%Y-%m-%d")
     
     # ============ WEEKLY AVAILABILITY CALENDAR ============
     weekly_calendar = []
