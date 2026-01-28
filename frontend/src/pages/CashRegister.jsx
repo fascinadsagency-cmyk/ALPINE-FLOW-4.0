@@ -80,6 +80,10 @@ export default function CashRegister() {
   });
   
   const [discrepancy, setDiscrepancy] = useState({ cash: 0, card: 0, total: 0 });
+  
+  // Ticket printing state
+  const [showTicketDialog, setShowTicketDialog] = useState(false);
+  const [selectedMovement, setSelectedMovement] = useState(null);
 
   useEffect(() => {
     loadData();
