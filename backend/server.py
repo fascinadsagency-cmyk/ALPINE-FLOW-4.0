@@ -580,8 +580,6 @@ async def get_item_by_barcode(barcode: str, current_user: dict = Depends(get_cur
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
     return ItemResponse(**item)
-        raise HTTPException(status_code=404, detail="Item not found")
-    return ItemResponse(**item)
 
 @api_router.put("/items/{item_id}", response_model=ItemResponse)
 async def update_item(item_id: str, item: ItemCreate, current_user: dict = Depends(get_current_user)):
