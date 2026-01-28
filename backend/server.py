@@ -357,6 +357,9 @@ async def get_customer_by_dni(dni: str, current_user: dict = Depends(get_current
 
 @api_router.get("/customers/{customer_id}/history")
 async def get_customer_history(customer_id: str, current_user: dict = Depends(get_current_user)):
+    # Get customer info first
+    customer = await db.customers.find_one({"customer_id": customer_id}, {"_id": 0})
+    
     rentals = await db.rentals.find({"customer_id": customer_id}, {"_id": 0}).sort("created_at", -1).to_list(50)
     
     # Check for active/pending rentals (for alerts)
@@ -379,13 +382,46 @@ async def get_customer_history(customer_id: str, current_user: dict = Depends(ge
                 if size not in sizes[item_type]:
                     sizes[item_type].append(size)
     
+    # Get rental IDs for this customer
+    rental_ids = [r["id"] for r in rentals]
+    
+    # Get cash transactions related to this customer's rentals
+    transactions = []
+    if rental_ids:
+        cash_movements = await db.cash_movements.find(
+            {"reference_id": {"$in": rental_ids}},
+            {"_id": 0}
+        ).sort("created_at", -1).to_list(100)
+        
+        for m in cash_movements:
+            transactions.append({
+                "id": m["id"],
+                "type": m["movement_type"],  # income, refund
+                "amount": m["amount"],
+                "payment_method": m["payment_method"],
+                "concept": m["concept"],
+                "reference_id": m.get("reference_id"),
+                "date": m["created_at"],
+                "notes": m.get("notes", "")
+            })
+    
+    # Calculate financial totals
+    total_paid = sum(t["amount"] for t in transactions if t["type"] == "income")
+    total_refunded = sum(t["amount"] for t in transactions if t["type"] == "refund")
+    
     return {
         "rentals": rentals,
+        "transactions": transactions,
         "preferred_sizes": sizes,
         "total_rentals": len(rentals),
         "active_rentals": len(active_rentals),
         "overdue_rentals": len(overdue_rentals),
-        "has_alerts": len(overdue_rentals) > 0
+        "has_alerts": len(overdue_rentals) > 0,
+        "financial_summary": {
+            "total_paid": total_paid,
+            "total_refunded": total_refunded,
+            "net_revenue": total_paid - total_refunded
+        }
     }
 
 @api_router.put("/customers/{customer_id}", response_model=CustomerResponse)
