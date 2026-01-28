@@ -1896,7 +1896,11 @@ async def get_dashboard_analytics(
         "top_rented": top_rented,
         "top_revenue": top_revenue,
         "stale_stock": stale_items,
-        "period": period
+        "period": period,
+        "date_range": {
+            "start": analysis_start,
+            "end": analysis_end
+        }
     }
 
 # ==================== HEALTH CHECK ====================
