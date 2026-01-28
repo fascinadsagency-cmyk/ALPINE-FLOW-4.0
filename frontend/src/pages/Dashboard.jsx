@@ -368,26 +368,81 @@ export default function Dashboard() {
         {/* Rankings Panel */}
         <Card className="lg:col-span-2 border-slate-200">
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Trophy className="h-5 w-5 text-amber-500" />
                 Rendimiento de Inventario
               </CardTitle>
-              {/* Period Filter */}
-              <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
-                {['today', 'week', 'month'].map(p => (
-                  <button
-                    key={p}
-                    onClick={() => setAnalyticsPeriod(p)}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                      analyticsPeriod === p
-                        ? 'bg-white text-slate-900 shadow-sm'
-                        : 'text-slate-500 hover:text-slate-700'
-                    }`}
-                  >
-                    {periodLabels[p]}
-                  </button>
-                ))}
+              
+              <div className="flex flex-col sm:flex-row gap-2">
+                {/* Custom Date Range Selector */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button 
+                      variant={customDateActive ? "default" : "outline"}
+                      size="sm"
+                      className={customDateActive ? "bg-primary text-white" : ""}
+                    >
+                      <CalendarRange className="h-4 w-4 mr-2" />
+                      {customDateActive && dateRange?.from && dateRange?.to
+                        ? `${format(dateRange.from, 'dd/MM/yy', {locale: es})} - ${format(dateRange.to, 'dd/MM/yy', {locale: es})}`
+                        : "Rango Personalizado"
+                      }
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="end">
+                    <div className="p-4 border-b">
+                      <p className="font-medium text-sm">Selecciona un rango de fechas</p>
+                      <p className="text-xs text-slate-500 mt-1">Analiza el rendimiento histórico</p>
+                    </div>
+                    <CalendarComponent
+                      mode="range"
+                      selected={dateRange}
+                      onSelect={setDateRange}
+                      numberOfMonths={2}
+                      locale={es}
+                      className="rounded-md"
+                    />
+                    <div className="p-3 border-t flex gap-2">
+                      <Button 
+                        onClick={applyCustomDateRange} 
+                        size="sm" 
+                        className="flex-1"
+                        disabled={!dateRange?.from || !dateRange?.to}
+                      >
+                        Aplicar Filtro
+                      </Button>
+                      {customDateActive && (
+                        <Button 
+                          onClick={clearCustomDateRange} 
+                          variant="outline" 
+                          size="sm"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                
+                {/* Predefined Period Tabs - Only show when custom date is not active */}
+                {!customDateActive && (
+                  <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
+                    {['today', 'week', 'month'].map(p => (
+                      <button
+                        key={p}
+                        onClick={() => setAnalyticsPeriod(p)}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                          analyticsPeriod === p
+                            ? 'bg-white text-slate-900 shadow-sm'
+                            : 'text-slate-500 hover:text-slate-700'
+                        }`}
+                      >
+                        {periodLabels[p]}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </CardHeader>
