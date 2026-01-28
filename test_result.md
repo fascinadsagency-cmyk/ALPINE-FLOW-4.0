@@ -258,15 +258,18 @@ frontend:
 
   - task: "New Rental - Customer Creation Modal"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/pages/NewRental.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "testing"
           comment: "Need to test new customer creation from rental page, provider selection, and automatic customer selection after creation"
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED SUCCESSFULLY: New rental page loads correctly, 'Nuevo Cliente' button opens customer creation modal, modal contains all required fields (DNI, name, phone, provider), provider selection works in modal, customer creation from rental page completes successfully"
 
   - task: "Inventory - Edit/Delete Items"
     implemented: true
