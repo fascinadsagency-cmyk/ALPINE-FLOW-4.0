@@ -44,19 +44,113 @@ export default function Reports() {
   const [compareMode, setCompareMode] = useState(false);
 
   useEffect(() => {
-    loadReport();
-  }, [date]);
+    // Set initial range to current week
+    const today = new Date();
+    setDateRange({
+      from: startOfWeek(today, { locale: es }),
+      to: endOfWeek(today, { locale: es })
+    });
+  }, []);
+
+  useEffect(() => {
+    if (dateRange?.from && dateRange?.to) {
+      loadReport();
+    }
+  }, [dateRange, compareMode]);
 
   const loadReport = async () => {
+    if (!dateRange?.from || !dateRange?.to) return;
+    
     setLoading(true);
     try {
-      const response = await reportApi.getDaily(date);
+      const startDate = format(dateRange.from, 'yyyy-MM-dd');
+      const endDate = format(dateRange.to, 'yyyy-MM-dd');
+      
+      // Load current period report
+      const response = await axios.get(`${API}/reports/range`, {
+        params: { start_date: startDate, end_date: endDate },
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
       setReport(response.data);
+      
+      // Load previous year report if compare mode is active
+      if (compareMode) {
+        const prevYearStart = format(subYears(dateRange.from, 1), 'yyyy-MM-dd');
+        const prevYearEnd = format(subYears(dateRange.to, 1), 'yyyy-MM-dd');
+        
+        const prevResponse = await axios.get(`${API}/reports/range`, {
+          params: { start_date: prevYearStart, end_date: prevYearEnd },
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        setPreviousYearReport(prevResponse.data);
+      } else {
+        setPreviousYearReport(null);
+      }
     } catch (error) {
       toast.error("Error al cargar reporte");
+      console.error(error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const setQuickRange = (rangeType) => {
+    const today = new Date();
+    let from, to;
+    
+    switch (rangeType) {
+      case 'week':
+        from = startOfWeek(today, { locale: es });
+        to = endOfWeek(today, { locale: es });
+        break;
+      case 'month':
+        from = startOfMonth(today);
+        to = endOfMonth(today);
+        break;
+      case 'season':
+        // Assuming season is Nov-Apr (adjust as needed)
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+        if (currentMonth >= 10) {  // Nov-Dec
+          from = new Date(currentYear, 10, 1);  // Nov 1st
+          to = new Date(currentYear + 1, 3, 30);  // Apr 30th next year
+        } else if (currentMonth <= 3) {  // Jan-Apr
+          from = new Date(currentYear - 1, 10, 1);  // Nov 1st prev year
+          to = new Date(currentYear, 3, 30);  // Apr 30th
+        } else {  // Off season - default to current month
+          from = startOfMonth(today);
+          to = endOfMonth(today);
+        }
+        break;
+      default:
+        return;
+    }
+    
+    setDateRange({ from, to });
+    toast.success(`Rango actualizado: ${format(from, 'dd/MM', { locale: es })} - ${format(to, 'dd/MM', { locale: es })}`);
+  };
+
+  const calculateGrowth = (current, previous) => {
+    if (!previous || previous === 0) return { percentage: 0, direction: 'neutral' };
+    const growth = ((current - previous) / previous) * 100;
+    return {
+      percentage: Math.abs(growth).toFixed(1),
+      direction: growth > 0 ? 'up' : growth < 0 ? 'down' : 'neutral'
+    };
+  };
+
+  const formatCurrency = (amount) => {
+    return `€${amount.toFixed(2)}`;
+  };
+
+  const handlePrint = () => {
+    window.print();
+    toast.success("Generando documento para imprimir...");
+  };
+
+  const handleExportPDF = () => {
+    // This would integrate with a PDF library in production
+    toast.info("Exportación a PDF (función en desarrollo)");
   };
 
   if (loading) {
