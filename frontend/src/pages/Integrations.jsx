@@ -53,6 +53,16 @@ export default function Integrations() {
     save_receipts: true,
     reprint_enabled: false
   });
+  const [verifactuConfig, setVerifactuConfig] = useState({
+    enabled: false,
+    nif_emisor: "",
+    nombre_emisor: "",
+    software_id: "",
+    software_version: "1.0",
+    test_mode: true,
+    auto_send: false,
+    save_xml: true
+  });
 
   useEffect(() => {
     loadConfigs();
