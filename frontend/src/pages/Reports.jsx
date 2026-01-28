@@ -1,10 +1,16 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { reportApi } from "@/lib/api";
+import axios from "axios";
+import { format, subYears, startOfWeek, endOfWeek, startOfMonth, endOfMonth, differenceInDays } from "date-fns";
+import { es } from "date-fns/locale";
 import { 
   BarChart3, 
   Calendar, 
@@ -15,14 +21,27 @@ import {
   Loader2,
   CreditCard,
   Banknote,
-  Globe
+  Globe,
+  CalendarRange,
+  ArrowUpRight,
+  ArrowDownRight,
+  Minus,
+  Download,
+  Printer,
+  Building2,
+  Wrench
 } from "lucide-react";
 import { toast } from "sonner";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Reports() {
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [dateRange, setDateRange] = useState(null);
   const [report, setReport] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [previousYearReport, setPreviousYearReport] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [compareMode, setCompareMode] = useState(false);
 
   useEffect(() => {
     loadReport();
