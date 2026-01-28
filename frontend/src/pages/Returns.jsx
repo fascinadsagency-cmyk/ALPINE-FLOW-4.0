@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { rentalApi } from "@/lib/api";
+import axios from "axios";
 import { 
   RotateCcw, 
   Check, 
@@ -13,9 +14,12 @@ import {
   Barcode,
   User,
   Calendar,
-  DollarSign
+  DollarSign,
+  Phone
 } from "lucide-react";
 import { toast } from "sonner";
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Returns() {
   const [barcodeInput, setBarcodeInput] = useState("");
@@ -23,6 +27,7 @@ export default function Returns() {
   const [scannedBarcodes, setScannedBarcodes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [pendingReturns, setPendingReturns] = useState({ today: [], other_days: [] });
   
   const barcodeRef = useRef(null);
 
@@ -30,7 +35,17 @@ export default function Returns() {
     if (barcodeRef.current) {
       barcodeRef.current.focus();
     }
+    loadPendingReturns();
   }, []);
+
+  const loadPendingReturns = async () => {
+    try {
+      const response = await axios.get(`${API}/rentals/pending/returns`);
+      setPendingReturns(response.data);
+    } catch (error) {
+      console.error("Error loading pending returns:", error);
+    }
+  };
 
   const handleBarcodeScan = async (e) => {
     if (e.key !== 'Enter' || !barcodeInput.trim()) return;
@@ -85,12 +100,13 @@ export default function Returns() {
       if (response.data.status === 'returned') {
         toast.success("Devolución completada");
         resetForm();
+        loadPendingReturns();
       } else {
         toast.warning(`Devolución parcial: ${response.data.pending_items.length} artículos pendientes`);
-        // Reload rental to update status
         const updatedRental = await rentalApi.getById(rental.id);
         setRental(updatedRental.data);
         setScannedBarcodes([]);
+        loadPendingReturns();
       }
     } catch (error) {
       toast.error("Error al procesar devolución");
@@ -106,9 +122,24 @@ export default function Returns() {
     if (barcodeRef.current) barcodeRef.current.focus();
   };
 
+  const loadRentalById = async (rentalId) => {
+    try {
+      const response = await rentalApi.getById(rentalId);
+      setRental(response.data);
+      toast.success("Alquiler cargado");
+    } catch (error) {
+      toast.error("Error al cargar alquiler");
+    }
+  };
+
   const pendingItems = rental?.items.filter(i => !i.returned && !scannedBarcodes.includes(i.barcode)) || [];
   const returnedItems = rental?.items.filter(i => i.returned) || [];
   const toReturnItems = rental?.items.filter(i => !i.returned && scannedBarcodes.includes(i.barcode)) || [];
+
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+  };
 
   return (
     <div className="p-6 lg:p-8" data-testid="returns-page">
@@ -126,7 +157,7 @@ export default function Returns() {
                   <Barcode className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-400" />
                   <Input
                     ref={barcodeRef}
-                    placeholder="Escanear código de barras para buscar alquiler o devolver artículo..."
+                    placeholder="Escanear o introducir código manualmente y presionar Enter..."
                     value={barcodeInput}
                     onChange={(e) => setBarcodeInput(e.target.value)}
                     onKeyDown={handleBarcodeScan}
@@ -141,6 +172,9 @@ export default function Returns() {
                   </Button>
                 )}
               </div>
+              <p className="text-sm text-slate-500 mt-2 ml-12">
+                Puedes escanear o escribir el código manualmente
+              </p>
               {loading && (
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -200,7 +234,6 @@ export default function Returns() {
 
             {/* Items Status */}
             <div className="lg:col-span-8 space-y-4">
-              {/* Items to return (scanned) */}
               {toReturnItems.length > 0 && (
                 <Card className="border-emerald-200 bg-emerald-50/50">
                   <CardHeader className="pb-3">
@@ -232,7 +265,6 @@ export default function Returns() {
                 </Card>
               )}
 
-              {/* Pending items */}
               {pendingItems.length > 0 && (
                 <Card className="border-amber-200 bg-amber-50/50">
                   <CardHeader className="pb-3">
@@ -264,7 +296,6 @@ export default function Returns() {
                 </Card>
               )}
 
-              {/* Already returned */}
               {returnedItems.length > 0 && (
                 <Card className="border-slate-200">
                   <CardHeader className="pb-3">
@@ -294,7 +325,6 @@ export default function Returns() {
                 </Card>
               )}
 
-              {/* Action Button */}
               {toReturnItems.length > 0 && (
                 <div className="flex justify-end">
                   <Button
@@ -317,15 +347,118 @@ export default function Returns() {
           </>
         )}
 
-        {/* Empty State */}
+        {/* Empty State with Pending Returns Panel */}
         {!rental && !loading && (
-          <div className="lg:col-span-12">
-            <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-              <RotateCcw className="h-16 w-16 mb-4" />
-              <p className="text-xl">Escanea cualquier artículo para iniciar la devolución</p>
-              <p className="text-sm mt-2">El sistema encontrará automáticamente el alquiler asociado</p>
+          <>
+            <div className="lg:col-span-12">
+              <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+                <RotateCcw className="h-16 w-16 mb-4" />
+                <p className="text-xl">Escanea o introduce manualmente cualquier artículo</p>
+                <p className="text-sm mt-2">El sistema encontrará automáticamente el alquiler asociado</p>
+              </div>
             </div>
-          </div>
+
+            {/* Pending Returns Panel */}
+            <div className="lg:col-span-12">
+              <Card className="border-slate-200">
+                <CardHeader className="pb-3 bg-slate-50">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-slate-600" />
+                    Devoluciones Pendientes
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  {/* Today's Returns */}
+                  {pendingReturns.today.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                        📅 HOY ({pendingReturns.today.length})
+                      </h3>
+                      <div className="space-y-2">
+                        {pendingReturns.today.map((rental) => (
+                          <div 
+                            key={rental.id}
+                            className="flex items-center justify-between p-4 rounded-lg bg-blue-50 border border-blue-200"
+                          >
+                            <div className="flex-1">
+                              <p className="font-medium text-slate-900">{rental.customer_name}</p>
+                              <p className="text-sm text-slate-600 mt-1">
+                                {rental.pending_items.map(i => `${i.brand} ${i.model}`).join(', ')}
+                              </p>
+                              <p className="text-xs text-slate-500 mt-1">
+                                {rental.pending_items.length} artículos pendientes
+                                {rental.pending_amount > 0 && ` • €${rental.pending_amount.toFixed(2)} pendiente`}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => loadRentalById(rental.id)}
+                              >
+                                Ver
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Other Days Returns */}
+                  {pendingReturns.other_days.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                        📋 OTROS DÍAS ACTIVOS ({pendingReturns.other_days.length})
+                      </h3>
+                      <div className="space-y-2">
+                        {pendingReturns.other_days.map((rental) => (
+                          <div 
+                            key={rental.id}
+                            className={`flex items-center justify-between p-4 rounded-lg border ${
+                              rental.days_overdue > 0 
+                                ? 'bg-red-50 border-red-200' 
+                                : 'bg-slate-50 border-slate-200'
+                            }`}
+                          >
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium text-slate-900">{rental.customer_name}</p>
+                                {rental.days_overdue > 0 && (
+                                  <Badge className="bg-red-100 text-red-700 border-red-200">
+                                    ⚠️ Retrasado {rental.days_overdue} {rental.days_overdue === 1 ? 'día' : 'días'}
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-slate-600 mt-1">
+                                Vence: {formatDate(rental.end_date)} • {rental.pending_items.length} artículos
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => loadRentalById(rental.id)}
+                              >
+                                Ver
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {pendingReturns.today.length === 0 && pendingReturns.other_days.length === 0 && (
+                    <div className="text-center py-8 text-slate-400">
+                      <Check className="h-12 w-12 mx-auto mb-3" />
+                      <p>No hay devoluciones pendientes</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </>
         )}
       </div>
     </div>
