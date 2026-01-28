@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { itemApi } from "@/lib/api";
-import { Package, Plus, Search, Loader2, Upload, Download, Barcode, Copy, Check, AlertCircle } from "lucide-react";
+import { Package, Plus, Search, Loader2, Upload, Download, Barcode, Copy, Check, AlertCircle, Edit2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 
