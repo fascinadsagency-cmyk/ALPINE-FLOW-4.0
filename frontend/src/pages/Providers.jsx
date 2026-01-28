@@ -490,6 +490,136 @@ export default function Providers() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Statistics Dialog */}
+      <Dialog open={showStatsDialog} onOpenChange={setShowStatsDialog}>
+        <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              Estadísticas: {statsData?.source.name}
+            </DialogTitle>
+            <DialogDescription>
+              Análisis de rendimiento y comisiones del proveedor
+            </DialogDescription>
+          </DialogHeader>
+
+          {statsLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : statsData && (
+            <div className="space-y-6 py-4">
+              {/* Metrics Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <Card className="bg-blue-50 border-blue-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 text-blue-600 text-sm mb-1">
+                      <Users className="h-4 w-4" />
+                      <span>Clientes</span>
+                    </div>
+                    <p className="text-2xl font-bold text-blue-900">{statsData.stats.total_customers}</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-emerald-50 border-emerald-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 text-emerald-600 text-sm mb-1">
+                      <TrendingUp className="h-4 w-4" />
+                      <span>Ingresos</span>
+                    </div>
+                    <p className="text-2xl font-bold text-emerald-900">
+                      {formatCurrency(statsData.stats.total_revenue)}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-purple-50 border-purple-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 text-purple-600 text-sm mb-1">
+                      <BarChart3 className="h-4 w-4" />
+                      <span>Ticket Medio</span>
+                    </div>
+                    <p className="text-2xl font-bold text-purple-900">
+                      {formatCurrency(statsData.stats.average_ticket)}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-amber-50 border-amber-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 text-amber-600 text-sm mb-1">
+                      <DollarSign className="h-4 w-4" />
+                      <span>Comisión</span>
+                    </div>
+                    <p className="text-2xl font-bold text-amber-900">
+                      {formatCurrency(statsData.stats.total_commission)}
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Rentals Table */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">
+                    Últimos Alquileres ({statsData.rentals.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {statsData.rentals.length === 0 ? (
+                    <div className="text-center py-8 text-slate-500">
+                      <p>No hay alquileres registrados</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto max-h-96 overflow-y-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Fecha</TableHead>
+                            <TableHead>Cliente</TableHead>
+                            <TableHead className="text-right">Importe</TableHead>
+                            <TableHead className="text-right">Comisión</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {statsData.rentals.slice(0, 50).map((rental, idx) => (
+                            <TableRow key={idx}>
+                              <TableCell className="text-sm">
+                                {formatDate(rental.date)}
+                              </TableCell>
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium text-sm">{rental.customer_name}</p>
+                                  <p className="text-xs text-slate-500">{rental.customer_dni}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right font-medium">
+                                {formatCurrency(rental.amount)}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Badge className="bg-amber-100 text-amber-700">
+                                  {formatCurrency(rental.commission)}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowStatsDialog(false)}>
+              Cerrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
