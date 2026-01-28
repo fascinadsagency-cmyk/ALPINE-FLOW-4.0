@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the new reorganized Providers page design with priority table structure, micro-metrics in rows, and expandable global metrics panel at bottom"
+user_problem_statement: "Test the new flexible Reports system with interannual comparisons: date range selector with 2-month calendar, quick selection buttons (Esta Semana/Este Mes/Toda la Temporada), interannual comparison toggle, KPIs with growth indicators, comparative bar chart, payment method breakdown, liquidation summary with commissions, and export buttons"
 
 backend:
   - task: "Inventory Internal Code Flow"
