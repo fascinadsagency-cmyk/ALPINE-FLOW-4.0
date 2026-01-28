@@ -244,6 +244,18 @@ backend:
           comment: "✅ COMPREHENSIVE TEST PASSED: Complete Flow - Customer with Provider→Create Rental with Discount→Modify Days→Partial Return→Verify Status. Full integration working correctly"
 
 frontend:
+  - task: "Automatic Pack Pricing System - Silent Detection"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/NewRental.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test automatic pack pricing system: silent pack detection (no toasts), discrete 'Tarifa: Pack' indicator with badge, compact pack suggestions (1 line format), automatic pack completion without interruptions, price calculations and visual elements validation"
+
   - task: "Dashboard Historical Date Range Filter"
     implemented: true
     working: true
