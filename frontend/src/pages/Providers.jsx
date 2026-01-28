@@ -29,8 +29,11 @@ export default function Providers() {
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showStatsDialog, setShowStatsDialog] = useState(false);
   const [editingProvider, setEditingProvider] = useState(null);
   const [deletingProvider, setDeletingProvider] = useState(null);
+  const [statsData, setStatsData] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     discount_percent: "0",
