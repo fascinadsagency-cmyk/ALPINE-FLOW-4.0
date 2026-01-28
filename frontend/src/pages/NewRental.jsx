@@ -23,7 +23,9 @@ import {
   Edit2,
   X,
   AlertTriangle,
-  Sparkles
+  Sparkles,
+  CheckCircle,
+  Printer
 } from "lucide-react";
 import { toast } from "sonner";
 
