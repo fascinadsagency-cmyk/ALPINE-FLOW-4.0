@@ -621,28 +621,321 @@ export default function Integrations() {
           </Card>
         </TabsContent>
 
-        {/* Email Integration - Coming Soon */}
+        {/* Email Integration */}
         <TabsContent value="email">
           <Card className="border-slate-200">
-            <CardContent className="py-12 text-center">
-              <Mail className="h-12 w-12 mx-auto text-slate-300 mb-4" />
-              <h3 className="text-lg font-semibold text-slate-700">Email (Próximamente)</h3>
-              <p className="text-slate-500 mt-2">
-                Envía confirmaciones y facturas por correo electrónico
-              </p>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-rose-100 flex items-center justify-center">
+                    <Mail className="h-5 w-5 text-rose-600" />
+                  </div>
+                  <div>
+                    <CardTitle>Servidor de Email (SMTP)</CardTitle>
+                    <CardDescription>Envía confirmaciones y facturas por correo</CardDescription>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Badge variant={emailConfig.enabled ? "default" : "secondary"}>
+                    {emailConfig.enabled ? (
+                      <><Check className="h-3 w-3 mr-1" /> Conectado</>
+                    ) : (
+                      <><X className="h-3 w-3 mr-1" /> No conectado</>
+                    )}
+                  </Badge>
+                  <Switch
+                    checked={emailConfig.enabled}
+                    onCheckedChange={(v) => setEmailConfig({ ...emailConfig, enabled: v })}
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                <p className="text-sm text-blue-800 mb-2">
+                  <strong>Proveedores recomendados:</strong>
+                </p>
+                <ul className="text-sm text-blue-700 space-y-1">
+                  <li>• <strong>Gmail:</strong> smtp.gmail.com (Puerto 587) - Usar contraseña de aplicación</li>
+                  <li>• <strong>Outlook:</strong> smtp.office365.com (Puerto 587)</li>
+                  <li>• <strong>SendGrid:</strong> smtp.sendgrid.net (Puerto 587)</li>
+                  <li>• <strong>Mailgun:</strong> smtp.mailgun.org (Puerto 587)</li>
+                </ul>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Servidor SMTP *</Label>
+                  <Input
+                    value={emailConfig.smtp_server}
+                    onChange={(e) => setEmailConfig({ ...emailConfig, smtp_server: e.target.value })}
+                    placeholder="smtp.gmail.com"
+                    className="h-11 mt-1"
+                  />
+                </div>
+                <div>
+                  <Label>Puerto *</Label>
+                  <Input
+                    type="number"
+                    value={emailConfig.smtp_port}
+                    onChange={(e) => setEmailConfig({ ...emailConfig, smtp_port: e.target.value })}
+                    placeholder="587"
+                    className="h-11 mt-1"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Email remitente *</Label>
+                  <Input
+                    type="email"
+                    value={emailConfig.email_from}
+                    onChange={(e) => setEmailConfig({ ...emailConfig, email_from: e.target.value })}
+                    placeholder="tutienda@ejemplo.com"
+                    className="h-11 mt-1"
+                  />
+                </div>
+                <div>
+                  <Label>Contraseña / API Key *</Label>
+                  <Input
+                    type="password"
+                    value={emailConfig.email_password}
+                    onChange={(e) => setEmailConfig({ ...emailConfig, email_password: e.target.value })}
+                    placeholder="••••••••••••••••"
+                    className="h-11 mt-1"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Opciones de envío automático</Label>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                    <div>
+                      <span className="text-sm font-medium block">Usar TLS/SSL</span>
+                      <span className="text-xs text-slate-500">Conexión segura (recomendado)</span>
+                    </div>
+                    <Switch
+                      checked={emailConfig.use_tls}
+                      onCheckedChange={(v) => setEmailConfig({ ...emailConfig, use_tls: v })}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                    <div>
+                      <span className="text-sm font-medium block">Confirmaciones de reserva</span>
+                      <span className="text-xs text-slate-500">Enviar email al completar un alquiler</span>
+                    </div>
+                    <Switch
+                      checked={emailConfig.send_confirmations}
+                      onCheckedChange={(v) => setEmailConfig({ ...emailConfig, send_confirmations: v })}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                    <div>
+                      <span className="text-sm font-medium block">Recordatorios de devolución</span>
+                      <span className="text-xs text-slate-500">Email 1 día antes del fin del alquiler</span>
+                    </div>
+                    <Switch
+                      checked={emailConfig.send_reminders}
+                      onCheckedChange={(v) => setEmailConfig({ ...emailConfig, send_reminders: v })}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                    <div>
+                      <span className="text-sm font-medium block">Enviar facturas</span>
+                      <span className="text-xs text-slate-500">PDF adjunto con resumen del alquiler</span>
+                    </div>
+                    <Switch
+                      checked={emailConfig.send_invoices}
+                      onCheckedChange={(v) => setEmailConfig({ ...emailConfig, send_invoices: v })}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label>URL del logo de la empresa</Label>
+                <Input
+                  value={emailConfig.company_logo_url}
+                  onChange={(e) => setEmailConfig({ ...emailConfig, company_logo_url: e.target.value })}
+                  placeholder="https://tutienda.com/logo.png"
+                  className="h-11 mt-1"
+                />
+                <p className="text-xs text-slate-500 mt-1">Se incluirá en la cabecera de los emails</p>
+              </div>
+
+              <div>
+                <Label>Firma de email</Label>
+                <Textarea
+                  value={emailConfig.email_signature}
+                  onChange={(e) => setEmailConfig({ ...emailConfig, email_signature: e.target.value })}
+                  placeholder="Saludos,&#10;Tu Tienda de Esquí&#10;Teléfono: +34 XXX XXX XXX"
+                  className="mt-1"
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex gap-2 pt-4 border-t border-slate-200">
+                <Button variant="outline" onClick={() => testConnection('Email')}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Enviar email de prueba
+                </Button>
+                <Button onClick={saveEmailConfig} disabled={saving}>
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Guardar configuración
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Calendar Integration - Coming Soon */}
+        {/* Calendar Integration */}
         <TabsContent value="calendar">
           <Card className="border-slate-200">
-            <CardContent className="py-12 text-center">
-              <Calendar className="h-12 w-12 mx-auto text-slate-300 mb-4" />
-              <h3 className="text-lg font-semibold text-slate-700">Google Calendar (Próximamente)</h3>
-              <p className="text-slate-500 mt-2">
-                Sincroniza reservas con tu calendario de Google
-              </p>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                    <Calendar className="h-5 w-5 text-amber-600" />
+                  </div>
+                  <div>
+                    <CardTitle>Google Calendar</CardTitle>
+                    <CardDescription>Sincroniza reservas con tu calendario</CardDescription>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Badge variant={calendarConfig.enabled ? "default" : "secondary"}>
+                    {calendarConfig.enabled ? (
+                      <><Check className="h-3 w-3 mr-1" /> Conectado</>
+                    ) : (
+                      <><X className="h-3 w-3 mr-1" /> No conectado</>
+                    )}
+                  </Badge>
+                  <Switch
+                    checked={calendarConfig.enabled}
+                    onCheckedChange={(v) => setCalendarConfig({ ...calendarConfig, enabled: v })}
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
+                <p className="text-sm text-amber-800 mb-2">
+                  <strong>Pasos para configurar:</strong>
+                </p>
+                <ol className="text-sm text-amber-700 space-y-1 list-decimal list-inside">
+                  <li>Ve a <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" className="underline">Google Cloud Console</a></li>
+                  <li>Crea un proyecto y activa la API de Google Calendar</li>
+                  <li>Crea credenciales OAuth 2.0 (Client ID y Secret)</li>
+                  <li>Añade tu dominio a las URLs autorizadas</li>
+                  <li>Pega las credenciales aquí</li>
+                </ol>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Client ID de Google *</Label>
+                  <Input
+                    value={calendarConfig.google_client_id}
+                    onChange={(e) => setCalendarConfig({ ...calendarConfig, google_client_id: e.target.value })}
+                    placeholder="xxxxx.apps.googleusercontent.com"
+                    className="h-11 mt-1 font-mono text-sm"
+                  />
+                </div>
+                <div>
+                  <Label>Client Secret de Google *</Label>
+                  <Input
+                    type="password"
+                    value={calendarConfig.google_client_secret}
+                    onChange={(e) => setCalendarConfig({ ...calendarConfig, google_client_secret: e.target.value })}
+                    placeholder="GOCSPX-••••••••••••••••"
+                    className="h-11 mt-1"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>ID del Calendario</Label>
+                  <Input
+                    value={calendarConfig.calendar_id}
+                    onChange={(e) => setCalendarConfig({ ...calendarConfig, calendar_id: e.target.value })}
+                    placeholder="primary o tu-calendario@gmail.com"
+                    className="h-11 mt-1 font-mono text-sm"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Deja "primary" para usar el calendario principal</p>
+                </div>
+                <div>
+                  <Label>Intervalo de sincronización (minutos)</Label>
+                  <Input
+                    type="number"
+                    value={calendarConfig.sync_interval}
+                    onChange={(e) => setCalendarConfig({ ...calendarConfig, sync_interval: e.target.value })}
+                    placeholder="15"
+                    className="h-11 mt-1"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Opciones de sincronización</Label>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                    <div>
+                      <span className="text-sm font-medium block">Crear eventos automáticamente</span>
+                      <span className="text-xs text-slate-500">Al crear un alquiler, añadir a calendario</span>
+                    </div>
+                    <Switch
+                      checked={calendarConfig.auto_create_events}
+                      onCheckedChange={(v) => setCalendarConfig({ ...calendarConfig, auto_create_events: v })}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                    <div>
+                      <span className="text-sm font-medium block">Códigos de color por estado</span>
+                      <span className="text-xs text-slate-500">Verde: Activo, Azul: Pendiente, Gris: Completado</span>
+                    </div>
+                    <Switch
+                      checked={calendarConfig.color_code_by_status}
+                      onCheckedChange={(v) => setCalendarConfig({ ...calendarConfig, color_code_by_status: v })}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                    <div>
+                      <span className="text-sm font-medium block">Notificaciones de Google</span>
+                      <span className="text-xs text-slate-500">Recordatorios antes del inicio/fin</span>
+                    </div>
+                    <Switch
+                      checked={calendarConfig.send_notifications}
+                      onCheckedChange={(v) => setCalendarConfig({ ...calendarConfig, send_notifications: v })}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label>Duración por defecto de eventos (minutos)</Label>
+                <Input
+                  type="number"
+                  value={calendarConfig.default_duration}
+                  onChange={(e) => setCalendarConfig({ ...calendarConfig, default_duration: e.target.value })}
+                  placeholder="60"
+                  className="h-11 mt-1"
+                />
+                <p className="text-xs text-slate-500 mt-1">Para eventos sin hora específica</p>
+              </div>
+
+              <div className="flex gap-2 pt-4 border-t border-slate-200">
+                <Button variant="outline" onClick={() => testConnection('Google Calendar')}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Probar conexión
+                </Button>
+                <Button onClick={saveCalendarConfig} disabled={saving}>
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Guardar configuración
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
