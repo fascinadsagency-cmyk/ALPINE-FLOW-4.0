@@ -1201,17 +1201,12 @@ export default function NewRental() {
                               />
                             ) : (
                               <button
-                                onClick={() => !isInPack && setEditingItemPrice(item.barcode)}
-                                disabled={isInPack}
-                                className={`font-semibold text-lg flex items-center gap-1 ${
-                                  isInPack 
-                                    ? 'text-emerald-700 cursor-not-allowed' 
-                                    : 'text-slate-900 hover:text-primary cursor-pointer'
-                                }`}
-                                title={isInPack ? "Precio del pack aplicado automáticamente" : "Click para editar precio"}
+                                onClick={() => setEditingItemPrice(item.barcode)}
+                                className="font-semibold text-lg flex items-center gap-1 text-slate-900 hover:text-primary cursor-pointer"
+                                title="Click para editar precio"
                               >
                                 €{itemPrice.toFixed(2)}
-                                {!isInPack && <Edit2 className="h-3 w-3 opacity-50" />}
+                                <Edit2 className="h-3 w-3 opacity-50" />
                               </button>
                             )}
                             <Button
