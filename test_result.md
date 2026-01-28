@@ -244,6 +244,18 @@ backend:
           comment: "✅ COMPREHENSIVE TEST PASSED: Complete Flow - Customer with Provider→Create Rental with Discount→Modify Days→Partial Return→Verify Status. Full integration working correctly"
 
 frontend:
+  - task: "Dashboard Historical Date Range Filter"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Dashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test new Dashboard date range filter functionality: Login with admin2/admin123, verify initial UI (Hoy/Semana/Mes tabs + Rango Personalizado button), test custom date selector popover, validate filter active state (blue button, dates shown, tabs hidden, X button), verify filtered data in Rankings section, test clearing filter, and validate form behavior (disabled apply button without complete selection)"
+
   - task: "Providers Page - CRUD Operations"
     implemented: true
     working: true
