@@ -21,7 +21,8 @@ import {
   Clock,
   ArrowRight,
   Edit2,
-  X
+  X,
+  AlertTriangle
 } from "lucide-react";
 import { toast } from "sonner";
 
