@@ -766,6 +766,178 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Item Dialog */}
+      {editingItem && (
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Editar Artículo</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Código de Barras *</Label>
+                  <Input
+                    value={editingItem.barcode}
+                    onChange={(e) => setEditingItem({ ...editingItem, barcode: e.target.value })}
+                    className="h-11 mt-1 font-mono"
+                  />
+                </div>
+                <div>
+                  <Label>Tipo *</Label>
+                  <Select 
+                    value={editingItem.item_type} 
+                    onValueChange={(v) => setEditingItem({ ...editingItem, item_type: v })}
+                  >
+                    <SelectTrigger className="h-11 mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ITEM_TYPES.filter(t => t.value !== "").map(type => (
+                        <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Marca *</Label>
+                  <Input
+                    value={editingItem.brand}
+                    onChange={(e) => setEditingItem({ ...editingItem, brand: e.target.value })}
+                    className="h-11 mt-1"
+                  />
+                </div>
+                <div>
+                  <Label>Modelo *</Label>
+                  <Input
+                    value={editingItem.model}
+                    onChange={(e) => setEditingItem({ ...editingItem, model: e.target.value })}
+                    className="h-11 mt-1"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Talla *</Label>
+                  <Input
+                    value={editingItem.size}
+                    onChange={(e) => setEditingItem({ ...editingItem, size: e.target.value })}
+                    className="h-11 mt-1"
+                  />
+                </div>
+                <div>
+                  <Label>Categoría</Label>
+                  <Select 
+                    value={editingItem.category} 
+                    onValueChange={(v) => setEditingItem({ ...editingItem, category: v })}
+                  >
+                    <SelectTrigger className="h-11 mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="SUPERIOR">Gama Superior</SelectItem>
+                      <SelectItem value="ALTA">Gama Alta</SelectItem>
+                      <SelectItem value="MEDIA">Gama Media</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Precio Coste (€)</Label>
+                  <Input
+                    type="number"
+                    value={editingItem.purchase_price}
+                    onChange={(e) => setEditingItem({ ...editingItem, purchase_price: e.target.value })}
+                    className="h-11 mt-1"
+                  />
+                </div>
+                <div>
+                  <Label>Mantenimiento cada (días)</Label>
+                  <Input
+                    type="number"
+                    value={editingItem.maintenance_interval}
+                    onChange={(e) => setEditingItem({ ...editingItem, maintenance_interval: e.target.value })}
+                    className="h-11 mt-1"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label>Ubicación</Label>
+                <Input
+                  value={editingItem.location}
+                  onChange={(e) => setEditingItem({ ...editingItem, location: e.target.value })}
+                  className="h-11 mt-1"
+                  placeholder="Ej: Estante A1"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => {
+                setShowEditDialog(false);
+                setEditingItem(null);
+              }}>
+                Cancelar
+              </Button>
+              <Button onClick={updateItem}>
+                Guardar Cambios
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {deletingItem && (
+        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Eliminar Artículo</DialogTitle>
+              <DialogDescription>
+                ¿Estás seguro de que quieres eliminar este artículo?
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <div className="bg-slate-50 rounded-lg p-4 space-y-2">
+                <p className="font-mono font-medium">{deletingItem.barcode}</p>
+                <p className="text-sm text-slate-600">
+                  {deletingItem.brand} {deletingItem.model} - {deletingItem.size}
+                </p>
+                <Badge className={getCategoryBadge(deletingItem.category)}>
+                  {deletingItem.category}
+                </Badge>
+              </div>
+              {deletingItem.status === 'rented' && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                  <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-red-700">
+                    No se puede eliminar este artículo porque está actualmente alquilado.
+                  </p>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => {
+                setShowDeleteDialog(false);
+                setDeletingItem(null);
+              }}>
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={deleteItem}
+                disabled={deletingItem.status === 'rented'}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Eliminar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
