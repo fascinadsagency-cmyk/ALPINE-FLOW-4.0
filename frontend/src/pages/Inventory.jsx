@@ -577,19 +577,37 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Tipo *</Label>
-                <Select 
-                  value={newItem.item_type} 
-                  onValueChange={(v) => setNewItem({ ...newItem, item_type: v })}
-                >
-                  <SelectTrigger className="h-11 mt-1" data-testid="new-item-type">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ITEM_TYPES.map(type => (
-                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-2 mt-1">
+                  <Select 
+                    value={newItem.item_type} 
+                    onValueChange={(v) => setNewItem({ ...newItem, item_type: v })}
+                  >
+                    <SelectTrigger className="h-11 flex-1" data-testid="new-item-type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {itemTypes.map(type => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                          {!type.is_default && (
+                            <Badge variant="secondary" className="ml-2 text-xs">Personalizado</Badge>
+                          )}
+                        </SelectItem>
+                      ))}
+                      <div className="border-t my-1"></div>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setShowAddTypeDialog(true);
+                        }}
+                        className="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-slate-100 rounded text-primary font-medium"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Añadir nuevo tipo
+                      </button>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
