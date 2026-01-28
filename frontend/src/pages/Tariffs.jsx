@@ -481,42 +481,6 @@ export default function Tariffs() {
           </Card>
         </TabsContent>
       </Tabs>
-                        <div className="flex flex-wrap gap-1 mt-3">
-                          {pack.items?.map(item => (
-                            <Badge key={item} variant="outline">
-                              {ITEM_TYPES.find(t => t.value === item)?.label || item}
-                            </Badge>
-                          ))}
-                        </div>
-                        <div className="mt-4 pt-4 border-t border-slate-100">
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div>
-                              <span className="text-slate-500">1 día:</span>
-                              <span className="ml-1 font-semibold">€{pack.price_1_day}</span>
-                            </div>
-                            <div>
-                              <span className="text-slate-500">2-3 días:</span>
-                              <span className="ml-1 font-semibold">€{pack.price_2_3_days}</span>
-                            </div>
-                            <div>
-                              <span className="text-slate-500">4-7 días:</span>
-                              <span className="ml-1 font-semibold">€{pack.price_4_7_days}</span>
-                            </div>
-                            <div>
-                              <span className="text-slate-500">Semana:</span>
-                              <span className="ml-1 font-semibold">€{pack.price_week}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
 
       {/* Create/Edit Pack Dialog */}
       <Dialog open={showPackDialog} onOpenChange={() => {
