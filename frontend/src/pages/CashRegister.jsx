@@ -278,15 +278,15 @@ export default function CashRegister() {
                 <TableRow>
                   <TableHead>Hora</TableHead>
                   <TableHead>Tipo</TableHead>
+                  <TableHead>Cliente</TableHead>
                   <TableHead>Concepto</TableHead>
-                  <TableHead>Categoría</TableHead>
                   <TableHead>Método</TableHead>
                   <TableHead className="text-right">Importe</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {movements.map((movement) => (
-                  <TableRow key={movement.id}>
+                  <TableRow key={movement.id} className={movement.movement_type === 'refund' ? 'bg-orange-50/50' : ''}>
                     <TableCell className="font-mono">
                       {movement.created_at.split('T')[1].substring(0, 5)}
                     </TableCell>
@@ -296,6 +296,11 @@ export default function CashRegister() {
                           <ArrowUpRight className="h-3 w-3 mr-1" />
                           Entrada
                         </Badge>
+                      ) : movement.movement_type === 'refund' ? (
+                        <Badge className="bg-orange-100 text-orange-700">
+                          <ArrowDownLeft className="h-3 w-3 mr-1" />
+                          Devolución
+                        </Badge>
                       ) : (
                         <Badge className="bg-red-100 text-red-700">
                           <ArrowDownLeft className="h-3 w-3 mr-1" />
@@ -303,13 +308,25 @@ export default function CashRegister() {
                         </Badge>
                       )}
                     </TableCell>
-                    <TableCell className="font-medium">{movement.concept}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">{movement.category}</Badge>
+                      {movement.customer_name ? (
+                        <span className="font-medium text-slate-700">{movement.customer_name}</span>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
                     </TableCell>
-                    <TableCell>{movement.payment_method}</TableCell>
+                    <TableCell className="font-medium max-w-[200px] truncate" title={movement.concept}>
+                      {movement.concept}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{movement.payment_method}</Badge>
+                    </TableCell>
                     <TableCell className={`text-right font-bold ${
-                      movement.movement_type === 'income' ? 'text-emerald-600' : 'text-red-600'
+                      movement.movement_type === 'income' 
+                        ? 'text-emerald-600' 
+                        : movement.movement_type === 'refund'
+                        ? 'text-orange-600'
+                        : 'text-red-600'
                     }`}>
                       {movement.movement_type === 'income' ? '+' : '-'}€{movement.amount.toFixed(2)}
                     </TableCell>
