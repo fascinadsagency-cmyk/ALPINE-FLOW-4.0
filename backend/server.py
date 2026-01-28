@@ -642,22 +642,38 @@ async def get_tariff(item_type: str, current_user: dict = Depends(get_current_us
 class PackCreate(BaseModel):
     name: str
     description: Optional[str] = ""
+    category: str = "MEDIA"  # SUPERIOR, ALTA, MEDIA
     items: List[str]  # List of item types
-    price_1_day: float
-    price_2_3_days: float
-    price_4_7_days: float
-    price_week: float
+    day_1: float = 0
+    day_2: float = 0
+    day_3: float = 0
+    day_4: float = 0
+    day_5: float = 0
+    day_6: float = 0
+    day_7: float = 0
+    day_8: float = 0
+    day_9: float = 0
+    day_10: float = 0
+    day_11_plus: float = 0
 
 class PackResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
     name: str
     description: str
+    category: str = "MEDIA"
     items: List[str]
-    price_1_day: float
-    price_2_3_days: float
-    price_4_7_days: float
-    price_week: float
+    day_1: float = 0
+    day_2: float = 0
+    day_3: float = 0
+    day_4: float = 0
+    day_5: float = 0
+    day_6: float = 0
+    day_7: float = 0
+    day_8: float = 0
+    day_9: float = 0
+    day_10: float = 0
+    day_11_plus: float = 0
 
 @api_router.post("/packs", response_model=PackResponse)
 async def create_pack(pack: PackCreate, current_user: dict = Depends(get_current_user)):
