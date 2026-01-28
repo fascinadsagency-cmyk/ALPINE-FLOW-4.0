@@ -163,23 +163,107 @@ export default function Reports() {
 
   return (
     <div className="p-6 lg:p-8" data-testid="reports-page">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans' }}>
-            Reportes
-          </h1>
-          <p className="text-slate-500 mt-1">Cierre de día y estadísticas</p>
+      {/* Header with Date Range Selector */}
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+              Reportes
+            </h1>
+            <p className="text-slate-500 mt-1">Análisis flexible por rangos y comparativa interanual</p>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" onClick={handlePrint}>
+              <Printer className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" onClick={handleExportPDF}>
+              <Download className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-slate-400" />
-          <Input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="w-40 h-11"
-            data-testid="report-date"
-          />
-        </div>
+
+        {/* Date Range Controls */}
+        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-blue-50">
+          <CardContent className="pt-6">
+            <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+              {/* Date Range Picker */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-1">
+                <div className="flex items-center gap-2">
+                  <CalendarRange className="h-5 w-5 text-primary" />
+                  <Label className="font-semibold text-slate-700">Periodo:</Label>
+                </div>
+                
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full sm:w-auto justify-start text-left font-normal border-2">
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {dateRange?.from && dateRange?.to ? (
+                        <>
+                          {format(dateRange.from, 'dd MMM', { locale: es })} - {format(dateRange.to, 'dd MMM yyyy', { locale: es })}
+                          <Badge variant="secondary" className="ml-2">
+                            {differenceInDays(dateRange.to, dateRange.from) + 1} días
+                          </Badge>
+                        </>
+                      ) : (
+                        "Seleccionar rango"
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="range"
+                      selected={dateRange}
+                      onSelect={setDateRange}
+                      numberOfMonths={2}
+                      locale={es}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Quick Selection Buttons */}
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setQuickRange('week')}
+                  className="text-xs"
+                >
+                  Esta Semana
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setQuickRange('month')}
+                  className="text-xs"
+                >
+                  Este Mes
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setQuickRange('season')}
+                  className="text-xs"
+                >
+                  Toda la Temporada
+                </Button>
+              </div>
+
+              {/* Compare Toggle */}
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white border border-slate-200">
+                <Switch
+                  checked={compareMode}
+                  onCheckedChange={setCompareMode}
+                  id="compare-mode"
+                />
+                <Label htmlFor="compare-mode" className="text-sm font-medium cursor-pointer">
+                  Comparar con {dateRange?.from ? format(subYears(dateRange.from, 1), 'yyyy', { locale: es }) : 'año anterior'}
+                </Label>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {report && (
