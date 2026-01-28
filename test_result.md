@@ -243,15 +243,18 @@ frontend:
 
   - task: "Customers Page - Provider Integration"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/pages/Customers.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "testing"
           comment: "Need to test customer creation with provider selection, provider filtering, and discount message display"
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED SUCCESSFULLY: Customer page loads correctly, new customer modal opens with all fields (name, DNI, phone, address, city, provider), provider dropdown works with Test Provider option, discount message displays when provider selected, customer creation completes, provider filter dropdown present with 'Todos' and provider options"
 
   - task: "New Rental - Customer Creation Modal"
     implemented: true
