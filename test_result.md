@@ -226,17 +226,101 @@ backend:
           comment: "✅ COMPREHENSIVE TEST PASSED: Complete Flow - Customer with Provider→Create Rental with Discount→Modify Days→Partial Return→Verify Status. Full integration working correctly"
 
 frontend:
-  - task: "Frontend Integration"
-    implemented: false
+  - task: "Providers Page - CRUD Operations"
+    implemented: true
     working: "NA"
-    file: "N/A"
+    file: "/app/frontend/src/pages/Providers.jsx"
     stuck_count: 0
-    priority: "low"
-    needs_retesting: false
+    priority: "high"
+    needs_retesting: true
     status_history:
         - working: "NA"
           agent: "testing"
-          comment: "Frontend testing not required for this phase"
+          comment: "Need to test provider creation, editing, statistics modal, and provider filtering functionality"
+
+  - task: "Customers Page - Provider Integration"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Customers.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test customer creation with provider selection, provider filtering, and discount message display"
+
+  - task: "New Rental - Customer Creation Modal"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/NewRental.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test new customer creation from rental page, provider selection, and automatic customer selection after creation"
+
+  - task: "Inventory - Edit/Delete Items"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Inventory.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test item editing modal, field updates, and delete functionality with proper validation"
+
+  - task: "Active Rentals - Modify Days"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ActiveRentals.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test rental days modification, preview calculations, and total updates"
+
+  - task: "Returns - Pending Returns Panel"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Returns.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test pending returns display, manual barcode entry, and return processing workflow"
+
+  - task: "Tariffs - Packs with Categories"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Tariffs.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test pack creation with categories, pricing configuration, and pack management (edit/delete)"
+
+  - task: "Complete Rental Flow with Provider Discount"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/NewRental.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test complete rental flow with provider discount application, discount banner display, and total calculations"
 
 metadata:
   created_by: "testing_agent"
