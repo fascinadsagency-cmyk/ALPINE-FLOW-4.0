@@ -1377,6 +1377,12 @@ async def process_refund(rental_id: str, refund: RefundRequest, current_user: di
     
     return {
         "message": "Reembolso procesado correctamente",
+        "refund_amount": refund.refund_amount,
+        "days_refunded": refund.days_to_refund,
+        "new_days": new_days,
+        "new_total": new_total,
+        "rental": updated_rental
+    }
 
 @api_router.post("/rentals/{rental_id}/quick-return")
 async def quick_return(rental_id: str, current_user: dict = Depends(get_current_user)):
