@@ -414,11 +414,45 @@ async def update_item(item_id: str, item: ItemCreate, current_user: dict = Depen
     if not existing:
         raise HTTPException(status_code=404, detail="Item not found")
     
-    update_doc = item.model_dump()
+    # Check if barcode changed and new barcode exists
+    if item.barcode != existing["barcode"]:
+        barcode_exists = await db.items.find_one({"barcode": item.barcode, "id": {"$ne": item_id}})
+        if barcode_exists:
+            raise HTTPException(status_code=400, detail="Barcode already exists")
+    
+    update_doc = {
+        "barcode": item.barcode,
+        "item_type": item.item_type,
+        "brand": item.brand,
+        "model": item.model,
+        "size": item.size,
+        "purchase_price": item.purchase_price,
+        "purchase_date": item.purchase_date,
+        "location": item.location or "",
+        "category": item.category or "MEDIA",
+        "maintenance_interval": item.maintenance_interval or 30
+    }
     await db.items.update_one({"id": item_id}, {"$set": update_doc})
     
     updated = await db.items.find_one({"id": item_id}, {"_id": 0})
     return ItemResponse(**updated)
+
+@api_router.delete("/items/{item_id}")
+async def delete_item(item_id: str, current_user: dict = Depends(get_current_user)):
+    item = await db.items.find_one({"id": item_id})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    # Check if item is currently rented
+    if item["status"] == "rented":
+        raise HTTPException(status_code=400, detail="Cannot delete: item is currently rented")
+    
+    # Move to retired status instead of deleting for traceability
+    await db.items.update_one(
+        {"id": item_id},
+        {"$set": {"status": "retired", "retired_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    return {"message": "Item retired successfully"}
 
 @api_router.put("/items/{item_id}/status")
 async def update_item_status(item_id: str, status: str = Query(...), current_user: dict = Depends(get_current_user)):
