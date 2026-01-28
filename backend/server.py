@@ -1250,6 +1250,53 @@ async def update_source(source_id: str, source: SourceCreate, current_user: dict
     updated["customer_count"] = count
     return SourceResponse(**updated)
 
+@api_router.get("/sources/{source_id}/stats")
+async def get_source_stats(source_id: str, current_user: dict = Depends(get_current_user)):
+    """Get statistics for a specific provider/source"""
+    source = await db.sources.find_one({"id": source_id}, {"_id": 0})
+    if not source:
+        raise HTTPException(status_code=404, detail="Source not found")
+    
+    # Get customers from this source
+    customers = await db.customers.find({"source": source["name"]}, {"_id": 0}).to_list(1000)
+    customer_ids = [c["id"] for c in customers]
+    
+    # Get rentals from these customers
+    rentals = await db.rentals.find(
+        {"customer_id": {"$in": customer_ids}},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(1000)
+    
+    # Calculate statistics
+    total_customers = len(customers)
+    total_revenue = sum(r["total_amount"] for r in rentals)
+    total_commission = total_revenue * (source["commission_percent"] / 100)
+    average_ticket = total_revenue / len(rentals) if rentals else 0
+    
+    # Prepare detailed rental list
+    rental_details = []
+    for rental in rentals:
+        commission = rental["total_amount"] * (source["commission_percent"] / 100)
+        rental_details.append({
+            "date": rental.get("created_at", ""),
+            "customer_name": rental["customer_name"],
+            "customer_dni": rental["customer_dni"],
+            "amount": rental["total_amount"],
+            "commission": commission,
+            "rental_id": rental["id"]
+        })
+    
+    return {
+        "source": source,
+        "stats": {
+            "total_customers": total_customers,
+            "total_revenue": total_revenue,
+            "average_ticket": average_ticket,
+            "total_commission": total_commission
+        },
+        "rentals": rental_details
+    }
+
 # ==================== CASH REGISTER (CAJA) ROUTES ====================
 
 class CashMovementCreate(BaseModel):
