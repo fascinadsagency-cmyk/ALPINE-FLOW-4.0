@@ -1281,6 +1281,10 @@ async def update_rental_days(rental_id: str, update_data: UpdateRentalDaysReques
     start_date = datetime.fromisoformat(rental["start_date"].replace('Z', '+00:00'))
     new_end_date = start_date + timedelta(days=update_data.days - 1)
     
+    # Calculate difference for cash register
+    old_total = rental["total_amount"]
+    price_difference = update_data.new_total - old_total
+    
     # Update rental
     new_pending = update_data.new_total - rental["paid_amount"]
     await db.rentals.update_one(
@@ -1294,6 +1298,27 @@ async def update_rental_days(rental_id: str, update_data: UpdateRentalDaysReques
             }
         }
     )
+    
+    # Create cash movement if there's a price difference
+    if price_difference != 0:
+        customer_name = rental.get("customer_name", "Cliente")
+        movement_type = "income" if price_difference > 0 else "expense"
+        concept = f"Ampliación Alquiler #{rental_id[:8]} - {customer_name}" if price_difference > 0 else f"Reducción Alquiler #{rental_id[:8]} - {customer_name}"
+        
+        cash_doc = {
+            "id": str(uuid.uuid4()),
+            "movement_type": movement_type,
+            "amount": abs(price_difference),
+            "payment_method": rental.get("payment_method", "cash"),
+            "category": "rental",
+            "concept": concept,
+            "notes": f"Modificación de {rental['days']} a {update_data.days} días",
+            "rental_id": rental_id,
+            "customer_name": customer_name,
+            "created_by": current_user["username"],
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.cash_movements.insert_one(cash_doc)
     
     updated = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
     return RentalResponse(**updated)
