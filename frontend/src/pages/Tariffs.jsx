@@ -299,10 +299,12 @@ export default function Tariffs() {
     }
   };
 
-  const deletePack = async (packId) => {
+  const deletePack = async () => {
     try {
-      await axios.delete(`${API}/packs/${packId}`);
+      await axios.delete(`${API}/packs/${deletingPack.id}`);
       toast.success("Pack eliminado");
+      setShowDeleteDialog(false);
+      setDeletingPack(null);
       loadData();
     } catch (error) {
       toast.error("Error al eliminar pack");
