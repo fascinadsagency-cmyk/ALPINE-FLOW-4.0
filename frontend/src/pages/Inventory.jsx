@@ -16,14 +16,6 @@ import JsBarcode from 'jsbarcode';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const ITEM_TYPES = [
-  { value: "ski", label: "Esquís" },
-  { value: "snowboard", label: "Snowboard" },
-  { value: "boots", label: "Botas" },
-  { value: "helmet", label: "Casco" },
-  { value: "poles", label: "Bastones" },
-];
-
 const STATUS_OPTIONS = [
   { value: "all", label: "Todos" },
   { value: "available", label: "Disponible" },
@@ -60,6 +52,7 @@ export default function Inventory() {
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showAddTypeDialog, setShowAddTypeDialog] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [deletingItem, setDeletingItem] = useState(null);
   const [importLoading, setImportLoading] = useState(false);
@@ -67,6 +60,8 @@ export default function Inventory() {
   const [generatedBarcodes, setGeneratedBarcodes] = useState([]);
   const [barcodePrefix, setBarcodePrefix] = useState("SKI");
   const [barcodeCount, setBarcodeCount] = useState(5);
+  const [itemTypes, setItemTypes] = useState([]);
+  const [newTypeName, setNewTypeName] = useState("");
   const fileInputRef = useRef(null);
   
   const [newItem, setNewItem] = useState({
@@ -85,7 +80,27 @@ export default function Inventory() {
 
   useEffect(() => {
     loadItems();
+    loadItemTypes();
   }, [filterStatus, filterType, filterCategory]);
+
+  const loadItemTypes = async () => {
+    try {
+      const response = await axios.get(`${API}/item-types`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      setItemTypes(response.data);
+    } catch (error) {
+      console.error("Error loading item types:", error);
+      // Fallback to default types if API fails
+      setItemTypes([
+        { value: "ski", label: "Esquís", is_default: true },
+        { value: "snowboard", label: "Snowboard", is_default: true },
+        { value: "boots", label: "Botas", is_default: true },
+        { value: "helmet", label: "Casco", is_default: true },
+        { value: "poles", label: "Bastones", is_default: true },
+      ]);
+    }
+  };
 
   const loadItems = async () => {
     setLoading(true);
