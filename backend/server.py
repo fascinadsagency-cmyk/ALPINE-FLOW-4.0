@@ -284,6 +284,19 @@ class RangeReportResponse(BaseModel):
     pending_returns: List[dict]
     commissions: List[CommissionSummary]
 
+# Item Type Models (for custom types)
+class ItemTypeCreate(BaseModel):
+    value: str  # Internal key (e.g., "snowblade")
+    label: str  # Display name (e.g., "Snowblade")
+
+class ItemTypeResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    value: str
+    label: str
+    is_default: bool
+    created_at: str
+
 # ==================== AUTH HELPERS ====================
 
 def hash_password(password: str) -> str:
