@@ -154,9 +154,30 @@ export default function Providers() {
     }
   };
 
-  const openStatistics = (provider) => {
-    // TODO: Implementar en siguiente paso
-    toast.info("Estadísticas próximamente");
+  const openStatistics = async (provider) => {
+    setStatsLoading(true);
+    setShowStatsDialog(true);
+    try {
+      const response = await axios.get(`${API}/sources/${provider.id}/stats`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      setStatsData(response.data);
+    } catch (error) {
+      toast.error("Error al cargar estadísticas");
+      setShowStatsDialog(false);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  const formatCurrency = (amount) => {
+    return `€${amount.toFixed(2)}`;
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
   return (
