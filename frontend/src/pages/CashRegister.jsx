@@ -821,6 +821,85 @@ export default function CashRegister() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Closure History Dialog */}
+      <Dialog open={showHistoryDialog} onOpenChange={setShowHistoryDialog}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Historial de Cierres de Caja
+            </DialogTitle>
+            <DialogDescription>
+              Consulta y gestiona los cierres de caja anteriores
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 max-h-[400px] overflow-y-auto">
+            {closureHistory.length === 0 ? (
+              <p className="text-center py-8 text-slate-500">No hay cierres registrados</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead className="text-right">Entradas</TableHead>
+                    <TableHead className="text-right">Salidas</TableHead>
+                    <TableHead className="text-right">Esperado</TableHead>
+                    <TableHead className="text-right">Contado</TableHead>
+                    <TableHead className="text-right">Diferencia</TableHead>
+                    <TableHead className="w-20"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {closureHistory.map((closure) => (
+                    <TableRow key={closure.date}>
+                      <TableCell className="font-medium">{closure.date}</TableCell>
+                      <TableCell className="text-right text-emerald-600">
+                        €{(closure.total_income || 0).toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-right text-red-600">
+                        €{(closure.total_expense || 0).toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        €{(closure.expected_balance || 0).toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold">
+                        €{(closure.physical_cash || 0).toFixed(2)}
+                      </TableCell>
+                      <TableCell className={`text-right font-bold ${
+                        (closure.difference || 0) === 0 
+                          ? 'text-emerald-600' 
+                          : (closure.difference || 0) > 0 
+                          ? 'text-blue-600' 
+                          : 'text-red-600'
+                      }`}>
+                        {(closure.difference || 0) >= 0 ? '+' : ''}€{(closure.difference || 0).toFixed(2)}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50"
+                          onClick={() => revertClosure(closure.date)}
+                          title="Revertir cierre"
+                          data-testid={`revert-closure-${closure.date}`}
+                        >
+                          <Undo2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowHistoryDialog(false)}>
+              Cerrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
