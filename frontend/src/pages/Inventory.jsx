@@ -270,14 +270,15 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
   };
 
   const updateItem = async () => {
-    if (!editingItem.barcode || !editingItem.brand || !editingItem.model || !editingItem.size) {
-      toast.error("Completa todos los campos obligatorios");
+    if (!editingItem.internal_code || !editingItem.brand || !editingItem.model || !editingItem.size) {
+      toast.error("Completa todos los campos obligatorios (Código Interno, Marca, Modelo, Talla)");
       return;
     }
     
     try {
       await axios.put(`${API}/items/${editingItem.id}`, {
         barcode: editingItem.barcode,
+        internal_code: editingItem.internal_code,
         item_type: editingItem.item_type,
         brand: editingItem.brand,
         model: editingItem.model,
@@ -822,22 +823,23 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Código de Barras *</Label>
+                  <Label className="text-base font-semibold">Código Interno * <span className="text-primary">🏷️</span></Label>
+                  <Input
+                    value={editingItem.internal_code || ""}
+                    onChange={(e) => setEditingItem({ ...editingItem, internal_code: e.target.value.toUpperCase() })}
+                    placeholder="Ej: SKI-G-001"
+                    className="h-11 mt-1 font-mono font-semibold text-base border-2 border-primary/50 focus:border-primary"
+                  />
+                  <p className="text-xs text-primary font-medium mt-1">Tu numeración principal de tienda</p>
+                </div>
+                <div>
+                  <Label>Código de Barras</Label>
                   <Input
                     value={editingItem.barcode}
                     onChange={(e) => setEditingItem({ ...editingItem, barcode: e.target.value })}
                     className="h-11 mt-1 font-mono"
                   />
-                </div>
-                <div>
-                  <Label>Código Interno</Label>
-                  <Input
-                    value={editingItem.internal_code || ""}
-                    onChange={(e) => setEditingItem({ ...editingItem, internal_code: e.target.value.toUpperCase() })}
-                    placeholder="Ej: SKI-G-001"
-                    className="h-11 mt-1 font-mono"
-                  />
-                  <p className="text-xs text-slate-500 mt-1">Numeración propia de la tienda</p>
+                  <p className="text-xs text-slate-500 mt-1">Para escaneo con lector</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
