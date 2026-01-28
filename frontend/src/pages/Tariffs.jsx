@@ -443,11 +443,70 @@ export default function Tariffs() {
                   {packs.map((pack) => (
                     <Card key={pack.id} className="border-slate-200">
                       <CardContent className="pt-6">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="font-semibold text-slate-900">{pack.name}</h3>
-                            {pack.description && (
-                              <p className="text-sm text-slate-500 mt-1">{pack.description}</p>
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-lg">{getCategoryIcon(pack.category)}</span>
+                              <h3 className="font-semibold text-slate-900">{pack.name}</h3>
+                            </div>
+                            <Badge className={getCategoryBadge(pack.category)}>
+                              Gama {pack.category}
+                            </Badge>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openEditPack(pack)}
+                              className="h-8 w-8"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openDeletePack(pack)}
+                              className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        {pack.description && (
+                          <p className="text-sm text-slate-500 mt-2">{pack.description}</p>
+                        )}
+                        <div className="flex flex-wrap gap-1 mt-3">
+                          {pack.items?.map(item => (
+                            <Badge key={item} variant="outline">
+                              {ITEM_TYPES.find(t => t.value === item)?.label || item}
+                            </Badge>
+                          ))}
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-slate-100">
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <span className="text-slate-500">Día 1-2:</span>
+                              <span className="ml-1 font-semibold">€{pack.day_1 || 0} / €{pack.day_2 || 0}</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-500">Día 3-5:</span>
+                              <span className="ml-1 font-semibold">€{pack.day_3 || 0} - €{pack.day_5 || 0}</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-500">Día 6-10:</span>
+                              <span className="ml-1 font-semibold">€{pack.day_6 || 0} - €{pack.day_10 || 0}</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-500">Día 11+:</span>
+                              <span className="ml-1 font-semibold">€{pack.day_11_plus || 0}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
                             )}
                           </div>
                           <Button
