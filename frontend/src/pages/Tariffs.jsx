@@ -314,78 +314,132 @@ export default function Tariffs() {
 
         {/* Individual Prices */}
         <TabsContent value="individual">
-          <Card className="border-slate-200">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-slate-500" />
-                Precios por Tipo de Artículo (€)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-40">Tipo</TableHead>
-                      <TableHead>1 día</TableHead>
-                      <TableHead>2-3 días</TableHead>
-                      <TableHead>4-7 días</TableHead>
-                      <TableHead>Semana</TableHead>
-                      <TableHead>Temporada</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {ITEM_TYPES.map((type) => (
-                      <TableRow key={type.value}>
-                        <TableCell className="font-medium">{type.label}</TableCell>
-                        <TableCell>
+          <div className="space-y-6">
+            {/* Daily Pricing (Detailed) */}
+            <Card className="border-slate-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <DollarSign className="h-5 w-5 text-slate-500" />
+                  Precios Diarios Detallados (Días 1-10 + 11+)
+                </CardTitle>
+                <p className="text-sm text-slate-500 mt-2">
+                  Configura precios específicos para cada uno de los primeros 10 días
+                </p>
+              </CardHeader>
+              <CardContent>
+                {ITEM_TYPES.map((type) => (
+                  <div key={type.value} className="mb-6 last:mb-0">
+                    <h3 className="font-semibold text-slate-900 mb-3">{type.label}</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((day) => (
+                        <div key={day}>
+                          <Label className="text-xs text-slate-500">Día {day}</Label>
                           <Input
                             type="number"
-                            value={tariffs[type.value]?.days_1 || ""}
-                            onChange={(e) => updateTariff(type.value, "days_1", e.target.value)}
-                            className="w-24 h-10"
-                            data-testid={`tariff-${type.value}-1`}
+                            step="0.01"
+                            placeholder="0.00"
+                            value={tariffs[type.value]?.[`day_${day}`] || ""}
+                            onChange={(e) => updateTariff(type.value, `day_${day}`, e.target.value)}
+                            className="w-full h-9 mt-1"
+                            data-testid={`tariff-${type.value}-day-${day}`}
                           />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            type="number"
-                            value={tariffs[type.value]?.days_2_3 || ""}
-                            onChange={(e) => updateTariff(type.value, "days_2_3", e.target.value)}
-                            className="w-24 h-10"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            type="number"
-                            value={tariffs[type.value]?.days_4_7 || ""}
-                            onChange={(e) => updateTariff(type.value, "days_4_7", e.target.value)}
-                            className="w-24 h-10"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            type="number"
-                            value={tariffs[type.value]?.week || ""}
-                            onChange={(e) => updateTariff(type.value, "week", e.target.value)}
-                            className="w-24 h-10"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            type="number"
-                            value={tariffs[type.value]?.season || ""}
-                            onChange={(e) => updateTariff(type.value, "season", e.target.value)}
-                            className="w-24 h-10"
-                          />
-                        </TableCell>
+                        </div>
+                      ))}
+                      <div>
+                        <Label className="text-xs text-slate-500">Día 11+</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          value={tariffs[type.value]?.day_11_plus || ""}
+                          onChange={(e) => updateTariff(type.value, "day_11_plus", e.target.value)}
+                          className="w-full h-9 mt-1"
+                          data-testid={`tariff-${type.value}-day-11plus`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Legacy Pricing (Simple - for backward compatibility) */}
+            <Card className="border-slate-200 bg-slate-50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <DollarSign className="h-5 w-5 text-slate-500" />
+                  Precios Simples (Legacy - Opcional)
+                </CardTitle>
+                <p className="text-sm text-slate-500 mt-2">
+                  Sistema anterior: usado solo si no hay precios diarios configurados
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-40">Tipo</TableHead>
+                        <TableHead>1 día</TableHead>
+                        <TableHead>2-3 días</TableHead>
+                        <TableHead>4-7 días</TableHead>
+                        <TableHead>Semana</TableHead>
+                        <TableHead>Temporada</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {ITEM_TYPES.map((type) => (
+                        <TableRow key={type.value}>
+                          <TableCell className="font-medium">{type.label}</TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              value={tariffs[type.value]?.days_1 || ""}
+                              onChange={(e) => updateTariff(type.value, "days_1", e.target.value)}
+                              className="w-24 h-10"
+                              data-testid={`tariff-${type.value}-1`}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              value={tariffs[type.value]?.days_2_3 || ""}
+                              onChange={(e) => updateTariff(type.value, "days_2_3", e.target.value)}
+                              className="w-24 h-10"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              value={tariffs[type.value]?.days_4_7 || ""}
+                              onChange={(e) => updateTariff(type.value, "days_4_7", e.target.value)}
+                              className="w-24 h-10"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              value={tariffs[type.value]?.week || ""}
+                              onChange={(e) => updateTariff(type.value, "week", e.target.value)}
+                              className="w-24 h-10"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              value={tariffs[type.value]?.season || ""}
+                              onChange={(e) => updateTariff(type.value, "season", e.target.value)}
+                              className="w-24 h-10"
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         {/* Packs */}
