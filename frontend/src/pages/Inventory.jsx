@@ -70,8 +70,8 @@ export default function Inventory() {
   const fileInputRef = useRef(null);
   
   const [newItem, setNewItem] = useState({
-    barcode: "",
     internal_code: "",
+    barcode: "",
     item_type: "ski",
     brand: "",
     model: "",
@@ -111,17 +111,21 @@ export default function Inventory() {
   };
 
   const createItem = async () => {
-    if (!newItem.barcode || !newItem.brand || !newItem.model || !newItem.size) {
-      toast.error("Completa todos los campos obligatorios");
+    if (!newItem.internal_code || !newItem.brand || !newItem.model || !newItem.size) {
+      toast.error("Completa todos los campos obligatorios (Código Interno, Marca, Modelo, Talla)");
       return;
     }
     
     try {
-      await itemApi.create({
+      // Si no hay barcode, generar uno automáticamente basado en internal_code
+      const itemToCreate = {
         ...newItem,
+        barcode: newItem.barcode || `BC-${newItem.internal_code}`,
         purchase_price: parseFloat(newItem.purchase_price) || 0,
         maintenance_interval: parseInt(newItem.maintenance_interval) || 30
-      });
+      };
+      
+      await itemApi.create(itemToCreate);
       toast.success("Artículo creado correctamente");
       setShowAddDialog(false);
       resetNewItem();
@@ -133,6 +137,7 @@ export default function Inventory() {
 
   const resetNewItem = () => {
     setNewItem({
+      internal_code: "",
       barcode: "",
       item_type: "ski",
       brand: "",
@@ -503,24 +508,27 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Código de Barras *</Label>
-                <Input
-                  value={newItem.barcode}
-                  onChange={(e) => setNewItem({ ...newItem, barcode: e.target.value })}
-                  className="h-11 mt-1 font-mono"
-                  data-testid="new-item-barcode"
-                />
-              </div>
-              <div>
-                <Label>Código Interno</Label>
+                <Label className="text-base font-semibold">Código Interno * <span className="text-primary">🏷️</span></Label>
                 <Input
                   value={newItem.internal_code}
                   onChange={(e) => setNewItem({ ...newItem, internal_code: e.target.value.toUpperCase() })}
                   placeholder="Ej: SKI-G-001"
-                  className="h-11 mt-1 font-mono"
+                  className="h-11 mt-1 font-mono font-semibold text-base border-2 border-primary/50 focus:border-primary"
                   data-testid="new-item-internal-code"
+                  autoFocus
                 />
-                <p className="text-xs text-slate-500 mt-1">Numeración propia de la tienda</p>
+                <p className="text-xs text-primary font-medium mt-1">Tu numeración principal de tienda</p>
+              </div>
+              <div>
+                <Label>Código de Barras <span className="text-slate-400 text-xs">(Opcional)</span></Label>
+                <Input
+                  value={newItem.barcode}
+                  onChange={(e) => setNewItem({ ...newItem, barcode: e.target.value })}
+                  placeholder="Escanear o dejar vacío"
+                  className="h-11 mt-1 font-mono"
+                  data-testid="new-item-barcode"
+                />
+                <p className="text-xs text-slate-500 mt-1">Se auto-genera si está vacío</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
