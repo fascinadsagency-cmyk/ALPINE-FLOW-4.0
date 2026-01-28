@@ -1878,6 +1878,17 @@ async def get_dashboard_analytics(
         ).to_list(10)
         
         for item in stale_item_data[:3]:
+            # Calculate days idle based on custom period or default
+            if start_date and end_date:
+                # Custom range: approximate based on date difference
+                days_idle = (datetime.strptime(analysis_end, "%Y-%m-%d") - datetime.strptime(analysis_start, "%Y-%m-%d")).days
+            elif period == "month":
+                days_idle = 30
+            elif period == "week":
+                days_idle = 7
+            else:
+                days_idle = 1
+            
             stale_items.append({
                 "barcode": item.get("barcode"),
                 "brand": item.get("brand", ""),
@@ -1885,7 +1896,7 @@ async def get_dashboard_analytics(
                 "item_type": item.get("item_type", ""),
                 "size": item.get("size", ""),
                 "category": item.get("category", "MEDIA"),
-                "days_idle": 30 if period == "month" else 7  # Approximation
+                "days_idle": days_idle
             })
     
     return {
