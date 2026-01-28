@@ -16,7 +16,8 @@ import {
   X,
   Loader2,
   Settings,
-  RefreshCw
+  RefreshCw,
+  FileText
 } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
