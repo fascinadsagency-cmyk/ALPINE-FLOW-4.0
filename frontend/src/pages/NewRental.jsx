@@ -1179,11 +1179,6 @@ export default function NewRental() {
                               <Badge className={getCategoryBadge(item.category || 'MEDIA')}>
                                 {item.category || 'MEDIA'}
                               </Badge>
-                              {isInPack && (
-                                <Badge className="bg-emerald-600 text-white text-xs">
-                                  En Pack
-                                </Badge>
-                              )}
                               <span className="font-mono text-sm text-slate-500">{item.barcode}</span>
                             </div>
                             <p className="font-medium text-slate-900 mt-1">
