@@ -182,7 +182,7 @@ export default function CashRegister() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
         <Card className="border-emerald-200 bg-emerald-50/50">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -211,14 +211,29 @@ export default function CashRegister() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200">
+        <Card className="border-orange-200 bg-orange-50/50">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-600">Saldo</p>
+                <p className="text-sm font-medium text-orange-700">Devoluciones</p>
+                <p className="text-3xl font-bold text-orange-700">
+                  €{(summary?.total_refunds || 0).toFixed(2)}
+                </p>
+              </div>
+              <ArrowDownLeft className="h-8 w-8 text-orange-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-600">Saldo Neto</p>
                 <p className={`text-3xl font-bold ${(summary?.balance || 0) >= 0 ? 'text-slate-900' : 'text-red-600'}`}>
                   €{(summary?.balance || 0).toFixed(2)}
                 </p>
+                <p className="text-xs text-slate-500 mt-1">Ingresos - Salidas - Devol.</p>
               </div>
               <Wallet className="h-8 w-8 text-slate-400" />
             </div>
