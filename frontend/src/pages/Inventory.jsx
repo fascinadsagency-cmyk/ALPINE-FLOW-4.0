@@ -410,54 +410,75 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Código</TableHead>
+                    <TableHead>Código Barras</TableHead>
+                    <TableHead>Código Interno</TableHead>
                     <TableHead>Tipo</TableHead>
                     <TableHead>Categoría</TableHead>
                     <TableHead>Marca / Modelo</TableHead>
                     <TableHead>Talla</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead>Días Uso</TableHead>
+                    <TableHead>Usos para Mant.</TableHead>
                     <TableHead>Ubicación</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {items.map((item) => (
-                    <TableRow key={item.id} className="hover:bg-slate-50">
-                      <TableCell className="font-mono">{item.barcode}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {ITEM_TYPES.find(t => t.value === item.item_type)?.label || item.item_type}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getCategoryBadge(item.category || 'MEDIA')}>
-                          {item.category || 'MEDIA'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {item.brand} {item.model}
-                      </TableCell>
-                      <TableCell>{item.size}</TableCell>
-                      <TableCell>{getStatusBadge(item.status)}</TableCell>
-                      <TableCell>{item.days_used}</TableCell>
-                      <TableCell>{item.location || '-'}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openEditDialog(item)}
-                            className="h-8 w-8"
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openDeleteDialog(item)}
-                            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
+                  {items.map((item) => {
+                    const usesRemaining = (item.maintenance_interval || 30) - (item.days_used || 0);
+                    const needsMaintenance = usesRemaining <= 0;
+                    
+                    return (
+                      <TableRow key={item.id} className="hover:bg-slate-50">
+                        <TableCell className="font-mono text-sm">{item.barcode}</TableCell>
+                        <TableCell className="font-mono text-sm font-semibold text-primary">
+                          {item.internal_code || '-'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {ITEM_TYPES.find(t => t.value === item.item_type)?.label || item.item_type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getCategoryBadge(item.category || 'MEDIA')}>
+                            {item.category || 'MEDIA'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {item.brand} {item.model}
+                        </TableCell>
+                        <TableCell>{item.size}</TableCell>
+                        <TableCell>{getStatusBadge(item.status)}</TableCell>
+                        <TableCell className="text-center">{item.days_used}</TableCell>
+                        <TableCell>
+                          {needsMaintenance ? (
+                            <Badge variant="destructive" className="whitespace-nowrap animate-pulse">
+                              <AlertCircle className="h-3 w-3 mr-1" />
+                              ¡MANTENIMIENTO!
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="whitespace-nowrap bg-emerald-50 text-emerald-700 border-emerald-200">
+                              {usesRemaining} {usesRemaining === 1 ? 'uso' : 'usos'}
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>{item.location || '-'}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openEditDialog(item)}
+                              className="h-8 w-8"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openDeleteDialog(item)}
+                              className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
