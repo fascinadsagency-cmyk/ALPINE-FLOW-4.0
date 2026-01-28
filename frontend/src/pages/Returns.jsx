@@ -36,6 +36,13 @@ export default function Returns() {
       barcodeRef.current.focus();
     }
     loadPendingReturns();
+    
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(() => {
+      loadPendingReturns();
+    }, 30000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const loadPendingReturns = async () => {
