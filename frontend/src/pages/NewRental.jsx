@@ -230,7 +230,7 @@ export default function NewRental() {
       const cat = item.category || 'MEDIA';
       if (!acc[cat]) acc[cat] = [];
       acc[cat].push(item);
-      return {};
+      return acc;
     }, {});
 
     // For each category, check if items form a pack
