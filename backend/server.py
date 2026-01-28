@@ -1231,20 +1231,101 @@ async def get_dashboard(current_user: dict = Depends(get_current_user)):
     # Recent activity
     recent_rentals = await db.rentals.find({}, {"_id": 0}).sort("created_at", -1).to_list(10)
     
-    # Alerts
-    alerts = []
+    # Occupancy by Category (Gama)
+    category_stats = await db.items.aggregate([
+        {
+            "$group": {
+                "_id": {
+                    "category": "$category",
+                    "status": "$status"
+                },
+                "count": {"$sum": 1}
+            }
+        }
+    ]).to_list(50)
     
-    # Items needing maintenance
-    maintenance_alerts = await db.items.find(
-        {"days_used": {"$gte": 30}, "status": "available"},
-        {"_id": 0, "barcode": 1, "brand": 1, "model": 1, "days_used": 1}
-    ).to_list(10)
-    for item in maintenance_alerts:
-        alerts.append({
+    # Process category stats for occupancy calculation
+    occupancy_by_category = {
+        "SUPERIOR": {"total": 0, "rented": 0, "percentage": 0},
+        "ALTA": {"total": 0, "rented": 0, "percentage": 0},
+        "MEDIA": {"total": 0, "rented": 0, "percentage": 0}
+    }
+    
+    for stat in category_stats:
+        category = stat["_id"]["category"]
+        status = stat["_id"]["status"]
+        count = stat["count"]
+        
+        if category in occupancy_by_category:
+            occupancy_by_category[category]["total"] += count
+            if status == "rented":
+                occupancy_by_category[category]["rented"] += count
+    
+    # Calculate percentages
+    for category in occupancy_by_category:
+        total = occupancy_by_category[category]["total"]
+        rented = occupancy_by_category[category]["rented"]
+        if total > 0:
+            occupancy_by_category[category]["percentage"] = round((rented / total) * 100, 1)
+    
+    # Maintenance Alerts (grouped by category and item type)
+    maintenance_items = await db.items.aggregate([
+        {
+            "$match": {
+                "$expr": {
+                    "$gte": ["$days_used", "$maintenance_interval"]
+                },
+                "status": {"$in": ["available", "rented"]}
+            }
+        },
+        {
+            "$group": {
+                "_id": {
+                    "category": "$category",
+                    "item_type": "$item_type"
+                },
+                "count": {"$sum": 1},
+                "items": {
+                    "$push": {
+                        "id": "$id",
+                        "barcode": "$barcode",
+                        "brand": "$brand",
+                        "model": "$model",
+                        "days_used": "$days_used",
+                        "maintenance_interval": "$maintenance_interval"
+                    }
+                }
+            }
+        }
+    ]).to_list(50)
+    
+    # Build maintenance alerts
+    maintenance_alerts = []
+    for group in maintenance_items:
+        category = group["_id"]["category"]
+        item_type = group["_id"]["item_type"]
+        count = group["count"]
+        
+        # Determine service type based on item type
+        service_type = "mantenimiento general"
+        if item_type in ["ski", "snowboard"]:
+            service_type = "encerado"
+        elif item_type == "boots":
+            service_type = "revisión"
+        
+        maintenance_alerts.append({
             "type": "maintenance",
-            "message": f"{item['brand']} {item['model']} ({item['barcode']}) - {item['days_used']} días de uso",
-            "severity": "warning"
+            "category": category,
+            "item_type": item_type,
+            "count": count,
+            "service_type": service_type,
+            "message": f"{count} {item_type} (Gama {category}) requieren {service_type}",
+            "severity": "warning",
+            "items": group["items"]
         })
+    
+    # Alerts
+    alerts = maintenance_alerts
     
     # Overdue rentals
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -1261,6 +1342,7 @@ async def get_dashboard(current_user: dict = Depends(get_current_user)):
     
     return {
         "stats": stats,
+        "occupancy_by_category": occupancy_by_category,
         "recent_activity": recent_rentals[:5],
         "alerts": alerts
     }
