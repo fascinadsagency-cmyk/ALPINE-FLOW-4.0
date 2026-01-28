@@ -369,7 +369,7 @@ frontend:
 
   - task: "Reports - Flexible System with Interannual Comparisons"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/pages/Reports.jsx"
     stuck_count: 0
     priority: "high"
