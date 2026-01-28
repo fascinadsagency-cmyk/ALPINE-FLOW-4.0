@@ -217,6 +217,38 @@ class MaintenanceResponse(BaseModel):
     completed_date: Optional[str]
     created_at: str
 
+# External Workshop (Taller Externo) Models
+class ExternalRepairCreate(BaseModel):
+    customer_name: str
+    customer_phone: str
+    customer_id: Optional[str] = None
+    equipment_description: str
+    services: List[str]  # ["wax", "sharpen", "patch", "bindings"]
+    delivery_date: str  # ISO date
+    delivery_time: Optional[str] = None
+    priority: str = "normal"  # normal, priority, urgent
+    price: float = 0
+    notes: Optional[str] = None
+
+class ExternalRepairResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    customer_name: str
+    customer_phone: str
+    customer_id: Optional[str] = None
+    equipment_description: str
+    services: List[str]
+    delivery_date: str
+    delivery_time: Optional[str] = None
+    priority: str
+    price: float
+    notes: Optional[str] = None
+    status: str  # pending, in_progress, completed, delivered
+    created_at: str
+    completed_at: Optional[str] = None
+    delivered_at: Optional[str] = None
+    payment_method: Optional[str] = None
+
 class DailyReportResponse(BaseModel):
     date: str
     total_revenue: float
