@@ -47,6 +47,7 @@ function AppRoutes() {
       >
         <Route index element={<Dashboard />} />
         <Route path="nuevo-alquiler" element={<NewRental />} />
+        <Route path="alquileres-activos" element={<ActiveRentals />} />
         <Route path="devoluciones" element={<Returns />} />
         <Route path="clientes" element={<Customers />} />
         <Route path="inventario" element={<Inventory />} />
