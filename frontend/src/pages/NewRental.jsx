@@ -143,6 +143,7 @@ export default function NewRental() {
   useEffect(() => {
     loadTariffs();
     loadSources();
+    loadPacks();
     const timer = setTimeout(() => setShowTimeHint(false), 5000);
     return () => clearTimeout(timer);
   }, []);
