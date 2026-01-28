@@ -682,11 +682,19 @@ async def create_pack(pack: PackCreate, current_user: dict = Depends(get_current
         "id": pack_id,
         "name": pack.name,
         "description": pack.description or "",
+        "category": pack.category,
         "items": pack.items,
-        "price_1_day": pack.price_1_day,
-        "price_2_3_days": pack.price_2_3_days,
-        "price_4_7_days": pack.price_4_7_days,
-        "price_week": pack.price_week,
+        "day_1": pack.day_1,
+        "day_2": pack.day_2,
+        "day_3": pack.day_3,
+        "day_4": pack.day_4,
+        "day_5": pack.day_5,
+        "day_6": pack.day_6,
+        "day_7": pack.day_7,
+        "day_8": pack.day_8,
+        "day_9": pack.day_9,
+        "day_10": pack.day_10,
+        "day_11_plus": pack.day_11_plus,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.packs.insert_one(doc)
