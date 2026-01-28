@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the new inventory flow with mandatory 'Código Interno' (internal_code) functionality: User registration/login, Create item with internal_code, Search by internal_code and barcode, Validate required fields and duplicates"
+user_problem_statement: "Test the new Dashboard historical date range filter functionality: Login with admin2/admin123, verify initial UI with predefined tabs, test custom date range selector, validate filter active state, verify filtered data, test clearing filter, and validate form behavior"
 
 backend:
   - task: "Inventory Internal Code Flow"
