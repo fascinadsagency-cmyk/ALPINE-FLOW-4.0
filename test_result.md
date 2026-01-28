@@ -429,7 +429,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Editable Item Types System"
+    - "Automatic Pack Pricing System - Silent Detection"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
