@@ -810,19 +810,41 @@ export default function NewRental() {
                 </div>
               )}
 
+              {/* Provider Discount Info */}
+              {customer?.source && getProviderDiscount() > 0 && (
+                <div className="mb-4 p-3 rounded-lg bg-blue-50 border border-blue-200 flex items-center gap-2">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-blue-900">
+                      Descuento {customer.source}
+                    </p>
+                    <p className="text-xs text-blue-700">
+                      Se aplicará automáticamente {getProviderDiscount()}% de descuento
+                    </p>
+                  </div>
+                  <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                    -{getProviderDiscount()}%
+                  </Badge>
+                </div>
+              )}
+
               <div className="flex items-center justify-between p-4 rounded-xl bg-primary/5 mt-4">
-                <div>
-                  {hasDiscount && (
+                <div className="flex-1">
+                  {(hasDiscount || getProviderDiscount() > 0) && (
                     <p className="text-sm text-slate-500 line-through">€{subtotal.toFixed(2)}</p>
                   )}
                   <div className="flex items-center gap-3">
                     <div>
                       <p className="text-sm text-slate-500">Total a pagar</p>
                       <p className="text-3xl font-bold text-slate-900">€{total.toFixed(2)}</p>
+                      {getProviderDiscount() > 0 && (
+                        <p className="text-xs text-slate-500 mt-1">
+                          Incluye descuento {customer.source}
+                        </p>
+                      )}
                     </div>
-                    {hasDiscount && (
+                    {(hasDiscount || getProviderDiscount() > 0) && (
                       <Badge className="bg-emerald-100 text-emerald-700">
-                        -{((subtotal - total) / subtotal * 100).toFixed(0)}%
+                        -€{(subtotal - total).toFixed(2)}
                       </Badge>
                     )}
                   </div>
