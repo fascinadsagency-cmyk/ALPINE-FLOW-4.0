@@ -1559,10 +1559,32 @@ export default function NewRental() {
       </Dialog>
 
       {/* Manual Item Search Dialog */}
-      <Dialog open={showItemSearch} onOpenChange={setShowItemSearch}>
+      <Dialog open={showItemSearch} onOpenChange={(open) => {
+        setShowItemSearch(open);
+        if (!open) {
+          setSearchFilter(null);
+          setItemSearchType("all");
+          setItemSearchCategory("all");
+          setItemSearchTerm("");
+        }
+      }}>
         <DialogContent className="sm:max-w-2xl max-h-[80vh]">
           <DialogHeader>
-            <DialogTitle>Buscar Artículo Manualmente</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              {searchFilter ? (
+                <>
+                  <Sparkles className="h-5 w-5 text-amber-500" />
+                  Completar Pack - Buscar {ITEM_TYPES.find(t => t.value === searchFilter.type)?.label || searchFilter.type}
+                </>
+              ) : (
+                "Buscar Artículo Manualmente"
+              )}
+            </DialogTitle>
+            {searchFilter && (
+              <p className="text-sm text-amber-600">
+                Mostrando artículos de tipo <strong>{ITEM_TYPES.find(t => t.value === searchFilter.type)?.label}</strong> en categoría <strong>{searchFilter.category}</strong> para completar el pack
+              </p>
+            )}
           </DialogHeader>
           
           {/* Search Filters */}
