@@ -369,16 +369,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Providers Page - CRUD Operations"
-    - "Customers Page - Provider Integration"
-    - "New Rental - Customer Creation Modal"
-    - "Inventory - Edit/Delete Items"
-    - "Active Rentals - Modify Days"
-    - "Returns - Pending Returns Panel"
-    - "Tariffs - Packs with Categories"
-    - "Complete Rental Flow with Provider Discount"
+    - "Inventory Internal Code Flow"
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
@@ -392,3 +385,5 @@ agent_communication:
       message: "🎯 STARTING COMPREHENSIVE FRONTEND TESTING: Testing all FASE 1 and FASE 2 frontend functionalities using Playwright. Will test 8 major frontend components: Providers CRUD, Customers with Provider Integration, New Rental Customer Creation, Inventory Edit/Delete, Active Rentals Modification, Returns Panel, Tariffs Packs, and Complete Rental Flow with Discounts."
     - agent: "testing"
       message: "🎉 COMPREHENSIVE FRONTEND TESTING COMPLETED SUCCESSFULLY! All 8 major frontend components tested and working: ✅ Providers Page (CRUD operations, statistics), ✅ Customers Page (provider integration, filtering), ✅ New Rental (customer creation modal), ✅ Inventory (edit/delete buttons), ✅ Active Rentals (modify days modal), ✅ Returns (pending panel with HOY/OTROS DÍAS sections), ✅ Tariffs (packs with categories), ✅ Complete Rental Flow (provider discount integration). All UI components render correctly, modals open properly, forms accept input, and provider discount system is fully integrated."
+    - agent: "testing"
+      message: "🎯 INVENTORY INTERNAL CODE TESTING COMPLETED: Tested new inventory flow with mandatory 'Código Interno' (internal_code). All 10 tests passed (100% success rate): ✅ User Registration/Login, ✅ Create Item with Internal Code (mandatory field), ✅ Validation Tests (prevents creation without internal_code, prevents duplicates), ✅ Search by Internal Code (prioritized), ✅ Search by Barcode, ✅ List All Items, ✅ Search Filters working correctly. Fixed database compatibility issue with existing items. ALL INVENTORY INTERNAL CODE FUNCTIONALITY WORKING PERFECTLY."
