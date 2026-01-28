@@ -70,9 +70,10 @@ export default function Integrations() {
 
   const loadConfigs = async () => {
     try {
-      const [whatsappRes, tpvRes] = await Promise.all([
+      const [whatsappRes, tpvRes, verifactuRes] = await Promise.all([
         axios.get(`${API}/integrations/config/whatsapp`),
-        axios.get(`${API}/integrations/config/tpv`)
+        axios.get(`${API}/integrations/config/tpv`),
+        axios.get(`${API}/integrations/config/verifactu`)
       ]);
       
       if (whatsappRes.data.config) {
@@ -80,6 +81,9 @@ export default function Integrations() {
       }
       if (tpvRes.data.config) {
         setTpvConfig({ ...tpvConfig, ...tpvRes.data.config, enabled: tpvRes.data.enabled });
+      }
+      if (verifactuRes.data.config) {
+        setVerifactuConfig({ ...verifactuConfig, ...verifactuRes.data.config, enabled: verifactuRes.data.enabled });
       }
     } catch (error) {
       console.log("Configs not loaded yet");
