@@ -59,6 +59,11 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 - Alertas de pagos pendientes
 - **Auto-actualización** del panel
 - **Botones de contacto** rápido
+- **✅ REEMBOLSO PARCIAL**: Abono por días no disfrutados
+  - Botón "Reembolso Parcial" visible en la ficha del alquiler
+  - Calcula automáticamente el precio por día (considerando packs/descuentos)
+  - Permite seleccionar días a reembolsar
+  - Genera asiento negativo en Caja etiquetado como "Devolución Alquiler #ID"
 
 ### 6. Inventario
 - **Importación CSV masiva**
@@ -83,10 +88,15 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 - Historial de mantenimientos
 - Tipos: afilado, encerado, reparación, inspección
 
-### 9. Gestión de Caja
-- Registro de entradas/salidas de dinero
-- Cierres de caja diarios
+### 9. Gestión de Caja (FLUJO FINANCIERO COMPLETO)
+- **✅ Vinculación automática con Alquileres**: Todo cobro genera asiento
+- **✅ Columna Cliente**: Muestra el nombre del cliente en cada movimiento
+- **✅ Tarjeta de Devoluciones**: Suma total de reembolsos del día (naranja)
+- **✅ Saldo Neto**: Entradas - Salidas - Devoluciones = Dinero real en caja
+- Registro de entradas/salidas manuales
+- Cierres de caja diarios con arqueo
 - Desglose por método de pago
+- Exportación a CSV
 
 ### 10. Reportes
 - Cierre de día con desglose por método de pago
