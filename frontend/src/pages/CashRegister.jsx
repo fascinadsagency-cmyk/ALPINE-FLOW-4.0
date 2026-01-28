@@ -69,8 +69,10 @@ export default function CashRegister() {
     concept: "",
     notes: ""
   });
+  const [physicalCash, setPhysicalCash] = useState("");
+  const [closeNotes, setCloseNotes] = useState("");
   
-  // Arqueo form
+  // Arqueo form (for future redesign)
   const [arqueoForm, setArqueoForm] = useState({
     physical_cash: "",
     card_sales: "",
