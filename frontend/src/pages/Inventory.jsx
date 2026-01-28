@@ -485,7 +485,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            {ITEM_TYPES.find(t => t.value === item.item_type)?.label || item.item_type}
+                            {itemTypes.find(t => t.value === item.item_type)?.label || item.item_type}
                           </Badge>
                         </TableCell>
                         <TableCell>
