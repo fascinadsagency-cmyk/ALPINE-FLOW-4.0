@@ -784,6 +784,55 @@ async def get_rental_by_barcode(barcode: str, current_user: dict = Depends(get_c
         raise HTTPException(status_code=404, detail="No active rental found for this item")
     return RentalResponse(**rental)
 
+@api_router.get("/rentals/pending/returns")
+async def get_pending_returns(current_user: dict = Depends(get_current_user)):
+    """Get all rentals with pending returns, grouped by date"""
+    today = datetime.now(timezone.utc).date().isoformat()
+    
+    # Get all active and partial rentals
+    rentals = await db.rentals.find(
+        {"status": {"$in": ["active", "partial"]}},
+        {"_id": 0}
+    ).sort("end_date", 1).to_list(200)
+    
+    today_returns = []
+    other_returns = []
+    
+    for rental in rentals:
+        end_date = rental["end_date"].split("T")[0]  # Get just the date part
+        pending_items = [i for i in rental["items"] if not i.get("returned", False)]
+        
+        if not pending_items:
+            continue
+            
+        rental_info = {
+            "id": rental["id"],
+            "customer_name": rental["customer_name"],
+            "customer_dni": rental["customer_dni"],
+            "end_date": end_date,
+            "pending_items": pending_items,
+            "pending_amount": rental["pending_amount"],
+            "days_overdue": 0
+        }
+        
+        # Calculate overdue days
+        end_dt = datetime.fromisoformat(end_date)
+        today_dt = datetime.fromisoformat(today)
+        days_diff = (today_dt - end_dt).days
+        
+        if days_diff > 0:
+            rental_info["days_overdue"] = days_diff
+        
+        if end_date == today:
+            today_returns.append(rental_info)
+        else:
+            other_returns.append(rental_info)
+    
+    return {
+        "today": today_returns,
+        "other_days": other_returns
+    }
+
 @api_router.post("/rentals/{rental_id}/return")
 async def process_return(rental_id: str, return_input: ReturnInput, current_user: dict = Depends(get_current_user)):
     rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
