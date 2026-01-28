@@ -1426,16 +1426,18 @@ async def deliver_external_repair(
     # Create cash movement (income from workshop)
     if repair["price"] > 0:
         cash_movement_id = str(uuid.uuid4())
+        # Build description from notes or services
+        work_desc = repair.get("notes", "") or ", ".join(repair.get("services", ["Reparación"]))
         cash_doc = {
             "id": cash_movement_id,
             "movement_type": "income",
             "amount": repair["price"],
             "payment_method": delivery.payment_method,
             "category": "workshop",
-            "concept": f"Taller: {repair['equipment_description'][:30]} - {repair['customer_name']}",
+            "concept": f"Servicio Taller: {repair['customer_name']}",
             "reference_id": repair_id,
             "customer_name": repair["customer_name"],
-            "notes": f"Servicios: {', '.join(repair['services'])}",
+            "notes": f"{repair['equipment_description']} - {work_desc[:50]}",
             "created_at": now,
             "created_by": current_user["username"]
         }
