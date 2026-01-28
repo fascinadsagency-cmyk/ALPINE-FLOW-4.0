@@ -1540,6 +1540,9 @@ async def get_daily_report(date: Optional[str] = None, current_user: dict = Depe
                 "customer_name": r["customer_name"],
                 "customer_dni": r["customer_dni"],
                 "end_date": r["end_date"],
+                "pending_items": len(pending_items),
+                "pending_amount": r.get("pending_amount", 0)
+            })
 
 @api_router.get("/reports/range", response_model=RangeReportResponse)
 async def get_range_report(
