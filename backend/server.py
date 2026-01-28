@@ -1137,6 +1137,36 @@ async def delete_source(source_id: str, current_user: dict = Depends(get_current
     await db.sources.delete_one({"id": source_id})
     return {"message": "Source deleted"}
 
+@api_router.put("/sources/{source_id}", response_model=SourceResponse)
+async def update_source(source_id: str, source: SourceCreate, current_user: dict = Depends(get_current_user)):
+    existing = await db.sources.find_one({"id": source_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Source not found")
+    
+    # Check if name changed and new name exists
+    if source.name != existing["name"]:
+        name_exists = await db.sources.find_one({"name": source.name, "id": {"$ne": source_id}})
+        if name_exists:
+            raise HTTPException(status_code=400, detail="Source name already exists")
+    
+    update_doc = {
+        "name": source.name,
+        "is_favorite": source.is_favorite,
+        "discount_percent": source.discount_percent,
+        "commission_percent": source.commission_percent,
+        "contact_person": source.contact_person or "",
+        "email": source.email or "",
+        "phone": source.phone or "",
+        "notes": source.notes or "",
+        "active": source.active
+    }
+    await db.sources.update_one({"id": source_id}, {"$set": update_doc})
+    
+    updated = await db.sources.find_one({"id": source_id}, {"_id": 0})
+    count = await db.customers.count_documents({"source": updated["name"]})
+    updated["customer_count"] = count
+    return SourceResponse(**updated)
+
 # ==================== CASH REGISTER (CAJA) ROUTES ====================
 
 class CashMovementCreate(BaseModel):
