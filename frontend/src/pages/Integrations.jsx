@@ -94,10 +94,12 @@ export default function Integrations() {
 
   const loadConfigs = async () => {
     try {
-      const [whatsappRes, tpvRes, verifactuRes] = await Promise.all([
+      const [whatsappRes, tpvRes, verifactuRes, emailRes, calendarRes] = await Promise.all([
         axios.get(`${API}/integrations/config/whatsapp`),
         axios.get(`${API}/integrations/config/tpv`),
-        axios.get(`${API}/integrations/config/verifactu`)
+        axios.get(`${API}/integrations/config/verifactu`),
+        axios.get(`${API}/integrations/config/email`),
+        axios.get(`${API}/integrations/config/calendar`)
       ]);
       
       if (whatsappRes.data.config) {
@@ -108,6 +110,12 @@ export default function Integrations() {
       }
       if (verifactuRes.data.config) {
         setVerifactuConfig({ ...verifactuConfig, ...verifactuRes.data.config, enabled: verifactuRes.data.enabled });
+      }
+      if (emailRes.data.config) {
+        setEmailConfig({ ...emailConfig, ...emailRes.data.config, enabled: emailRes.data.enabled });
+      }
+      if (calendarRes.data.config) {
+        setCalendarConfig({ ...calendarConfig, ...calendarRes.data.config, enabled: calendarRes.data.enabled });
       }
     } catch (error) {
       console.log("Configs not loaded yet");
