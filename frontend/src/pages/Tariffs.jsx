@@ -198,10 +198,10 @@ export default function Tariffs() {
         </Button>
       </div>
 
-      <Tabs defaultValue="individual" className="space-y-6">
+      <Tabs defaultValue="packs" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="individual">Precios Individuales</TabsTrigger>
           <TabsTrigger value="packs">Packs / Combos</TabsTrigger>
+          <TabsTrigger value="individual">Precios Individuales</TabsTrigger>
         </TabsList>
 
         {/* Individual Prices */}
