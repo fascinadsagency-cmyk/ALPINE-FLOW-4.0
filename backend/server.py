@@ -654,6 +654,73 @@ async def update_item(item_id: str, item: ItemCreate, current_user: dict = Depen
 
 @api_router.delete("/items/{item_id}")
 async def delete_item(item_id: str, current_user: dict = Depends(get_current_user)):
+
+
+# ==================== ITEM TYPES ROUTES ====================
+
+@api_router.get("/item-types", response_model=List[ItemTypeResponse])
+async def get_item_types(current_user: dict = Depends(get_current_user)):
+    """Get all item types (default + custom)"""
+    # Default types
+    default_types = [
+        {"id": "default_ski", "value": "ski", "label": "Esquís", "is_default": True, "created_at": ""},
+        {"id": "default_snowboard", "value": "snowboard", "label": "Snowboard", "is_default": True, "created_at": ""},
+        {"id": "default_boots", "value": "boots", "label": "Botas", "is_default": True, "created_at": ""},
+        {"id": "default_helmet", "value": "helmet", "label": "Casco", "is_default": True, "created_at": ""},
+        {"id": "default_poles", "value": "poles", "label": "Bastones", "is_default": True, "created_at": ""},
+    ]
+    
+    # Get custom types from database
+    custom_types = await db.item_types.find({}, {"_id": 0}).to_list(100)
+    
+    all_types = default_types + [ItemTypeResponse(**t) for t in custom_types]
+    return all_types
+
+@api_router.post("/item-types", response_model=ItemTypeResponse)
+async def create_item_type(item_type: ItemTypeCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new custom item type"""
+    # Normalize value (lowercase, no spaces)
+    normalized_value = item_type.value.lower().replace(" ", "_")
+    
+    # Check if already exists (check both default and custom)
+    default_values = ["ski", "snowboard", "boots", "helmet", "poles"]
+    if normalized_value in default_values:
+        raise HTTPException(status_code=400, detail="This type already exists as a default type")
+    
+    existing = await db.item_types.find_one({"value": normalized_value})
+    if existing:
+        raise HTTPException(status_code=400, detail="This type already exists")
+    
+    type_id = str(uuid.uuid4())
+    doc = {
+        "id": type_id,
+        "value": normalized_value,
+        "label": item_type.label,
+        "is_default": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.item_types.insert_one(doc)
+    return ItemTypeResponse(**doc)
+
+@api_router.delete("/item-types/{type_id}")
+async def delete_item_type(type_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a custom item type (cannot delete default types)"""
+    item_type = await db.item_types.find_one({"id": type_id})
+    if not item_type:
+        raise HTTPException(status_code=404, detail="Item type not found")
+    
+    # Check if any items use this type
+    items_count = await db.items.count_documents({"item_type": item_type["value"]})
+    if items_count > 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot delete this type. {items_count} items are using it."
+        )
+    
+    await db.item_types.delete_one({"id": type_id})
+    return {"message": "Item type deleted successfully"}
+
     item = await db.items.find_one({"id": item_id})
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
