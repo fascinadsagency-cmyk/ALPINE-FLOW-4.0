@@ -24,6 +24,7 @@ class AlpineFlowAPITester:
         self.test_customer_id = None
         self.test_item_ids = []
         self.test_rental_id = None
+        self.test_source_id = None
         self.generated_barcodes = []
 
     def log_test(self, name: str, success: bool, details: str = "", response_data: Any = None):
