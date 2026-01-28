@@ -22,8 +22,9 @@ class InventoryInternalCodeTester:
         
         # Test data storage
         self.test_item_id = None
-        self.test_internal_code = "SKI-001"
-        self.test_barcode = "BC-SKI-001"
+        timestamp = datetime.now().strftime('%H%M%S')
+        self.test_internal_code = f"SKI-{timestamp}"
+        self.test_barcode = f"BC-SKI-{timestamp}"
 
     def log_test(self, name: str, success: bool, details: str = "", response_data: Any = None):
         """Log test result"""
