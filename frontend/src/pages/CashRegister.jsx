@@ -300,6 +300,7 @@ export default function CashRegister() {
                   <TableHead>Concepto</TableHead>
                   <TableHead>Método</TableHead>
                   <TableHead className="text-right">Importe</TableHead>
+                  <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -347,6 +348,17 @@ export default function CashRegister() {
                         : 'text-red-600'
                     }`}>
                       {movement.movement_type === 'income' ? '+' : '-'}€{movement.amount.toFixed(2)}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-slate-500 hover:text-slate-900"
+                        onClick={() => handlePrintTicket(movement)}
+                        data-testid={`print-movement-${movement.id}`}
+                      >
+                        <Printer className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
