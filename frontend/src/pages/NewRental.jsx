@@ -288,6 +288,116 @@ export default function NewRental() {
     return detected;
   };
 
+  // SMART UPSELLING: Detect partial packs (when missing components to complete a pack)
+  const detectPartialPacks = (currentItems) => {
+    if (!packs || packs.length === 0 || currentItems.length === 0) {
+      return [];
+    }
+
+    const suggestions = [];
+    
+    // Group items by category
+    const itemsByCategory = currentItems.reduce((acc, item) => {
+      const cat = item.category || 'MEDIA';
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(item);
+      return acc;
+    }, {});
+
+    // For each category with items, check if we can form a pack by adding more items
+    Object.entries(itemsByCategory).forEach(([category, categoryItems]) => {
+      // Count item types in this category
+      const itemTypeCounts = categoryItems.reduce((acc, item) => {
+        acc[item.item_type] = (acc[item.item_type] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Check each pack of this category
+      const categoryPacks = packs.filter(p => p.category === category);
+      
+      categoryPacks.forEach(pack => {
+        // Count required components for this pack
+        const requiredComponents = pack.items.reduce((acc, itemType) => {
+          acc[itemType] = (acc[itemType] || 0) + 1;
+          return acc;
+        }, {});
+
+        // Find what's missing
+        const missingItems = [];
+        let hasAtLeastOne = false;
+        let canComplete = true;
+
+        for (const [type, requiredCount] of Object.entries(requiredComponents)) {
+          const currentCount = itemTypeCounts[type] || 0;
+          if (currentCount > 0) {
+            hasAtLeastOne = true;
+          }
+          if (currentCount < requiredCount) {
+            for (let i = 0; i < (requiredCount - currentCount); i++) {
+              missingItems.push(type);
+            }
+          }
+        }
+
+        // Only suggest if we have at least one component but not all
+        if (hasAtLeastOne && missingItems.length > 0 && missingItems.length < pack.items.length) {
+          // Calculate individual prices for current items
+          const currentItemsPrice = categoryItems.reduce((sum, item) => {
+            return sum + getItemPrice(item);
+          }, 0);
+
+          // Calculate what we'd pay if we completed the pack
+          const packPrice = getPackPrice(pack);
+          
+          // Estimate individual price for missing items (average)
+          const avgMissingPrice = currentItemsPrice / categoryItems.length;
+          const estimatedTotalWithoutPack = currentItemsPrice + (avgMissingPrice * missingItems.length);
+          
+          // Calculate potential savings
+          const potentialSavings = estimatedTotalWithoutPack - packPrice;
+
+          if (potentialSavings > 0) {
+            suggestions.push({
+              pack: pack,
+              category: category,
+              missingItems: [...new Set(missingItems)], // Unique missing types
+              missingCount: missingItems.length,
+              currentItems: categoryItems.map(i => i.item_type),
+              packPrice: packPrice,
+              potentialSavings: potentialSavings,
+              packName: pack.name
+            });
+          }
+        }
+      });
+    });
+
+    // Return only the best suggestion per category (highest savings)
+    const bestByCategory = {};
+    suggestions.forEach(s => {
+      if (!bestByCategory[s.category] || s.potentialSavings > bestByCategory[s.category].potentialSavings) {
+        bestByCategory[s.category] = s;
+      }
+    });
+
+    return Object.values(bestByCategory);
+  };
+
+  // State for pack suggestions
+  const [packSuggestions, setPackSuggestions] = useState([]);
+
+  // Update suggestions when items change
+  useEffect(() => {
+    const suggestions = detectPartialPacks(items);
+    setPackSuggestions(suggestions);
+  }, [items, packs, numDays]);
+
+  // Open item search with pre-filter for missing item
+  const openSearchForMissingItem = (itemType, category) => {
+    setSearchFilter({ type: itemType, category: category });
+    setShowItemSearch(true);
+  };
+
   // AUTO-COMBO: Calculate price with pack detection
   const getItemPriceWithPack = (item) => {
     // Check if this item is part of a detected pack
