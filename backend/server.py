@@ -1422,14 +1422,6 @@ async def quick_return(rental_id: str, current_user: dict = Depends(get_current_
     
     return {"message": "Quick return successful", "items_returned": len(rental["items"])}
 
-        "refund_amount": refund.refund_amount,
-        "days_refunded": refund.days_to_refund,
-        "new_days": new_days,
-        "new_total": new_total,
-        "cash_movement_id": refund_movement_id,
-        "rental": RentalResponse(**updated_rental)
-    }
-
 # ==================== MAINTENANCE ROUTES ====================
 
 @api_router.post("/maintenance", response_model=MaintenanceResponse)
