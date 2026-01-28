@@ -1097,6 +1097,93 @@ async def update_rental_days(rental_id: str, update_data: UpdateRentalDaysReques
     updated = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
     return RentalResponse(**updated)
 
+# Refund request model
+class RefundRequest(BaseModel):
+    days_to_refund: int
+    refund_amount: float
+    payment_method: str = "cash"
+    reason: str = ""
+
+@api_router.post("/rentals/{rental_id}/refund")
+async def process_refund(rental_id: str, refund: RefundRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Process a partial refund for unused days.
+    Creates a negative entry in the cash register.
+    """
+    rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
+    if not rental:
+        raise HTTPException(status_code=404, detail="Rental not found")
+    
+    if rental["status"] not in ["active", "partial"]:
+        raise HTTPException(status_code=400, detail="No se puede reembolsar un alquiler cerrado")
+    
+    if refund.days_to_refund <= 0:
+        raise HTTPException(status_code=400, detail="Debe especificar al menos 1 día a reembolsar")
+    
+    if refund.refund_amount <= 0:
+        raise HTTPException(status_code=400, detail="El importe de reembolso debe ser positivo")
+    
+    if refund.refund_amount > rental["paid_amount"]:
+        raise HTTPException(status_code=400, detail="El reembolso no puede superar el importe pagado")
+    
+    # Get customer info
+    customer = await db.customers.find_one({"id": rental["customer_id"]}, {"_id": 0})
+    customer_name = customer["name"] if customer else rental.get("customer_name", "Cliente")
+    
+    # Calculate new values
+    original_days = rental["days"]
+    new_days = original_days - refund.days_to_refund
+    new_total = rental["total_amount"] - refund.refund_amount
+    new_paid = rental["paid_amount"] - refund.refund_amount
+    new_pending = new_total - new_paid
+    
+    # Calculate new end date
+    start_date = datetime.fromisoformat(rental["start_date"].replace('Z', '+00:00'))
+    new_end_date = start_date + timedelta(days=new_days - 1) if new_days > 0 else start_date
+    
+    # Update rental record
+    await db.rentals.update_one(
+        {"id": rental_id},
+        {
+            "$set": {
+                "days": new_days,
+                "end_date": new_end_date.isoformat(),
+                "total_amount": new_total,
+                "paid_amount": new_paid,
+                "pending_amount": max(0, new_pending)
+            }
+        }
+    )
+    
+    # Create NEGATIVE cash movement (refund)
+    refund_movement_id = str(uuid.uuid4())
+    refund_doc = {
+        "id": refund_movement_id,
+        "movement_type": "refund",  # Special type for refunds
+        "amount": refund.refund_amount,
+        "payment_method": refund.payment_method,
+        "category": "refund",
+        "concept": f"Devolución Alquiler #{rental_id[:8]} - {customer_name}",
+        "reference_id": rental_id,
+        "customer_name": customer_name,
+        "notes": f"Reembolso {refund.days_to_refund} día(s) no disfrutado(s). {refund.reason}".strip(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": current_user["username"]
+    }
+    await db.cash_movements.insert_one(refund_doc)
+    
+    updated_rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
+    
+    return {
+        "message": "Reembolso procesado correctamente",
+        "refund_amount": refund.refund_amount,
+        "days_refunded": refund.days_to_refund,
+        "new_days": new_days,
+        "new_total": new_total,
+        "cash_movement_id": refund_movement_id,
+        "rental": RentalResponse(**updated_rental)
+    }
+
 # ==================== MAINTENANCE ROUTES ====================
 
 @api_router.post("/maintenance", response_model=MaintenanceResponse)
