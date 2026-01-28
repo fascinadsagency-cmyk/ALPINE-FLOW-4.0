@@ -18,7 +18,8 @@ import {
   Loader2,
   Users,
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  DollarSign
 } from "lucide-react";
 import { toast } from "sonner";
 
