@@ -27,6 +27,7 @@ const navItems = [
   { to: "/alquileres-activos", icon: ShoppingCart, label: "Alquileres Activos" },
   { to: "/devoluciones", icon: RotateCcw, label: "Devoluciones" },
   { to: "/clientes", icon: Users, label: "Clientes" },
+  { to: "/proveedores", icon: Building2, label: "Proveedores" },
   { to: "/inventario", icon: Package, label: "Inventario" },
   { to: "/tarifas", icon: DollarSign, label: "Tarifas" },
   { to: "/caja", icon: Wallet, label: "Caja" },
