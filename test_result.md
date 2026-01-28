@@ -384,7 +384,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Inventory Internal Code Flow"
+    - "Dashboard Historical Date Range Filter"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
