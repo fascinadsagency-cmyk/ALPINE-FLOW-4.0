@@ -925,14 +925,14 @@ export default function NewRental() {
               <div>
                 <Label>Proveedor/Fuente</Label>
                 <Select 
-                  value={newCustomer.source} 
-                  onValueChange={(v) => setNewCustomer({ ...newCustomer, source: v })}
+                  value={newCustomer.source || "none"} 
+                  onValueChange={(v) => setNewCustomer({ ...newCustomer, source: v === "none" ? "" : v })}
                 >
                   <SelectTrigger className="h-11 mt-1">
                     <SelectValue placeholder="Seleccionar..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Sin especificar</SelectItem>
+                    <SelectItem value="none">Sin especificar</SelectItem>
                     <SelectItem value="Web propia">Web propia</SelectItem>
                     <SelectItem value="Booking.com">Booking.com</SelectItem>
                     <SelectItem value="Expedia">Expedia</SelectItem>
