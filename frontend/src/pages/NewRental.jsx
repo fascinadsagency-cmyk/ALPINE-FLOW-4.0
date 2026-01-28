@@ -162,14 +162,7 @@ export default function NewRental() {
   useEffect(() => {
     const detected = detectPacks(items);
     setDetectedPacks(detected);
-    
-    // Show toast notification when pack is detected
-    if (detected.length > detectedPacks.length) {
-      const newPack = detected[detected.length - 1];
-      toast.success(`🎁 Pack detectado: ${newPack.pack.name}`, {
-        duration: 3000
-      });
-    }
+    // Silent detection - no toasts or interruptions
   }, [items, packs, numDays]);
 
   // Keyboard shortcut for item search (F3 or Alt+B)
