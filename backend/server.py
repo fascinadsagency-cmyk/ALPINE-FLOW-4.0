@@ -705,6 +705,34 @@ async def get_packs(current_user: dict = Depends(get_current_user)):
     packs = await db.packs.find({}, {"_id": 0}).to_list(50)
     return [PackResponse(**p) for p in packs]
 
+@api_router.put("/packs/{pack_id}", response_model=PackResponse)
+async def update_pack(pack_id: str, pack: PackCreate, current_user: dict = Depends(get_current_user)):
+    existing = await db.packs.find_one({"id": pack_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Pack not found")
+    
+    update_doc = {
+        "name": pack.name,
+        "description": pack.description or "",
+        "category": pack.category,
+        "items": pack.items,
+        "day_1": pack.day_1,
+        "day_2": pack.day_2,
+        "day_3": pack.day_3,
+        "day_4": pack.day_4,
+        "day_5": pack.day_5,
+        "day_6": pack.day_6,
+        "day_7": pack.day_7,
+        "day_8": pack.day_8,
+        "day_9": pack.day_9,
+        "day_10": pack.day_10,
+        "day_11_plus": pack.day_11_plus
+    }
+    await db.packs.update_one({"id": pack_id}, {"$set": update_doc})
+    
+    updated = await db.packs.find_one({"id": pack_id}, {"_id": 0})
+    return PackResponse(**updated)
+
 @api_router.delete("/packs/{pack_id}")
 async def delete_pack(pack_id: str, current_user: dict = Depends(get_current_user)):
     result = await db.packs.delete_one({"id": pack_id})
