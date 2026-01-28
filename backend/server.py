@@ -1656,11 +1656,7 @@ async def get_range_report(
         commissions=commissions_list
     )
 
-                "pending_items": len(pending_items),
-                "pending_amount": r["pending_amount"]
-            })
-    
-    # Inventory usage
+# ==================== DAILY REPORT ENDPOINT ====================
     total_items = await db.items.count_documents({})
     rented_items = await db.items.count_documents({"status": "rented"})
     usage = (rented_items / total_items * 100) if total_items > 0 else 0
