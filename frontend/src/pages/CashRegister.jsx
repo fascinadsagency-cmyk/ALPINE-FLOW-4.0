@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Wallet, 
   Plus, 
@@ -16,7 +17,13 @@ import {
   Loader2,
   Calendar,
   Lock,
-  Download
+  Download,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  RefreshCcw,
+  Printer,
+  Shield
 } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
@@ -52,6 +59,8 @@ export default function CashRegister() {
   const [loading, setLoading] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showCloseDialog, setShowCloseDialog] = useState(false);
+  const [showHistoryDialog, setShowHistoryDialog] = useState(false);
+  const [closureHistory, setClosureHistory] = useState([]);
   const [movementType, setMovementType] = useState("income");
   const [newMovement, setNewMovement] = useState({
     amount: "",
@@ -60,8 +69,15 @@ export default function CashRegister() {
     concept: "",
     notes: ""
   });
-  const [physicalCash, setPhysicalCash] = useState("");
-  const [closeNotes, setCloseNotes] = useState("");
+  
+  // Arqueo form
+  const [arqueoForm, setArqueoForm] = useState({
+    physical_cash: "",
+    card_sales: "",
+    notes: ""
+  });
+  
+  const [discrepancy, setDiscrepancy] = useState({ cash: 0, card: 0, total: 0 });
 
   useEffect(() => {
     loadData();
