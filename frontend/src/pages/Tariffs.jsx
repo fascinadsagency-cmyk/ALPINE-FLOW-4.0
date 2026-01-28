@@ -711,29 +711,6 @@ export default function Tariffs() {
           </DialogContent>
         </Dialog>
       )}
-              </div>
-              <div>
-                <Label>Precio Semana (€)</Label>
-                <Input
-                  type="number"
-                  value={newPack.price_week}
-                  onChange={(e) => setNewPack({ ...newPack, price_week: e.target.value })}
-                  className="h-11 mt-1"
-                />
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPackDialog(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={createPack}>
-              Crear Pack
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
