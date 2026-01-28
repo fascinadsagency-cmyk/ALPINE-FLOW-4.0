@@ -1057,6 +1057,61 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
           </DialogContent>
         </Dialog>
       )}
+      {/* Add New Type Dialog */}
+      <Dialog open={showAddTypeDialog} onOpenChange={setShowAddTypeDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5 text-primary" />
+              Añadir Nuevo Tipo de Artículo
+            </DialogTitle>
+            <DialogDescription>
+              Crea un nuevo tipo personalizado que se guardará en tu inventario
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div>
+              <Label>Nombre del Tipo *</Label>
+              <Input
+                value={newTypeName}
+                onChange={(e) => setNewTypeName(e.target.value)}
+                placeholder="Ej: Snowblade, Trineo, Protecciones..."
+                className="mt-2 h-11"
+                autoFocus
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    createNewItemType();
+                  }
+                }}
+              />
+              <p className="text-xs text-slate-500 mt-2">
+                Este tipo aparecerá en el desplegable para futuros artículos y en los filtros del sistema
+              </p>
+            </div>
+
+            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <p className="text-sm text-blue-700">
+                <strong>💡 Consejo:</strong> Usa nombres descriptivos y únicos para facilitar la identificación
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowAddTypeDialog(false);
+              setNewTypeName("");
+            }}>
+              Cancelar
+            </Button>
+            <Button onClick={createNewItemType} disabled={!newTypeName.trim()}>
+              <Plus className="h-4 w-4 mr-2" />
+              Crear Tipo
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
