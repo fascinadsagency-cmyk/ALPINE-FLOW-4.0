@@ -330,6 +330,33 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
     }
   };
 
+  const createNewItemType = async () => {
+    if (!newTypeName.trim()) {
+      toast.error("Ingresa un nombre para el nuevo tipo");
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${API}/item-types`, {
+        value: newTypeName.toLowerCase().replace(/\s+/g, '_'),
+        label: newTypeName.trim()
+      }, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      toast.success(`Tipo "${newTypeName}" creado correctamente`);
+      setShowAddTypeDialog(false);
+      setNewTypeName("");
+      
+      // Reload types and set the new type as selected
+      await loadItemTypes();
+      setNewItem({ ...newItem, item_type: response.data.value });
+      
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al crear tipo");
+    }
+  };
+
   return (
     <div className="p-6 lg:p-8" data-testid="inventory-page">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
