@@ -431,7 +431,7 @@ export default function CashRegister() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="p-4 rounded-xl bg-slate-50">
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
                   <p className="text-slate-500">Entradas</p>
                   <p className="font-semibold text-emerald-600">+€{(summary?.total_income || 0).toFixed(2)}</p>
@@ -440,9 +440,13 @@ export default function CashRegister() {
                   <p className="text-slate-500">Salidas</p>
                   <p className="font-semibold text-red-600">-€{(summary?.total_expense || 0).toFixed(2)}</p>
                 </div>
+                <div>
+                  <p className="text-slate-500">Devoluciones</p>
+                  <p className="font-semibold text-orange-600">-€{(summary?.total_refunds || 0).toFixed(2)}</p>
+                </div>
               </div>
               <div className="mt-3 pt-3 border-t border-slate-200">
-                <p className="text-slate-500">Saldo esperado</p>
+                <p className="text-slate-500">Saldo Neto esperado</p>
                 <p className="text-2xl font-bold text-slate-900">€{(summary?.balance || 0).toFixed(2)}</p>
               </div>
             </div>
