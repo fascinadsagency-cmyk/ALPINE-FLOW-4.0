@@ -37,13 +37,24 @@ export default function Tariffs() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showPackDialog, setShowPackDialog] = useState(false);
+  const [editingPack, setEditingPack] = useState(null);
+  const [deletingPack, setDeletingPack] = useState(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [newPack, setNewPack] = useState({
     name: "",
     description: "",
-    price_1_day: "",
-    price_2_3_days: "",
-    price_4_7_days: "",
-    price_week: "",
+    category: "MEDIA",
+    day_1: "",
+    day_2: "",
+    day_3: "",
+    day_4: "",
+    day_5: "",
+    day_6: "",
+    day_7: "",
+    day_8: "",
+    day_9: "",
+    day_10: "",
+    day_11_plus: "",
     items: []
   });
 
