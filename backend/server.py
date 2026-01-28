@@ -1065,12 +1065,26 @@ async def root():
 class SourceCreate(BaseModel):
     name: str
     is_favorite: bool = False
+    discount_percent: float = 0
+    commission_percent: float = 0
+    contact_person: Optional[str] = ""
+    email: Optional[str] = ""
+    phone: Optional[str] = ""
+    notes: Optional[str] = ""
+    active: bool = True
 
 class SourceResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
     name: str
     is_favorite: bool
+    discount_percent: float = 0
+    commission_percent: float = 0
+    contact_person: str = ""
+    email: str = ""
+    phone: str = ""
+    notes: str = ""
+    active: bool = True
     customer_count: int = 0
 
 @api_router.post("/sources", response_model=SourceResponse)
