@@ -411,6 +411,152 @@ export default function Integrations() {
           </Card>
         </TabsContent>
 
+        {/* VeriFactu Integration */}
+        <TabsContent value="verifactu">
+          <Card className="border-slate-200">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                    <FileText className="h-5 w-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <CardTitle>VeriFactu (AEAT)</CardTitle>
+                    <CardDescription>Sistema de facturación electrónica español</CardDescription>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Badge variant={verifactuConfig.enabled ? "default" : "secondary"}>
+                    {verifactuConfig.enabled ? (
+                      <><Check className="h-3 w-3 mr-1" /> Activo</>
+                    ) : (
+                      <><X className="h-3 w-3 mr-1" /> Inactivo</>
+                    )}
+                  </Badge>
+                  <Switch
+                    checked={verifactuConfig.enabled}
+                    onCheckedChange={(v) => setVerifactuConfig({ ...verifactuConfig, enabled: v })}
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
+                <p className="text-sm text-amber-800">
+                  <strong>Nota:</strong> VeriFactu es obligatorio para ciertas empresas según normativa AEAT. 
+                  Consulta con tu asesor fiscal para determinar si aplica a tu negocio.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>NIF Emisor *</Label>
+                  <Input
+                    value={verifactuConfig.nif_emisor}
+                    onChange={(e) => setVerifactuConfig({ ...verifactuConfig, nif_emisor: e.target.value })}
+                    placeholder="A12345678"
+                    className="h-11 mt-1 font-mono"
+                  />
+                </div>
+                <div>
+                  <Label>Nombre / Razón Social *</Label>
+                  <Input
+                    value={verifactuConfig.nombre_emisor}
+                    onChange={(e) => setVerifactuConfig({ ...verifactuConfig, nombre_emisor: e.target.value })}
+                    placeholder="Tu empresa S.L."
+                    className="h-11 mt-1"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>ID Software</Label>
+                  <Input
+                    value={verifactuConfig.software_id}
+                    onChange={(e) => setVerifactuConfig({ ...verifactuConfig, software_id: e.target.value })}
+                    placeholder="SW-XXXXX-XXXX"
+                    className="h-11 mt-1 font-mono"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">
+                    ID proporcionado por AEAT tras el registro del software
+                  </p>
+                </div>
+                <div>
+                  <Label>Versión Software</Label>
+                  <Input
+                    value={verifactuConfig.software_version}
+                    onChange={(e) => setVerifactuConfig({ ...verifactuConfig, software_version: e.target.value })}
+                    placeholder="1.0"
+                    className="h-11 mt-1"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Opciones</Label>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                    <div>
+                      <span className="text-sm font-medium block">Modo pruebas</span>
+                      <span className="text-xs text-slate-500">Usa el entorno de pre-producción de AEAT</span>
+                    </div>
+                    <Switch
+                      checked={verifactuConfig.test_mode}
+                      onCheckedChange={(v) => setVerifactuConfig({ ...verifactuConfig, test_mode: v })}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                    <div>
+                      <span className="text-sm font-medium block">Envío automático</span>
+                      <span className="text-xs text-slate-500">Envía facturas a AEAT al completar alquiler</span>
+                    </div>
+                    <Switch
+                      checked={verifactuConfig.auto_send}
+                      onCheckedChange={(v) => setVerifactuConfig({ ...verifactuConfig, auto_send: v })}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                    <div>
+                      <span className="text-sm font-medium block">Guardar archivos XML</span>
+                      <span className="text-xs text-slate-500">Almacena copias locales de facturas firmadas</span>
+                    </div>
+                    <Switch
+                      checked={verifactuConfig.save_xml}
+                      onCheckedChange={(v) => setVerifactuConfig({ ...verifactuConfig, save_xml: v })}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                <h4 className="text-sm font-semibold text-blue-900 mb-2">Estado de la integración</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>✓ Estructura de configuración preparada</li>
+                  <li>✓ UI de configuración completa</li>
+                  <li className="text-blue-600">⏳ API de firma digital - Pendiente</li>
+                  <li className="text-blue-600">⏳ Conexión AEAT - Pendiente</li>
+                  <li className="text-blue-600">⏳ Generación de XML - Pendiente</li>
+                </ul>
+                <p className="text-xs text-blue-700 mt-3">
+                  La implementación completa requiere certificados digitales y homologación con AEAT
+                </p>
+              </div>
+
+              <div className="flex gap-2 pt-4 border-t border-slate-200">
+                <Button variant="outline" onClick={() => testConnection('VeriFactu')} disabled>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Probar conexión
+                </Button>
+                <Button onClick={saveVerifactuConfig} disabled={saving}>
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Guardar configuración
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Email Integration - Coming Soon */}
         <TabsContent value="email">
           <Card className="border-slate-200">
