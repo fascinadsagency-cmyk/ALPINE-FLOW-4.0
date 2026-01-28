@@ -567,6 +567,16 @@ export default function Returns() {
                             </div>
                             <div className="flex gap-2">
                               <Button 
+                                variant="default"
+                                size="sm"
+                                onClick={() => quickReturn(rental.id, rental.customer_name)}
+                                className="gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                                disabled={loading}
+                              >
+                                <Zap className="h-4 w-4" />
+                                DEVOLUCIÓN RÁPIDA
+                              </Button>
+                              <Button 
                                 variant="outline" 
                                 size="sm"
                                 onClick={() => contactCustomer(rental.customer_phone)}
@@ -619,6 +629,16 @@ export default function Returns() {
                               </p>
                             </div>
                             <div className="flex gap-2">
+                              <Button 
+                                variant="default"
+                                size="sm"
+                                onClick={() => quickReturn(rental.id, rental.customer_name)}
+                                className="gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                                disabled={loading}
+                              >
+                                <Zap className="h-4 w-4" />
+                                DEVOLUCIÓN RÁPIDA
+                              </Button>
                               <Button 
                                 variant="outline" 
                                 size="sm"
