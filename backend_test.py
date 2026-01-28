@@ -623,6 +623,71 @@ class AlpineFlowAPITester:
             self.log_test("Update Provider Discount", False, f"Status: {status}, Response: {data}")
             return False, {}
 
+    def run_fase1_tests(self):
+        """Run FASE 1 specific functionality tests"""
+        print("🚀 Starting FASE 1 Functionality Tests")
+        print("=" * 50)
+        
+        # Basic connectivity and auth
+        if not self.test_health_check():
+            print("❌ Health check failed - stopping tests")
+            return False
+        
+        if not self.test_login():
+            print("❌ Login failed - stopping tests")
+            return False
+        
+        # Setup test data
+        print("\n📋 Setting up test data...")
+        self.test_generate_barcodes()
+        self.test_create_item()
+        self.test_create_customer()
+        self.test_create_rental()
+        
+        print("\n🧪 Running FASE 1 Tests...")
+        
+        # 1. TEST EDIT/DELETE ITEMS IN INVENTORY
+        print("\n1️⃣ Testing Edit/Delete Items in Inventory")
+        success, items = self.test_get_items()
+        if success:
+            self.test_edit_item()
+            self.test_delete_rented_item()
+            self.test_delete_available_item()
+        
+        # 2. TEST PENDING RETURNS ENDPOINT
+        print("\n2️⃣ Testing Pending Returns Endpoint")
+        self.test_pending_returns()
+        
+        # 3. TEST UPDATE RENTAL DAYS
+        print("\n3️⃣ Testing Update Rental Days")
+        self.test_update_rental_days()
+        self.test_update_returned_rental_days()
+        
+        # 4. TEST PROVIDER DISCOUNT
+        print("\n4️⃣ Testing Provider Discount Management")
+        self.test_create_provider_source()
+        self.test_get_sources()
+        self.test_update_provider_discount()
+        
+        # Summary
+        print("\n" + "=" * 50)
+        print(f"📊 FASE 1 Test Results: {self.tests_passed}/{self.tests_run} passed")
+        
+        if self.tests_passed == self.tests_run:
+            print("🎉 All FASE 1 tests passed!")
+            return True
+        else:
+            failed_tests = self.tests_run - self.tests_passed
+            print(f"⚠️  {failed_tests} FASE 1 tests failed")
+            
+            # Show failed tests
+            print("\n❌ Failed Tests:")
+            for result in self.test_results:
+                if not result['success']:
+                    print(f"   - {result['test']}: {result['details']}")
+            
+            return False
+
     def run_all_tests(self):
         """Run comprehensive test suite"""
         print("🚀 Starting AlpineFlow API Test Suite")
