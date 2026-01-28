@@ -23,6 +23,15 @@ export default function Customers() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerHistory, setCustomerHistory] = useState(null);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [showNewCustomerDialog, setShowNewCustomerDialog] = useState(false);
+  const [newCustomer, setNewCustomer] = useState({
+    name: "",
+    dni: "",
+    phone: "",
+    address: "",
+    city: "",
+    source: ""
+  });
 
   useEffect(() => {
     loadCustomers();
