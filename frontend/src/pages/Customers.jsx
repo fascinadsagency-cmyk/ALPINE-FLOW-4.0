@@ -3,29 +3,49 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { customerApi } from "@/lib/api";
 import { Search, Users, History, Loader2, Phone, MapPin } from "lucide-react";
 import { toast } from "sonner";
+import axios from "axios";
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Customers() {
   const [customers, setCustomers] = useState([]);
+  const [allCustomers, setAllCustomers] = useState([]);
+  const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedProvider, setSelectedProvider] = useState("all");
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerHistory, setCustomerHistory] = useState(null);
   const [historyLoading, setHistoryLoading] = useState(false);
 
   useEffect(() => {
     loadCustomers();
+    loadProviders();
   }, []);
+
+  const loadProviders = async () => {
+    try {
+      const response = await axios.get(`${API}/sources`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      setProviders(response.data);
+    } catch (error) {
+      console.error("Error loading providers:", error);
+    }
+  };
 
   const loadCustomers = async (search = "") => {
     setLoading(true);
     try {
       const response = await customerApi.getAll(search);
       setCustomers(response.data);
+      setAllCustomers(response.data);
     } catch (error) {
       toast.error("Error al cargar clientes");
     } finally {
@@ -33,9 +53,36 @@ export default function Customers() {
     }
   };
 
+  const filterCustomers = () => {
+    let filtered = [...allCustomers];
+
+    // Filter by search term
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(c => 
+        c.name.toLowerCase().includes(term) ||
+        c.dni.toLowerCase().includes(term) ||
+        (c.phone && c.phone.toLowerCase().includes(term))
+      );
+    }
+
+    // Filter by provider
+    if (selectedProvider === "none") {
+      filtered = filtered.filter(c => !c.source || c.source === "");
+    } else if (selectedProvider !== "all") {
+      filtered = filtered.filter(c => c.source === selectedProvider);
+    }
+
+    setCustomers(filtered);
+  };
+
+  useEffect(() => {
+    filterCustomers();
+  }, [searchTerm, selectedProvider, allCustomers]);
+
   const handleSearch = (e) => {
     e.preventDefault();
-    loadCustomers(searchTerm);
+    filterCustomers();
   };
 
   const viewHistory = async (customer) => {
