@@ -19,7 +19,8 @@ import {
   Users,
   TrendingUp,
   AlertCircle,
-  DollarSign
+  DollarSign,
+  Trophy
 } from "lucide-react";
 import { toast } from "sonner";
 
