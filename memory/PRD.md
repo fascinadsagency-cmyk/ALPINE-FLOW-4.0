@@ -159,22 +159,22 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 
 ## Última Actualización
 Fecha: 2026-01-28
-Versión: 1.6.0
+Versión: 1.7.0
 
 ## Changelog
+- **v1.7.0** (2026-01-28): ✅ Módulo Taller Externo completo
+  - Selector de modo: "MI FLOTA" (azul) vs "TALLER EXTERNO" (naranja)
+  - Precios manuales sin tarifas fijas
+  - Botón flotante "+ NUEVA REPARACIÓN" solo en modo externo
+  - Precio editable al momento de cobrar
+  - Integración con Caja como "Servicio Taller"
+  - Prioridades visuales (verde/naranja/rojo)
+  - Botón WhatsApp para avisar clientes
 - **v1.6.0** (2026-01-28): ✅ Sugerencias Inteligentes de Packs (Upselling)
   - Detección en tiempo real de packs incompletos
   - Mensaje dinámico con ahorro potencial
-  - Botón "Ver Disponibles" con filtro automático por tipo y categoría
-  - Cierre automático al completar el pack
+  - Botón "Ver Disponibles" con filtro automático
 - **v1.5.0** (2026-01-28): ✅ Historial de Transacciones en ficha de cliente
-  - Resumen financiero: Total Pagado, Devoluciones, Ingreso Neto
-  - Lista cronológica de pagos y reembolsos
-  - Referencia al alquiler y notas de cada transacción
-- **v1.4.0** (2026-01-28): ✅ Flujo Financiero Completo implementado
-  - Vinculación Nuevo Alquiler → Caja (asientos automáticos)
-  - Reembolso Parcial en Devoluciones (abono por días no disfrutados)
-  - Asientos negativos en Caja para devoluciones
-  - Saldo Neto = Entradas - Salidas - Devoluciones
-- **v1.3.0** (2026-01-28): ✅ Auto-Combo implementado y verificado
+- **v1.4.0** (2026-01-28): ✅ Flujo Financiero Completo (Alquileres ↔ Caja ↔ Devoluciones)
+- **v1.3.0** (2026-01-28): ✅ Auto-Combo implementado
 - **v1.2.x** (2026-01-27): Dashboard estratégico, Autocompletado clientes, UI integraciones
