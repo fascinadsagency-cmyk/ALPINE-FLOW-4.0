@@ -58,6 +58,8 @@ class AlpineFlowAPITester:
                 response = requests.post(url, headers=headers, json=data)
             elif method == 'PUT':
                 response = requests.put(url, headers=headers, json=data)
+            elif method == 'PATCH':
+                response = requests.patch(url, headers=headers, json=data)
             elif method == 'DELETE':
                 response = requests.delete(url, headers=headers)
             else:
