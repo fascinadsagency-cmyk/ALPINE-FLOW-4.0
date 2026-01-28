@@ -169,9 +169,92 @@ export default function Returns() {
     window.open(`https://wa.me/${cleanPhone}`, '_blank');
   };
 
+  // Calculate refund amount based on days
+  const calculateRefundAmount = (days) => {
+    if (!rental || days <= 0) return 0;
+    
+    // Simple calculation: proportional to the total
+    const pricePerDay = rental.total_amount / rental.days;
+    return pricePerDay * days;
+  };
+
+  // Open refund dialog
+  const openRefundDialog = () => {
+    if (!rental) return;
+    
+    // Calculate remaining days that could be refunded
+    const today = new Date();
+    const endDate = new Date(rental.end_date);
+    const startDate = new Date(rental.start_date);
+    
+    // Calculate days used
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const daysElapsed = Math.max(1, Math.ceil((today - startDate) / msPerDay));
+    const maxRefundDays = Math.max(0, rental.days - daysElapsed);
+    
+    if (maxRefundDays === 0) {
+      toast.error("No hay días disponibles para reembolsar");
+      return;
+    }
+    
+    setRefundDays(1);
+    setRefundAmount(calculateRefundAmount(1));
+    setRefundReason("");
+    setShowRefundDialog(true);
+  };
+
+  // Handle refund days change
+  const handleRefundDaysChange = (days) => {
+    const numDays = parseInt(days) || 1;
+    setRefundDays(numDays);
+    setRefundAmount(calculateRefundAmount(numDays));
+  };
+
+  // Process the refund
+  const processRefund = async () => {
+    if (!rental || refundDays <= 0 || refundAmount <= 0) {
+      toast.error("Verifica los datos del reembolso");
+      return;
+    }
+    
+    setProcessingRefund(true);
+    try {
+      const response = await axios.post(`${API}/rentals/${rental.id}/refund`, {
+        days_to_refund: refundDays,
+        refund_amount: refundAmount,
+        payment_method: refundMethod,
+        reason: refundReason
+      });
+      
+      toast.success(`Reembolso de €${refundAmount.toFixed(2)} procesado correctamente`);
+      setShowRefundDialog(false);
+      
+      // Reload the rental data
+      const updatedRental = await rentalApi.getById(rental.id);
+      setRental(updatedRental.data);
+      loadPendingReturns();
+      
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al procesar reembolso");
+    } finally {
+      setProcessingRefund(false);
+    }
+  };
+
+  // Calculate max refundable days
+  const getMaxRefundDays = () => {
+    if (!rental) return 0;
+    const today = new Date();
+    const startDate = new Date(rental.start_date);
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const daysElapsed = Math.max(1, Math.ceil((today - startDate) / msPerDay));
+    return Math.max(0, rental.days - daysElapsed);
+  };
+
   const pendingItems = rental?.items.filter(i => !i.returned && !scannedBarcodes.includes(i.barcode)) || [];
   const returnedItems = rental?.items.filter(i => i.returned) || [];
   const toReturnItems = rental?.items.filter(i => !i.returned && scannedBarcodes.includes(i.barcode)) || [];
+  const maxRefundDays = getMaxRefundDays();
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
