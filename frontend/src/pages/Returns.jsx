@@ -2,7 +2,11 @@ import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { rentalApi } from "@/lib/api";
 import axios from "axios";
 import { 
@@ -15,11 +19,19 @@ import {
   User,
   Calendar,
   DollarSign,
-  Phone
+  Phone,
+  RefreshCcw,
+  Banknote
 } from "lucide-react";
 import { toast } from "sonner";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const PAYMENT_METHODS = [
+  { value: "cash", label: "Efectivo" },
+  { value: "card", label: "Tarjeta" },
+  { value: "transfer", label: "Transferencia" },
+];
 
 export default function Returns() {
   const [barcodeInput, setBarcodeInput] = useState("");
@@ -28,6 +40,14 @@ export default function Returns() {
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [pendingReturns, setPendingReturns] = useState({ today: [], other_days: [] });
+  
+  // Refund dialog state
+  const [showRefundDialog, setShowRefundDialog] = useState(false);
+  const [refundDays, setRefundDays] = useState(1);
+  const [refundAmount, setRefundAmount] = useState(0);
+  const [refundMethod, setRefundMethod] = useState("cash");
+  const [refundReason, setRefundReason] = useState("");
+  const [processingRefund, setProcessingRefund] = useState(false);
   
   const barcodeRef = useRef(null);
 
