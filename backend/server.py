@@ -1236,7 +1236,7 @@ async def get_dashboard(current_user: dict = Depends(get_current_user)):
         {
             "$group": {
                 "_id": {
-                    "category": "$category",
+                    "category": {"$ifNull": ["$category", "MEDIA"]},
                     "status": "$status"
                 },
                 "count": {"$sum": 1}
@@ -1252,8 +1252,8 @@ async def get_dashboard(current_user: dict = Depends(get_current_user)):
     }
     
     for stat in category_stats:
-        category = stat["_id"]["category"]
-        status = stat["_id"]["status"]
+        category = stat["_id"].get("category", "MEDIA")
+        status = stat["_id"].get("status", "available")
         count = stat["count"]
         
         if category in occupancy_by_category:
@@ -1276,6 +1276,11 @@ async def get_dashboard(current_user: dict = Depends(get_current_user)):
                     "$gte": ["$days_used", "$maintenance_interval"]
                 },
                 "status": {"$in": ["available", "rented"]}
+            }
+        },
+        {
+            "$addFields": {
+                "category": {"$ifNull": ["$category", "MEDIA"]}
             }
         },
         {
@@ -1302,8 +1307,8 @@ async def get_dashboard(current_user: dict = Depends(get_current_user)):
     # Build maintenance alerts
     maintenance_alerts = []
     for group in maintenance_items:
-        category = group["_id"]["category"]
-        item_type = group["_id"]["item_type"]
+        category = group["_id"].get("category", "MEDIA")
+        item_type = group["_id"].get("item_type", "unknown")
         count = group["count"]
         
         # Determine service type based on item type
