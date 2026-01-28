@@ -154,6 +154,20 @@ export default function NewRental() {
     }
   }, [customer]);
 
+  // AUTO-COMBO: Detect packs whenever items change
+  useEffect(() => {
+    const detected = detectPacks(items);
+    setDetectedPacks(detected);
+    
+    // Show toast notification when pack is detected
+    if (detected.length > detectedPacks.length) {
+      const newPack = detected[detected.length - 1];
+      toast.success(`🎁 Pack detectado: ${newPack.pack.name}`, {
+        duration: 3000
+      });
+    }
+  }, [items, packs, numDays]);
+
   // Keyboard shortcut for item search (F3 or Alt+B)
   useEffect(() => {
     const handleKeyDown = (e) => {
