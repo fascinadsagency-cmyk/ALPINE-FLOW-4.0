@@ -379,18 +379,32 @@ export default function NewRental() {
     return items.reduce((sum, item) => sum + getItemPrice(item), 0);
   };
 
+  const getProviderDiscount = () => {
+    if (!customer?.source) return 0;
+    const provider = sources.find(s => s.name === customer.source);
+    return provider?.discount_percent || 0;
+  };
+
   const calculateTotal = () => {
     const subtotal = calculateSubtotal();
+    let total = subtotal;
     
+    // Apply provider discount first
+    const providerDiscount = getProviderDiscount();
+    if (providerDiscount > 0) {
+      total = total - (total * (providerDiscount / 100));
+    }
+    
+    // Then apply manual discount if any
     if (discountType === 'percent' && discountValue) {
-      const discount = subtotal * (parseFloat(discountValue) / 100);
-      return subtotal - discount;
+      const discount = total * (parseFloat(discountValue) / 100);
+      total = total - discount;
     }
     if (discountType === 'fixed' && discountValue) {
-      return subtotal - parseFloat(discountValue);
+      total = total - parseFloat(discountValue);
     }
     
-    return subtotal;
+    return total;
   };
 
   const completeRental = async () => {
