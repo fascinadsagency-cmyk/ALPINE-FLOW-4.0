@@ -537,57 +537,128 @@ export default function Reports() {
             </CardContent>
           </Card>
 
+          {/* Commissions Summary */}
+          <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 mb-6">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-amber-600" />
+                Resumen de Liquidación - Comisiones a Pagar
+              </CardTitle>
+              <p className="text-sm text-slate-600 mt-1">
+                Periodo: {dateRange?.from && format(dateRange.from, 'dd/MM/yyyy', { locale: es })} - {dateRange?.to && format(dateRange.to, 'dd/MM/yyyy', { locale: es })}
+              </p>
+            </CardHeader>
+            <CardContent>
+              {report.commissions && report.commissions.length > 0 ? (
+                <>
+                  <div className="grid sm:grid-cols-2 gap-4 mb-4">
+                    <div className="p-4 rounded-xl bg-white border-2 border-amber-200">
+                      <p className="text-sm text-slate-600 mb-1">Total Comisiones</p>
+                      <p className="text-3xl font-bold text-amber-700">
+                        {formatCurrency(report.commissions.reduce((sum, c) => sum + c.commission_amount, 0))}
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-white border-2 border-amber-200">
+                      <p className="text-sm text-slate-600 mb-1">Proveedores</p>
+                      <p className="text-3xl font-bold text-amber-700">{report.commissions.length}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg border border-amber-200 overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-amber-50">
+                          <TableHead>Proveedor</TableHead>
+                          <TableHead className="text-center">Clientes</TableHead>
+                          <TableHead className="text-center">% Comisión</TableHead>
+                          <TableHead className="text-right">Ingresos Generados</TableHead>
+                          <TableHead className="text-right font-semibold">Comisión a Pagar</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {report.commissions.map((comm, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell className="font-medium">{comm.provider_name}</TableCell>
+                            <TableCell className="text-center">{comm.customer_count}</TableCell>
+                            <TableCell className="text-center">
+                              <Badge className="bg-amber-100 text-amber-700">
+                                {comm.commission_percent}%
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right text-slate-600">
+                              {formatCurrency(comm.revenue_generated)}
+                            </TableCell>
+                            <TableCell className="text-right font-semibold text-amber-700">
+                              {formatCurrency(comm.commission_amount)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8 text-slate-500">
+                  <Building2 className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>No hay comisiones para liquidar en este periodo</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Pending Returns */}
           <Card className="border-slate-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-amber-500" />
-                Devoluciones Pendientes ({report.pending_returns.length})
+                Devoluciones Pendientes ({report.pending_returns?.length || 0})
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {report.pending_returns.length === 0 ? (
+              {!report.pending_returns || report.pending_returns.length === 0 ? (
                 <p className="text-center py-8 text-slate-500">
                   No hay devoluciones pendientes
                 </p>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Cliente</TableHead>
-                      <TableHead>DNI</TableHead>
-                      <TableHead>Fecha Fin</TableHead>
-                      <TableHead>Artículos</TableHead>
-                      <TableHead>Pendiente</TableHead>
-                      <TableHead>Estado</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {report.pending_returns.map((rental) => {
-                      const isOverdue = new Date(rental.end_date) < new Date(date);
-                      return (
-                        <TableRow key={rental.rental_id} className={isOverdue ? 'bg-red-50' : ''}>
-                          <TableCell className="font-medium">{rental.customer_name}</TableCell>
-                          <TableCell className="font-mono">{rental.customer_dni}</TableCell>
-                          <TableCell>{rental.end_date}</TableCell>
-                          <TableCell>
-                            <Badge variant="secondary">{rental.pending_items}</Badge>
-                          </TableCell>
-                          <TableCell className={rental.pending_amount > 0 ? 'text-red-600 font-semibold' : ''}>
-                            €{rental.pending_amount.toFixed(2)}
-                          </TableCell>
-                          <TableCell>
-                            {isOverdue ? (
-                              <Badge variant="destructive">Vencido</Badge>
-                            ) : (
-                              <Badge variant="outline">Activo</Badge>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Cliente</TableHead>
+                        <TableHead>DNI</TableHead>
+                        <TableHead>Fecha Fin</TableHead>
+                        <TableHead>Artículos</TableHead>
+                        <TableHead>Pendiente</TableHead>
+                        <TableHead>Estado</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {report.pending_returns.map((rental) => {
+                        const isOverdue = new Date(rental.end_date) < new Date();
+                        return (
+                          <TableRow key={rental.rental_id} className={isOverdue ? 'bg-red-50' : ''}>
+                            <TableCell className="font-medium">{rental.customer_name}</TableCell>
+                            <TableCell className="font-mono">{rental.customer_dni}</TableCell>
+                            <TableCell>{rental.end_date}</TableCell>
+                            <TableCell>
+                              <Badge variant="secondary">{rental.pending_items}</Badge>
+                            </TableCell>
+                            <TableCell className={rental.pending_amount > 0 ? 'text-red-600 font-semibold' : ''}>
+                              {formatCurrency(rental.pending_amount)}
+                            </TableCell>
+                            <TableCell>
+                              {isOverdue ? (
+                                <Badge variant="destructive">Vencido</Badge>
+                              ) : (
+                                <Badge variant="outline">Activo</Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </CardContent>
           </Card>
