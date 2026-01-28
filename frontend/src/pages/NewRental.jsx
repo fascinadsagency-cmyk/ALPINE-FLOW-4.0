@@ -22,7 +22,8 @@ import {
   ArrowRight,
   Edit2,
   X,
-  AlertTriangle
+  AlertTriangle,
+  Sparkles
 } from "lucide-react";
 import { toast } from "sonner";
 
