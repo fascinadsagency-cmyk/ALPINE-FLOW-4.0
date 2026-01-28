@@ -189,6 +189,117 @@ export default function NewRental() {
     }
   };
 
+  const loadPacks = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/packs`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setPacks(data);
+      }
+    } catch (error) {
+      console.log("Packs not loaded");
+    }
+  };
+
+  // AUTO-COMBO: Detect packs formed by current items
+  const detectPacks = (currentItems) => {
+    if (!packs || packs.length === 0 || currentItems.length === 0) {
+      return [];
+    }
+
+    const detected = [];
+    
+    // Group items by category
+    const itemsByCategory = currentItems.reduce((acc, item) => {
+      const cat = item.category || 'MEDIA';
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(item);
+      return {};
+    }, {});
+
+    // For each category, check if items form a pack
+    Object.entries(itemsByCategory).forEach(([category, categoryItems]) => {
+      // Count item types in this category
+      const itemTypeCounts = categoryItems.reduce((acc, item) => {
+        acc[item.item_type] = (acc[item.item_type] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Check each pack of this category
+      const categoryPacks = packs.filter(p => p.category === category);
+      
+      categoryPacks.forEach(pack => {
+        // Count required components
+        const requiredComponents = pack.items.reduce((acc, itemType) => {
+          acc[itemType] = (acc[itemType] || 0) + 1;
+          return acc;
+        }, {});
+
+        // Check if we have all components
+        let canFormPack = true;
+        for (const [type, count] of Object.entries(requiredComponents)) {
+          if ((itemTypeCounts[type] || 0) < count) {
+            canFormPack = false;
+            break;
+          }
+        }
+
+        if (canFormPack) {
+          // Find the specific items that form this pack
+          const usedItems = [];
+          const tempCounts = { ...itemTypeCounts };
+          
+          for (const requiredType of pack.items) {
+            const item = categoryItems.find(i => 
+              i.item_type === requiredType && !usedItems.includes(i.barcode)
+            );
+            if (item) {
+              usedItems.push(item.barcode);
+            }
+          }
+
+          if (usedItems.length === pack.items.length) {
+            detected.push({
+              pack: pack,
+              items: usedItems,
+              category: category
+            });
+          }
+        }
+      });
+    });
+
+    return detected;
+  };
+
+  // AUTO-COMBO: Calculate price with pack detection
+  const getItemPriceWithPack = (item) => {
+    // Check if this item is part of a detected pack
+    for (const detectedPack of detectedPacks) {
+      if (detectedPack.items.includes(item.barcode)) {
+        // This item is part of a pack
+        const packPrice = getPackPrice(detectedPack.pack);
+        // Divide pack price equally among components
+        return packPrice / detectedPack.pack.items.length;
+      }
+    }
+
+    // Not part of a pack, use individual pricing
+    return getItemPrice(item);
+  };
+
+  const getPackPrice = (pack) => {
+    if (numDays <= 10 && pack[`day_${numDays}`]) {
+      return pack[`day_${numDays}`];
+    }
+    if (numDays > 10 && pack.day_11_plus) {
+      return pack.day_11_plus;
+    }
+    return 0;
+  };
+
   // Smart date handlers
   const handleNumDaysChange = (value) => {
     const days = Math.max(1, parseInt(value) || 1);
