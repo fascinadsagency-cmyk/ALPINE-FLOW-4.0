@@ -1427,11 +1427,24 @@ export default function NewRental() {
                   )}
                   <div className="flex items-center gap-3">
                     <div>
-                      <p className="text-sm text-slate-500">Total a pagar</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm text-slate-500">Total a pagar</p>
+                        {detectedPacks.length > 0 && (
+                          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs font-medium">
+                            <Gift className="h-3 w-3 mr-1" />
+                            Tarifa: Pack
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-3xl font-bold text-slate-900">€{total.toFixed(2)}</p>
                       {getProviderDiscount() > 0 && (
                         <p className="text-xs text-slate-500 mt-1">
                           Incluye descuento {customer.source}
+                        </p>
+                      )}
+                      {detectedPacks.length > 0 && (
+                        <p className="text-xs text-emerald-600 mt-1">
+                          {detectedPacks.map(dp => dp.pack.name).join(', ')}
                         </p>
                       )}
                     </div>
