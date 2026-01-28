@@ -23,7 +23,9 @@ import {
   XCircle,
   RefreshCcw,
   Printer,
-  Shield
+  Shield,
+  History,
+  Undo2
 } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
