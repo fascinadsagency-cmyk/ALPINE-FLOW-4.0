@@ -1656,7 +1656,8 @@ class CashMovementResponse(BaseModel):
     payment_method: str
     category: str
     concept: str
-    reference_id: Optional[str]
+    reference_id: Optional[str] = None
+    customer_name: Optional[str] = None
     notes: str
     created_at: str
     created_by: str
