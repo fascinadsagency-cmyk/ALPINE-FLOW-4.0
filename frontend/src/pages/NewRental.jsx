@@ -232,16 +232,14 @@ export default function NewRental() {
     try {
       try {
         const response = await customerApi.getByDni(searchTerm);
-        setCustomer(response.data);
-        loadCustomerHistory(response.data.id);
+        selectCustomer(response.data);
         toast.success(`Cliente encontrado: ${response.data.name}`);
         return;
       } catch (e) {}
       
       const response = await customerApi.getAll(searchTerm);
       if (response.data.length === 1) {
-        setCustomer(response.data[0]);
-        loadCustomerHistory(response.data[0].id);
+        selectCustomer(response.data[0]);
         toast.success(`Cliente encontrado: ${response.data[0].name}`);
       } else if (response.data.length > 1) {
         toast.info("Múltiples clientes encontrados. Sé más específico.");
@@ -254,6 +252,91 @@ export default function NewRental() {
       setShowNewCustomer(true);
     } finally {
       setSearchLoading(false);
+    }
+  };
+
+  // NEW: Predictive search (real-time)
+  const searchCustomersRealTime = async (query) => {
+    if (!query || query.trim().length < 2) {
+      setCustomerSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    
+    try {
+      const response = await customerApi.getAll(query.trim());
+      setCustomerSuggestions(response.data.slice(0, 8)); // Limit to 8 suggestions
+      setShowSuggestions(response.data.length > 0);
+      setSelectedIndex(-1);
+    } catch (error) {
+      setCustomerSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  // NEW: Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchCustomersRealTime(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // NEW: Select customer from suggestions
+  const selectCustomer = async (selectedCustomer) => {
+    setCustomer(selectedCustomer);
+    setSearchTerm("");
+    setShowSuggestions(false);
+    setSelectedIndex(-1);
+    
+    // Load history with alerts
+    try {
+      const response = await customerApi.getHistory(selectedCustomer.id);
+      setCustomerHistory(response.data);
+      
+      // Show alert if customer has overdue rentals
+      if (response.data.has_alerts && response.data.overdue_rentals > 0) {
+        toast.warning(`⚠️ ALERTA: Este cliente tiene ${response.data.overdue_rentals} alquiler(es) vencido(s)`, {
+          duration: 5000
+        });
+      }
+    } catch (error) {
+      console.error("Error loading history:", error);
+    }
+  };
+
+  // NEW: Handle keyboard navigation
+  const handleKeyDown = (e) => {
+    if (!showSuggestions || customerSuggestions.length === 0) {
+      if (e.key === 'Enter') {
+        searchCustomer();
+      }
+      return;
+    }
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex(prev => 
+          prev < customerSuggestions.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex(prev => prev > 0 ? prev - 1 : -1);
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex >= 0 && selectedIndex < customerSuggestions.length) {
+          selectCustomer(customerSuggestions[selectedIndex]);
+        }
+        break;
+      case 'Escape':
+        setShowSuggestions(false);
+        setSelectedIndex(-1);
+        break;
+      default:
+        break;
     }
   };
 
