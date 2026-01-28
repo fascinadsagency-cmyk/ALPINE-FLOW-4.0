@@ -35,6 +35,8 @@ export default function Providers() {
   const [deletingProvider, setDeletingProvider] = useState(null);
   const [statsData, setStatsData] = useState(null);
   const [statsLoading, setStatsLoading] = useState(false);
+  const [globalStats, setGlobalStats] = useState(null);
+  const [showGlobalMetrics, setShowGlobalMetrics] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
     discount_percent: "0",
@@ -48,6 +50,7 @@ export default function Providers() {
 
   useEffect(() => {
     loadProviders();
+    loadGlobalStats();
   }, []);
 
   const loadProviders = async () => {
@@ -61,6 +64,35 @@ export default function Providers() {
       toast.error("Error al cargar proveedores");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadGlobalStats = async () => {
+    try {
+      // Calcular estadísticas globales desde todos los proveedores
+      const response = await axios.get(`${API}/sources`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      const totalCustomers = response.data.reduce((sum, p) => sum + (p.customer_count || 0), 0);
+      const avgDiscount = response.data.filter(p => p.discount_percent > 0).length > 0
+        ? response.data.reduce((sum, p) => sum + p.discount_percent, 0) / response.data.filter(p => p.discount_percent > 0).length
+        : 0;
+      const avgCommission = response.data.filter(p => p.commission_percent > 0).length > 0
+        ? response.data.reduce((sum, p) => sum + p.commission_percent, 0) / response.data.filter(p => p.commission_percent > 0).length
+        : 0;
+      
+      setGlobalStats({
+        total_providers: response.data.length,
+        active_providers: response.data.filter(p => p.active).length,
+        total_customers: totalCustomers,
+        avg_discount: avgDiscount,
+        avg_commission: avgCommission,
+        providers_with_discount: response.data.filter(p => p.discount_percent > 0).length,
+        providers_with_commission: response.data.filter(p => p.commission_percent > 0).length
+      });
+    } catch (error) {
+      console.error("Error loading global stats:", error);
     }
   };
 
