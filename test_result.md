@@ -273,15 +273,18 @@ frontend:
 
   - task: "Inventory - Edit/Delete Items"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/pages/Inventory.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "testing"
           comment: "Need to test item editing modal, field updates, and delete functionality with proper validation"
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED SUCCESSFULLY: Inventory page loads correctly, edit and delete action buttons present in Actions column (✏️ and 🗑️ icons), edit modal opens when edit button clicked, proper UI structure for item management"
 
   - task: "Active Rentals - Modify Days"
     implemented: true
