@@ -318,15 +318,18 @@ frontend:
 
   - task: "Tariffs - Packs with Categories"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/pages/Tariffs.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "testing"
           comment: "Need to test pack creation with categories, pricing configuration, and pack management (edit/delete)"
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED SUCCESSFULLY: Tariffs page loads correctly, 'Packs/Combos' tab is first and active by default, 'Crear Pack' button present, pack creation modal opens with all required fields (name, category selection with Gama Superior 🟣, component selection for ski/boots, pricing by days 1-11+), category badges working properly"
 
   - task: "Complete Rental Flow with Provider Discount"
     implemented: true
