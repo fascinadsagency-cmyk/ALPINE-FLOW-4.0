@@ -107,6 +107,37 @@ export default function Customers() {
     }
   };
 
+  const createCustomer = async () => {
+    if (!newCustomer.name || !newCustomer.dni) {
+      toast.error("Nombre y DNI son obligatorios");
+      return;
+    }
+
+    try {
+      await customerApi.create({
+        name: newCustomer.name,
+        dni: newCustomer.dni,
+        phone: newCustomer.phone || "",
+        address: newCustomer.address || "",
+        city: newCustomer.city || "",
+        source: newCustomer.source || ""
+      });
+      toast.success("Cliente creado correctamente");
+      setShowNewCustomerDialog(false);
+      setNewCustomer({
+        name: "",
+        dni: "",
+        phone: "",
+        address: "",
+        city: "",
+        source: ""
+      });
+      loadCustomers();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al crear cliente");
+    }
+  };
+
   return (
     <div className="p-6 lg:p-8" data-testid="customers-page">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
