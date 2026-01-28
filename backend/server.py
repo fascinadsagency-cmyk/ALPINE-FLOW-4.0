@@ -898,6 +898,24 @@ async def create_rental(rental: RentalCreate, current_user: dict = Depends(get_c
     await db.rentals.insert_one(doc)
     await db.customers.update_one({"id": rental.customer_id}, {"$inc": {"total_rentals": 1}})
     
+    # AUTO-REGISTER in CAJA: Create cash movement for the paid amount
+    if rental.paid_amount > 0:
+        cash_movement_id = str(uuid.uuid4())
+        cash_doc = {
+            "id": cash_movement_id,
+            "movement_type": "income",
+            "amount": rental.paid_amount,
+            "payment_method": rental.payment_method,
+            "category": "rental",
+            "concept": f"Alquiler #{rental_id[:8]} - {customer['name']}",
+            "reference_id": rental_id,
+            "customer_name": customer["name"],
+            "notes": f"Alquiler {days} días ({rental.start_date} a {rental.end_date})",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "created_by": current_user["username"]
+        }
+        await db.cash_movements.insert_one(cash_doc)
+    
     return RentalResponse(**doc)
 
 @api_router.get("/rentals", response_model=List[RentalResponse])
