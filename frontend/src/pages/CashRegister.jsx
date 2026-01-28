@@ -175,6 +175,172 @@ export default function CashRegister() {
     toast.success("Exportado correctamente");
   };
 
+  const handlePrintTicket = (movement) => {
+    setSelectedMovement(movement);
+    setShowTicketDialog(true);
+  };
+
+  const printTicket = () => {
+    if (!selectedMovement) return;
+    
+    const m = selectedMovement;
+    const movementDate = m.created_at.split('T')[0];
+    const movementTime = m.created_at.split('T')[1].substring(0, 5);
+    const typeLabel = m.movement_type === 'income' ? 'ENTRADA' : m.movement_type === 'refund' ? 'DEVOLUCIÓN' : 'SALIDA';
+    const categoryLabel = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES].find(c => c.value === m.category)?.label || m.category;
+    const paymentLabel = PAYMENT_METHODS.find(p => p.value === m.payment_method)?.label || m.payment_method;
+    
+    const ticketWindow = window.open('', '_blank', 'width=400,height=600');
+    ticketWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Ticket - ${m.id}</title>
+        <style>
+          @media print {
+            @page { margin: 0; size: 80mm auto; }
+            body { margin: 0; }
+          }
+          body {
+            font-family: 'Courier New', monospace;
+            width: 80mm;
+            padding: 5mm;
+            margin: 0 auto;
+            font-size: 12px;
+            line-height: 1.4;
+          }
+          .header {
+            text-align: center;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+          }
+          .header h1 {
+            margin: 0;
+            font-size: 18px;
+          }
+          .header p {
+            margin: 5px 0 0 0;
+            font-size: 10px;
+          }
+          .type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 10px 0;
+          }
+          .income { background: #dcfce7; color: #166534; }
+          .expense { background: #fee2e2; color: #991b1b; }
+          .refund { background: #ffedd5; color: #9a3412; }
+          .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+          }
+          .row .label {
+            color: #666;
+          }
+          .total {
+            border-top: 1px dashed #000;
+            margin-top: 10px;
+            padding-top: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+          }
+          .total.income { color: #166534; }
+          .total.expense { color: #991b1b; }
+          .total.refund { color: #9a3412; }
+          .footer {
+            text-align: center;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed #000;
+            font-size: 10px;
+            color: #666;
+          }
+          .concept {
+            text-align: center;
+            font-weight: bold;
+            padding: 10px 0;
+            word-wrap: break-word;
+          }
+          .print-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 4px;
+          }
+          @media print {
+            .print-btn { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>COMPROBANTE</h1>
+          <p>Movimiento de Caja</p>
+        </div>
+        
+        <div style="text-align: center;">
+          <span class="type-badge ${m.movement_type}">${typeLabel}</span>
+        </div>
+        
+        <div class="concept">${m.concept}</div>
+        
+        <div class="row">
+          <span class="label">Fecha:</span>
+          <span>${movementDate}</span>
+        </div>
+        <div class="row">
+          <span class="label">Hora:</span>
+          <span>${movementTime}</span>
+        </div>
+        ${m.customer_name ? `
+        <div class="row">
+          <span class="label">Cliente:</span>
+          <span>${m.customer_name}</span>
+        </div>` : ''}
+        <div class="row">
+          <span class="label">Categoría:</span>
+          <span>${categoryLabel}</span>
+        </div>
+        <div class="row">
+          <span class="label">Método:</span>
+          <span>${paymentLabel}</span>
+        </div>
+        ${m.notes ? `
+        <div class="row">
+          <span class="label">Notas:</span>
+          <span>${m.notes}</span>
+        </div>` : ''}
+        
+        <div class="total ${m.movement_type}">
+          ${m.movement_type === 'income' ? '+' : '-'}€${m.amount.toFixed(2)}
+        </div>
+        
+        <div class="footer">
+          <p>Ref: ${m.id ? m.id.substring(0, 8).toUpperCase() : 'N/A'}</p>
+          <p>Gracias por su confianza</p>
+        </div>
+        
+        <button class="print-btn" onclick="window.print(); setTimeout(() => window.close(), 500);">
+          IMPRIMIR
+        </button>
+      </body>
+      </html>
+    `);
+    ticketWindow.document.close();
+    setShowTicketDialog(false);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
