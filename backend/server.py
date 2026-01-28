@@ -61,6 +61,7 @@ class CustomerCreate(BaseModel):
     address: Optional[str] = ""
     city: Optional[str] = ""
     source: Optional[str] = ""  # Proveedor/Fuente
+    notes: Optional[str] = ""  # Observaciones internas
 
 class CustomerResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -71,6 +72,7 @@ class CustomerResponse(BaseModel):
     address: str
     city: str
     source: str = ""
+    notes: str = ""
     created_at: str
     total_rentals: int = 0
 
