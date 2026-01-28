@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the new flexible Reports system with interannual comparisons: date range selector with 2-month calendar, quick selection buttons (Esta Semana/Este Mes/Toda la Temporada), interannual comparison toggle, KPIs with growth indicators, comparative bar chart, payment method breakdown, liquidation summary with commissions, and export buttons"
+user_problem_statement: "Test the new editable item types system in Inventory: default types (Esquís, Snowboard, Botas, Casco, Bastones), create custom types (Snowblade, Trineo), verify types appear in filters and selectors, test persistence, and validate complete workflow from type creation to item creation"
 
 backend:
   - task: "Inventory Internal Code Flow"
