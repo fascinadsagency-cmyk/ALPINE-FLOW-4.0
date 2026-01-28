@@ -139,6 +139,16 @@ export default function Returns() {
     }
   };
 
+  const contactCustomer = (phone) => {
+    if (!phone) {
+      toast.error("No hay teléfono registrado para este cliente");
+      return;
+    }
+    // Clean phone number and open WhatsApp
+    const cleanPhone = phone.replace(/\D/g, '');
+    window.open(`https://wa.me/${cleanPhone}`, '_blank');
+  };
+
   const pendingItems = rental?.items.filter(i => !i.returned && !scannedBarcodes.includes(i.barcode)) || [];
   const returnedItems = rental?.items.filter(i => i.returned) || [];
   const toReturnItems = rental?.items.filter(i => !i.returned && scannedBarcodes.includes(i.barcode)) || [];
