@@ -145,6 +145,10 @@ export default function Customers() {
           Clientes
         </h1>
         <div className="flex gap-2">
+          <Button onClick={() => setShowNewCustomerDialog(true)} size="lg">
+            <Users className="h-5 w-5 mr-2" />
+            Nuevo Cliente
+          </Button>
           <Select value={selectedProvider} onValueChange={setSelectedProvider}>
             <SelectTrigger className="w-48 h-11">
               <SelectValue placeholder="Todos los proveedores" />
