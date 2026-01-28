@@ -1054,40 +1054,91 @@ export default function NewRental() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {items.map((item, index) => (
-                      <div 
-                        key={item.barcode}
-                        className="flex items-center justify-between p-4 rounded-xl bg-slate-50 animate-fade-in"
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline">{item.item_type}</Badge>
-                            <Badge className={getCategoryBadge(item.category || 'MEDIA')}>
-                              {item.category || 'MEDIA'}
-                            </Badge>
-                            <span className="font-mono text-sm text-slate-500">{item.barcode}</span>
+                    {/* Pack Detection Badges */}
+                    {detectedPacks.length > 0 && (
+                      <div className="mb-4 space-y-2">
+                        {detectedPacks.map((detected, idx) => (
+                          <div 
+                            key={idx}
+                            className="p-3 rounded-xl bg-gradient-to-r from-emerald-50 to-emerald-100 border-2 border-emerald-300 animate-fade-in"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Badge className="bg-emerald-600 text-white">
+                                  🎁 Pack Detectado
+                                </Badge>
+                                <span className="font-semibold text-emerald-900">
+                                  {detected.pack.name}
+                                </span>
+                                <Badge variant="outline" className="bg-white">
+                                  {detected.category}
+                                </Badge>
+                              </div>
+                              <span className="text-sm font-semibold text-emerald-700">
+                                €{getPackPrice(detected.pack).toFixed(2)} (ahorro aplicado)
+                              </span>
+                            </div>
+                            <p className="text-xs text-emerald-700 mt-1">
+                              Componentes: {detected.pack.items.join(" + ")} • Precio automático aplicado
+                            </p>
                           </div>
-                          <p className="font-medium text-slate-900 mt-1">
-                            {item.brand} {item.model}
-                          </p>
-                          <p className="text-sm text-slate-500">Talla: {item.size}</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          {editingItemPrice === item.barcode ? (
-                            <Input
-                              type="number"
-                              defaultValue={getItemPrice(item)}
-                              className="w-20 h-8 text-right"
-                              autoFocus
-                              onBlur={(e) => updateItemPrice(item.barcode, e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') updateItemPrice(item.barcode, e.target.value);
-                                if (e.key === 'Escape') setEditingItemPrice(null);
-                              }}
-                            />
-                          ) : (
-                            <button
-                              onClick={() => setEditingItemPrice(item.barcode)}
+                        ))}
+                      </div>
+                    )}
+
+                    {items.map((item, index) => {
+                      const isInPack = detectedPacks.some(dp => dp.items.includes(item.barcode));
+                      const itemPrice = getItemPriceWithPack(item);
+                      
+                      return (
+                        <div 
+                          key={item.barcode}
+                          className={`flex items-center justify-between p-4 rounded-xl animate-fade-in ${
+                            isInPack ? 'bg-emerald-50 border-2 border-emerald-200' : 'bg-slate-50'
+                          }`}
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline">{item.item_type}</Badge>
+                              <Badge className={getCategoryBadge(item.category || 'MEDIA')}>
+                                {item.category || 'MEDIA'}
+                              </Badge>
+                              {isInPack && (
+                                <Badge className="bg-emerald-600 text-white text-xs">
+                                  En Pack
+                                </Badge>
+                              )}
+                              <span className="font-mono text-sm text-slate-500">{item.barcode}</span>
+                            </div>
+                            <p className="font-medium text-slate-900 mt-1">
+                              {item.brand} {item.model}
+                            </p>
+                            <p className="text-sm text-slate-500">Talla: {item.size}</p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            {editingItemPrice === item.barcode ? (
+                              <Input
+                                type="number"
+                                defaultValue={itemPrice}
+                                className="w-20 h-8 text-right"
+                                autoFocus
+                                onBlur={(e) => updateItemPrice(item.barcode, e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') updateItemPrice(item.barcode, e.target.value);
+                                  if (e.key === 'Escape') setEditingItemPrice(null);
+                                }}
+                              />
+                            ) : (
+                              <button
+                                onClick={() => !isInPack && setEditingItemPrice(item.barcode)}
+                                disabled={isInPack}
+                                className={`font-semibold text-lg ${
+                                  isInPack 
+                                    ? 'text-emerald-700 cursor-not-allowed' 
+                                    : 'text-slate-900 hover:text-primary cursor-pointer'
+                                }`}
+                                title={isInPack ? "Precio del pack aplicado automáticamente" : "Click para editar precio"}
+                              >
                               className="text-lg font-bold text-slate-900 hover:text-primary flex items-center gap-1"
                             >
                               €{getItemPrice(item).toFixed(2)}
