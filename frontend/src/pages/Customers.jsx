@@ -104,18 +104,34 @@ export default function Customers() {
         <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans' }}>
           Clientes
         </h1>
-        <form onSubmit={handleSearch} className="flex gap-2">
-          <Input
-            placeholder="Buscar por DNI, nombre o teléfono..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-64 h-11"
-            data-testid="customer-search"
-          />
-          <Button type="submit" className="h-11">
-            <Search className="h-4 w-4" />
-          </Button>
-        </form>
+        <div className="flex gap-2">
+          <Select value={selectedProvider} onValueChange={setSelectedProvider}>
+            <SelectTrigger className="w-48 h-11">
+              <SelectValue placeholder="Todos los proveedores" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="none">Sin proveedor</SelectItem>
+              {providers.map(provider => (
+                <SelectItem key={provider.id} value={provider.name}>
+                  {provider.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <Input
+              placeholder="Buscar por DNI, nombre..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-64 h-11"
+              data-testid="customer-search"
+            />
+            <Button type="submit" className="h-11">
+              <Search className="h-4 w-4" />
+            </Button>
+          </form>
+        </div>
       </div>
 
       <Card className="border-slate-200">
