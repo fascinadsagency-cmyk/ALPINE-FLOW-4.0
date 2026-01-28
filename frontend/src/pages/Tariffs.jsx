@@ -164,7 +164,7 @@ export default function Tariffs() {
         day_10: parseFloat(newPack.day_10) || 0,
         day_11_plus: parseFloat(newPack.day_11_plus) || 0
       });
-      toast.success(editingPack ? "Pack actualizado" : "Pack creado correctamente");
+      toast.success("Pack creado correctamente");
       setShowPackDialog(false);
       setEditingPack(null);
       setNewPack({
