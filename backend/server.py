@@ -1377,6 +1377,45 @@ async def process_refund(rental_id: str, refund: RefundRequest, current_user: di
     
     return {
         "message": "Reembolso procesado correctamente",
+
+@api_router.post("/rentals/{rental_id}/quick-return")
+async def quick_return(rental_id: str, current_user: dict = Depends(get_current_user)):
+    """
+    Quick return: Mark ALL items as returned with one click
+    Perfect for when staff receives all items physically
+    """
+    rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
+    if not rental:
+        raise HTTPException(status_code=404, detail="Rental not found")
+    
+    if rental["status"] == "returned":
+        raise HTTPException(status_code=400, detail="Rental already fully returned")
+    
+    # Mark all items as returned
+    for item in rental["items"]:
+        item["returned"] = True
+        item["return_date"] = datetime.now(timezone.utc).isoformat()
+        
+        # Update item availability
+        await db.items.update_one(
+            {"barcode": item["barcode"]},
+            {"$set": {"status": "available"}}
+        )
+    
+    # Update rental status
+    await db.rentals.update_one(
+        {"id": rental_id},
+        {
+            "$set": {
+                "items": rental["items"],
+                "status": "returned",
+                "actual_return_date": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    return {"message": "Quick return successful", "items_returned": len(rental["items"])}
+
         "refund_amount": refund.refund_amount,
         "days_refunded": refund.days_to_refund,
         "new_days": new_days,
