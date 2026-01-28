@@ -132,6 +132,10 @@ export default function NewRental() {
   const [searchFilter, setSearchFilter] = useState(null); // For upselling suggestion filter
   const [packSuggestions, setPackSuggestions] = useState([]); // Smart upselling suggestions
   
+  // Success dialog and printing
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [completedRental, setCompletedRental] = useState(null);
+  
   // Price editing
   const [discountType, setDiscountType] = useState('none');
   const [discountValue, setDiscountValue] = useState("");
