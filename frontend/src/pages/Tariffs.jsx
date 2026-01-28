@@ -276,29 +276,6 @@ export default function Tariffs() {
         name: newPack.name,
         description: newPack.description,
         items: newPack.items,
-        price_1_day: parseFloat(newPack.price_1_day) || 0,
-        price_2_3_days: parseFloat(newPack.price_2_3_days) || 0,
-        price_4_7_days: parseFloat(newPack.price_4_7_days) || 0,
-        price_week: parseFloat(newPack.price_week) || 0
-      });
-      
-      toast.success("Pack creado correctamente");
-      setShowPackDialog(false);
-      setNewPack({
-        name: "",
-        description: "",
-        price_1_day: "",
-        price_2_3_days: "",
-        price_4_7_days: "",
-        price_week: "",
-        items: []
-      });
-      loadData();
-    } catch (error) {
-      toast.error(error.response?.data?.detail || "Error al crear pack");
-    }
-  };
-
   const deletePack = async () => {
     try {
       await axios.delete(`${API}/packs/${deletingPack.id}`);
