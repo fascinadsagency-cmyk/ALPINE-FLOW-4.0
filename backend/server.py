@@ -2475,6 +2475,16 @@ async def get_cash_closings(current_user: dict = Depends(get_current_user)):
     closings = await db.cash_closings.find({}, {"_id": 0}).sort("date", -1).to_list(100)
     return [CashClosingResponse(**c) for c in closings]
 
+@api_router.delete("/cash/closings/{date}")
+async def revert_cash_closing(date: str, current_user: dict = Depends(get_current_user)):
+    """Revert/delete a cash closing to allow modifications"""
+    existing = await db.cash_closings.find_one({"date": date})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Cash closing not found")
+    
+    await db.cash_closings.delete_one({"date": date})
+    return {"message": f"Cash closing for {date} has been reverted", "date": date}
+
 # ==================== INTEGRATIONS CONFIG ROUTES ====================
 
 class IntegrationConfig(BaseModel):
