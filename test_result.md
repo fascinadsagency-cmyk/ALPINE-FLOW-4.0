@@ -329,10 +329,18 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Providers Page - CRUD Operations"
+    - "Customers Page - Provider Integration"
+    - "New Rental - Customer Creation Modal"
+    - "Inventory - Edit/Delete Items"
+    - "Active Rentals - Modify Days"
+    - "Returns - Pending Returns Panel"
+    - "Tariffs - Packs with Categories"
+    - "Complete Rental Flow with Provider Discount"
   stuck_tasks: []
   test_all: true
-  test_priority: "comprehensive_completed"
+  test_priority: "high_first"
 
 agent_communication:
     - agent: "testing"
