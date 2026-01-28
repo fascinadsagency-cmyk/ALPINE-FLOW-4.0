@@ -1086,6 +1086,7 @@ class SourceResponse(BaseModel):
     notes: str = ""
     active: bool = True
     customer_count: int = 0
+    created_at: str = ""
 
 @api_router.post("/sources", response_model=SourceResponse)
 async def create_source(source: SourceCreate, current_user: dict = Depends(get_current_user)):
