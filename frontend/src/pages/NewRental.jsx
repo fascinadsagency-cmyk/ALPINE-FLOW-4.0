@@ -287,14 +287,14 @@ export default function NewRental() {
       const params = new URLSearchParams();
       params.append('status', 'available');
       if (itemSearchTerm) params.append('search', itemSearchTerm);
-      if (itemSearchType) params.append('item_type', itemSearchType);
-      if (itemSearchCategory) params.append('category', itemSearchCategory);
+      if (itemSearchType && itemSearchType !== 'all') params.append('item_type', itemSearchType);
+      if (itemSearchCategory && itemSearchCategory !== 'all') params.append('category', itemSearchCategory);
       
       const response = await itemApi.getAll({
         status: 'available',
         search: itemSearchTerm || undefined,
-        item_type: itemSearchType || undefined,
-        category: itemSearchCategory || undefined
+        item_type: (itemSearchType && itemSearchType !== 'all') ? itemSearchType : undefined,
+        category: (itemSearchCategory && itemSearchCategory !== 'all') ? itemSearchCategory : undefined
       });
       
       // Filter out already added items
