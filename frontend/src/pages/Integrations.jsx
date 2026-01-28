@@ -63,6 +63,30 @@ export default function Integrations() {
     auto_send: false,
     save_xml: true
   });
+  const [emailConfig, setEmailConfig] = useState({
+    enabled: false,
+    smtp_server: "",
+    smtp_port: "587",
+    email_from: "",
+    email_password: "",
+    use_tls: true,
+    send_confirmations: false,
+    send_reminders: false,
+    send_invoices: false,
+    company_logo_url: "",
+    email_signature: ""
+  });
+  const [calendarConfig, setCalendarConfig] = useState({
+    enabled: false,
+    google_client_id: "",
+    google_client_secret: "",
+    calendar_id: "",
+    sync_interval: "15",
+    auto_create_events: true,
+    color_code_by_status: true,
+    send_notifications: true,
+    default_duration: "60"
+  });
 
   useEffect(() => {
     loadConfigs();
