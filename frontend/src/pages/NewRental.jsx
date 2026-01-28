@@ -35,7 +35,7 @@ const PAYMENT_METHODS = [
 ];
 
 const ITEM_TYPES = [
-  { value: "", label: "Todos" },
+  { value: "all", label: "Todos" },
   { value: "ski", label: "Esquís" },
   { value: "snowboard", label: "Snowboard" },
   { value: "boots", label: "Botas" },
@@ -44,7 +44,7 @@ const ITEM_TYPES = [
 ];
 
 const CATEGORIES = [
-  { value: "", label: "Todas" },
+  { value: "all", label: "Todas" },
   { value: "SUPERIOR", label: "Gama Superior" },
   { value: "ALTA", label: "Gama Alta" },
   { value: "MEDIA", label: "Gama Media" },
