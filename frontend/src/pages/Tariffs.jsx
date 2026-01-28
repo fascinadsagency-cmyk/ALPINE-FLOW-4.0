@@ -268,14 +268,7 @@ export default function Tariffs() {
     };
     return icons[category] || icons.MEDIA;
   };
-      return;
-    }
 
-    try {
-      await axios.post(`${API}/packs`, {
-        name: newPack.name,
-        description: newPack.description,
-        items: newPack.items,
   const deletePack = async () => {
     try {
       await axios.delete(`${API}/packs/${deletingPack.id}`);
