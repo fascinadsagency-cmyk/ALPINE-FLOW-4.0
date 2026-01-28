@@ -124,6 +124,22 @@ export default function Integrations() {
     }
   };
 
+  const saveVerifactuConfig = async () => {
+    setSaving(true);
+    try {
+      await axios.post(`${API}/integrations/config`, {
+        integration_type: "verifactu",
+        enabled: verifactuConfig.enabled,
+        config: verifactuConfig
+      });
+      toast.success("Configuración de VeriFactu guardada");
+    } catch (error) {
+      toast.error("Error al guardar configuración");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const testConnection = async (type) => {
     toast.info(`Probando conexión con ${type}...`);
     // Simulated test - in real implementation would call actual API
