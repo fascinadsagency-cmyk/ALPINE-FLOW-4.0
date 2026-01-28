@@ -473,7 +473,9 @@ export default function NewRental() {
         selectCustomer(response.data);
         toast.success(`Cliente encontrado: ${response.data.name}`);
         return;
-      } catch (e) {}
+      } catch (e) {
+        // Customer not found by DNI, try general search
+      }
       
       const response = await customerApi.getAll(searchTerm);
       if (response.data.length === 1) {
