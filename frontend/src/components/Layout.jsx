@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/nuevo-alquiler", icon: ShoppingCart, label: "Nuevo Alquiler" },
+  { to: "/alquileres-activos", icon: ShoppingCart, label: "Alquileres Activos" },
   { to: "/devoluciones", icon: RotateCcw, label: "Devoluciones" },
   { to: "/clientes", icon: Users, label: "Clientes" },
   { to: "/inventario", icon: Package, label: "Inventario" },
