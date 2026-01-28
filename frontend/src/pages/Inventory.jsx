@@ -817,6 +817,18 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                   />
                 </div>
                 <div>
+                  <Label>Código Interno</Label>
+                  <Input
+                    value={editingItem.internal_code || ""}
+                    onChange={(e) => setEditingItem({ ...editingItem, internal_code: e.target.value.toUpperCase() })}
+                    placeholder="Ej: SKI-G-001"
+                    className="h-11 mt-1 font-mono"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Numeración propia de la tienda</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
                   <Label>Tipo *</Label>
                   <Select 
                     value={editingItem.item_type} 
@@ -832,9 +844,6 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
                   <Label>Marca *</Label>
                   <Input
                     value={editingItem.brand}
