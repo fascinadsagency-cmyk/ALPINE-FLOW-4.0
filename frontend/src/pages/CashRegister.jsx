@@ -485,6 +485,10 @@ export default function CashRegister() {
           <Download className="h-4 w-4 mr-2" />
           Exportar
         </Button>
+        <Button variant="outline" onClick={loadClosureHistory}>
+          <History className="h-4 w-4 mr-2" />
+          Historial Cierres
+        </Button>
         <Button variant="destructive" onClick={() => setShowCloseDialog(true)}>
           <Lock className="h-4 w-4 mr-2" />
           Cerrar Caja
