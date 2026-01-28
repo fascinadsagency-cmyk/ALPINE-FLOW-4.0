@@ -99,6 +99,8 @@ export default function NewRental() {
   const [customer, setCustomer] = useState(null);
   const [customerHistory, setCustomerHistory] = useState(null);
   const [items, setItems] = useState([]);
+  const [packs, setPacks] = useState([]);
+  const [detectedPacks, setDetectedPacks] = useState([]);
   const [barcodeInput, setBarcodeInput] = useState("");
   
   // Smart date system
