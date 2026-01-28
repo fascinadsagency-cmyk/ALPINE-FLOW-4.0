@@ -1306,6 +1306,155 @@ async def complete_maintenance(maintenance_id: str, current_user: dict = Depends
     
     return {"message": "Maintenance completed"}
 
+# ==================== EXTERNAL WORKSHOP (TALLER EXTERNO) ROUTES ====================
+
+EXTERNAL_SERVICES = {
+    "wax": {"label": "Encerado", "price": 15},
+    "sharpen": {"label": "Afilado", "price": 20},
+    "patch": {"label": "Parcheado", "price": 25},
+    "bindings": {"label": "Montaje fijaciones", "price": 35},
+    "base_repair": {"label": "Reparación base", "price": 30},
+    "full_tune": {"label": "Puesta a punto completa", "price": 45},
+}
+
+@api_router.post("/external-repairs", response_model=ExternalRepairResponse)
+async def create_external_repair(repair: ExternalRepairCreate, current_user: dict = Depends(get_current_user)):
+    repair_id = str(uuid.uuid4())
+    
+    doc = {
+        "id": repair_id,
+        "customer_name": repair.customer_name,
+        "customer_phone": repair.customer_phone,
+        "customer_id": repair.customer_id,
+        "equipment_description": repair.equipment_description,
+        "services": repair.services,
+        "delivery_date": repair.delivery_date,
+        "delivery_time": repair.delivery_time,
+        "priority": repair.priority,
+        "price": repair.price,
+        "notes": repair.notes or "",
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "completed_at": None,
+        "delivered_at": None,
+        "payment_method": None
+    }
+    
+    await db.external_repairs.insert_one(doc)
+    return ExternalRepairResponse(**doc)
+
+@api_router.get("/external-repairs", response_model=List[ExternalRepairResponse])
+async def get_external_repairs(
+    status: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    query = {}
+    if status and status != "all":
+        query["status"] = status
+    
+    repairs = await db.external_repairs.find(query, {"_id": 0}).sort("delivery_date", 1).to_list(200)
+    return [ExternalRepairResponse(**r) for r in repairs]
+
+@api_router.get("/external-repairs/{repair_id}", response_model=ExternalRepairResponse)
+async def get_external_repair(repair_id: str, current_user: dict = Depends(get_current_user)):
+    repair = await db.external_repairs.find_one({"id": repair_id}, {"_id": 0})
+    if not repair:
+        raise HTTPException(status_code=404, detail="Repair not found")
+    return ExternalRepairResponse(**repair)
+
+@api_router.put("/external-repairs/{repair_id}")
+async def update_external_repair(repair_id: str, repair: ExternalRepairCreate, current_user: dict = Depends(get_current_user)):
+    existing = await db.external_repairs.find_one({"id": repair_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Repair not found")
+    
+    update_data = {
+        "customer_name": repair.customer_name,
+        "customer_phone": repair.customer_phone,
+        "customer_id": repair.customer_id,
+        "equipment_description": repair.equipment_description,
+        "services": repair.services,
+        "delivery_date": repair.delivery_date,
+        "delivery_time": repair.delivery_time,
+        "priority": repair.priority,
+        "price": repair.price,
+        "notes": repair.notes or ""
+    }
+    
+    await db.external_repairs.update_one({"id": repair_id}, {"$set": update_data})
+    updated = await db.external_repairs.find_one({"id": repair_id}, {"_id": 0})
+    return ExternalRepairResponse(**updated)
+
+@api_router.post("/external-repairs/{repair_id}/complete")
+async def complete_external_repair(repair_id: str, current_user: dict = Depends(get_current_user)):
+    repair = await db.external_repairs.find_one({"id": repair_id}, {"_id": 0})
+    if not repair:
+        raise HTTPException(status_code=404, detail="Repair not found")
+    
+    await db.external_repairs.update_one(
+        {"id": repair_id},
+        {"$set": {"status": "completed", "completed_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Repair marked as completed"}
+
+class DeliverAndChargeRequest(BaseModel):
+    payment_method: str = "cash"
+
+@api_router.post("/external-repairs/{repair_id}/deliver")
+async def deliver_external_repair(
+    repair_id: str, 
+    delivery: DeliverAndChargeRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    repair = await db.external_repairs.find_one({"id": repair_id}, {"_id": 0})
+    if not repair:
+        raise HTTPException(status_code=404, detail="Repair not found")
+    
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Update repair status
+    await db.external_repairs.update_one(
+        {"id": repair_id},
+        {"$set": {
+            "status": "delivered",
+            "delivered_at": now,
+            "payment_method": delivery.payment_method
+        }}
+    )
+    
+    # Create cash movement (income from workshop)
+    if repair["price"] > 0:
+        cash_movement_id = str(uuid.uuid4())
+        cash_doc = {
+            "id": cash_movement_id,
+            "movement_type": "income",
+            "amount": repair["price"],
+            "payment_method": delivery.payment_method,
+            "category": "workshop",
+            "concept": f"Taller: {repair['equipment_description'][:30]} - {repair['customer_name']}",
+            "reference_id": repair_id,
+            "customer_name": repair["customer_name"],
+            "notes": f"Servicios: {', '.join(repair['services'])}",
+            "created_at": now,
+            "created_by": current_user["username"]
+        }
+        await db.cash_movements.insert_one(cash_doc)
+    
+    return {"message": "Repair delivered and charged", "amount": repair["price"]}
+
+@api_router.delete("/external-repairs/{repair_id}")
+async def delete_external_repair(repair_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.external_repairs.delete_one({"id": repair_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Repair not found")
+    return {"message": "Repair deleted"}
+
+@api_router.get("/external-services")
+async def get_external_services(current_user: dict = Depends(get_current_user)):
+    """Returns available services and their default prices"""
+    return EXTERNAL_SERVICES
+
 # ==================== REPORTS ROUTES ====================
 
 @api_router.get("/reports/daily", response_model=DailyReportResponse)
