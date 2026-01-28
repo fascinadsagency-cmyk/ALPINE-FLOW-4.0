@@ -744,7 +744,9 @@ class AlpineFlowAPITester:
 def main():
     """Main test execution"""
     tester = AlpineFlowAPITester()
-    success = tester.run_all_tests()
+    
+    # Run FASE 1 specific tests as requested
+    success = tester.run_fase1_tests()
     
     # Save detailed results
     with open('/tmp/backend_test_results.json', 'w') as f:
