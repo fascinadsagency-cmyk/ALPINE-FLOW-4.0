@@ -357,6 +357,218 @@ export default function Providers() {
         </CardContent>
       </Card>
 
+      {/* Global Metrics Panel - Below the table */}
+      {globalStats && (
+        <Card className="mt-6 border-slate-200 bg-gradient-to-br from-slate-50 to-white">
+          <CardHeader className="pb-3 border-b">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-primary" />
+                Resumen de Rendimiento Global
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowGlobalMetrics(!showGlobalMetrics)}
+                className="text-slate-500"
+              >
+                {showGlobalMetrics ? "Ocultar" : "Mostrar"}
+              </Button>
+            </div>
+          </CardHeader>
+          
+          {showGlobalMetrics && (
+            <CardContent className="pt-6">
+              {/* KPI Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
+                {/* Total Providers */}
+                <Card className="bg-white border-slate-200 hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 text-slate-600 text-xs mb-2">
+                      <Building2 className="h-3.5 w-3.5" />
+                      <span className="font-medium">Proveedores</span>
+                    </div>
+                    <p className="text-2xl font-bold text-slate-900">{globalStats.total_providers}</p>
+                    <p className="text-xs text-emerald-600 mt-1">
+                      {globalStats.active_providers} activos
+                    </p>
+                  </CardContent>
+                </Card>
+
+                {/* Total Customers */}
+                <Card className="bg-blue-50 border-blue-200 hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 text-blue-600 text-xs mb-2">
+                      <Users className="h-3.5 w-3.5" />
+                      <span className="font-medium">Clientes</span>
+                    </div>
+                    <p className="text-2xl font-bold text-blue-900">{globalStats.total_customers}</p>
+                    <p className="text-xs text-blue-600 mt-1">
+                      Total referidos
+                    </p>
+                  </CardContent>
+                </Card>
+
+                {/* Avg Discount */}
+                <Card className="bg-emerald-50 border-emerald-200 hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 text-emerald-600 text-xs mb-2">
+                      <TrendingUp className="h-3.5 w-3.5" />
+                      <span className="font-medium">Dto. Medio</span>
+                    </div>
+                    <p className="text-2xl font-bold text-emerald-900">
+                      {globalStats.avg_discount.toFixed(1)}%
+                    </p>
+                    <p className="text-xs text-emerald-600 mt-1">
+                      {globalStats.providers_with_discount} con descuento
+                    </p>
+                  </CardContent>
+                </Card>
+
+                {/* Avg Commission */}
+                <Card className="bg-amber-50 border-amber-200 hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 text-amber-600 text-xs mb-2">
+                      <DollarSign className="h-3.5 w-3.5" />
+                      <span className="font-medium">Com. Media</span>
+                    </div>
+                    <p className="text-2xl font-bold text-amber-900">
+                      {globalStats.avg_commission.toFixed(1)}%
+                    </p>
+                    <p className="text-xs text-amber-600 mt-1">
+                      {globalStats.providers_with_commission} con comisión
+                    </p>
+                  </CardContent>
+                </Card>
+
+                {/* Best Provider */}
+                <Card className="bg-purple-50 border-purple-200 hover:shadow-md transition-shadow col-span-2 md:col-span-2 lg:col-span-3">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 text-purple-600 text-xs mb-2">
+                      <Trophy className="h-3.5 w-3.5" />
+                      <span className="font-medium">Top Proveedor</span>
+                    </div>
+                    {providers.length > 0 ? (
+                      <>
+                        <p className="text-lg font-bold text-purple-900 truncate">
+                          {[...providers].sort((a, b) => (b.customer_count || 0) - (a.customer_count || 0))[0]?.name || "-"}
+                        </p>
+                        <p className="text-xs text-purple-600 mt-1">
+                          {[...providers].sort((a, b) => (b.customer_count || 0) - (a.customer_count || 0))[0]?.customer_count || 0} clientes
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-lg text-purple-400">Sin datos</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Distribution Chart */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Distribution by Customer Count */}
+                <Card className="border-slate-200">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium text-slate-700">
+                      Distribución por Clientes
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {[
+                        { label: "Alta (10+)", count: providers.filter(p => p.customer_count > 10).length, color: "bg-emerald-500" },
+                        { label: "Media (5-10)", count: providers.filter(p => p.customer_count >= 5 && p.customer_count <= 10).length, color: "bg-blue-500" },
+                        { label: "Baja (1-4)", count: providers.filter(p => p.customer_count > 0 && p.customer_count < 5).length, color: "bg-amber-500" },
+                        { label: "Sin clientes", count: providers.filter(p => p.customer_count === 0).length, color: "bg-slate-300" }
+                      ].map((segment) => (
+                        <div key={segment.label} className="flex items-center gap-3">
+                          <div className={`h-3 w-3 rounded-full ${segment.color}`} />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-sm text-slate-600">{segment.label}</span>
+                              <span className="text-sm font-medium text-slate-900">{segment.count}</span>
+                            </div>
+                            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full ${segment.color}`}
+                                style={{ width: `${providers.length > 0 ? (segment.count / providers.length * 100) : 0}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Configuration Summary */}
+                <Card className="border-slate-200">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium text-slate-700">
+                      Resumen de Configuración
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50">
+                        <div className="flex items-center gap-2">
+                          <div className="h-8 w-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                            <TrendingUp className="h-4 w-4 text-emerald-600" />
+                          </div>
+                          <span className="text-sm font-medium text-slate-700">Con descuento</span>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-emerald-900">{globalStats.providers_with_discount}</p>
+                          <p className="text-xs text-emerald-600">
+                            {providers.length > 0 ? ((globalStats.providers_with_discount / providers.length) * 100).toFixed(0) : 0}%
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-amber-50">
+                        <div className="flex items-center gap-2">
+                          <div className="h-8 w-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                            <DollarSign className="h-4 w-4 text-amber-600" />
+                          </div>
+                          <span className="text-sm font-medium text-slate-700">Con comisión</span>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-amber-900">{globalStats.providers_with_commission}</p>
+                          <p className="text-xs text-amber-600">
+                            {providers.length > 0 ? ((globalStats.providers_with_commission / providers.length) * 100).toFixed(0) : 0}%
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50">
+                        <div className="flex items-center gap-2">
+                          <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                            <Building2 className="h-4 w-4 text-blue-600" />
+                          </div>
+                          <span className="text-sm font-medium text-slate-700">Activos</span>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-blue-900">{globalStats.active_providers}</p>
+                          <p className="text-xs text-blue-600">
+                            {providers.length > 0 ? ((globalStats.active_providers / providers.length) * 100).toFixed(0) : 0}%
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="mt-4 p-3 rounded-lg bg-slate-100 border border-slate-200">
+                <p className="text-xs text-slate-600 text-center">
+                  💡 <strong>Tip:</strong> Haz scroll hacia arriba para gestionar la lista de proveedores. Las métricas aquí te ayudan a tener una visión global del rendimiento.
+                </p>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+      )}
+
       {/* Create/Edit Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="sm:max-w-lg">
