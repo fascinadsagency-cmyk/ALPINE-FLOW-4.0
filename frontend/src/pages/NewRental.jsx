@@ -1234,7 +1234,7 @@ export default function NewRental() {
       }
     });
     
-    // Generate HTML for standalone items - TARIFA ESCALONADA (sin P.UNIT)
+    // Generate HTML for standalone items - Con desglose completo
     const standaloneHtml = standaloneItems.map(item => {
       const typeLabel = getTypeLabel(item.item_type);
       const days = item.itemDays || numDays;
@@ -1244,41 +1244,47 @@ export default function NewRental() {
       const dayField = days <= 10 ? `day_${days}` : 'day_11_plus';
       const totalPrice = item.customPrice || item.custom_price || (tariff ? tariff[dayField] : 0) || 0;
       
-      // Build full description: "Esquís Atomic Redster (42) [SKI-001]"
+      // Precio base (día 1) como referencia
+      const basePrice = tariff?.day_1 || totalPrice;
+      
+      // Build full description: "Esquís Atomic Redster (42)"
       const modelStr = `${item.brand || ''} ${item.model || ''}`.trim();
       const sizeStr = item.size ? ` (${item.size})` : '';
-      const codeStr = item.internal_code ? ` [${item.internal_code}]` : '';
-      const description = `${typeLabel} ${modelStr}${sizeStr}${codeStr}`.trim();
+      const description = `${typeLabel} ${modelStr}${sizeStr}`.trim();
+      const codeStr = item.internal_code || item.barcode?.substring(0, 8) || '';
       
       return `
         <tr class="item-row">
-          <td class="item-desc">${description}</td>
-          <td class="item-days">${days}</td>
+          <td class="item-desc">
+            <div>${description}</div>
+            <div class="item-code">${codeStr}</div>
+          </td>
+          <td class="item-days">${days}d</td>
+          <td class="item-unit">€${basePrice.toFixed(2)}</td>
           <td class="item-total">€${totalPrice.toFixed(2)}</td>
         </tr>
       `;
     }).join('');
     
-    // Generate HTML for pack items - SINGLE LINE PER PACK with FUSED name format
-    // PASO 1: Consolidación - Códigos de hijos fusionados en el nombre
-    // PASO 2: Filtrado - Solo esta línea aparece, los hijos fueron filtrados arriba
+    // Generate HTML for pack items - SINGLE LINE PER PACK
     const packsHtml = Object.values(packItems).map(packData => {
       const packDays = packData.days;
-      // CRITICAL: Pack price is TOTAL for the selected days, NOT per day
       const packTotal = getPackPrice(packData.pack, packDays);
+      const packBasePrice = packData.pack.day_1 || packTotal;
       
-      // CONSOLIDACIÓN: Extraer códigos de los HIJOS
+      // Extraer códigos de los componentes
       const childCodes = packData.items.map(item => 
-        item.internal_code || item.barcode?.substring(0, 10) || 'N/A'
+        item.internal_code || item.barcode?.substring(0, 8) || 'N/A'
       ).join(' / ');
-      
-      // NOMBRE FUSIONADO: "Pack Esquí Plata (SKI-001 / BOT-204)"
-      const fusedPackName = `${packData.pack.name} (${childCodes})`;
       
       return `
         <tr class="item-row pack-row">
-          <td class="item-desc">${fusedPackName}</td>
-          <td class="item-days">${packDays}</td>
+          <td class="item-desc">
+            <div class="pack-name">${packData.pack.name}</div>
+            <div class="item-code">${childCodes}</div>
+          </td>
+          <td class="item-days">${packDays}d</td>
+          <td class="item-unit">€${packBasePrice.toFixed(2)}</td>
           <td class="item-total">€${packTotal.toFixed(2)}</td>
         </tr>
       `;
