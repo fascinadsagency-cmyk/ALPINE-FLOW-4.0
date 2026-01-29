@@ -301,6 +301,10 @@ export default function CashRegister() {
       });
     };
     
+    // Extract payment method breakdown
+    const cashData = closingData.by_payment_method?.cash || { income: 0, expense: 0, refund: 0 };
+    const cardData = closingData.by_payment_method?.card || { income: 0, expense: 0, refund: 0 };
+    
     printWindow.document.write(`
       <html>
       <head>
@@ -320,6 +324,8 @@ export default function CashRegister() {
           .warning { background: #fff3cd; }
           .error { background: #f8d7da; }
           .footer { text-align: center; margin-top: 15px; font-size: 10px; }
+          .subsection { margin-left: 8px; font-size: 11px; color: #555; }
+          .method-header { font-weight: bold; margin-top: 8px; margin-bottom: 3px; text-decoration: underline; }
         </style>
       </head>
       <body>
@@ -337,7 +343,7 @@ export default function CashRegister() {
         <div class="divider"></div>
         
         <div class="section">
-          <div style="font-weight: bold; margin-bottom: 5px;">RESUMEN DEL DÍA</div>
+          <div style="font-weight: bold; margin-bottom: 5px;">RESUMEN GLOBAL DEL DÍA</div>
           <div class="row"><span>Entradas:</span><span class="value">€${formatCurrency(closingData.total_income)}</span></div>
           <div class="row"><span>Salidas:</span><span class="value">€${formatCurrency(closingData.total_expense)}</span></div>
           <div class="row"><span>Devoluciones:</span><span class="value">€${formatCurrency(closingData.total_refunds)}</span></div>
@@ -346,17 +352,43 @@ export default function CashRegister() {
         <div class="divider"></div>
         
         <div class="section">
-          <div style="font-weight: bold; margin-bottom: 5px;">EFECTIVO</div>
-          <div class="row"><span>Esperado:</span><span>€${formatCurrency(closingData.expected_cash)}</span></div>
+          <div style="font-weight: bold; margin-bottom: 8px;">DESGLOSE POR MÉTODO DE PAGO</div>
+          
+          <div class="method-header">💵 EFECTIVO</div>
+          <div class="subsection">
+            <div class="row"><span>+ Ventas:</span><span>€${formatCurrency(cashData.income)}</span></div>
+            <div class="row"><span>- Salidas:</span><span>€${formatCurrency(cashData.expense)}</span></div>
+            <div class="row"><span>- Devoluciones:</span><span>€${formatCurrency(cashData.refund)}</span></div>
+          </div>
+          <div class="row" style="margin-top: 5px; padding-top: 5px; border-top: 1px solid #ddd;">
+            <span style="font-weight: bold;">Esperado:</span>
+            <span style="font-weight: bold;">€${formatCurrency(closingData.expected_cash)}</span>
+          </div>
           <div class="row"><span>Contado:</span><span class="value">€${formatCurrency(closingData.physical_cash)}</span></div>
-          <div class="row"><span>Descuadre:</span><span class="value" style="color: ${closingData.discrepancy_cash === 0 ? 'green' : 'red'}">€${formatCurrency(closingData.discrepancy_cash)}</span></div>
-        </div>
-        
-        <div class="section">
-          <div style="font-weight: bold; margin-bottom: 5px;">TARJETA</div>
-          <div class="row"><span>Esperado:</span><span>€${formatCurrency(closingData.expected_card)}</span></div>
+          <div class="row">
+            <span style="font-weight: bold;">Descuadre:</span>
+            <span class="value" style="color: ${closingData.discrepancy_cash === 0 ? 'green' : 'red'}; font-weight: bold;">
+              €${formatCurrency(closingData.discrepancy_cash)}
+            </span>
+          </div>
+          
+          <div class="method-header" style="margin-top: 12px;">💳 TARJETA</div>
+          <div class="subsection">
+            <div class="row"><span>+ Ventas:</span><span>€${formatCurrency(cardData.income)}</span></div>
+            <div class="row"><span>- Salidas:</span><span>€${formatCurrency(cardData.expense)}</span></div>
+            <div class="row"><span>- Devoluciones:</span><span>€${formatCurrency(cardData.refund)}</span></div>
+          </div>
+          <div class="row" style="margin-top: 5px; padding-top: 5px; border-top: 1px solid #ddd;">
+            <span style="font-weight: bold;">Esperado:</span>
+            <span style="font-weight: bold;">€${formatCurrency(closingData.expected_card)}</span>
+          </div>
           <div class="row"><span>Datáfono:</span><span class="value">€${formatCurrency(closingData.card_total)}</span></div>
-          <div class="row"><span>Descuadre:</span><span class="value" style="color: ${closingData.discrepancy_card === 0 ? 'green' : 'red'}">€${formatCurrency(closingData.discrepancy_card)}</span></div>
+          <div class="row">
+            <span style="font-weight: bold;">Descuadre:</span>
+            <span class="value" style="color: ${closingData.discrepancy_card === 0 ? 'green' : 'red'}; font-weight: bold;">
+              €${formatCurrency(closingData.discrepancy_card)}
+            </span>
+          </div>
         </div>
         
         <div class="divider"></div>
