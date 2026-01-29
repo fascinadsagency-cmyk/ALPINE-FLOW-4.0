@@ -1012,33 +1012,6 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                         {orderedVisibleColumns.map((col) => (
                           <TableCell key={col.id}>{renderCell(col.id)}</TableCell>
                         ))}
-                                </div>
-                              )}
-                            </TableCell>
-                            <TableCell className={`text-right font-mono font-bold ${(item.net_profit || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                              {(item.net_profit || 0) >= 0 ? '+' : ''}€{(item.net_profit || 0).toFixed(0)}
-                            </TableCell>
-                          </>
-                        )}
-                        
-                        {!showProfitability && (
-                          <>
-                            <TableCell className="text-center">{item.days_used}</TableCell>
-                            <TableCell>
-                              {needsMaintenance ? (
-                                <Badge variant="destructive" className="whitespace-nowrap animate-pulse">
-                                  <AlertCircle className="h-3 w-3 mr-1" />
-                                  ¡MANTENIMIENTO!
-                                </Badge>
-                              ) : (
-                                <Badge variant="outline" className="whitespace-nowrap bg-emerald-50 text-emerald-700 border-emerald-200">
-                                  {usesRemaining} {usesRemaining === 1 ? 'uso' : 'usos'}
-                                </Badge>
-                              )}
-                            </TableCell>
-                          </>
-                        )}
-                        
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
                             <Button
@@ -1064,6 +1037,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                   })}
                 </TableBody>
               </Table>
+              </DndContext>
             </div>
           )}
         </CardContent>
