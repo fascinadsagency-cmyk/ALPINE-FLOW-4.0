@@ -1630,9 +1630,10 @@ export default function NewRental() {
                                     item.customPrice !== null ? 'text-emerald-600' : 'text-slate-900'
                                   }`}>
                                     €{totalItemPrice.toFixed(2)}
-                                    {qty > 1 && <span className="ml-1 text-xs font-normal">({qty}x€{itemPrice.toFixed(2)})</span>}
                                   </p>
-                                  <p className="text-xs text-slate-500">{numDays}d</p>
+                                  <p className="text-xs text-slate-500">
+                                    {qty > 1 ? `${qty}x` : ''}{days}d
+                                  </p>
                                 </div>
                                 <Edit2 className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
                               </div>
