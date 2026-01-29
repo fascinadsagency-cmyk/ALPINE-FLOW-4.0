@@ -1425,7 +1425,7 @@ export default function NewRental() {
                 <tr>
                   <th>Artículo</th>
                   <th class="col-days">Días</th>
-                  <th class="col-total">Total</th>
+                  <th class="col-total">Total (IVA inc.)</th>
                 </tr>
               </thead>
               <tbody>
