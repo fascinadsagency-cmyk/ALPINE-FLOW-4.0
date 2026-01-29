@@ -84,9 +84,8 @@ export default function Inventory() {
   });
 
   useEffect(() => {
-    loadItems();
     loadItemTypes();
-  }, [filterStatus, filterType, filterCategory]);
+  }, []);
 
   const loadItemTypes = async () => {
     try {
