@@ -555,7 +555,13 @@ export default function ActiveRentals() {
                     <TableRow key={rental.id} className="hover:bg-slate-50">
                       <TableCell>
                         <div>
-                          <p className="font-medium text-slate-900">{rental.customer_name}</p>
+                          <button
+                            onClick={() => openCustomerModal(rental)}
+                            className="font-medium text-slate-900 hover:text-primary hover:underline text-left cursor-pointer"
+                            data-testid={`customer-link-${rental.id}`}
+                          >
+                            {rental.customer_name}
+                          </button>
                           <p className="text-sm text-slate-500 font-mono">{rental.customer_dni}</p>
                         </div>
                       </TableCell>
@@ -588,15 +594,27 @@ export default function ActiveRentals() {
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openEditDialog(rental)}
-                          className="h-8 w-8"
-                          data-testid={`edit-rental-${rental.id}`}
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openCustomerModal(rental)}
+                            className="h-8 w-8"
+                            title="Ver ficha del cliente"
+                          >
+                            <User className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditDialog(rental)}
+                            className="h-8 w-8"
+                            data-testid={`edit-rental-${rental.id}`}
+                            title="Modificar duración"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
