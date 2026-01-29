@@ -340,7 +340,7 @@ export default function Tariffs() {
                 </p>
               </CardHeader>
               <CardContent>
-                {ITEM_TYPES.map((type) => (
+                {itemTypes.map((type) => (
                   <div key={type.value} className="mb-6 last:mb-0">
                     <h3 className="font-semibold text-slate-900 mb-3">{type.label}</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
