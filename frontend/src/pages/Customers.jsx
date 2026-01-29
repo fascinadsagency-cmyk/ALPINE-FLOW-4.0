@@ -489,10 +489,20 @@ export default function Customers() {
           </h1>
           <p className="text-slate-500 mt-1">Gestión profesional de clientes</p>
         </div>
-        <Button onClick={() => setShowNewCustomerDialog(true)} size="lg">
-          <Plus className="h-5 w-5 mr-2" />
-          Nuevo Cliente
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowImportDialog(true)}
+            data-testid="import-customers-btn"
+          >
+            <Upload className="h-5 w-5 mr-2" />
+            Importar
+          </Button>
+          <Button onClick={() => setShowNewCustomerDialog(true)} size="lg" data-testid="new-customer-btn">
+            <Plus className="h-5 w-5 mr-2" />
+            Nuevo Cliente
+          </Button>
+        </div>
       </div>
 
       {/* Search and Filters */}
