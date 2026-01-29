@@ -708,14 +708,14 @@ export default function NewRental() {
 
   // Quick add: Adds first available item of given type instantly
   const quickAddItem = async (itemType) => {
-    const typeNames = { helmet: 'cascos', goggles: 'máscaras', poles: 'bastones' };
+    const typeLabel = itemTypes.find(t => t.value === itemType)?.label || itemType;
     try {
       const response = await itemApi.getAll({ status: 'available', item_type: itemType });
       const addedBarcodes = items.map(i => i.barcode);
       const availableItems = response.data.filter(i => !addedBarcodes.includes(i.barcode));
       
       if (availableItems.length === 0) {
-        toast.error(`No hay ${typeNames[itemType]} disponibles`);
+        toast.error(`No hay ${typeLabel} disponibles`);
         return;
       }
       
