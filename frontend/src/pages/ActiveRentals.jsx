@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,10 +29,10 @@ import {
   MapPin,
   MessageCircle,
   Package,
-  IdCard,
   RefreshCw,
   Scan,
-  ArrowLeftRight
+  ArrowLeftRight,
+  Zap
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -50,7 +50,7 @@ export default function ActiveRentals() {
   // Step-based modification flow
   const [editingRental, setEditingRental] = useState(null);
   const [newDays, setNewDays] = useState("");
-  const [step, setStep] = useState(1); // 1: Select days, 2: Confirm payment, 3: Print ticket
+  const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [updating, setUpdating] = useState(false);
   const [modificationResult, setModificationResult] = useState(null);
@@ -60,15 +60,18 @@ export default function ActiveRentals() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerLoading, setCustomerLoading] = useState(false);
 
-  // SWAP/CANJE modal state
-  const [swapModal, setSwapModal] = useState(null); // { rental, item }
-  const [swapNewBarcode, setSwapNewBarcode] = useState("");
-  const [swapNewItem, setSwapNewItem] = useState(null);
-  const [swapNewDays, setSwapNewDays] = useState("");
-  const [swapStep, setSwapStep] = useState(1); // 1: Scan, 2: Confirm, 3: Payment
-  const [swapLoading, setSwapLoading] = useState(false);
-  const [swapDelta, setSwapDelta] = useState(null);
+  // ============ NEW CENTRALIZED SWAP SYSTEM ============
+  const [swapRental, setSwapRental] = useState(null); // The rental being swapped
+  const [swapBarcode, setSwapBarcode] = useState(""); // Scanned barcode
+  const [swapNewItem, setSwapNewItem] = useState(null); // New item detected
+  const [swapOldItem, setSwapOldItem] = useState(null); // Old item to be replaced (auto-detected)
+  const [swapDaysRemaining, setSwapDaysRemaining] = useState(0);
+  const [swapNewDays, setSwapNewDays] = useState(""); // Optional new duration
+  const [swapDelta, setSwapDelta] = useState(null); // Price difference
   const [swapPaymentMethod, setSwapPaymentMethod] = useState("cash");
+  const [swapLoading, setSwapLoading] = useState(false);
+  const [swapComplete, setSwapComplete] = useState(false);
+  const swapInputRef = useRef(null);
 
   useEffect(() => {
     loadActiveRentals();
@@ -86,6 +89,305 @@ export default function ActiveRentals() {
     }
   };
 
+  // ============ SWAP CENTRALIZED FUNCTIONS ============
+  
+  const openSwapModal = (rental) => {
+    setSwapRental(rental);
+    setSwapBarcode("");
+    setSwapNewItem(null);
+    setSwapOldItem(null);
+    setSwapDelta(null);
+    setSwapComplete(false);
+    setSwapPaymentMethod("cash");
+    
+    // Calculate days remaining
+    const endDate = new Date(rental.end_date);
+    const today = new Date();
+    const daysLeft = Math.max(1, Math.ceil((endDate - today) / (1000 * 60 * 60 * 24)) + 1);
+    setSwapDaysRemaining(daysLeft);
+    setSwapNewDays(daysLeft.toString());
+    
+    // Auto-focus input after modal opens
+    setTimeout(() => {
+      swapInputRef.current?.focus();
+    }, 100);
+  };
+
+  const closeSwapModal = () => {
+    setSwapRental(null);
+    setSwapBarcode("");
+    setSwapNewItem(null);
+    setSwapOldItem(null);
+    setSwapDelta(null);
+    setSwapComplete(false);
+  };
+
+  // Handle barcode scan/input
+  const handleSwapBarcodeChange = async (e) => {
+    const code = e.target.value.toUpperCase();
+    setSwapBarcode(code);
+    
+    // Auto-search when code is long enough (or on Enter)
+    if (code.length >= 3) {
+      // Debounce - search after user stops typing
+      setTimeout(() => {
+        if (swapBarcode === code) {
+          searchSwapItem(code);
+        }
+      }, 500);
+    }
+  };
+
+  const handleSwapBarcodeKeyDown = (e) => {
+    if (e.key === 'Enter' && swapBarcode.trim()) {
+      e.preventDefault();
+      searchSwapItem(swapBarcode);
+    }
+  };
+
+  const searchSwapItem = async (code) => {
+    if (!code.trim() || !swapRental) return;
+    
+    setSwapLoading(true);
+    try {
+      // Search for the new item by barcode or internal_code
+      const response = await axios.get(`${API}/items?search=${code}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      const items = response.data;
+      const foundItem = items.find(i => 
+        i.barcode === code || 
+        i.internal_code === code ||
+        i.barcode?.toUpperCase() === code ||
+        i.internal_code?.toUpperCase() === code
+      );
+
+      if (!foundItem) {
+        toast.error(`No se encontró ningún artículo con código "${code}"`);
+        setSwapNewItem(null);
+        setSwapOldItem(null);
+        return;
+      }
+
+      if (foundItem.status === 'rented') {
+        toast.error("Este artículo ya está alquilado por otro cliente");
+        return;
+      }
+
+      if (!['available', 'dirty'].includes(foundItem.status)) {
+        toast.error(`Artículo no disponible (Estado: ${foundItem.status})`);
+        return;
+      }
+
+      setSwapNewItem(foundItem);
+
+      // INTELLIGENT AUTO-DETECTION: Find matching item in rental to replace
+      const rentalItems = swapRental.items.filter(i => !i.returned);
+      const matchingOldItem = rentalItems.find(i => 
+        i.item_type?.toLowerCase() === foundItem.item_type?.toLowerCase()
+      );
+
+      if (matchingOldItem) {
+        setSwapOldItem(matchingOldItem);
+        toast.success(`✓ Sustitución detectada: ${matchingOldItem.internal_code || matchingOldItem.barcode} → ${foundItem.internal_code || foundItem.barcode}`);
+        
+        // Calculate price delta
+        await calculateSwapPriceDelta(matchingOldItem, foundItem);
+      } else {
+        // No matching type found - let user select manually
+        toast.warning(`No se encontró un artículo del mismo tipo (${foundItem.item_type}) en el alquiler`);
+        setSwapOldItem(null);
+        setSwapDelta(null);
+      }
+
+    } catch (error) {
+      toast.error("Error al buscar artículo");
+    } finally {
+      setSwapLoading(false);
+    }
+  };
+
+  const calculateSwapPriceDelta = async (oldItem, newItem) => {
+    if (!swapRental || !oldItem || !newItem) return;
+
+    try {
+      // Get tariffs to calculate proper prices
+      const tariffsRes = await axios.get(`${API}/tariffs`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const tariffs = tariffsRes.data;
+
+      const days = parseInt(swapNewDays) || swapDaysRemaining;
+
+      // Get price for old item (value not used = remaining value)
+      const oldTariff = tariffs.find(t => t.item_type?.toLowerCase() === oldItem.item_type?.toLowerCase());
+      const oldDayField = days <= 10 ? `day_${days}` : 'day_11_plus';
+      const oldPriceForDays = oldTariff?.[oldDayField] || oldItem.unit_price || 0;
+
+      // Get price for new item
+      const newTariff = tariffs.find(t => t.item_type?.toLowerCase() === newItem.item_type?.toLowerCase());
+      const newDayField = days <= 10 ? `day_${days}` : 'day_11_plus';
+      const newPriceForDays = newTariff?.[newDayField] || newItem.rental_price || 0;
+
+      // Calculate delta
+      const delta = newPriceForDays - oldPriceForDays;
+
+      setSwapDelta({
+        oldPrice: oldPriceForDays,
+        newPrice: newPriceForDays,
+        delta,
+        days,
+        isUpgrade: delta > 0,
+        isDowngrade: delta < 0,
+        isEqual: delta === 0
+      });
+
+    } catch (error) {
+      console.error("Error calculating swap price:", error);
+      // Fallback to zero delta
+      setSwapDelta({
+        oldPrice: 0,
+        newPrice: 0,
+        delta: 0,
+        days: swapDaysRemaining,
+        isEqual: true
+      });
+    }
+  };
+
+  // Handle days change
+  const handleSwapDaysChange = (e) => {
+    const newDaysValue = e.target.value;
+    setSwapNewDays(newDaysValue);
+    
+    if (swapOldItem && swapNewItem) {
+      calculateSwapPriceDelta(swapOldItem, swapNewItem);
+    }
+  };
+
+  // Manual selection of old item to replace
+  const selectOldItemToReplace = (item) => {
+    setSwapOldItem(item);
+    if (swapNewItem) {
+      calculateSwapPriceDelta(item, swapNewItem);
+    }
+  };
+
+  // CONFIRM SWAP - Execute the change
+  const executeSwap = async () => {
+    if (!swapRental || !swapNewItem || !swapOldItem) {
+      toast.error("Faltan datos para realizar el cambio");
+      return;
+    }
+
+    setSwapLoading(true);
+    try {
+      const response = await axios.post(`${API}/rentals/${swapRental.id}/central-swap`, {
+        old_item_barcode: swapOldItem.barcode || swapOldItem.internal_code,
+        new_item_barcode: swapNewItem.barcode || swapNewItem.internal_code,
+        days_remaining: parseInt(swapNewDays) || swapDaysRemaining,
+        payment_method: swapPaymentMethod,
+        delta_amount: swapDelta?.delta || 0
+      }, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      // Success
+      setSwapComplete(true);
+      
+      if (swapDelta?.isUpgrade) {
+        toast.success(`✅ Cambio completado. Suplemento: +€${swapDelta.delta.toFixed(2)}`);
+      } else if (swapDelta?.isDowngrade) {
+        toast.success(`✅ Cambio completado. Abono: -€${Math.abs(swapDelta.delta).toFixed(2)}`);
+      } else {
+        toast.success("✅ Cambio completado sin diferencia de precio");
+      }
+
+      // Reload rentals
+      loadActiveRentals();
+
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al procesar el cambio");
+    } finally {
+      setSwapLoading(false);
+    }
+  };
+
+  // Print swap ticket
+  const printSwapTicket = () => {
+    if (!swapRental || !swapNewItem || !swapOldItem || !swapDelta) return;
+
+    const ticketWindow = window.open('', '_blank', 'width=400,height=600');
+    ticketWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Ticket de Cambio</title>
+        <style>
+          @media print { @page { margin: 0; size: 80mm auto; } body { margin: 0; } }
+          body { font-family: 'Courier New', monospace; width: 80mm; padding: 5mm; margin: 0 auto; font-size: 11px; }
+          .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 8px; margin-bottom: 10px; }
+          .header h1 { margin: 0; font-size: 14px; }
+          .section { border-bottom: 1px dashed #ccc; padding: 8px 0; margin-bottom: 8px; }
+          .row { display: flex; justify-content: space-between; padding: 3px 0; }
+          .label { color: #666; }
+          .value { font-weight: bold; }
+          .delta-box { text-align: center; padding: 15px; margin: 10px 0; border-radius: 4px; }
+          .delta-positive { background: #dcfce7; color: #166534; }
+          .delta-negative { background: #fee2e2; color: #991b1b; }
+          .delta-zero { background: #f3f4f6; color: #374151; }
+          .delta-amount { font-size: 24px; font-weight: bold; }
+          .footer { text-align: center; margin-top: 15px; font-size: 9px; color: #666; }
+          .print-btn { display: block; width: 100%; padding: 10px; margin-top: 15px; background: #2563eb; color: white; border: none; cursor: pointer; font-size: 12px; border-radius: 4px; }
+          @media print { .print-btn { display: none; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>COMPROBANTE DE CAMBIO</h1>
+          <p>Regularización de material</p>
+        </div>
+        
+        <div class="section">
+          <div class="row"><span class="label">Cliente:</span><span class="value">${swapRental.customer_name}</span></div>
+          <div class="row"><span class="label">DNI:</span><span class="value">${swapRental.customer_dni || '-'}</span></div>
+          <div class="row"><span class="label">Alquiler:</span><span class="value">#${swapRental.id.substring(0, 8).toUpperCase()}</span></div>
+        </div>
+        
+        <div class="section">
+          <p style="font-weight: bold; margin: 0 0 8px 0;">❌ MATERIAL DEVUELTO</p>
+          <div class="row"><span>${swapOldItem.internal_code || swapOldItem.barcode}</span><span>€${swapDelta.oldPrice.toFixed(2)}</span></div>
+          <div style="font-size: 10px; color: #666;">${swapOldItem.item_type} - ${swapOldItem.brand || ''} ${swapOldItem.model || ''}</div>
+        </div>
+        
+        <div class="section">
+          <p style="font-weight: bold; margin: 0 0 8px 0;">✅ MATERIAL ENTREGADO</p>
+          <div class="row"><span>${swapNewItem.internal_code || swapNewItem.barcode}</span><span>€${swapDelta.newPrice.toFixed(2)}</span></div>
+          <div style="font-size: 10px; color: #666;">${swapNewItem.item_type} - ${swapNewItem.brand || ''} ${swapNewItem.model || ''}</div>
+        </div>
+        
+        <div class="delta-box ${swapDelta.isUpgrade ? 'delta-positive' : swapDelta.isDowngrade ? 'delta-negative' : 'delta-zero'}">
+          <p style="margin: 0 0 5px 0; font-size: 10px;">${swapDelta.isUpgrade ? 'SUPLEMENTO COBRADO' : swapDelta.isDowngrade ? 'ABONO AL CLIENTE' : 'SIN DIFERENCIA'}</p>
+          <p class="delta-amount">${swapDelta.delta > 0 ? '+' : swapDelta.delta < 0 ? '-' : ''}€${Math.abs(swapDelta.delta).toFixed(2)}</p>
+          <p style="margin: 5px 0 0 0; font-size: 10px;">Método: ${swapPaymentMethod === 'cash' ? 'Efectivo' : 'Tarjeta'}</p>
+        </div>
+        
+        <div class="footer">
+          <p>Fecha: ${new Date().toLocaleString('es-ES')}</p>
+          <p>Días restantes: ${swapDelta.days}</p>
+          <p style="margin-top: 8px;">Gracias por su confianza</p>
+        </div>
+        
+        <button class="print-btn" onclick="window.print(); setTimeout(() => window.close(), 500);">IMPRIMIR</button>
+      </body>
+      </html>
+    `);
+    ticketWindow.document.close();
+  };
+
+  // ============ MODIFICATION DIALOG FUNCTIONS ============
+
   const openEditDialog = (rental) => {
     setEditingRental(rental);
     setNewDays(rental.days.toString());
@@ -102,163 +404,11 @@ export default function ActiveRentals() {
     setModificationResult(null);
   };
 
-  // ========== SWAP/CANJE FUNCTIONS ==========
-  const openSwapModal = (rental, item) => {
-    setSwapModal({ rental, item });
-    setSwapNewBarcode("");
-    setSwapNewItem(null);
-    setSwapNewDays(rental.days.toString());
-    setSwapStep(1);
-    setSwapDelta(null);
-    setSwapPaymentMethod("cash");
-  };
-
-  const closeSwapModal = () => {
-    setSwapModal(null);
-    setSwapNewBarcode("");
-    setSwapNewItem(null);
-    setSwapNewDays("");
-    setSwapStep(1);
-    setSwapDelta(null);
-  };
-
-  const searchNewItem = async () => {
-    if (!swapNewBarcode.trim()) {
-      toast.error("Escanea o introduce el código del nuevo artículo");
-      return;
-    }
-
-    setSwapLoading(true);
-    try {
-      // Search for the item by barcode or internal_code
-      const response = await axios.get(`${API}/items?search=${swapNewBarcode}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-
-      const items = response.data;
-      const foundItem = items.find(i => 
-        i.barcode === swapNewBarcode || 
-        i.internal_code === swapNewBarcode ||
-        i.barcode?.toLowerCase() === swapNewBarcode.toLowerCase() ||
-        i.internal_code?.toLowerCase() === swapNewBarcode.toLowerCase()
-      );
-
-      if (!foundItem) {
-        toast.error("Artículo no encontrado");
-        return;
-      }
-
-      if (foundItem.status === 'rented') {
-        toast.error("Este artículo ya está alquilado");
-        return;
-      }
-
-      if (foundItem.status !== 'available') {
-        toast.error(`Artículo no disponible (Estado: ${foundItem.status})`);
-        return;
-      }
-
-      setSwapNewItem(foundItem);
-      calculateSwapDelta(foundItem, parseInt(swapNewDays) || swapModal.rental.days);
-      setSwapStep(2);
-
-    } catch (error) {
-      toast.error("Error al buscar artículo");
-    } finally {
-      setSwapLoading(false);
-    }
-  };
-
-  const calculateSwapDelta = async (newItem, days) => {
-    if (!swapModal || !newItem) return;
-
-    const oldItem = swapModal.item;
-    const rental = swapModal.rental;
-
-    try {
-      // Get tariffs to calculate prices
-      const tariffsRes = await axios.get(`${API}/tariffs`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      const tariffs = tariffsRes.data;
-
-      // Calculate old item price for the days
-      const oldTariff = tariffs.find(t => t.item_type === oldItem.item_type);
-      const oldDayField = rental.days <= 10 ? `day_${rental.days}` : 'day_11_plus';
-      const oldPrice = oldTariff?.[oldDayField] || oldItem.price || 0;
-
-      // Calculate new item price for the (potentially new) days
-      const newTariff = tariffs.find(t => t.item_type === newItem.item_type);
-      const newDayField = days <= 10 ? `day_${days}` : 'day_11_plus';
-      const newPrice = newTariff?.[newDayField] || newItem.rental_price || 0;
-
-      // Calculate delta
-      const delta = newPrice - oldPrice;
-
-      setSwapDelta({
-        oldPrice,
-        newPrice,
-        delta,
-        days,
-        isUpgrade: delta > 0,
-        isDowngrade: delta < 0,
-        isSamePrice: delta === 0
-      });
-
-    } catch (error) {
-      console.error("Error calculating swap delta:", error);
-      setSwapDelta({ oldPrice: 0, newPrice: 0, delta: 0, days, isSamePrice: true });
-    }
-  };
-
-  const confirmSwap = async () => {
-    if (!swapModal || !swapNewItem) return;
-
-    setSwapLoading(true);
-    try {
-      const response = await axios.post(`${API}/rentals/${swapModal.rental.id}/swap-item`, {
-        old_item_barcode: swapModal.item.barcode,
-        new_item_barcode: swapNewItem.barcode,
-        new_days: parseInt(swapNewDays) || swapModal.rental.days,
-        payment_method: swapPaymentMethod,
-        delta_amount: swapDelta?.delta || 0
-      }, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-
-      const result = response.data;
-
-      if (swapDelta?.delta > 0) {
-        toast.success(`✅ Cambio realizado. Suplemento cobrado: €${swapDelta.delta.toFixed(2)}`);
-      } else if (swapDelta?.delta < 0) {
-        toast.success(`✅ Cambio realizado. Abono al cliente: €${Math.abs(swapDelta.delta).toFixed(2)}`);
-      } else {
-        toast.success("✅ Cambio realizado sin diferencia de precio");
-      }
-
-      closeSwapModal();
-      loadActiveRentals();
-
-    } catch (error) {
-      toast.error(error.response?.data?.detail || "Error al procesar el cambio");
-    } finally {
-      setSwapLoading(false);
-    }
-  };
-
-  // ========== END SWAP FUNCTIONS ==========
-
   const calculateNewTotal = () => {
     if (!editingRental || newDays === "") return editingRental?.total_amount || 0;
-    
     const daysInt = parseInt(newDays);
     if (isNaN(daysInt) || daysInt < 0) return editingRental.total_amount;
-    
-    // 0 days = return same day, charge minimum or refund
-    if (daysInt === 0) {
-      return 0; // Full refund case
-    }
-    
+    if (daysInt === 0) return 0;
     const pricePerDay = editingRental.total_amount / editingRental.days;
     return pricePerDay * daysInt;
   };
@@ -270,20 +420,12 @@ export default function ActiveRentals() {
 
   const calculateNewEndDate = () => {
     if (!editingRental || newDays === "") return "";
-    
     const daysInt = parseInt(newDays);
     if (isNaN(daysInt) || daysInt < 0) return "";
-    
     const startDate = new Date(editingRental.start_date);
-    
-    if (daysInt === 0) {
-      // Same day return
-      return startDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    }
-    
+    if (daysInt === 0) return startDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
     const endDate = new Date(startDate);
     endDate.setDate(startDate.getDate() + daysInt - 1);
-    
     return endDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
@@ -294,33 +436,28 @@ export default function ActiveRentals() {
     return { text: "SIN CAMBIOS", color: "text-slate-600", bgColor: "bg-slate-50", borderColor: "border-slate-200" };
   };
 
-  // Step 1 → Step 2: Validate and proceed to payment
   const proceedToPayment = () => {
     const daysInt = parseInt(newDays);
     if (isNaN(daysInt) || daysInt < 0) {
       toast.error("Introduce un número válido de días (0 o más)");
       return;
     }
-    
     if (daysInt === editingRental.days) {
       toast.error("El número de días no ha cambiado");
       return;
     }
-    
     setStep(2);
   };
 
-  // Step 2 → Step 3: Process modification with payment
   const processModification = async () => {
     if (!editingRental) return;
-    
     const daysInt = parseInt(newDays);
     const newTotal = calculateNewTotal();
     const difference = calculateDifference();
 
     setUpdating(true);
     try {
-      const response = await axios.patch(
+      await axios.patch(
         `${API}/rentals/${editingRental.id}/modify-duration`,
         {
           new_days: daysInt,
@@ -341,8 +478,7 @@ export default function ActiveRentals() {
         newTotal: newTotal,
         difference: difference,
         paymentMethod: paymentMethod,
-        timestamp: new Date().toISOString(),
-        cashMovementId: response.data.cash_movement_id
+        timestamp: new Date().toISOString()
       });
       
       toast.success("Modificación registrada correctamente");
@@ -355,10 +491,8 @@ export default function ActiveRentals() {
     }
   };
 
-  // Print modification ticket
   const printModificationTicket = () => {
     if (!modificationResult) return;
-    
     const r = modificationResult;
     const paymentLabel = PAYMENT_METHODS.find(p => p.value === r.paymentMethod)?.label || r.paymentMethod;
     const isRefund = r.difference < 0;
@@ -371,201 +505,74 @@ export default function ActiveRentals() {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Comprobante Modificación - ${r.rental.id.substring(0, 8)}</title>
+        <title>Comprobante Modificación</title>
         <style>
-          @media print {
-            @page { margin: 0; size: 80mm auto; }
-            body { margin: 0; }
-          }
-          body {
-            font-family: 'Courier New', monospace;
-            width: 80mm;
-            padding: 5mm;
-            margin: 0 auto;
-            font-size: 11px;
-            line-height: 1.4;
-          }
-          .header {
-            text-align: center;
-            border-bottom: 2px dashed #000;
-            padding-bottom: 10px;
-            margin-bottom: 10px;
-          }
-          .header h1 {
-            margin: 0;
-            font-size: 16px;
-          }
-          .header p {
-            margin: 5px 0 0 0;
-            font-size: 10px;
-          }
-          .type-badge {
-            display: inline-block;
-            padding: 6px 16px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 12px;
-            margin: 10px 0;
-          }
+          @media print { @page { margin: 0; size: 80mm auto; } body { margin: 0; } }
+          body { font-family: 'Courier New', monospace; width: 80mm; padding: 5mm; margin: 0 auto; font-size: 11px; line-height: 1.4; }
+          .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
+          .header h1 { margin: 0; font-size: 16px; }
+          .type-badge { display: inline-block; padding: 6px 16px; border-radius: 4px; font-weight: bold; font-size: 12px; margin: 10px 0; }
           .cobro { background: #dcfce7; color: #166534; }
           .devolucion { background: #ffedd5; color: #9a3412; }
-          .section {
-            border-bottom: 1px dashed #ccc;
-            padding: 8px 0;
-            margin-bottom: 8px;
-          }
-          .section-title {
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 10px;
-            color: #666;
-            margin-bottom: 5px;
-          }
-          .row {
-            display: flex;
-            justify-content: space-between;
-            padding: 2px 0;
-          }
+          .section { border-bottom: 1px dashed #ccc; padding: 8px 0; margin-bottom: 8px; }
+          .section-title { font-weight: bold; text-transform: uppercase; font-size: 10px; color: #666; margin-bottom: 5px; }
+          .row { display: flex; justify-content: space-between; padding: 2px 0; }
           .row .label { color: #666; }
           .row .value { font-weight: bold; }
-          .old-value {
-            text-decoration: line-through;
-            color: #999;
-          }
-          .new-value {
-            color: #166534;
-            font-weight: bold;
-          }
-          .total {
-            border-top: 2px dashed #000;
-            margin-top: 10px;
-            padding-top: 10px;
-            text-align: center;
-          }
-          .total-amount {
-            font-size: 24px;
-            font-weight: bold;
-          }
+          .old-value { text-decoration: line-through; color: #999; }
+          .new-value { color: #166534; font-weight: bold; }
+          .total { border-top: 2px dashed #000; margin-top: 10px; padding-top: 10px; text-align: center; }
+          .total-amount { font-size: 24px; font-weight: bold; }
           .total-amount.cobro { color: #166534; }
           .total-amount.devolucion { color: #9a3412; }
-          .footer {
-            text-align: center;
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px dashed #000;
-            font-size: 9px;
-            color: #666;
-          }
-          .print-btn {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            margin-top: 20px;
-            background: #2563eb;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            border-radius: 4px;
-          }
+          .footer { text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #000; font-size: 9px; color: #666; }
+          .print-btn { display: block; width: 100%; padding: 12px; margin-top: 20px; background: #2563eb; color: white; border: none; cursor: pointer; font-size: 14px; border-radius: 4px; }
           @media print { .print-btn { display: none; } }
         </style>
       </head>
       <body>
         <div class="header">
           <h1>COMPROBANTE DE MODIFICACIÓN</h1>
-          <p>Factura Rectificativa</p>
         </div>
-        
         <div style="text-align: center;">
-          <span class="type-badge ${isRefund ? 'devolucion' : 'cobro'}">
-            ${isRefund ? 'DEVOLUCIÓN' : 'COBRO ADICIONAL'}
-          </span>
+          <span class="type-badge ${isRefund ? 'devolucion' : 'cobro'}">${isRefund ? 'DEVOLUCIÓN' : 'COBRO ADICIONAL'}</span>
         </div>
-        
         <div class="section">
           <div class="section-title">Datos del Cliente</div>
-          <div class="row">
-            <span class="label">Cliente:</span>
-            <span class="value">${r.rental.customer_name}</span>
-          </div>
-          <div class="row">
-            <span class="label">DNI:</span>
-            <span class="value">${r.rental.customer_dni || '-'}</span>
-          </div>
-          <div class="row">
-            <span class="label">Alquiler:</span>
-            <span class="value">#${r.rental.id.substring(0, 8).toUpperCase()}</span>
-          </div>
+          <div class="row"><span class="label">Cliente:</span><span class="value">${r.rental.customer_name}</span></div>
+          <div class="row"><span class="label">DNI:</span><span class="value">${r.rental.customer_dni || '-'}</span></div>
+          <div class="row"><span class="label">Alquiler:</span><span class="value">#${r.rental.id.substring(0, 8).toUpperCase()}</span></div>
         </div>
-        
         <div class="section">
           <div class="section-title">Modificación de Fechas</div>
-          <div class="row">
-            <span class="label">Fecha inicio:</span>
-            <span class="value">${startDate}</span>
-          </div>
-          <div class="row">
-            <span class="label">Fecha fin anterior:</span>
-            <span class="old-value">${oldEndDate}</span>
-          </div>
-          <div class="row">
-            <span class="label">Nueva fecha fin:</span>
-            <span class="new-value">${newEndDate}</span>
-          </div>
+          <div class="row"><span class="label">Fecha inicio:</span><span class="value">${startDate}</span></div>
+          <div class="row"><span class="label">Fecha fin anterior:</span><span class="old-value">${oldEndDate}</span></div>
+          <div class="row"><span class="label">Nueva fecha fin:</span><span class="new-value">${newEndDate}</span></div>
         </div>
-        
-        <div class="section">
-          <div class="section-title">Modificación de Duración</div>
-          <div class="row">
-            <span class="label">Días anteriores:</span>
-            <span class="old-value">${r.oldDays} días</span>
-          </div>
-          <div class="row">
-            <span class="label">Nuevos días:</span>
-            <span class="new-value">${r.newDays} días</span>
-          </div>
-        </div>
-        
         <div class="section">
           <div class="section-title">Detalle Económico</div>
-          <div class="row">
-            <span class="label">Importe anterior:</span>
-            <span class="old-value">€${r.oldTotal.toFixed(2)}</span>
-          </div>
-          <div class="row">
-            <span class="label">Nuevo importe:</span>
-            <span class="new-value">€${r.newTotal.toFixed(2)}</span>
-          </div>
-          <div class="row">
-            <span class="label">Método de pago:</span>
-            <span class="value">${paymentLabel}</span>
-          </div>
+          <div class="row"><span class="label">Días anteriores:</span><span class="old-value">${r.oldDays} días</span></div>
+          <div class="row"><span class="label">Nuevos días:</span><span class="new-value">${r.newDays} días</span></div>
+          <div class="row"><span class="label">Importe anterior:</span><span class="old-value">€${r.oldTotal.toFixed(2)}</span></div>
+          <div class="row"><span class="label">Nuevo importe:</span><span class="new-value">€${r.newTotal.toFixed(2)}</span></div>
+          <div class="row"><span class="label">Método de pago:</span><span class="value">${paymentLabel}</span></div>
         </div>
-        
         <div class="total">
-          <p style="margin: 0; font-size: 10px; color: #666;">
-            ${isRefund ? 'IMPORTE DEVUELTO' : 'IMPORTE COBRADO'}
-          </p>
-          <p class="total-amount ${isRefund ? 'devolucion' : 'cobro'}">
-            ${isRefund ? '-' : '+'}€${Math.abs(r.difference).toFixed(2)}
-          </p>
+          <p style="margin: 0; font-size: 10px; color: #666;">${isRefund ? 'IMPORTE DEVUELTO' : 'IMPORTE COBRADO'}</p>
+          <p class="total-amount ${isRefund ? 'devolucion' : 'cobro'}">${isRefund ? '-' : '+'}€${Math.abs(r.difference).toFixed(2)}</p>
         </div>
-        
         <div class="footer">
           <p>Fecha: ${new Date(r.timestamp).toLocaleString('es-ES')}</p>
-          <p>Ref: MOD-${r.rental.id.substring(0, 8).toUpperCase()}</p>
           <p style="margin-top: 8px;">Gracias por su confianza</p>
         </div>
-        
-        <button class="print-btn" onclick="window.print(); setTimeout(() => window.close(), 500);">
-          IMPRIMIR COMPROBANTE
-        </button>
+        <button class="print-btn" onclick="window.print(); setTimeout(() => window.close(), 500);">IMPRIMIR COMPROBANTE</button>
       </body>
       </html>
     `);
     ticketWindow.document.close();
   };
+
+  // ============ HELPER FUNCTIONS ============
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -584,7 +591,6 @@ export default function ActiveRentals() {
     return getDaysRemaining(endDate) < 0;
   };
 
-  // Open customer info modal
   const openCustomerModal = async (rental) => {
     setCustomerLoading(true);
     setShowCustomerModal(true);
@@ -605,21 +611,13 @@ export default function ActiveRentals() {
         total_amount: rental.total_amount
       };
       
-      // Try to get more customer details from API
       if (rental.customer_id) {
         try {
           const response = await axios.get(`${API}/customers/${rental.customer_id}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
           });
-          customerData = {
-            ...customerData,
-            ...response.data,
-            items: rental.items || [],
-            rental_id: rental.id
-          };
-        } catch (e) {
-          // Continue with rental data
-        }
+          customerData = { ...customerData, ...response.data, items: rental.items || [], rental_id: rental.id };
+        } catch (e) {}
       }
       
       setSelectedCustomer(customerData);
@@ -630,20 +628,16 @@ export default function ActiveRentals() {
     }
   };
 
-  // Send WhatsApp with predefined message
   const sendWhatsAppMessage = (phone, customerName) => {
     if (!phone) {
       toast.error("No hay teléfono registrado para este cliente");
       return;
     }
     const cleanPhone = phone.replace(/\D/g, '');
-    const message = encodeURIComponent(
-      `Hola ${customerName}, te contactamos de la tienda de esquí. ¿En qué podemos ayudarte?`
-    );
+    const message = encodeURIComponent(`Hola ${customerName}, te contactamos de la tienda de esquí. ¿En qué podemos ayudarte?`);
     window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
   };
 
-  // Call phone directly
   const callPhone = (phone) => {
     if (!phone) {
       toast.error("No hay teléfono registrado");
@@ -652,16 +646,13 @@ export default function ActiveRentals() {
     window.open(`tel:${phone}`, '_self');
   };
 
-  // Send email
   const sendEmail = (email, customerName) => {
     if (!email) {
       toast.error("No hay email registrado");
       return;
     }
     const subject = encodeURIComponent("Información sobre tu alquiler - Tienda de Esquí");
-    const body = encodeURIComponent(
-      `Hola ${customerName},\n\nTe contactamos desde la tienda de esquí respecto a tu alquiler.\n\nGracias.`
-    );
+    const body = encodeURIComponent(`Hola ${customerName},\n\nTe contactamos desde la tienda de esquí respecto a tu alquiler.\n\nGracias.`);
     window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
   };
 
@@ -727,21 +718,12 @@ export default function ActiveRentals() {
                       <TableCell>
                         <div className="space-y-1">
                           <Badge variant="outline" className="mb-1">{rental.items.length} artículos</Badge>
-                          <div className="space-y-1">
-                            {rental.items.map((item, idx) => (
-                              <div key={idx} className="flex items-center gap-2 text-xs">
-                                <span className="font-mono text-slate-600">{item.internal_code || item.barcode?.substring(0, 8)}</span>
-                                <span className="text-slate-400">|</span>
-                                <span className="text-slate-700">{item.item_type}</span>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-5 w-5 p-0 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-                                  onClick={() => openSwapModal(rental, item)}
-                                  title="Cambiar/Sustituir artículo"
-                                >
-                                  <ArrowLeftRight className="h-3 w-3" />
-                                </Button>
+                          <div className="space-y-1 text-xs text-slate-600 max-h-20 overflow-y-auto">
+                            {rental.items.filter(i => !i.returned).map((item, idx) => (
+                              <div key={idx} className="flex items-center gap-1">
+                                <span className="font-mono">{item.internal_code || item.barcode?.substring(0, 8)}</span>
+                                <span className="text-slate-400">•</span>
+                                <span>{item.item_type}</span>
                               </div>
                             ))}
                           </div>
@@ -774,6 +756,18 @@ export default function ActiveRentals() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
+                          {/* NEW: CENTRALIZED SWAP BUTTON */}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openSwapModal(rental)}
+                            className="gap-1 text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-400"
+                            data-testid={`swap-btn-${rental.id}`}
+                            title="Cambiar material"
+                          >
+                            <ArrowLeftRight className="h-4 w-4" />
+                            CAMBIOS
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -803,6 +797,229 @@ export default function ActiveRentals() {
           )}
         </CardContent>
       </Card>
+
+      {/* ============ NEW CENTRALIZED SWAP MODAL ============ */}
+      <Dialog open={!!swapRental} onOpenChange={closeSwapModal}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <ArrowLeftRight className="h-6 w-6 text-blue-600" />
+              Gestión de Cambios
+            </DialogTitle>
+            {swapRental && (
+              <DialogDescription className="text-base">
+                Cliente: <strong>{swapRental.customer_name}</strong> | 
+                DNI: <strong>{swapRental.customer_dni}</strong> | 
+                Días restantes: <Badge className="ml-1 bg-blue-100 text-blue-700">{swapDaysRemaining}</Badge>
+              </DialogDescription>
+            )}
+          </DialogHeader>
+
+          {!swapComplete ? (
+            <div className="space-y-5 py-4">
+              {/* SCANNER INPUT - Auto-focused */}
+              <div className="relative">
+                <Label className="text-base font-semibold flex items-center gap-2 mb-2">
+                  <Scan className="h-5 w-5 text-blue-600" />
+                  Escanear Nuevo Artículo
+                </Label>
+                <p className="text-sm text-slate-500 mb-3">
+                  Escanea con el lector láser o escribe el código del material nuevo
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    ref={swapInputRef}
+                    value={swapBarcode}
+                    onChange={handleSwapBarcodeChange}
+                    onKeyDown={handleSwapBarcodeKeyDown}
+                    placeholder="SKI-001, BOT-002..."
+                    className="h-14 text-xl font-mono flex-1"
+                    autoFocus
+                    data-testid="swap-barcode-input"
+                  />
+                  <Button 
+                    onClick={() => searchSwapItem(swapBarcode)}
+                    disabled={swapLoading || !swapBarcode.trim()}
+                    className="h-14 px-6"
+                  >
+                    {swapLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Scan className="h-5 w-5" />}
+                  </Button>
+                </div>
+              </div>
+
+              {/* SWAP PREVIEW - When items are detected */}
+              {swapNewItem && swapOldItem && (
+                <div className="grid grid-cols-2 gap-4">
+                  {/* OLD ITEM (to return) */}
+                  <div className="p-4 rounded-lg bg-red-50 border-2 border-red-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-red-600 text-lg">❌</span>
+                      <span className="font-bold text-red-700">DEVUELVE</span>
+                    </div>
+                    <p className="font-mono text-lg font-bold">{swapOldItem.internal_code || swapOldItem.barcode}</p>
+                    <p className="text-sm text-slate-600">{swapOldItem.item_type}</p>
+                    <p className="text-xs text-slate-500">{swapOldItem.brand} {swapOldItem.model}</p>
+                    {swapDelta && (
+                      <p className="text-sm font-semibold mt-2 text-slate-700">Valor: €{swapDelta.oldPrice.toFixed(2)}</p>
+                    )}
+                  </div>
+
+                  {/* NEW ITEM (to receive) */}
+                  <div className="p-4 rounded-lg bg-green-50 border-2 border-green-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-green-600 text-lg">✅</span>
+                      <span className="font-bold text-green-700">RECIBE</span>
+                    </div>
+                    <p className="font-mono text-lg font-bold">{swapNewItem.internal_code || swapNewItem.barcode}</p>
+                    <p className="text-sm text-slate-600">{swapNewItem.item_type}</p>
+                    <p className="text-xs text-slate-500">{swapNewItem.brand} {swapNewItem.model}</p>
+                    {swapDelta && (
+                      <p className="text-sm font-semibold mt-2 text-slate-700">Valor: €{swapDelta.newPrice.toFixed(2)}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Manual selection if no match found */}
+              {swapNewItem && !swapOldItem && swapRental && (
+                <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
+                  <p className="font-semibold text-amber-800 mb-2">
+                    <AlertCircle className="h-4 w-4 inline mr-1" />
+                    Selecciona el artículo a reemplazar:
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {swapRental.items.filter(i => !i.returned).map((item, idx) => (
+                      <Button
+                        key={idx}
+                        variant={swapOldItem?.barcode === item.barcode ? "default" : "outline"}
+                        className="justify-start text-left"
+                        onClick={() => selectOldItemToReplace(item)}
+                      >
+                        <span className="font-mono">{item.internal_code || item.barcode}</span>
+                        <span className="ml-2 text-xs opacity-70">{item.item_type}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* PRICE DELTA DISPLAY */}
+              {swapDelta && swapNewItem && swapOldItem && (
+                <div className={`p-5 rounded-xl border-2 text-center ${
+                  swapDelta.isUpgrade ? 'bg-emerald-50 border-emerald-300' :
+                  swapDelta.isDowngrade ? 'bg-red-50 border-red-300' :
+                  'bg-slate-50 border-slate-300'
+                }`}>
+                  <p className="text-sm font-medium mb-2">
+                    {swapDelta.isUpgrade ? '⬆️ UPGRADE - Suplemento a cobrar al cliente' :
+                     swapDelta.isDowngrade ? '⬇️ DOWNGRADE - Abono al cliente' :
+                     '↔️ MISMO PRECIO - Sin diferencia económica'}
+                  </p>
+                  <p className={`text-4xl font-bold ${
+                    swapDelta.isUpgrade ? 'text-emerald-600' :
+                    swapDelta.isDowngrade ? 'text-red-600' :
+                    'text-slate-600'
+                  }`}>
+                    {swapDelta.delta > 0 ? '+' : swapDelta.delta < 0 ? '-' : ''}€{Math.abs(swapDelta.delta).toFixed(2)}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-2">para {swapDelta.days} días restantes</p>
+                </div>
+              )}
+
+              {/* DAYS ADJUSTMENT */}
+              {swapNewItem && swapOldItem && (
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <Label className="text-sm">Ajustar días (opcional)</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={swapNewDays}
+                      onChange={handleSwapDaysChange}
+                      className="h-10 w-24"
+                    />
+                  </div>
+                  
+                  {/* Payment method if delta != 0 */}
+                  {swapDelta && swapDelta.delta !== 0 && (
+                    <div className="flex-1">
+                      <Label className="text-sm">Método de {swapDelta.isUpgrade ? 'cobro' : 'abono'}</Label>
+                      <div className="flex gap-2 mt-1">
+                        <Button
+                          variant={swapPaymentMethod === "cash" ? "default" : "outline"}
+                          onClick={() => setSwapPaymentMethod("cash")}
+                          className="flex-1"
+                          size="sm"
+                        >
+                          <Banknote className="h-4 w-4 mr-1" />
+                          Efectivo
+                        </Button>
+                        <Button
+                          variant={swapPaymentMethod === "card" ? "default" : "outline"}
+                          onClick={() => setSwapPaymentMethod("card")}
+                          className="flex-1"
+                          size="sm"
+                        >
+                          <CreditCard className="h-4 w-4 mr-1" />
+                          Tarjeta
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            /* SUCCESS STATE */
+            <div className="text-center py-8">
+              <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="h-10 w-10 text-emerald-600" />
+              </div>
+              <h3 className="text-xl font-bold text-emerald-800 mb-2">¡Cambio Completado!</h3>
+              <p className="text-slate-600">El material ha sido intercambiado y el inventario actualizado.</p>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            {!swapComplete ? (
+              <>
+                <Button variant="outline" onClick={closeSwapModal}>
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={executeSwap}
+                  disabled={swapLoading || !swapNewItem || !swapOldItem}
+                  className={`min-w-[200px] ${
+                    swapDelta?.isUpgrade ? 'bg-emerald-600 hover:bg-emerald-700' :
+                    swapDelta?.isDowngrade ? 'bg-red-600 hover:bg-red-700' :
+                    ''
+                  }`}
+                  data-testid="confirm-swap-btn"
+                >
+                  {swapLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Zap className="h-4 w-4 mr-2" />
+                  )}
+                  {swapDelta?.isUpgrade ? `Cobrar €${swapDelta.delta.toFixed(2)} y Cambiar` :
+                   swapDelta?.isDowngrade ? `Abonar €${Math.abs(swapDelta.delta).toFixed(2)} y Cambiar` :
+                   'Confirmar Cambio'}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" onClick={closeSwapModal}>
+                  Cerrar
+                </Button>
+                <Button onClick={printSwapTicket}>
+                  <Printer className="h-4 w-4 mr-2" />
+                  Imprimir Comprobante
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Modification Dialog - Multi-step */}
       {editingRental && (
@@ -854,7 +1071,7 @@ export default function ActiveRentals() {
 
                 <div>
                   <Label className="text-base font-semibold">Nuevo número de días</Label>
-                  <p className="text-xs text-slate-500 mb-2">Introduce 0 para devolución el mismo día del alquiler</p>
+                  <p className="text-xs text-slate-500 mb-2">Introduce 0 para devolución el mismo día</p>
                   <Input
                     type="number"
                     min="0"
@@ -866,7 +1083,6 @@ export default function ActiveRentals() {
                   />
                 </div>
 
-                {/* Quick day buttons */}
                 <div className="flex flex-wrap gap-2 justify-center">
                   {[0, 1, 2, 3, 5, 7].map((d) => (
                     <Button
@@ -908,42 +1124,29 @@ export default function ActiveRentals() {
                       </div>
                     </div>
                     
-                    <p className="text-xs text-slate-600">
-                      Nueva fecha fin: {calculateNewEndDate()}
-                    </p>
+                    <p className="text-xs text-slate-600">Nueva fecha fin: {calculateNewEndDate()}</p>
                   </div>
                 )}
               </div>
             )}
 
-            {/* STEP 2: Confirm payment method */}
+            {/* STEP 2: Confirm payment */}
             {step === 2 && (
               <div className="space-y-4 py-4">
                 <div className={`p-6 rounded-xl ${diffInfo?.bgColor} border-2 ${diffInfo?.borderColor}`}>
                   <div className="text-center">
                     <p className="text-sm font-medium text-slate-600 mb-1">
-                      {calculateDifference() > 0 ? 'IMPORTE A COBRAR AL CLIENTE' : 'IMPORTE A DEVOLVER AL CLIENTE'}
+                      {calculateDifference() > 0 ? 'IMPORTE A COBRAR' : 'IMPORTE A DEVOLVER'}
                     </p>
                     <p className={`text-4xl font-bold ${diffInfo?.color}`}>
                       {calculateDifference() > 0 ? '+' : '-'}€{Math.abs(calculateDifference()).toFixed(2)}
                     </p>
                   </div>
-                  
-                  <div className="mt-4 pt-4 border-t border-current/20 grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-slate-500">De {editingRental.days} días</p>
-                      <p className="font-semibold">€{editingRental.total_amount.toFixed(2)}</p>
-                    </div>
-                    <div>
-                      <p className="text-slate-500">A {newDays} días</p>
-                      <p className="font-semibold">€{calculateNewTotal().toFixed(2)}</p>
-                    </div>
-                  </div>
                 </div>
 
                 <div>
                   <Label className="text-base font-semibold mb-3 block">
-                    {calculateDifference() > 0 ? '¿Cómo paga el cliente?' : '¿Cómo se devuelve el dinero?'}
+                    {calculateDifference() > 0 ? '¿Cómo paga el cliente?' : '¿Cómo se devuelve?'}
                   </Label>
                   <div className="grid grid-cols-2 gap-3">
                     {PAYMENT_METHODS.map((method) => {
@@ -952,25 +1155,14 @@ export default function ActiveRentals() {
                         <Button
                           key={method.value}
                           variant={paymentMethod === method.value ? "default" : "outline"}
-                          className={`h-20 flex-col gap-2 ${paymentMethod === method.value ? '' : 'hover:bg-slate-50'}`}
+                          className={`h-20 flex-col gap-2`}
                           onClick={() => setPaymentMethod(method.value)}
-                          data-testid={`payment-method-${method.value}`}
                         >
                           <Icon className="h-6 w-6" />
                           <span className="font-semibold">{method.label}</span>
                         </Button>
                       );
                     })}
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
-                  <div className="flex items-start gap-2">
-                    <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm text-amber-800">
-                      <p className="font-semibold">Operación de caja</p>
-                      <p>Al confirmar, se registrará automáticamente este {calculateDifference() > 0 ? 'cobro' : 'reembolso'} en los Movimientos de Caja.</p>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -982,35 +1174,6 @@ export default function ActiveRentals() {
                 <div className="text-center p-6 rounded-xl bg-emerald-50 border-2 border-emerald-200">
                   <CheckCircle className="h-16 w-16 text-emerald-600 mx-auto mb-3" />
                   <p className="text-lg font-bold text-emerald-800">Modificación Completada</p>
-                  <p className="text-sm text-emerald-600 mt-1">
-                    El movimiento ha sido registrado en caja
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Concepto registrado:</span>
-                  </div>
-                  <p className="font-medium text-slate-900">
-                    Ajuste días Alquiler ID: {modificationResult.rental.id.substring(0, 8).toUpperCase()} 
-                    (De {modificationResult.oldDays} días a {modificationResult.newDays} días)
-                  </p>
-                  <div className="flex justify-between pt-2 border-t border-slate-200">
-                    <span className="text-slate-500">Importe:</span>
-                    <span className={`font-bold ${modificationResult.difference > 0 ? 'text-emerald-600' : 'text-orange-600'}`}>
-                      {modificationResult.difference > 0 ? '+' : '-'}€{Math.abs(modificationResult.difference).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
-                  <div className="flex items-start gap-2">
-                    <Printer className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm text-blue-800">
-                      <p className="font-semibold">Imprime el comprobante</p>
-                      <p>Entrega al cliente el comprobante de modificación con los datos actualizados.</p>
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
@@ -1018,54 +1181,26 @@ export default function ActiveRentals() {
             <DialogFooter>
               {step === 1 && (
                 <>
-                  <Button variant="outline" onClick={closeDialog}>
-                    Cancelar
-                  </Button>
-                  <Button 
-                    onClick={proceedToPayment}
-                    disabled={newDays === "" || parseInt(newDays) === editingRental.days}
-                    data-testid="proceed-to-payment"
-                  >
-                    Continuar
-                    <ArrowRight className="h-4 w-4 ml-2" />
+                  <Button variant="outline" onClick={closeDialog}>Cancelar</Button>
+                  <Button onClick={proceedToPayment} disabled={newDays === "" || parseInt(newDays) === editingRental.days}>
+                    Continuar <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </>
               )}
-              
               {step === 2 && (
                 <>
-                  <Button variant="outline" onClick={() => setStep(1)}>
-                    Volver
-                  </Button>
-                  <Button 
-                    onClick={processModification}
-                    disabled={updating}
-                    className={calculateDifference() > 0 ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-orange-600 hover:bg-orange-700'}
-                    data-testid="confirm-modification"
-                  >
-                    {updating ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : calculateDifference() > 0 ? (
-                      <ArrowUpRight className="h-4 w-4 mr-2" />
-                    ) : (
-                      <ArrowDownLeft className="h-4 w-4 mr-2" />
-                    )}
+                  <Button variant="outline" onClick={() => setStep(1)}>Volver</Button>
+                  <Button onClick={processModification} disabled={updating}>
+                    {updating && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                     {calculateDifference() > 0 ? 'Cobrar' : 'Devolver'} €{Math.abs(calculateDifference()).toFixed(2)}
                   </Button>
                 </>
               )}
-              
               {step === 3 && (
                 <>
-                  <Button variant="outline" onClick={closeDialog}>
-                    Cerrar
-                  </Button>
-                  <Button 
-                    onClick={printModificationTicket}
-                    data-testid="print-modification-ticket"
-                  >
-                    <Printer className="h-4 w-4 mr-2" />
-                    Imprimir Comprobante
+                  <Button variant="outline" onClick={closeDialog}>Cerrar</Button>
+                  <Button onClick={printModificationTicket}>
+                    <Printer className="h-4 w-4 mr-2" /> Imprimir
                   </Button>
                 </>
               )}
@@ -1082,9 +1217,6 @@ export default function ActiveRentals() {
               <User className="h-5 w-5 text-primary" />
               Ficha del Cliente
             </DialogTitle>
-            <DialogDescription>
-              Información de contacto y detalle del alquiler
-            </DialogDescription>
           </DialogHeader>
           
           {customerLoading ? (
@@ -1093,7 +1225,6 @@ export default function ActiveRentals() {
             </div>
           ) : selectedCustomer && (
             <div className="space-y-4 py-4">
-              {/* Customer Name & DNI */}
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
                 <div className="flex items-start justify-between">
                   <div>
@@ -1106,340 +1237,64 @@ export default function ActiveRentals() {
                   </div>
                   {selectedCustomer.dni && (
                     <div className="text-right">
-                      <p className="text-xs text-slate-500">DNI/Pasaporte</p>
-                      <p className="font-mono font-semibold text-slate-700">{selectedCustomer.dni}</p>
+                      <p className="text-xs text-slate-500">DNI</p>
+                      <p className="font-mono font-semibold">{selectedCustomer.dni}</p>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Contact Info */}
               <div className="space-y-3">
-                {/* Phone */}
-                <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200">
-                  <div className="flex items-center gap-3">
-                    <Phone className="h-5 w-5 text-emerald-600" />
-                    <div>
-                      <p className="text-xs text-emerald-600 font-medium">Teléfono</p>
-                      <p className="font-semibold text-slate-900">{selectedCustomer.phone || 'No registrado'}</p>
-                    </div>
-                  </div>
-                  {selectedCustomer.phone && (
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-100"
-                        onClick={() => callPhone(selectedCustomer.phone)}
-                      >
-                        <Phone className="h-3 w-3" />
-                        Llamar
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="gap-1 bg-green-600 hover:bg-green-700 text-white"
-                        onClick={() => sendWhatsAppMessage(selectedCustomer.phone, selectedCustomer.name)}
-                        data-testid="whatsapp-btn"
-                      >
-                        <MessageCircle className="h-3 w-3" />
-                        WhatsApp
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Email */}
-                <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200">
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-5 w-5 text-blue-600" />
-                    <div>
-                      <p className="text-xs text-blue-600 font-medium">Email</p>
-                      <p className="font-semibold text-slate-900">{selectedCustomer.email || 'No registrado'}</p>
-                    </div>
-                  </div>
-                  {selectedCustomer.email && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-100"
-                      onClick={() => sendEmail(selectedCustomer.email, selectedCustomer.name)}
-                    >
-                      <Mail className="h-3 w-3" />
-                      Enviar Email
-                    </Button>
-                  )}
-                </div>
-
-                {/* Hotel/Address */}
-                <div className="flex items-center justify-between p-3 rounded-lg bg-purple-50 border border-purple-200">
-                  <div className="flex items-center gap-3">
-                    <MapPin className="h-5 w-5 text-purple-600" />
-                    <div>
-                      <p className="text-xs text-purple-600 font-medium">Hotel / Alojamiento</p>
-                      <p className="font-semibold text-slate-900">{selectedCustomer.hotel || 'No registrado'}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Rental Info */}
-              {selectedCustomer.items && selectedCustomer.items.length > 0 && (
-                <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Package className="h-5 w-5 text-blue-600" />
-                    <p className="font-semibold text-blue-800">Artículos Alquilados</p>
-                  </div>
-                  <div className="space-y-2">
-                    {selectedCustomer.items.map((item, index) => (
-                      <div 
-                        key={index}
-                        className="flex items-center justify-between p-2 rounded-lg bg-white border border-blue-200"
-                      >
-                        <div>
-                          <p className="font-medium text-slate-900">{item.brand} {item.model}</p>
-                          <p className="text-xs text-slate-500">
-                            {item.item_type} • Talla {item.size}
-                            {item.barcode && <span className="font-mono ml-2">#{item.barcode}</span>}
-                          </p>
-                        </div>
-                        <Badge className={item.returned ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}>
-                          {item.returned ? 'Devuelto' : 'Activo'}
-                        </Badge>
+                {selectedCustomer.phone && (
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                    <div className="flex items-center gap-3">
+                      <Phone className="h-5 w-5 text-emerald-600" />
+                      <div>
+                        <p className="text-xs text-emerald-600">Teléfono</p>
+                        <p className="font-semibold">{selectedCustomer.phone}</p>
                       </div>
-                    ))}
-                  </div>
-                  {selectedCustomer.days && selectedCustomer.total_amount && (
-                    <div className="mt-3 pt-3 border-t border-blue-200 flex justify-between text-sm">
-                      <span className="text-blue-700">{selectedCustomer.days} días de alquiler</span>
-                      <span className="font-bold text-blue-800">€{selectedCustomer.total_amount.toFixed(2)}</span>
                     </div>
-                  )}
-                </div>
-              )}
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => callPhone(selectedCustomer.phone)}>
+                        <Phone className="h-3 w-3" />
+                      </Button>
+                      <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => sendWhatsAppMessage(selectedCustomer.phone, selectedCustomer.name)}>
+                        <MessageCircle className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
-              {/* Notes */}
-              {selectedCustomer.notes && (
-                <div className="p-3 rounded-lg bg-slate-100 border border-slate-200">
-                  <p className="text-xs text-slate-500 mb-1">Observaciones</p>
-                  <p className="text-sm text-slate-700">{selectedCustomer.notes}</p>
-                </div>
-              )}
+                {selectedCustomer.email && (
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200">
+                    <div className="flex items-center gap-3">
+                      <Mail className="h-5 w-5 text-blue-600" />
+                      <div>
+                        <p className="text-xs text-blue-600">Email</p>
+                        <p className="font-semibold">{selectedCustomer.email}</p>
+                      </div>
+                    </div>
+                    <Button size="sm" variant="outline" onClick={() => sendEmail(selectedCustomer.email, selectedCustomer.name)}>
+                      <Mail className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+
+                {selectedCustomer.hotel && (
+                  <div className="flex items-center p-3 rounded-lg bg-purple-50 border border-purple-200">
+                    <MapPin className="h-5 w-5 text-purple-600 mr-3" />
+                    <div>
+                      <p className="text-xs text-purple-600">Hotel</p>
+                      <p className="font-semibold">{selectedCustomer.hotel}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCustomerModal(false)}>
-              Cerrar
-            </Button>
-            {selectedCustomer?.phone && (
-              <Button 
-                className="bg-green-600 hover:bg-green-700"
-                onClick={() => sendWhatsAppMessage(selectedCustomer.phone, selectedCustomer.name)}
-              >
-                <MessageCircle className="h-4 w-4 mr-2" />
-                Contactar por WhatsApp
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ========== MODAL DE SWAP/CANJE ========== */}
-      <Dialog open={!!swapModal} onOpenChange={closeSwapModal}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ArrowLeftRight className="h-5 w-5 text-blue-600" />
-              Cambiar / Sustituir Artículo
-            </DialogTitle>
-            <DialogDescription>
-              {swapModal && (
-                <>
-                  Cliente: <strong>{swapModal.rental.customer_name}</strong>
-                  <br />
-                  Artículo actual: <strong>{swapModal.item.internal_code || swapModal.item.barcode}</strong> ({swapModal.item.item_type})
-                </>
-              )}
-            </DialogDescription>
-          </DialogHeader>
-
-          {/* Progress Steps */}
-          <div className="flex justify-center gap-2 py-2">
-            {[1, 2, 3].map((s) => (
-              <div key={s} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold
-                  ${swapStep >= s ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
-                  {swapStep > s ? <CheckCircle className="h-4 w-4" /> : s}
-                </div>
-                {s < 3 && <div className={`w-8 h-1 ${swapStep > s ? 'bg-blue-600' : 'bg-slate-200'}`} />}
-              </div>
-            ))}
-          </div>
-
-          {/* STEP 1: Scan new item */}
-          {swapStep === 1 && (
-            <div className="space-y-4 py-4">
-              <div className="p-4 rounded-lg bg-slate-50 border">
-                <p className="text-sm text-slate-600 mb-2">Artículo a reemplazar:</p>
-                <div className="flex items-center gap-3">
-                  <Package className="h-8 w-8 text-slate-400" />
-                  <div>
-                    <p className="font-bold text-lg">{swapModal?.item.internal_code || swapModal?.item.barcode}</p>
-                    <p className="text-sm text-slate-500">
-                      {swapModal?.item.brand} {swapModal?.item.model} {swapModal?.item.size && `(${swapModal.item.size})`}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-base font-semibold flex items-center gap-2">
-                  <Scan className="h-4 w-4" />
-                  Escanear Nuevo Artículo
-                </Label>
-                <p className="text-xs text-slate-500 mb-2">Introduce o escanea el código del artículo de reemplazo</p>
-                <Input
-                  value={swapNewBarcode}
-                  onChange={(e) => setSwapNewBarcode(e.target.value.toUpperCase())}
-                  placeholder="SKI-001, BOT-002..."
-                  className="h-12 text-lg font-mono"
-                  autoFocus
-                  onKeyDown={(e) => e.key === 'Enter' && searchNewItem()}
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm">Ajustar días (opcional)</Label>
-                <div className="flex gap-2 mt-1">
-                  <Input
-                    type="number"
-                    min="1"
-                    value={swapNewDays}
-                    onChange={(e) => setSwapNewDays(e.target.value)}
-                    className="h-10 w-20 text-center font-bold"
-                  />
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 5, 7].map((d) => (
-                      <Button
-                        key={d}
-                        variant={swapNewDays === d.toString() ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setSwapNewDays(d.toString())}
-                        className="w-10"
-                      >
-                        {d}d
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 2: Confirm swap */}
-          {swapStep === 2 && swapNewItem && (
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                {/* Old Item */}
-                <div className="p-3 rounded-lg bg-red-50 border border-red-200">
-                  <p className="text-xs text-red-600 font-semibold mb-1">❌ DEVUELVE</p>
-                  <p className="font-bold">{swapModal?.item.internal_code}</p>
-                  <p className="text-sm text-slate-600">{swapModal?.item.item_type}</p>
-                  <p className="text-xs text-slate-500">{swapModal?.item.brand} {swapModal?.item.model}</p>
-                  {swapDelta && <p className="text-sm font-medium mt-2">€{swapDelta.oldPrice.toFixed(2)}</p>}
-                </div>
-
-                {/* New Item */}
-                <div className="p-3 rounded-lg bg-green-50 border border-green-200">
-                  <p className="text-xs text-green-600 font-semibold mb-1">✅ RECIBE</p>
-                  <p className="font-bold">{swapNewItem.internal_code || swapNewItem.barcode}</p>
-                  <p className="text-sm text-slate-600">{swapNewItem.item_type}</p>
-                  <p className="text-xs text-slate-500">{swapNewItem.brand} {swapNewItem.model}</p>
-                  {swapDelta && <p className="text-sm font-medium mt-2">€{swapDelta.newPrice.toFixed(2)}</p>}
-                </div>
-              </div>
-
-              {/* Delta Display */}
-              {swapDelta && (
-                <div className={`p-4 rounded-lg border-2 text-center ${
-                  swapDelta.isUpgrade ? 'bg-amber-50 border-amber-300' :
-                  swapDelta.isDowngrade ? 'bg-emerald-50 border-emerald-300' :
-                  'bg-slate-50 border-slate-300'
-                }`}>
-                  <p className="text-sm font-medium mb-1">
-                    {swapDelta.isUpgrade ? '⬆️ UPGRADE - Suplemento a cobrar' :
-                     swapDelta.isDowngrade ? '⬇️ DOWNGRADE - Abono al cliente' :
-                     '↔️ MISMO PRECIO - Sin diferencia'}
-                  </p>
-                  <p className={`text-3xl font-bold ${
-                    swapDelta.isUpgrade ? 'text-amber-600' :
-                    swapDelta.isDowngrade ? 'text-emerald-600' :
-                    'text-slate-600'
-                  }`}>
-                    {swapDelta.delta > 0 ? '+' : swapDelta.delta < 0 ? '-' : ''}€{Math.abs(swapDelta.delta).toFixed(2)}
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">para {swapDelta.days} días</p>
-                </div>
-              )}
-
-              {/* Payment method if delta != 0 */}
-              {swapDelta && swapDelta.delta !== 0 && (
-                <div>
-                  <Label className="text-sm font-semibold">Método de pago/devolución</Label>
-                  <div className="flex gap-2 mt-2">
-                    <Button
-                      variant={swapPaymentMethod === "cash" ? "default" : "outline"}
-                      onClick={() => setSwapPaymentMethod("cash")}
-                      className="flex-1"
-                    >
-                      <Banknote className="h-4 w-4 mr-2" />
-                      Efectivo
-                    </Button>
-                    <Button
-                      variant={swapPaymentMethod === "card" ? "default" : "outline"}
-                      onClick={() => setSwapPaymentMethod("card")}
-                      className="flex-1"
-                    >
-                      <CreditCard className="h-4 w-4 mr-2" />
-                      Tarjeta
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          <DialogFooter className="gap-2 sm:gap-0">
-            {swapStep === 1 && (
-              <>
-                <Button variant="outline" onClick={closeSwapModal}>Cancelar</Button>
-                <Button onClick={searchNewItem} disabled={swapLoading || !swapNewBarcode.trim()}>
-                  {swapLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Scan className="h-4 w-4 mr-2" />}
-                  Buscar Artículo
-                </Button>
-              </>
-            )}
-            {swapStep === 2 && (
-              <>
-                <Button variant="outline" onClick={() => { setSwapStep(1); setSwapNewItem(null); }}>
-                  Volver
-                </Button>
-                <Button 
-                  onClick={confirmSwap} 
-                  disabled={swapLoading}
-                  className={
-                    swapDelta?.isUpgrade ? 'bg-amber-600 hover:bg-amber-700' :
-                    swapDelta?.isDowngrade ? 'bg-emerald-600 hover:bg-emerald-700' :
-                    ''
-                  }
-                >
-                  {swapLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle className="h-4 w-4 mr-2" />}
-                  {swapDelta?.isUpgrade ? `Cobrar €${swapDelta.delta.toFixed(2)}` :
-                   swapDelta?.isDowngrade ? `Abonar €${Math.abs(swapDelta.delta).toFixed(2)}` :
-                   'Confirmar Cambio'}
-                </Button>
-              </>
-            )}
+            <Button variant="outline" onClick={() => setShowCustomerModal(false)}>Cerrar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
