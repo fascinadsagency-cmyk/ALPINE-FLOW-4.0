@@ -1947,10 +1947,43 @@ export default function NewRental() {
                               )}
                             </div>
                             
-                            {/* Precio Total Pack (IVA incluido) */}
+                            {/* Precio Total Pack (IVA incluido) - EDITABLE */}
                             <div className="col-span-3 text-right">
                               <p className="text-xs text-amber-700 uppercase">Total (IVA inc.)</p>
-                              <p className="text-xl font-bold text-amber-700">€{packTotal.toFixed(2)}</p>
+                              {editingPackPrice === group.packId ? (
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  defaultValue={packTotal.toFixed(2)}
+                                  className="h-8 w-24 text-right text-lg font-bold ml-auto"
+                                  autoFocus
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      updatePackPrice(group.items, e.target.value);
+                                      setEditingPackPrice(null);
+                                    }
+                                    if (e.key === 'Escape') setEditingPackPrice(null);
+                                  }}
+                                  onBlur={(e) => {
+                                    updatePackPrice(group.items, e.target.value);
+                                    setEditingPackPrice(null);
+                                  }}
+                                />
+                              ) : (
+                                <div 
+                                  className="cursor-pointer hover:bg-amber-100 rounded px-2 py-1 inline-block"
+                                  onClick={() => setEditingPackPrice(group.packId)}
+                                >
+                                  <p className={`text-xl font-bold ${group.isEdited ? 'text-orange-600' : 'text-amber-700'}`}>
+                                    €{packTotal.toFixed(2)}
+                                    <Edit2 className="h-3 w-3 ml-1 inline opacity-50" />
+                                  </p>
+                                  {group.isEdited && (
+                                    <Badge className="bg-orange-500 text-white text-xs mt-1">EDITADO</Badge>
+                                  )}
+                                </div>
+                              )}
                             </div>
                             
                             {/* Remove Pack Button - BORRADO EN CASCADA */}
