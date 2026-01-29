@@ -262,14 +262,16 @@ export default function CashRegister() {
       
       const response = await axios.post(`${API}/cash/close`, closingData);
       
-      // Auto-print closing ticket
+      // Auto-print closing ticket with detailed breakdown
       printClosingTicket({
         ...closingData,
         ...response.data,
         total_income: summary?.total_income || 0,
         total_expense: summary?.total_expense || 0,
         total_refunds: summary?.total_refunds || 0,
-        movements_count: summary?.movements_count || 0
+        movements_count: summary?.movements_count || 0,
+        // Add detailed breakdown by payment method
+        by_payment_method: summary?.by_payment_method || {}
       });
       
       toast.success("Caja cerrada correctamente");
