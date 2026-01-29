@@ -515,7 +515,7 @@ export default function Tariffs() {
                         <div className="flex flex-wrap gap-1 mt-3">
                           {pack.items?.map(item => (
                             <Badge key={item} variant="outline">
-                              {ITEM_TYPES.find(t => t.value === item)?.label || item}
+                              {getItemLabel(item)}
                             </Badge>
                           ))}
                         </div>
