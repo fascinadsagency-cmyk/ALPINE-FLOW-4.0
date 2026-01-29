@@ -792,6 +792,11 @@ export default function NewRental() {
   };
 
   const getItemPrice = (item) => {
+    // Para artículos genéricos, usar rental_price
+    if (item.is_generic && item.rental_price) {
+      return item.rental_price;
+    }
+    
     if (item.customPrice !== null && item.customPrice !== undefined) {
       return item.customPrice;
     }
@@ -816,8 +821,15 @@ export default function NewRental() {
     return 0;
   };
 
+  // Calcula el precio total de un item (precio unitario * cantidad)
+  const getItemTotalPrice = (item) => {
+    const unitPrice = getItemPriceWithPack(item);
+    const qty = item.quantity || 1;
+    return unitPrice * qty;
+  };
+
   const calculateSubtotal = () => {
-    return items.reduce((sum, item) => sum + getItemPriceWithPack(item), 0);
+    return items.reduce((sum, item) => sum + getItemTotalPrice(item), 0);
   };
 
   const getProviderDiscount = () => {
