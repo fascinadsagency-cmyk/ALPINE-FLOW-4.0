@@ -1427,9 +1427,10 @@ export default function NewRental() {
             <table class="items-table">
               <thead>
                 <tr>
-                  <th>Artículo</th>
+                  <th>Tipo / Modelo</th>
                   <th class="col-days">Días</th>
-                  <th class="col-total">Precio</th>
+                  <th class="col-unit">P.Unit</th>
+                  <th class="col-total">Subtotal</th>
                 </tr>
               </thead>
               <tbody>
