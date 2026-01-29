@@ -3726,8 +3726,10 @@ async def audit_and_sync_cash_movements(current_user: dict = Depends(get_current
     for repair in repairs:
         if repair["id"] not in existing_refs:
             cash_movement_id = str(uuid.uuid4())
+            operation_number = await get_next_operation_number()
             cash_doc = {
                 "id": cash_movement_id,
+                "operation_number": operation_number,
                 "session_id": session_id,
                 "movement_type": "income",
                 "amount": repair.get("price", 0),
@@ -3743,6 +3745,7 @@ async def audit_and_sync_cash_movements(current_user: dict = Depends(get_current
             await db.cash_movements.insert_one(cash_doc)
             created_movements.append({
                 "type": "workshop",
+                "operation_number": operation_number,
                 "repair_id": repair["id"][:8],
                 "amount": repair.get("price", 0),
                 "payment_method": repair.get("payment_method", "cash")
