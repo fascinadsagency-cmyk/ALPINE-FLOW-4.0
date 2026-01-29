@@ -1062,17 +1062,29 @@ export default function NewRental() {
   };
 
   const completePendingRental = async (total, cashGivenAmount, sessionId = null) => {
+    const API = process.env.REACT_APP_BACKEND_URL;
+    
+    // Prepare clean rental data for offline fallback
+    const rentalDataForOffline = {
+      customer_id: customer?.id || null,
+      customer_name: customer?.name || 'Sin nombre',
+      total: Number(total.toFixed(2)),
+      paid: paymentMethodSelected !== 'pending' ? Number(total.toFixed(2)) : 0,
+      payment_method: paymentMethodSelected || 'cash',
+      items: items.map(i => ({ id: i.id, name: i.name || i.brand, barcode: i.barcode }))
+    };
+    
     try {
       // Clean all numeric values
       const cleanTotal = Number(total.toFixed(2));
       const cleanDeposit = Number(parseFloat(deposit) || 0);
       const paid = paymentMethodSelected !== 'pending' ? cleanTotal : 0;
       
-      // Prepare items - handle both regular and generic items
+      // Prepare items - handle both regular and generic items (clean all fields)
       const itemsToSend = items.map(i => {
         if (i.is_generic) {
           return {
-            barcode: i.barcode || i.id,
+            barcode: String(i.barcode || i.id || ''),
             person_name: "",
             is_generic: true,
             quantity: Number(i.quantity || 1),
@@ -1080,51 +1092,65 @@ export default function NewRental() {
           };
         }
         return { 
-          barcode: i.barcode, 
+          barcode: String(i.barcode || ''),
           person_name: "",
           quantity: 1,
           unit_price: Number(getItemPriceWithPack(i) || 0)
         };
       });
       
-      const rentalResponse = await rentalApi.create({
-        customer_id: customer.id,
-        start_date: startDate,
-        end_date: endDate,
-        items: itemsToSend,
-        payment_method: paymentMethodSelected,
-        total_amount: cleanTotal,
-        paid_amount: Number(paid.toFixed(2)),
-        deposit: cleanDeposit,
-        notes: notes + (discountReason ? ` | Descuento: ${discountReason}` : '')
+      // Clean notes - remove null/undefined
+      const cleanNotes = [
+        notes || '',
+        discountReason ? `Descuento: ${discountReason}` : ''
+      ].filter(Boolean).join(' | ') || '';
+      
+      // Create rental with safeFetch
+      const rentalResult = await safeFetch(`${API}/api/rentals`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          customer_id: customer?.id || null,
+          start_date: startDate || new Date().toISOString().split('T')[0],
+          end_date: endDate || new Date().toISOString().split('T')[0],
+          items: itemsToSend,
+          payment_method: paymentMethodSelected || 'cash',
+          total_amount: cleanTotal,
+          paid_amount: Number(paid.toFixed(2)),
+          deposit: cleanDeposit,
+          notes: cleanNotes
+        })
       });
       
+      if (!rentalResult.ok) {
+        const errMsg = rentalResult.data?.detail;
+        throw new Error(typeof errMsg === 'string' ? errMsg : 'Error al crear alquiler');
+      }
+      
+      const rentalData = rentalResult.data;
+      
       // 2. Register cash movement (income) if payment completed
-      if (paid > 0) {
+      if (paid > 0 && sessionId) {
         try {
-          const API = process.env.REACT_APP_BACKEND_URL;
-          const movementData = {
-            movement_type: 'income',
-            amount: Number(paid.toFixed(2)),
-            payment_method: paymentMethodSelected,
-            category: 'rental',
-            concept: `Alquiler #${rentalResponse.data.id?.substring(0, 8)} - ${customer.name}`,
-            reference_id: rentalResponse.data.id,
-            notes: `Cliente: ${customer.dni || customer.name}`
-          };
-          
-          // Include session_id if available
-          if (sessionId) {
-            movementData.session_id = sessionId;
-          }
-          
-          await fetch(`${API}/api/cash/movements`, {
+          await safeFetch(`${API}/api/cash/movements`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${localStorage.getItem('token')}`
             },
-            body: JSON.stringify(movementData)
+            body: JSON.stringify({
+              movement_type: 'income',
+              amount: Number(paid.toFixed(2)),
+              payment_method: paymentMethodSelected || 'cash',
+              category: 'rental',
+              concept: `Alquiler #${(rentalData.id || '').substring(0, 8)} - ${customer?.name || 'Cliente'}`,
+              reference_id: rentalData.id || null,
+              notes: `Cliente: ${customer?.dni || customer?.name || ''}`,
+              session_id: sessionId
+            })
           });
         } catch (cashError) {
           console.error("Error registering cash movement:", cashError);
