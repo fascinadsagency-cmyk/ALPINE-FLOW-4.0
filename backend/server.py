@@ -1402,6 +1402,17 @@ def calculate_days(start_date: str, end_date: str) -> int:
 
 @api_router.post("/rentals", response_model=RentalResponse)
 async def create_rental(rental: RentalCreate, current_user: dict = Depends(get_current_user)):
+    # CRITICAL: Validate active cash session FIRST (if payment is being made)
+    if rental.paid_amount > 0:
+        date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+        
+        if not active_session:
+            raise HTTPException(
+                status_code=400,
+                detail="No hay sesión de caja activa. No se puede registrar el cobro. Abre la caja primero desde 'Gestión de Caja'."
+            )
+    
     # Validate customer
     customer = await db.customers.find_one({"id": rental.customer_id}, {"_id": 0})
     if not customer:
