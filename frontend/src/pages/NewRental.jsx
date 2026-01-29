@@ -1913,11 +1913,12 @@ export default function NewRental() {
                           </div>
                         );
                       } else {
-                        // SINGLE ITEM: Render normally
+                        // SINGLE ITEM: Render normally - TARIFA ESCALONADA
                         const item = group.item;
                         const qty = item.quantity || 1;
                         const days = group.days;
-                        const totalItemPrice = group.price * qty * days;
+                        // Precio ya es TOTAL escalonado (look-up), solo multiplicar por cantidad
+                        const totalItemPrice = group.price * qty;
                         
                         return (
                           <div 
@@ -1927,14 +1928,17 @@ export default function NewRental() {
                             }`}
                           >
                             {/* Nombre/Código */}
-                            <div className="col-span-3">
+                            <div className="col-span-4">
                               <p className="text-xs text-slate-500 font-medium uppercase">
                                 {item.is_generic ? 'Artículo' : 'Código'}
                               </p>
                               {item.is_generic ? (
                                 <p className="font-bold text-emerald-700 truncate">{item.name}</p>
                               ) : (
-                                <p className="font-mono font-bold text-slate-900">{item.internal_code || item.barcode}</p>
+                                <>
+                                  <p className="font-mono font-bold text-slate-900">{item.internal_code || item.barcode}</p>
+                                  <p className="text-xs text-slate-500">{item.brand} {item.model} {item.size && `(${item.size})`}</p>
+                                </>
                               )}
                             </div>
                             
@@ -1944,32 +1948,20 @@ export default function NewRental() {
                               <Badge variant="outline" className="font-semibold text-xs">
                                 {itemTypes.find(t => t.value === item.item_type)?.label || item.item_type}
                               </Badge>
-                            </div>
-                            
-                            {/* Cantidad/Info */}
-                            <div className="col-span-2">
-                              {item.is_generic ? (
-                                <>
-                                  <p className="text-xs text-slate-500 font-medium uppercase">Cant.</p>
-                                  <Badge className="bg-emerald-600 text-white font-bold">x{qty}</Badge>
-                                </>
-                              ) : (
-                                <>
-                                  <p className="text-xs text-slate-500 font-medium uppercase">Info</p>
-                                  <p className="font-medium text-slate-900 text-sm truncate">{item.brand} {item.size}</p>
-                                </>
+                              {item.is_generic && qty > 1 && (
+                                <Badge className="ml-1 bg-emerald-600 text-white font-bold text-xs">x{qty}</Badge>
                               )}
                             </div>
                             
-                            {/* Días */}
-                            <div className="col-span-1">
+                            {/* Días - Editable */}
+                            <div className="col-span-2 text-center">
                               <p className="text-xs text-slate-500 font-medium uppercase">Días</p>
                               {editingItemDays === (item.id || item.barcode) ? (
                                 <Input
                                   type="number"
                                   min="1"
                                   defaultValue={days}
-                                  className="h-7 w-14 text-center text-sm font-bold"
+                                  className="h-7 w-16 text-center text-sm font-bold mx-auto"
                                   autoFocus
                                   onKeyDown={(e) => {
                                     if (e.key === 'Enter') updateItemDays(item.id || item.barcode, e.target.value);
@@ -1988,35 +1980,29 @@ export default function NewRental() {
                               )}
                             </div>
                             
-                            {/* Precio Unitario */}
-                            <div className="col-span-1">
-                              <p className="text-xs text-slate-500 font-medium uppercase">P.Unit</p>
+                            {/* Precio Total (Tarifa Escalonada) - SIN columna P.UNIT */}
+                            <div className="col-span-3 text-right">
+                              <p className="text-xs text-slate-500 font-medium uppercase">Precio ({days}d)</p>
                               {group.price === 0 && !item.is_generic ? (
                                 <Badge variant="destructive" className="text-xs">
-                                  <AlertCircle className="h-3 w-3" />
+                                  <AlertCircle className="h-3 w-3 mr-1" /> Sin tarifa
                                 </Badge>
                               ) : (
-                                <p className="text-sm font-medium text-slate-700">€{group.price.toFixed(2)}</p>
-                              )}
-                            </div>
-                            
-                            {/* Total y Acciones */}
-                            <div className="col-span-3 flex items-center justify-end gap-2">
-                              <div className="text-right">
-                                <p className={`text-sm font-bold ${
+                                <p className={`text-lg font-bold ${
                                   item.customPrice !== null ? 'text-emerald-600' : 'text-slate-900'
                                 }`}>
                                   €{totalItemPrice.toFixed(2)}
                                 </p>
-                                <p className="text-xs text-slate-500">
-                                  {qty > 1 ? `${qty}x` : ''}{days}d
-                                </p>
-                              </div>
+                              )}
+                            </div>
+                            
+                            {/* Eliminar */}
+                            <div className="col-span-1 text-right">
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => removeItem(item.id || item.barcode)}
-                                className="h-8 w-8 p-0"
+                                className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
                               >
                                 <X className="h-4 w-4" />
                               </Button>
