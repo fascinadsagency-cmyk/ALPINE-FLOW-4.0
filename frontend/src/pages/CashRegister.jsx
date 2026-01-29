@@ -1015,7 +1015,7 @@ export default function CashRegister() {
 
       {/* Close Cash Register Dialog - ENHANCED */}
       <Dialog open={showCloseDialog} onOpenChange={setShowCloseDialog}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Lock className="h-5 w-5" />
@@ -1026,79 +1026,117 @@ export default function CashRegister() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            {/* Expected values */}
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-              <p className="text-sm font-semibold text-slate-600 mb-3">Valores esperados según el sistema:</p>
-              <div className="grid grid-cols-3 gap-4 text-sm">
-                <div>
-                  <p className="text-slate-500">Efectivo</p>
-                  <p className="font-bold text-lg text-blue-600">€{(summary?.by_method?.cash || 0).toFixed(2)}</p>
+            {/* Resumen del día detallado */}
+            <div className="p-4 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200">
+              <p className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                📊 Resumen del Día - {summary?.movements_count || 0} operaciones
+              </p>
+              
+              {/* Desglose por tipo */}
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                  <p className="text-xs text-emerald-600 font-medium">Total Ventas</p>
+                  <p className="text-xl font-bold text-emerald-700">€{(summary?.total_income || 0).toFixed(2)}</p>
                 </div>
-                <div>
-                  <p className="text-slate-500">Tarjeta</p>
-                  <p className="font-bold text-lg text-purple-600">€{(summary?.by_method?.card || 0).toFixed(2)}</p>
+                <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+                  <p className="text-xs text-red-600 font-medium">Total Salidas</p>
+                  <p className="text-xl font-bold text-red-700">€{(summary?.total_expense || 0).toFixed(2)}</p>
                 </div>
-                <div>
-                  <p className="text-slate-500">Total</p>
-                  <p className="font-bold text-lg text-slate-900">€{((summary?.by_method?.cash || 0) + (summary?.by_method?.card || 0)).toFixed(2)}</p>
+                <div className="p-3 rounded-lg bg-orange-50 border border-orange-200">
+                  <p className="text-xs text-orange-600 font-medium">Devoluciones</p>
+                  <p className="text-xl font-bold text-orange-700">€{(summary?.total_refunds || 0).toFixed(2)}</p>
+                </div>
+              </div>
+              
+              {/* Desglose por método de pago - ESPERADO */}
+              <div className="border-t border-slate-300 pt-3">
+                <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Saldo Esperado por Método</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Banknote className="h-4 w-4 text-blue-600" />
+                      <p className="text-xs text-blue-600 font-medium">EFECTIVO Esperado</p>
+                    </div>
+                    <p className="text-2xl font-bold text-blue-700">€{(discrepancy.expectedCash || 0).toFixed(2)}</p>
+                    <p className="text-xs text-blue-500 mt-1">
+                      (Ventas: €{(summary?.by_payment_method?.cash?.income || 0).toFixed(2)} - 
+                      Dev: €{(summary?.by_payment_method?.cash?.refund || 0).toFixed(2)})
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-purple-50 border border-purple-200">
+                    <div className="flex items-center gap-2 mb-1">
+                      <CreditCard className="h-4 w-4 text-purple-600" />
+                      <p className="text-xs text-purple-600 font-medium">TARJETA Esperado</p>
+                    </div>
+                    <p className="text-2xl font-bold text-purple-700">€{(discrepancy.expectedCard || 0).toFixed(2)}</p>
+                    <p className="text-xs text-purple-500 mt-1">
+                      (Ventas: €{(summary?.by_payment_method?.card?.income || 0).toFixed(2)} - 
+                      Dev: €{(summary?.by_payment_method?.card?.refund || 0).toFixed(2)})
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Arqueo form */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="flex items-center gap-2">
-                  <Banknote className="h-4 w-4 text-blue-600" />
-                  Efectivo Real Contado (€) *
-                </Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={arqueoForm.physical_cash}
-                  onChange={(e) => setArqueoForm({ ...arqueoForm, physical_cash: e.target.value })}
-                  className="h-14 text-2xl font-bold mt-1 text-center"
-                  placeholder="0.00"
-                />
-              </div>
-              <div>
-                <Label className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4 text-purple-600" />
-                  Total Datáfono/Tarjeta (€) *
-                </Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={arqueoForm.card_total}
-                  onChange={(e) => setArqueoForm({ ...arqueoForm, card_total: e.target.value })}
-                  className="h-14 text-2xl font-bold mt-1 text-center"
-                  placeholder="0.00"
-                />
+            {/* Arqueo form - lo que has contado */}
+            <div className="p-4 rounded-xl bg-slate-900 text-white">
+              <p className="text-sm font-semibold mb-3 flex items-center gap-2">
+                ✍️ Arqueo Manual - ¿Cuánto has contado?
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="flex items-center gap-2 text-blue-300">
+                    <Banknote className="h-4 w-4" />
+                    Efectivo Real Contado (€)
+                  </Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={arqueoForm.physical_cash}
+                    onChange={(e) => setArqueoForm({ ...arqueoForm, physical_cash: e.target.value })}
+                    className="h-14 text-2xl font-bold mt-1 text-center bg-blue-900/50 border-blue-500 text-white placeholder-blue-300"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <Label className="flex items-center gap-2 text-purple-300">
+                    <CreditCard className="h-4 w-4" />
+                    Total Datáfono/Tarjeta (€)
+                  </Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={arqueoForm.card_total}
+                    onChange={(e) => setArqueoForm({ ...arqueoForm, card_total: e.target.value })}
+                    className="h-14 text-2xl font-bold mt-1 text-center bg-purple-900/50 border-purple-500 text-white placeholder-purple-300"
+                    placeholder="0.00"
+                  />
+                </div>
               </div>
             </div>
 
             {/* Discrepancy display */}
-            {(arqueoForm.physical_cash || arqueoForm.card_total) && (
+            {(arqueoForm.physical_cash !== "" || arqueoForm.card_total !== "") && (
               <div className={`p-4 rounded-xl border-2 ${
                 discrepancy.total === 0 ? 'bg-emerald-50 border-emerald-300' :
                 Math.abs(discrepancy.total) <= 5 ? 'bg-amber-50 border-amber-300' : 'bg-red-50 border-red-300'
               }`}>
-                <p className="text-sm font-semibold mb-3">Cálculo de Descuadre:</p>
+                <p className="text-sm font-semibold mb-3">📉 Cálculo de Descuadre:</p>
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
-                    <p className="text-slate-600">Efectivo</p>
+                    <p className="text-slate-600">Descuadre Efectivo</p>
                     <p className={`font-bold text-lg ${
                       discrepancy.cash === 0 ? 'text-emerald-600' : discrepancy.cash > 0 ? 'text-blue-600' : 'text-red-600'
                     }`}>
-                      {discrepancy.cash >= 0 ? '+' : ''}€{discrepancy.cash.toFixed(2)}
+                      {discrepancy.cash >= 0 ? '+' : ''}€{(discrepancy.cash || 0).toFixed(2)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-slate-600">Tarjeta</p>
+                    <p className="text-slate-600">Descuadre Tarjeta</p>
                     <p className={`font-bold text-lg ${
                       discrepancy.card === 0 ? 'text-emerald-600' : discrepancy.card > 0 ? 'text-blue-600' : 'text-red-600'
                     }`}>
-                      {discrepancy.card >= 0 ? '+' : ''}€{discrepancy.card.toFixed(2)}
+                      {discrepancy.card >= 0 ? '+' : ''}€{(discrepancy.card || 0).toFixed(2)}
                     </p>
                   </div>
                   <div>
@@ -1106,7 +1144,7 @@ export default function CashRegister() {
                     <p className={`font-bold text-xl ${
                       discrepancy.total === 0 ? 'text-emerald-600' : discrepancy.total > 0 ? 'text-blue-600' : 'text-red-600'
                     }`}>
-                      {discrepancy.total >= 0 ? '+' : ''}€{discrepancy.total.toFixed(2)}
+                      {discrepancy.total >= 0 ? '+' : ''}€{(discrepancy.total || 0).toFixed(2)}
                     </p>
                   </div>
                 </div>
