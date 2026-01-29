@@ -3174,24 +3174,35 @@ async def get_next_closure_number(date: str) -> int:
 
 @api_router.post("/cash/close")
 async def close_cash_register(closing: CashClosingCreate, current_user: dict = Depends(get_current_user)):
-    # NO RESTRICTIONS: Allow closing cash register at any time, multiple times per day
-    # This gives full control to the administrator over when to start/end accounting periods
+    """Close the active cash session and create closing record"""
     
-    # Get summary for current moment
+    # Find active session
+    active_session = await db.cash_sessions.find_one({"date": closing.date, "status": "open"})
+    
+    if not active_session:
+        raise HTTPException(status_code=400, detail="No active cash session found for this date")
+    
+    # Get summary for active session
     summary = await get_cash_summary(closing.date, current_user)
     
+    if not summary.get("session_active"):
+        raise HTTPException(status_code=400, detail="No active session to close")
+    
+    # Create closing record
     closing_id = str(uuid.uuid4())
-    doc = {
+    closing_doc = {
         "id": closing_id,
         "date": closing.date,
+        "session_id": active_session["id"],
         "total_income": summary["total_income"],
         "total_expense": summary["total_expense"],
         "total_refunds": summary["total_refunds"],
         "expected_balance": summary["balance"],
+        "opening_balance": active_session["opening_balance"],
         "physical_cash": closing.physical_cash,
         "card_total": closing.card_total,
-        "expected_cash": closing.expected_cash or summary.get("by_method", {}).get("cash", 0),
-        "expected_card": closing.expected_card or summary.get("by_method", {}).get("card", 0),
+        "expected_cash": closing.expected_cash or summary.get("by_payment_method", {}).get("cash", {}).get("income", 0),
+        "expected_card": closing.expected_card or summary.get("by_payment_method", {}).get("card", {}).get("income", 0),
         "discrepancy_cash": closing.discrepancy_cash,
         "discrepancy_card": closing.discrepancy_card,
         "discrepancy_total": closing.discrepancy_total,
@@ -3201,10 +3212,23 @@ async def close_cash_register(closing: CashClosingCreate, current_user: dict = D
         "closed_at": datetime.now(timezone.utc).isoformat(),
         "movements_count": summary["movements_count"],
         "by_payment_method": summary["by_payment_method"],
-        "closure_number": await get_next_closure_number(closing.date)  # Support multiple closures per day
+        "closure_number": active_session.get("session_number", 1)
     }
-    await db.cash_closings.insert_one(doc)
-    return CashClosingResponse(**doc)
+    await db.cash_closings.insert_one(closing_doc)
+    
+    # Mark session as closed
+    await db.cash_sessions.update_one(
+        {"id": active_session["id"]},
+        {
+            "$set": {
+                "status": "closed",
+                "closed_at": datetime.now(timezone.utc).isoformat(),
+                "closure_id": closing_id
+            }
+        }
+    )
+    
+    return CashClosingResponse(**closing_doc)
 
 @api_router.get("/cash/closings")
 async def get_cash_closings(current_user: dict = Depends(get_current_user)):
