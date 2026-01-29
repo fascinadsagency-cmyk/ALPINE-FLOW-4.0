@@ -87,16 +87,16 @@ class ItemCreate(BaseModel):
     model: Optional[str] = ""  # Optional for generic items
     size: Optional[str] = ""
     binding: Optional[str] = ""  # Binding type/model for skis
-    purchase_price: float = 0
+    purchase_price: Optional[float] = 0
     purchase_date: Optional[str] = ""
-    location: str = ""
-    maintenance_interval: int = 30  # days between maintenance
-    category: str = "MEDIA"  # SUPERIOR, ALTA, MEDIA
+    location: Optional[str] = ""
+    maintenance_interval: Optional[int] = 30  # days between maintenance
+    category: Optional[str] = "MEDIA"  # SUPERIOR, ALTA, MEDIA
     acquisition_cost: Optional[float] = None  # Cost for profitability tracking
     # Generic item fields
-    is_generic: bool = False  # If true, managed by quantity not individual tracking
+    is_generic: Optional[bool] = False  # If true, managed by quantity not individual tracking
     name: Optional[str] = ""  # Display name for generic items (e.g., "Casco Adulto")
-    stock_total: int = 0  # Total units for generic items
+    stock_total: Optional[int] = 0  # Total units for generic items
     rental_price: Optional[float] = None  # Quick rental price for generic items
 
 class BulkItemCreate(BaseModel):
