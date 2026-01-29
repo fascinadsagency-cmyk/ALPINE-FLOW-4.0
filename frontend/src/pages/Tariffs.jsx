@@ -609,7 +609,7 @@ export default function Tariffs() {
                     <SelectValue placeholder="Añadir artículo" />
                   </SelectTrigger>
                   <SelectContent>
-                    {ITEM_TYPES.filter(t => !newPack.items.includes(t.value)).map(type => (
+                    {itemTypes.filter(t => !newPack.items.includes(t.value)).map(type => (
                       <SelectItem key={type.value} value={type.value}>
                         {type.label}
                       </SelectItem>
@@ -621,7 +621,7 @@ export default function Tariffs() {
                 <div className="flex flex-wrap gap-2 mt-2">
                   {newPack.items.map(item => (
                     <Badge key={item} variant="secondary" className="flex items-center gap-1 py-1">
-                      {ITEM_TYPES.find(t => t.value === item)?.label}
+                      {getItemLabel(item)}
                       <button onClick={() => removeItemFromPack(item)}>
                         <X className="h-3 w-3" />
                       </button>
