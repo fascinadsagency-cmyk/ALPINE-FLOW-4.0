@@ -2,7 +2,7 @@
 
 ## Estado del Proyecto
 **Última actualización:** 2026-01-29
-**Estado:** Operativo - Bug crítico de contabilidad RESUELTO
+**Estado:** Operativo - Bugs de contabilidad y persistencia de inventario RESUELTOS
 
 ---
 
