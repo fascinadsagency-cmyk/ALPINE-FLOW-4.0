@@ -1569,6 +1569,32 @@ export default function CashRegister() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Confirmación para Reabrir Cierre */}
+      <Dialog open={!!revertClosureId} onOpenChange={() => setRevertClosureId(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-orange-600">
+              <Undo2 className="h-5 w-5" />
+              Reabrir Cierre de Caja
+            </DialogTitle>
+            <DialogDescription>
+              ¿Seguro que quieres reabrir este cierre de caja? Esto permitirá realizar un nuevo cierre.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setRevertClosureId(null)}>
+              Cancelar
+            </Button>
+            <Button 
+              className="bg-orange-600 hover:bg-orange-700"
+              onClick={confirmRevertClosure}
+            >
+              Sí, Reabrir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
