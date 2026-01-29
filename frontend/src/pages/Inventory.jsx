@@ -323,16 +323,34 @@ export default function Inventory() {
     }
     
     try {
+      // Clean numeric fields - convert empty strings to proper defaults
+      const cleanNumber = (val, defaultVal = 0) => {
+        const num = parseFloat(val);
+        return isNaN(num) ? defaultVal : num;
+      };
+      const cleanInt = (val, defaultVal = 0) => {
+        const num = parseInt(val);
+        return isNaN(num) ? defaultVal : num;
+      };
+
       const itemToCreate = {
-        ...newItem,
+        item_type: newItem.item_type,
+        is_generic: newItem.is_generic || false,
         name: newItem.name?.trim() || "",
         barcode: newItem.is_generic ? "" : (newItem.barcode || `BC-${newItem.internal_code}`),
+        internal_code: newItem.internal_code || "",
         serial_number: newItem.serial_number || "",
+        brand: newItem.brand || "",
+        model: newItem.model || "",
+        size: newItem.size || "",
         binding: newItem.binding || "",
-        purchase_price: parseFloat(newItem.purchase_price) || 0,
-        maintenance_interval: parseInt(newItem.maintenance_interval) || 30,
-        stock_total: parseInt(newItem.stock_total) || 0,
-        rental_price: parseFloat(newItem.rental_price) || 0
+        location: newItem.location || "",
+        category: newItem.category || "MEDIA",
+        purchase_price: cleanNumber(newItem.purchase_price, 0),
+        purchase_date: newItem.purchase_date || "",
+        maintenance_interval: cleanInt(newItem.maintenance_interval, 30),
+        stock_total: cleanInt(newItem.stock_total, 0),
+        rental_price: cleanNumber(newItem.rental_price, 0)
       };
       
       await itemApi.create(itemToCreate);
