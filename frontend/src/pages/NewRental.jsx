@@ -1185,18 +1185,22 @@ export default function NewRental() {
       }
     });
     
-    // Generate HTML for standalone items
+    // Generate HTML for standalone items - Full description with type, model, size and code
     const standaloneHtml = standaloneItems.map(item => {
       const typeLabel = getTypeLabel(item.item_type);
       const days = item.itemDays || numDays;
       const unitPrice = item.customPrice || item.custom_price || item.price_per_day || 0;
       const subtotalItem = unitPrice * days;
-      const description = `${typeLabel} ${item.brand || ''} ${item.model || ''}`.trim();
+      
+      // Build full description: "Esquís Atomic Redster (42) [SKI-001]"
+      const modelStr = `${item.brand || ''} ${item.model || ''}`.trim();
       const sizeStr = item.size ? ` (${item.size})` : '';
+      const codeStr = item.internal_code ? ` [${item.internal_code}]` : '';
+      const description = `${typeLabel} ${modelStr}${sizeStr}${codeStr}`.trim();
       
       return `
         <tr class="item-row">
-          <td class="item-desc">${description}${sizeStr}</td>
+          <td class="item-desc">${description}</td>
           <td class="item-days">${days}</td>
           <td class="item-unit">€${unitPrice.toFixed(2)}</td>
           <td class="item-subtotal">€${subtotalItem.toFixed(2)}</td>
