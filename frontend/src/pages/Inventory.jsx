@@ -38,6 +38,53 @@ const CATEGORY_OPTIONS = [
   { value: "MEDIA", label: "Gama Media" },
 ];
 
+// Column definitions for customizable table
+const ALL_COLUMNS = [
+  { id: "internal_code", label: "Código Interno", width: "w-28", required: true },
+  { id: "barcode", label: "Cód. Barras", width: "w-28" },
+  { id: "serial_number", label: "Nº Serie", width: "w-28" },
+  { id: "item_type", label: "Tipo", width: "w-24" },
+  { id: "brand_model", label: "Marca / Modelo", width: "w-40" },
+  { id: "size", label: "Talla", width: "w-16" },
+  { id: "binding", label: "Fijación", width: "w-28" },
+  { id: "category", label: "Gama", width: "w-24" },
+  { id: "status", label: "Estado", width: "w-24" },
+  { id: "location", label: "Ubicación", width: "w-24" },
+  { id: "days_used", label: "Días Uso", width: "w-20" },
+  { id: "maintenance", label: "Mantenimiento", width: "w-28" },
+  { id: "purchase_price", label: "Coste", width: "w-20" },
+  { id: "purchase_date", label: "F. Compra", width: "w-24" },
+];
+
+const DEFAULT_VISIBLE_COLUMNS = ["internal_code", "barcode", "serial_number", "item_type", "brand_model", "size", "binding", "status", "days_used", "maintenance"];
+const DEFAULT_COLUMN_ORDER = ALL_COLUMNS.map(c => c.id);
+
+// Sortable Header Component
+function SortableHeader({ id, children, width }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    cursor: 'grab',
+  };
+  
+  return (
+    <TableHead 
+      ref={setNodeRef} 
+      style={style} 
+      className={`${width} select-none`}
+      {...attributes}
+    >
+      <div className="flex items-center gap-1" {...listeners}>
+        <GripVertical className="h-3 w-3 text-slate-400 opacity-50" />
+        {children}
+      </div>
+    </TableHead>
+  );
+}
+
 const getCategoryBadge = (category) => {
   const styles = {
     SUPERIOR: "bg-purple-100 text-purple-700 border-purple-200",
