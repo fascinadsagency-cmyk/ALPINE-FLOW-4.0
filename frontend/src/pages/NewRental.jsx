@@ -1787,78 +1787,82 @@ export default function NewRental() {
                     {/* GROUPED CART ITEMS - Packs shown as unified blocks */}
                     {getGroupedCartItems().map((group, groupIndex) => {
                       if (group.type === 'pack') {
-                        // PACK: Render as unified block - price IS the total for selected days
-                        const packTotal = group.price;  // Already total, NOT per day
-                        const packItemNames = group.items.map(i => 
-                          i.name || `${i.brand || ''} ${i.model || ''}`.trim() || i.item_type
-                        ).join(' + ');
+                        // PACK: Single unified line with embedded reference codes
+                        const packTotal = group.price;  // Already total for selected days
+                        
+                        // Build reference string: "Ref: SKI-001 / BOT-002 / HEL-003"
+                        const refCodes = group.items.map(i => 
+                          i.internal_code || i.barcode?.substring(0, 10) || 'N/A'
+                        ).join(' / ');
                         
                         return (
                           <div 
                             key={group.packId}
-                            className="rounded-xl border-2 border-amber-400 bg-gradient-to-r from-amber-50 to-orange-50 overflow-hidden animate-fade-in"
+                            className="grid grid-cols-12 gap-2 items-center p-4 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-400 animate-fade-in"
                           >
-                            {/* Pack Header */}
-                            <div className="bg-amber-100 px-4 py-2 flex items-center gap-2">
-                              <Package className="h-5 w-5 text-amber-600" />
-                              <span className="font-bold text-amber-800">{group.pack.name}</span>
-                              <Badge className="bg-amber-500 text-white text-xs">PACK</Badge>
+                            {/* Pack Name + References */}
+                            <div className="col-span-5">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Package className="h-5 w-5 text-amber-600" />
+                                <span className="font-bold text-amber-800">{group.pack.name}</span>
+                                <Badge className="bg-amber-500 text-white text-xs">PACK</Badge>
+                              </div>
+                              <p className="text-xs text-slate-600 font-mono">
+                                Ref: {refCodes}
+                              </p>
                             </div>
                             
-                            {/* Pack Content */}
-                            <div className="p-4">
-                              <div className="grid grid-cols-12 gap-2 items-center">
-                                {/* Componentes del Pack */}
-                                <div className="col-span-5">
-                                  <p className="text-xs text-amber-700 font-medium uppercase mb-1">Incluye</p>
-                                  <p className="font-medium text-slate-800 text-sm">{packItemNames}</p>
-                                  <div className="flex flex-wrap gap-1 mt-1">
-                                    {group.items.map((item, idx) => (
-                                      <Badge key={idx} variant="outline" className="text-xs bg-white">
-                                        {item.internal_code || item.barcode?.substring(0, 8)}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                </div>
-                                
-                                {/* Días del Pack */}
-                                <div className="col-span-2">
-                                  <p className="text-xs text-amber-700 font-medium uppercase mb-1">Días</p>
-                                  {editingItemDays === group.packId ? (
-                                    <Input
-                                      type="number"
-                                      min="1"
-                                      defaultValue={group.days}
-                                      className="h-8 w-16 text-center text-sm font-bold"
-                                      autoFocus
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter') updatePackDays(group.items, e.target.value);
-                                        if (e.key === 'Escape') setEditingItemDays(null);
-                                      }}
-                                      onBlur={(e) => updatePackDays(group.items, e.target.value)}
-                                    />
-                                  ) : (
-                                    <Badge 
-                                      className="cursor-pointer bg-amber-500 hover:bg-amber-600 text-white font-bold"
-                                      onClick={() => setEditingItemDays(group.packId)}
-                                    >
-                                      {group.days}d <Edit2 className="h-3 w-3 ml-1 inline" />
-                                    </Badge>
-                                  )}
-                                </div>
-                                
-                                {/* Precio Pack para X días */}
-                                <div className="col-span-2">
-                                  <p className="text-xs text-amber-700 font-medium uppercase mb-1">Tarifa {group.days}d</p>
-                                  <p className="font-bold text-amber-800">€{group.price.toFixed(2)}</p>
-                                </div>
-                                
-                                {/* Total Pack */}
-                                <div className="col-span-3 text-right">
-                                  <p className="text-xs text-amber-700 font-medium uppercase mb-1">Total</p>
-                                  <p className="text-xl font-bold text-amber-700">€{packTotal.toFixed(2)}</p>
-                                </div>
-                              </div>
+                            {/* Días del Pack */}
+                            <div className="col-span-2 text-center">
+                              {editingItemDays === group.packId ? (
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  defaultValue={group.days}
+                                  className="h-8 w-16 text-center text-sm font-bold mx-auto"
+                                  autoFocus
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') updatePackDays(group.items, e.target.value);
+                                    if (e.key === 'Escape') setEditingItemDays(null);
+                                  }}
+                                  onBlur={(e) => updatePackDays(group.items, e.target.value)}
+                                />
+                              ) : (
+                                <Badge 
+                                  className="cursor-pointer bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm px-3 py-1"
+                                  onClick={() => setEditingItemDays(group.packId)}
+                                >
+                                  {group.days} días <Edit2 className="h-3 w-3 ml-1 inline" />
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            {/* Tarifa */}
+                            <div className="col-span-2 text-center">
+                              <p className="text-xs text-amber-700 uppercase">Tarifa {group.days}d</p>
+                              <p className="font-bold text-amber-800">€{group.price.toFixed(2)}</p>
+                            </div>
+                            
+                            {/* Total Pack */}
+                            <div className="col-span-2 text-right">
+                              <p className="text-xs text-amber-700 uppercase">Total</p>
+                              <p className="text-xl font-bold text-amber-700">€{packTotal.toFixed(2)}</p>
+                            </div>
+                            
+                            {/* Remove Pack Button */}
+                            <div className="col-span-1 text-right">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => {
+                                  // Remove all items that are part of this pack
+                                  const packItemIds = new Set(group.items.map(i => i.id || i.barcode));
+                                  setItems(items.filter(item => !packItemIds.has(item.id || item.barcode)));
+                                }}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
                             </div>
                           </div>
                         );
