@@ -3085,13 +3085,18 @@ async def get_cash_movements(
     movement_type: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
+    """Get movements for ACTIVE SESSION only"""
     if not date:
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
-    start = f"{date}T00:00:00"
-    end = f"{date}T23:59:59"
+    # Find active session
+    active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
     
-    query = {"created_at": {"$gte": start, "$lte": end}}
+    if not active_session:
+        return []  # No active session = no movements to show
+    
+    # Query movements by session_id
+    query = {"session_id": active_session["id"]}
     if movement_type:
         query["movement_type"] = movement_type
     
