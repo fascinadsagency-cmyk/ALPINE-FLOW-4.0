@@ -1569,40 +1569,25 @@ export default function NewRental() {
           {/* Payment Card */}
           <Card className="border-slate-200">
             <CardContent className="pt-6">
-              {/* Quick Add Buttons */}
-              <div className="flex items-center gap-2 mb-4 pb-4 border-b border-slate-200">
-                <span className="text-sm text-slate-600 font-medium">Añadir complemento:</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => quickAddItem('helmet')}
-                  className="h-8 px-3 text-sm"
-                  data-testid="quick-add-helmet"
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1.5" />
-                  Casco
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => quickAddItem('goggles')}
-                  className="h-8 px-3 text-sm"
-                  data-testid="quick-add-goggles"
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1.5" />
-                  Máscara
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => quickAddItem('poles')}
-                  className="h-8 px-3 text-sm"
-                  data-testid="quick-add-poles"
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1.5" />
-                  Bastones
-                </Button>
-              </div>
+              {/* Quick Add Buttons - Dynamic based on user's custom types */}
+              {itemTypes.filter(t => t.value !== 'all').length > 0 && (
+                <div className="flex items-center gap-2 mb-4 pb-4 border-b border-slate-200 flex-wrap">
+                  <span className="text-sm text-slate-600 font-medium">Añadir rápido:</span>
+                  {itemTypes.filter(t => t.value !== 'all').slice(0, 4).map(type => (
+                    <Button
+                      key={type.value}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => quickAddItem(type.value)}
+                      className="h-8 px-3 text-sm"
+                      data-testid={`quick-add-${type.value}`}
+                    >
+                      <Plus className="h-3.5 w-3.5 mr-1.5" />
+                      {type.label}
+                    </Button>
+                  ))}
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div>
