@@ -145,14 +145,35 @@ export default function CashRegister() {
   const loadData = async () => {
     setLoading(true);
     try {
+      // Use realtime endpoint for accurate SUM-based calculations
       const [summaryRes, movementsRes, sessionRes] = await Promise.all([
-        axios.get(`${API}/cash/summary`, { params: { date } }),
+        axios.get(`${API}/cash/summary/realtime`, { params: { date } }),
         axios.get(`${API}/cash/movements`, { params: { date } }),
         axios.get(`${API}/cash/sessions/active`)
       ]);
       setSummary(summaryRes.data);
       setMovements(movementsRes.data);
       setActiveSession(sessionRes.data);
+      
+      // Auto-sync missing movements if session is active
+      if (sessionRes.data?.id) {
+        try {
+          const auditRes = await axios.post(`${API}/cash/audit-sync`);
+          if (auditRes.data.movements_created > 0) {
+            // Reload data if new movements were synced
+            toast.info(`🔄 ${auditRes.data.movements_created} movimiento(s) sincronizado(s) automáticamente`);
+            const [newSummary, newMovements] = await Promise.all([
+              axios.get(`${API}/cash/summary/realtime`, { params: { date } }),
+              axios.get(`${API}/cash/movements`, { params: { date } })
+            ]);
+            setSummary(newSummary.data);
+            setMovements(newMovements.data);
+          }
+        } catch (auditError) {
+          // Audit sync is optional, don't show error
+          console.log("Audit sync skipped:", auditError.response?.data?.detail);
+        }
+      }
     } catch (error) {
       toast.error("Error al cargar datos de caja");
     } finally {
