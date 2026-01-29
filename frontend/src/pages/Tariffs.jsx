@@ -401,7 +401,7 @@ export default function Tariffs() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {ITEM_TYPES.map((type) => (
+                      {itemTypes.map((type) => (
                         <TableRow key={type.value}>
                           <TableCell className="font-medium">{type.label}</TableCell>
                           <TableCell>
