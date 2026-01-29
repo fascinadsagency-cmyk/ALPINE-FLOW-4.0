@@ -9,12 +9,14 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
     *   **Reportes Flexibles:** Con filtro por rango, botones de selección rápida y comparativa interanual.
     *   **Rentabilidad de Inventario:** Trackear coste, ingresos, amortización y beneficio neto por artículo.
 3.  **Flujos de Trabajo Optimizados:**
-    *   **Apertura de Caja Automática:** La caja se abre automáticamente con un modal para introducir el fondo inicial la primera vez que se intenta un cobro tras un cierre.
-    *   **Pasarela de Pago Obligatoria:** Un modal de pago (Efectivo/Tarjeta) intercepta la finalización del alquiler para asegurar el registro del cobro antes de imprimir.
+    *   **Apertura de Caja Manual:** La caja se abre desde su propio módulo. No se debe intentar abrir automáticamente al cobrar.
+    *   **Pasarela de Pago en Alquiler:** Un modal de pago (Efectivo/Tarjeta) asegura el registro del cobro.
     *   **Devolución Rápida:** Botón de un solo clic para cerrar alquileres.
     *   **Modificar Duración:** Permitir ampliar/acortar alquileres activos con ajuste financiero.
-    *   **Tipos de Artículo Editables:** Permitir al usuario crear y eliminar categorías de inventario, con validación de seguridad para no borrar tipos en uso.
+    *   **Tipos de Artículo 100% Personalizados:** El usuario crea y gestiona todas las categorías de inventario.
     *   **Buscador de Clientes Avanzado:** Implementar buscador por nombre/DNI/teléfono con autocompletado.
+    *   **Artículos Genéricos (por Cantidad):** Gestionar ítems como 'Cascos' por stock total en vez de por código de barras individual.
+    *   **Añadido Rápido:** Botones para añadir rápidamente ítems genéricos como Cascos, Bastones y Máscara.
 4.  **Sistema de Tickets/Comprobantes:** Impresión como comprobante de un pago ya realizado.
 5.  **Gestión de Datos:**
     *   **Importador Universal (CSV/Excel):** Para clientes e inventario.
@@ -26,25 +28,37 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
 **User's preferred language**: Spanish
 
 **what currently exists?**
-Es un sistema full-stack (React, FastAPI, MongoDB) de gestión de alquileres. En esta sesión, se ha reconstruido casi por completo el módulo de **Gestión de Caja**, transformándolo en un robusto sistema de sesiones/turnos. Los cambios clave son:
--   **Sistema de Sesiones de Caja:** Se implementó un backend y frontend para manejar sesiones de caja (apertura/cierre). Las operaciones financieras ahora se vinculan a una sesión activa, garantizando que los contadores se reseteen a cero tras cada cierre.
--   **Apertura de Caja Automática:** Se eliminó la apertura manual. Ahora, al intentar realizar un cobro con la caja cerrada, un modal salta automáticamente para pedir el fondo de caja inicial y abrir una nueva sesión.
--   **Pasarela de Pago en Alquiler:** Se intercepta el flujo de Completar Alquiler con un modal que obliga a seleccionar el método de pago (efectivo/tarjeta) y registrar el cobro antes de imprimir el ticket.
--   **Múltiples Cierres Diarios:** Se eliminó la restricción de un cierre por día, añadiendo un  para soportar múltiples turnos.
--   **Desglose Detallado en Cierres:** El diálogo de cierre y el ticket impreso ahora muestran un desglose completo por método de pago (ingresos, gastos, devoluciones).
--   **Gestión de Categorías:** Los usuarios ahora pueden eliminar tipos de artículo personalizados desde la interfaz, con una validación de seguridad en el backend que impide borrar tipos en uso.
--   **Mejoras de UI:** Se han optimizado las columnas en las listas de material pendiente para facilitar la identificación rápida de los artículos.
--   **Estabilidad:** Se solucionó un error crítico de sintaxis en el frontend que provocaba una pantalla en blanco ().
+Es un sistema full-stack (React, FastAPI, MongoDB) para la gestión de alquileres de esquí. En la última sesión, se implementaron varias características y se corrigieron numerosos errores, principalmente en los módulos de  y .
+
+**Funcionalidades Clave:**
+-   **Artículos Genéricos:** Se implementó un sistema para gestionar artículos por cantidad (stock) en lugar de por código de barras individual. Esto incluye un nuevo formulario en el inventario y lógica de backend para descontar/devolver unidades del stock.
+-   **Tipos de Artículo 100% Personalizables:** Se eliminaron todas las categorías de artículos predefinidas (hardcoded). Ahora, el usuario tiene control total para crear y eliminar sus propias categorías desde la interfaz. Se ejecutó una migración para mover los artículos existentes a este nuevo sistema.
+-   **Botonera de Añadido Rápido:** En la pantalla de , se añadieron tres botones fijos (, , ) para añadir rápidamente artículos genéricos al carrito. La lógica ahora incrementa la cantidad (, ) en lugar de añadir líneas duplicadas.
+-   **Edición de Precios en Carrito:** Se corrigió y validó la funcionalidad que permite editar el precio de un artículo directamente en la lista del alquiler, con recálculo automático del total.
+-   **Eliminación de Precios Legacy:** Se eliminó por completo el antiguo sistema de precios simples, forzando al sistema a usar exclusivamente las tarifas por días.
+-   **Flujo de Cobro Simplificado (Bypass):** Tras repetidos errores críticos de servidor al intentar abrir la caja y cobrar en un solo paso, se implementó una solución de bypass. Ahora, el sistema no intenta abrir la caja automáticamente. Si la caja está cerrada, muestra un aviso para que el usuario la abra manualmente desde el módulo  antes de poder cobrar.
 
 **Last working item**:
--   **Last item agent was working**: El agente estaba implementando la **apertura de caja automática basada en eventos**. Acababa de modificar el frontend () para que, al intentar completar un alquiler con la caja cerrada, se muestre un modal para introducir el fondo de caja inicial en lugar de un simple . Se disponía a iniciar el testing end-to-end para validar este nuevo flujo.
--   **Status**: IN PROGRESS
+-   **Last item agent was working**: El agente acababa de recibir un informe de error crítico del usuario: **El arqueo de caja sale a cero porque los cobros de Nuevo Alquiler no se están sumando al saldo de la caja activa.** El agente estaba a punto de empezar a investigar la causa raíz de este fallo contable.
+-   **Status**: NOT STARTED
 -   **Agent Testing Done**: N
 -   **Which testing method agent to use?**: both
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1**: (P1) Fragilidad de la arquitectura del backend.
+-   **Issue 1**: (P0) **Los cobros de alquiler no se registran en la caja.**
+    -   **Description**: Al completar un alquiler y procesar el pago, no se está creando el  correspondiente o no se está vinculando a la  activa. Esto provoca que el arqueo de caja no refleje los ingresos, un error contable crítico.
+    -   **Next debug checklist**:
+        1.  Revisar la función  en .
+        2.  Verificar que, tras un alquiler exitoso, se realiza una llamada al backend para registrar un .
+        3.  Asegurarse de que el  de la caja activa se obtiene correctamente y se incluye en la petición.
+        4.  Revisar el endpoint del backend ( o similar) para confirmar que guarda el movimiento y lo asocia a la sesión.
+    -   **Why fix this issue and what will be achieved with the fix?**: Es la funcionalidad más crítica del módulo de caja. Sin esto, el sistema no puede realizar un seguimiento de los ingresos y es contablemente inútil.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: Y (Es un síntoma del problema de sincronización omnicanal no resuelto).
+    -   **Should Test frontend/backend/both after fix?**: both
+    -   **Blocked on other issue**: None. Este es el bloqueador principal.
+-   **Issue 2**: (P2) **Fragilidad de la arquitectura del backend.**
     -   **Description**: El archivo  es un monolito que sigue creciendo, aumentando el riesgo de introducir errores de sintaxis o indentación que detienen el servicio.
     -   **Next debug checklist**: La solución a largo plazo es una refactorización modular. A corto plazo, cualquier edición debe ser seguida por una revisión cuidadosa y una verificación de los logs del supervisor.
     -   **Why fix this issue and what will be achieved with the fix?**: La refactorización es crucial para la estabilidad y mantenibilidad del proyecto. Reducirá el tiempo de depuración y facilitará la adición de nuevas funcionalidades.
@@ -54,51 +68,43 @@ Es un sistema full-stack (React, FastAPI, MongoDB) de gestión de alquileres. En
     -   **Blocked on other issue**: None
 
 **In progress Task List**:
--   **Task 1**: (P0) Finalizar y validar el flujo de apertura de caja automática.
-    -   **Description**: El agente debe ejecutar un test end-to-end completo para verificar que el nuevo modal de apertura automática funciona como se espera y que el cobro original se procesa correctamente después de abrir la sesión.
-    -   **Where to resume**: El código ya ha sido modificado en . El siguiente paso es invocar al  para una validación completa del frontend y backend.
-    -   **What will be achieved with this?**: Se completará el requisito del usuario de un flujo de caja sin fricción y basado en eventos.
-    -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: both
-    -   **Blocked on something**: None
--   **Task 2**: (P1) Implementar personalización de la tabla de Inventario (Drag & Drop).
+-   **Task 1**: (P1) Sincronización completa de caja (Omnicanalidad).
+    -   **Description**: El agente solo ha intentado (y ahora está roto) sincronizar los nuevos alquileres con la caja. Otras operaciones financieras (Taller, devoluciones, gastos) siguen sin vincularse a la sesión de caja activa. El error P0 actual es una manifestación directa de esta tarea incompleta.
+    -   **Where to resume**: Revisar todos los endpoints en  que crean  (ej: , ) y asegurarse de que obtienen y asignan el  de la sesión activa, lanzando un error si no hay ninguna.
+    -   **What will be achieved with this?**: La pestaña de caja será un reflejo 100% fiel de toda la actividad financiera del negocio.
+    -   **Status**: IN PROGRESS (Partially Done & Broken)
+    -   **Should Test frontend/backend/both after fix?**: backend
+    -   **Blocked on something**: La resolución del Issue 1 es el primer paso de esta tarea.
+-   **Task 2**: (P2) Implementar personalización de la tabla de Inventario (Drag & Drop).
     -   **Description**: Permitir al usuario reordenar las columnas de la tabla de inventario mediante drag and drop y seleccionar su visibilidad.
-    -   **Where to resume**: Se instaló la dependencia . El trabajo en  fue pausado y debe reanudarse.
+    -   **Where to resume**: La dependencia  está instalada. El trabajo en  fue pausado y debe reanudarse.
     -   **What will be achieved with this?**: Ofrecerá una experiencia de usuario altamente personalizada.
     -   **Status**: IN PROGRESS (Paused)
     -   **Should Test frontend/backend/both after fix?**: frontend
     -   **Blocked on something**: Tareas de caja son más prioritarias.
--   **Task 3**: (P1) Sincronización completa de caja (Omnicanalidad).
-    -   **Description**: El usuario solicitó una reparación profunda para que *todas* las operaciones financieras (Taller, devoluciones, gastos) se vinculen a la sesión de caja activa. El agente solo lo ha implementado para los nuevos alquileres.
-    -   **Where to resume**: Revisar todos los endpoints en  que crean  (ej: , ) y asegurarse de que obtienen y asignan el  de la sesión activa, lanzando un error si no hay ninguna.
-    -   **What will be achieved with this?**: La pestaña de caja será un reflejo 100% fiel de toda la actividad financiera del negocio.
-    -   **Status**: IN PROGRESS (Partially Done)
-    -   **Should Test frontend/backend/both after fix?**: backend
-    -   **Blocked on something**: None
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
     -   (P2) **Crear Pestaña de Soporte y Mejoras:** Crear una nueva página con un formulario para que el usuario pueda solicitar nuevas funcionalidades o reportar problemas.
     -   (P2) **Finalizar Sistema de Impresión:** Implementar el interruptor Impresión Automática en  y conectar su estado a los flujos de trabajo.
-    -   (P2) **Refresco en tiempo real (Polling):** El agente añadió polling a . Se debería evaluar añadirlo a otras páginas clave como el Dashboard para que los datos se actualicen automáticamente.
+    -   (P2) **Refresco en tiempo real (Polling):** Evaluar añadir polling a páginas clave como el Dashboard para que los datos se actualicen automáticamente.
 -   **Future Tasks:**
     -   Integraciones (VeriFactu, WhatsApp API, TPV, Email, Google Calendar).
     -   Sistema de Reservas Online.
     -   Modo Oscuro.
 
 **Completed work in this session**
--   **Módulo de Caja reconstruido (Sistema de Sesiones)**: Implementado en  y .
--   **Apertura de Caja Automática**: Implementada en  con un nuevo modal.
--   **Pasarela de Pago en Alquiler**: Implementada en  con modal de pago.
--   **Soporte para Múltiples Cierres Diarios**: Lógica añadida en  y UI en .
--   **Desglose Detallado en Cierre de Caja**: UI actualizada en .
--   **Gestión de Categorías de Artículo**: Funcionalidad de eliminación añadida en  y .
--   **UI Optimizada para Listas de Material**: Columnas actualizadas en  y .
--   **Corrección de Bug Crítico (White Screen)**: Se arregló un error de sintaxis en  que impedía que la aplicación se cargara.
--   **Endpoint de Recuperación de Huérfanos**: Se creó  para vincular movimientos sin sesión.
+-   **Feature: Artículos Genéricos:** Implementado sistema para gestionar inventario por cantidad de stock.
+-   **Feature: Purga de Tipos de Artículo:** Eliminados todos los tipos predefinidos; ahora son 100% gestionados por el usuario.
+-   **Feature: Botonera de Añadido Rápido:** Rediseñada para añadir ítems genéricos e incrementar su cantidad.
+-   **Feature: Eliminación de Precios Legacy:** El sistema ahora usa exclusivamente tarifas por días.
+-   **Bugfix: Edición de Precios en Carrito:** Corregida y validada.
+-   **Bugfix: Flujo de Cobro Simplificado:** Implementado un bypass para evitar errores de servidor, desacoplando la apertura de caja del cobro.
+-   **Bugfix: Múltiples errores de UI y de Validación:** Corregidos errores de renderizado en React, errores de validación 422 de FastAPI y fallos de parsing de datos.
+-   **Feature Restoration:** Recuperada la visualización de Packs/Combos en la pantalla de .
 
 **Earlier issues found/mentioned but not fixed**
--   El problema de la **sincronización omnicanal** (Tarea en Progreso 3) fue identificado pero solo parcialmente resuelto. Otros endpoints además de la creación de alquileres siguen creando movimientos de caja huérfanos (sin ).
+-   El problema de la **sincronización omnicanal** (Tarea en Progreso 1) fue identificado pero solo parcialmente abordado y actualmente está roto, siendo la causa del error P0. Otros endpoints además de la creación de alquileres siguen creando movimientos de caja huérfanos (sin ).
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**: Errores de sintaxis/indentación en  tras realizar modificaciones.
@@ -109,58 +115,61 @@ Es un sistema full-stack (React, FastAPI, MongoDB) de gestión de alquileres. En
 
 
 **Key Technical Concepts**
--   **Frontend:** React (Hooks), TailwindCSS, Shadcn/UI,  para polling.
--   **Backend:** FastAPI, Pydantic, motor-asyncio. El concepto clave añadido es el de **Sesiones de Caja** (), que ahora gobierna toda la lógica financiera.
+-   **Frontend:** React (Hooks), TailwindCSS, Shadcn/UI. Lógica de estado muy compleja en  e .
+-   **Backend:** FastAPI, Pydantic, motor-asyncio. El concepto clave es el de **Sesiones de Caja** (), que debe gobernar toda la lógica financiera pero actualmente no lo hace correctamente.
 -   **Database:** MongoDB.
 -   **Architecture:** SPA con una API RESTful monolítica.
 
 **key DB schema**
--   **cash_sessions:** Nueva colección para gestionar turnos (uid=0(root) gid=0(root) groups=0(root), , , , ).
--   **cash_movements:** Ahora incluye un campo opcional  para vincularlo a una sesión.
--   **cash_closings:** Ahora incluye  para permitir múltiples cierres por día y  para el desglose.
+-   **items:** Incluye nuevos campos:  (bool),  (int),  (int).  y otros campos de trazabilidad son ahora opcionales.
+-   **item_types:** Es la única fuente para categorías de artículos. No hay tipos por defecto.
+-   **cash_movements:** Debe tener un campo  para vincularlo a una . **Esta vinculación es la que está fallando.**
 
 **changes in tech stack**
--   Ningún nuevo paquete instalado en esta sesión.
+-   Ninguno.
 
 **All files of reference**
--   : Modificado masivamente para añadir el sistema de sesiones, actualizar endpoints de caja, alquileres y devoluciones.
--   : Reescrito en gran parte para manejar el estado de la sesión, mostrar el banner de caja cerrada/abierta y el modal de apertura. Se añadió polling.
--   : Modificado extensamente para añadir el modal de pago y el modal de apertura automática de caja. Se corrigió un error grave de sintaxis.
--   : Modificado para permitir la eliminación de tipos de artículo.
--   : Modificado para mejorar la visualización de la lista de artículos.
+-   : Modificado para añadir lógica de artículos genéricos, tipos dinámicos y arreglos en los modelos Pydantic.
+-   : Modificado masivamente para el formulario y la tabla de artículos genéricos/normales.
+-   : Archivo muy modificado para la botonera de añadido rápido, la lógica de precios y múltiples (y fallidos) intentos de arreglar el flujo de pago.
+-   : Modificado para eliminar la lógica de precios legacy.
 
 **Areas that need refactoring**:
--   **CRÍTICO:**  es insostenible. Debe ser descompuesto en una estructura modular (e.g., , , ).
--   **ALTO:**  se ha vuelto extremadamente complejo con múltiples modales y estados anidados. Debería descomponerse en sub-componentes.
+-   **CRÍTICO:**  es insostenible y una fuente constante de errores. Debe ser descompuesto en una estructura modular (e.g., , , ).
+-   **ALTO:**  es extremadamente complejo debido a la acumulación de funcionalidades y correcciones de errores. Debería descomponerse en sub-componentes más pequeños y manejables (ej. , , ).
 
 **key api endpoints**
--    (Abrir nueva sesión)
--    (Obtener sesión activa)
--    (Cerrar sesión activa)
+-    (Actualizado para )
 -   
 -   
--   (Modificados) , , , 
+-   
+-    y 
 
 **Critical Info for New Agent**
--   **El sistema de Sesiones de Caja es el nuevo núcleo**: Toda operación financiera (entradas/salidas de dinero) **DEBE** estar asociada a una sesión activa. El agente anterior solo lo aseguró para el endpoint de creación de alquileres. Es **crítico** extender esta lógica a devoluciones, pagos de taller, gastos, etc., para evitar movimientos huérfanos.
--   **Flujo de Apertura Automático**: El flujo ya no es manual. La caja se abre a través de un modal que se dispara al intentar un cobro con la caja cerrada. Este modal está en . La lógica debe replicarse para otras acciones de cobro (ej. Taller).
--   **Complejidad del Frontend**:  y  son muy complejos. Un pequeño error de sintaxis en  bloqueó toda la aplicación. Procede con extrema cautela y realiza pruebas de compilación y renderizado después de cada cambio.
--   **Iteración del Usuario**: El usuario es muy activo, proporciona feedback detallado y cambia las prioridades con frecuencia, a menudo interrumpiendo tareas en curso. Prepárate para re-planificar sobre la marcha.
+-   **PRIORIDAD MÁXIMA:** Arreglar el bug contable (Issue 1). Los alquileres se completan pero el dinero no se registra en la caja. El sistema es inutilizable en su estado actual. Investiga  en  y los endpoints relacionados con la creación de movimientos de caja.
+-   **NO REIMPLEMENTAR EL FLUJO AUTOMÁTICO DE CAJA:** Los intentos de abrir la caja automáticamente desde la pantalla de cobro han fallado repetidamente, causando errores críticos del servidor (). Mantén el flujo actual y desacoplado: el usuario debe abrir la caja manualmente en el módulo de  antes de poder cobrar un alquiler. Comunica esto claramente al usuario si pregunta.
+-   **PRECAUCIÓN EXTREMA con :** Este archivo es un campo de minas. Ha sido modificado tantas veces para arreglar el flujo de pago que es muy frágil. Cualquier cambio aquí necesita ser mínimo y probado exhaustivamente.
+-   **La raíz del problema es la sincronización:** El bug actual es un síntoma de una tarea más grande e incompleta: asegurar que TODAS las operaciones financieras se vinculen a una sesión de caja. Arreglar el cobro de alquileres es solo el primer paso.
 
 **documents and test reports created in this job**
+-   
+-   
+-   
 -    (actualizado)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Pide que el sistema de caja se reconstruya para sincronizar todas las operaciones en tiempo real, distinguiendo métodos de pago y refrescando la UI automáticamente.
-2.  **Agent**: Implementa la sincronización parcial y el polling.
-3.  **User**: Pide que la apertura de caja sea automática y se dispare al intentar un cobro.
-4.  **Agent**: Implementa el flujo de apertura automática con un modal en .
-5.  **User**: Repite la petición de apertura de caja automática (confirmación).
-6.  **Agent**: Se prepara para testear la implementación de apertura automática.
-7.  **PENDING HUMAN MESSAGES**: No hay mensajes pendientes. El agente estaba a punto de actuar sobre la última petición del usuario, que era una confirmación de la tarea en la que ya estaba trabajando.
+1.  **User:** Reporta que el sistema crashea al abrir caja y cobrar simultáneamente. Pide un flujo de 2 pasos.
+2.  **Agent:** Implementa el flujo de 2 pasos.
+3.  **User:** El sistema sigue bloqueado. Pide un bypass total, desacoplando completamente la apertura de caja del cobro.
+4.  **Agent:** Implementa el bypass. Ahora el usuario debe abrir la caja manualmente.
+5.  **User:** Reporta que el sistema sigue fallando, creyendo que es por un driver de cajón que no existe.
+6.  **Agent:** Investiga, no encuentra referencias a hardware, pero corrige un endpoint de API () y verifica que la apertura manual funciona.
+7.  **PENDING HUMAN MESSAGE (CRITICAL):**
+    -   **User:** ERROR CRÍTICO EN CONTABILIDAD: El arqueo de caja sale a cero porque los cobros de Nuevo Alquiler no se están sumando al saldo de la caja activa. Ejecuta esta reestructuración de datos...
+    -   **Status:** **UNADDRESSED**. This is the highest priority task for the next agent.
 
 **Project Health Check:**
--   **Broken**: No. La aplicación es funcional tras la última corrección de errores.
+-   **Broken**: Sí. El núcleo de la funcionalidad contable (registrar ingresos de alquileres) no funciona.
 -   **Mocked**: , .
 
 **3rd Party Integrations**
@@ -168,15 +177,13 @@ Es un sistema full-stack (React, FastAPI, MongoDB) de gestión de alquileres. En
 -   , 
 
 **Testing status**
--   **Testing agent used after significant changes**: YES. El agente de testing fue crucial para identificar errores de lógica en el backend y para confirmar la corrección de un error crítico en el frontend.
+-   **Testing agent used after significant changes**: YES. Se usó para validar funcionalidades de frontend como la edición de precios y los botones de acceso rápido.
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: []
--   **Known regressions**: Ninguna.
+-   **Known regressions**: La funcionalidad de registrar los pagos de alquiler en la caja, que pudo haber funcionado en un punto, está ahora completamente rota.
 
 **Credentials to test flow:**
 -   Registra un nuevo usuario desde la interfaz de login.
 
 **What agent forgot to execute**
--   **Sincronización de Sesiones en todos los Endpoints**: El agente identificó la necesidad de añadir la lógica de  a todos los endpoints financieros (devoluciones, taller, etc.) pero solo la implementó en la creación de alquileres. Esta es la tarea técnica pendiente más crítica.
--   **Refresco de UI (Polling)**: Solo se implementó en . No se ha extendido a otras páginas que podrían beneficiarse de ello (como el Dashboard).
--   **Tareas del Handoff Original**: La Pestaña de Soporte y el interruptor de Impresión Automática siguen pendientes.</analysis>
+-   El agente no completó ni validó la tarea de **Sincronización omnicanal de caja**. Se centró en los síntomas del flujo de  sin asegurar que la lógica contable subyacente (crear un  y vincularlo a la ) funcionara correctamente. Este descuido es la causa directa del error crítico actual.</analysis>
