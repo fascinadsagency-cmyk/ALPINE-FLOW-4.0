@@ -388,6 +388,7 @@ async def create_customer(customer: CustomerCreate, current_user: dict = Depends
         "dni": customer.dni.upper(),
         "name": customer.name,
         "phone": customer.phone or "",
+        "email": customer.email or "",
         "address": customer.address or "",
         "city": customer.city or "",
         "source": customer.source or "",
