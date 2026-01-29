@@ -274,7 +274,7 @@ export default function Dashboard() {
               {returnsControl.pending_by_category.map((cat) => (
                 <button
                   key={cat.item_type}
-                  onClick={() => navigate(`/returns?filter=${cat.item_type}`)}
+                  onClick={() => navigate(`/devoluciones?filter=${cat.item_type}`)}
                   className={`group p-4 rounded-xl border-2 transition-all hover:shadow-md hover:scale-[1.02] ${
                     returnsControl.is_past_closing 
                       ? 'border-red-300 bg-red-50 hover:border-red-400 hover:bg-red-100' 
