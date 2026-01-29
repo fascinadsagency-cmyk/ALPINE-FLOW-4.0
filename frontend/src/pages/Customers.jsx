@@ -309,6 +309,177 @@ export default function Customers() {
     window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
   };
 
+  // ============== IMPORT FUNCTIONS ==============
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validExtensions = ['.csv', '.xls', '.xlsx'];
+    const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    
+    if (!validExtensions.includes(fileExt)) {
+      toast.error("Formato no válido. Usa CSV, XLS o XLSX");
+      return;
+    }
+
+    setImportFile(file);
+    parseFile(file);
+  };
+
+  const parseFile = async (file) => {
+    setImportLoading(true);
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+
+      if (jsonData.length < 2) {
+        toast.error("El archivo debe tener al menos una fila de cabecera y una de datos");
+        return;
+      }
+
+      // First row is headers
+      const headers = jsonData[0].map((h, idx) => ({
+        index: idx,
+        name: String(h).trim() || `Columna ${idx + 1}`
+      }));
+
+      // Rest is data
+      const rows = jsonData.slice(1).filter(row => row.some(cell => cell !== ''));
+
+      setFileColumns(headers);
+      setImportData(rows);
+      
+      // Auto-map columns with similar names
+      const autoMapping = {};
+      headers.forEach(header => {
+        const headerLower = header.name.toLowerCase();
+        systemFields.forEach(field => {
+          const fieldLower = field.label.toLowerCase().replace(' *', '');
+          if (
+            headerLower === field.value ||
+            headerLower === fieldLower ||
+            headerLower.includes(field.value) ||
+            headerLower.includes(fieldLower) ||
+            (field.value === 'dni' && (headerLower.includes('documento') || headerLower.includes('pasaporte') || headerLower.includes('nif'))) ||
+            (field.value === 'name' && (headerLower.includes('nombre') || headerLower.includes('cliente'))) ||
+            (field.value === 'phone' && (headerLower.includes('telefono') || headerLower.includes('móvil') || headerLower.includes('movil'))) ||
+            (field.value === 'city' && (headerLower.includes('ciudad') || headerLower.includes('población') || headerLower.includes('poblacion') || headerLower.includes('localidad'))) ||
+            (field.value === 'address' && (headerLower.includes('direccion') || headerLower.includes('dirección') || headerLower.includes('domicilio'))) ||
+            (field.value === 'email' && (headerLower.includes('email') || headerLower.includes('correo') || headerLower.includes('e-mail'))) ||
+            (field.value === 'source' && (headerLower.includes('proveedor') || headerLower.includes('fuente') || headerLower.includes('origen'))) ||
+            (field.value === 'notes' && (headerLower.includes('nota') || headerLower.includes('observacion') || headerLower.includes('comentario')))
+          ) {
+            if (!autoMapping[field.value]) {
+              autoMapping[field.value] = header.index;
+            }
+          }
+        });
+      });
+
+      setColumnMapping(autoMapping);
+      setImportStep(2);
+    } catch (error) {
+      console.error("Error parsing file:", error);
+      toast.error("Error al leer el archivo");
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  const getMappedPreview = () => {
+    return importData.slice(0, 5).map(row => {
+      const mapped = {};
+      Object.entries(columnMapping).forEach(([field, colIndex]) => {
+        if (colIndex !== undefined && colIndex !== null && colIndex !== -1) {
+          mapped[field] = row[colIndex] || '';
+        }
+      });
+      return mapped;
+    });
+  };
+
+  const validateMapping = () => {
+    const requiredFields = systemFields.filter(f => f.required).map(f => f.value);
+    const missingFields = requiredFields.filter(field => 
+      columnMapping[field] === undefined || columnMapping[field] === null || columnMapping[field] === -1
+    );
+
+    if (missingFields.length > 0) {
+      const missingLabels = missingFields.map(f => 
+        systemFields.find(sf => sf.value === f)?.label
+      ).join(', ');
+      toast.error(`Campos obligatorios sin mapear: ${missingLabels}`);
+      return false;
+    }
+
+    return true;
+  };
+
+  const goToPreview = () => {
+    if (validateMapping()) {
+      setImportStep(3);
+    }
+  };
+
+  const executeImport = async () => {
+    setImportLoading(true);
+    try {
+      const customersToImport = importData.map(row => {
+        const customer = {};
+        Object.entries(columnMapping).forEach(([field, colIndex]) => {
+          if (colIndex !== undefined && colIndex !== null && colIndex !== -1) {
+            let value = row[colIndex] || '';
+            // Clean up DNI
+            if (field === 'dni') {
+              value = String(value).toUpperCase().trim();
+            }
+            customer[field] = value;
+          }
+        });
+        return customer;
+      }).filter(c => c.dni && c.name); // Filter out empty rows
+
+      const response = await axios.post(`${API}/customers/import`, {
+        customers: customersToImport
+      }, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      setImportResult(response.data);
+      setImportStep(4);
+      
+      if (response.data.imported > 0) {
+        toast.success(`${response.data.imported} clientes importados correctamente`);
+        loadCustomersWithStatus();
+      }
+    } catch (error) {
+      console.error("Import error:", error);
+      toast.error(error.response?.data?.detail || "Error al importar clientes");
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  const resetImport = () => {
+    setImportStep(1);
+    setImportFile(null);
+    setImportData([]);
+    setFileColumns([]);
+    setColumnMapping({});
+    setImportResult(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const closeImportDialog = () => {
+    setShowImportDialog(false);
+    resetImport();
+  };
+
   return (
     <div className="p-6 lg:p-8" data-testid="customers-page">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
