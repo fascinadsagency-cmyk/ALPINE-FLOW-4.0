@@ -11,36 +11,36 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 
 ## Funcionalidades Implementadas
 
-### 1. Acceso a Ficha de Cliente - ESTANDARIZADO (2026-01-29)
-**Comportamiento unificado en toda la aplicación:**
-- ✅ **Devoluciones Pendientes**: Nombre clicable + botón "Ficha"
-- ✅ **Alquileres Activos**: Nombre clicable + icono 👤
-- ✅ **Base de Datos de Clientes**: Nombre clicable (nuevo)
+### 1. Filtro de Estado en Base de Datos de Clientes (NUEVO 2026-01-29)
+**Selector de filtro con 3 opciones:**
+- ✅ **Todos**: Muestra base de datos completa (histórico)
+- ✅ **Activos Hoy**: Clientes con alquiler abierto actualmente
+- ✅ **Inactivos**: Clientes sin material alquilado
 
-**Modal de Ficha incluye:**
-- Teléfono con botones **Llamar** y **WhatsApp**
-- Email con botón de envío (si existe)
-- Población/Dirección/Hotel
-- DNI/Pasaporte
-- Colaborador/Proveedor con descuento
-- Total de alquileres
-- Observaciones internas
-- Tallas preferidas
-- Historial financiero (pagos/devoluciones)
-- Historial de alquileres
+**Características:**
+- Contador dinámico al lado de cada opción (ej: Activos Hoy (2))
+- Filtrado instantáneo sin recarga
+- Integración con búsqueda (buscar dentro del filtro seleccionado)
+- Indicador visual "Activo" badge verde en la tabla
+- Filas de clientes activos con fondo verde suave
 
-### 2. Modificar Duración de Alquileres
+### 2. Acceso a Ficha de Cliente - Estandarizado
+**Disponible en:** Devoluciones, Alquileres Activos, Base de Datos
+- Nombre clicable → Modal de ficha completa
+- Botones: Llamar, WhatsApp, Email
+- Historial de alquileres y pagos
+
+### 3. Modificar Duración de Alquileres
 - Flujo de 3 pasos (días → pago → ticket)
 - Soporte para reembolsos
 - Ajuste financiero automático en Caja
 
-### 3. Sistema de Caja
+### 4. Sistema de Caja
 - Impresión de tickets desde movimientos
 - Historial de cierres con reversión
 
-### 4. Funcionalidades Base
+### 5. Funcionalidades Base
 - Dashboard estratégico con KPIs
-- Gestión de Clientes con historial
 - Proceso de Alquiler con Auto-Combo
 - Devolución Rápida
 - Inventario con código interno
@@ -63,13 +63,14 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 
 ## Última Actualización
 Fecha: 2026-01-29
-Versión: 2.3.0
+Versión: 2.4.0
 
 ## Changelog
-- **v2.3.0** (2026-01-29): Nombre clicable en Base de Datos de Clientes
-  - Nombre del cliente abre ficha completa
-  - Botones de contacto rápido (Llamar, WhatsApp, Email)
-  - Diseño mejorado con secciones de contacto separadas
-  - Estilo visual unificado con hover en azul
+- **v2.4.0** (2026-01-29): Filtro de Estado en Clientes
+  - Nuevo endpoint /api/customers/with-status
+  - Botones: Todos, Activos Hoy, Inactivos con contadores
+  - Badge "Activo" en tabla para clientes con alquiler
+  - Filtrado instantáneo combinado con búsqueda
+- **v2.3.0** (2026-01-29): Nombre clicable en Clientes
 - **v2.2.0** (2026-01-29): Ficha de Cliente en Alquileres Activos
 - **v2.1.0** (2026-01-29): Ficha de Cliente en Devoluciones
