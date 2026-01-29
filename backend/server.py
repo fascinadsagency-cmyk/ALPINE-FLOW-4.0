@@ -2025,6 +2025,16 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
     # Create cash movement (MANDATORY for any price change)
     cash_movement_id = None
     if data.difference_amount != 0:
+        # Validate active cash session FIRST
+        date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+        
+        if not active_session:
+            raise HTTPException(
+                status_code=400,
+                detail="No hay sesión de caja activa. Abre la caja primero desde 'Gestión de Caja'."
+            )
+        
         customer_name = rental.get("customer_name", "Cliente")
         
         # Determine movement type: 'income' for charges, 'refund' for returns
@@ -2039,11 +2049,13 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
         cash_movement_id = str(uuid.uuid4())
         cash_doc = {
             "id": cash_movement_id,
+            "session_id": active_session["id"],  # CRITICAL: Link to active session
             "movement_type": movement_type,
             "amount": abs(data.difference_amount),
             "payment_method": data.payment_method,
-            "category": "rental",
+            "category": "rental_adjustment",
             "concept": concept,
+            "reference_id": f"{rental_id}_adj_{cash_movement_id[:8]}",
             "notes": f"Modificación de duración: {old_days}→{data.new_days} días. Total: €{old_total:.2f}→€{data.new_total:.2f}",
             "rental_id": rental_id,
             "customer_name": customer_name,
