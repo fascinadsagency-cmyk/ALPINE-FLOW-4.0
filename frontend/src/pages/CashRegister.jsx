@@ -79,7 +79,13 @@ export default function CashRegister() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showCloseDialog, setShowCloseDialog] = useState(false);
   const [showTicketDialog, setShowTicketDialog] = useState(false);
+  const [showOpenSessionDialog, setShowOpenSessionDialog] = useState(false);
   const [selectedMovement, setSelectedMovement] = useState(null);
+  
+  // Session state
+  const [activeSession, setActiveSession] = useState(null);
+  const [openingBalance, setOpeningBalance] = useState("");
+  const [sessionNotes, setSessionNotes] = useState("");
   
   // Movement form
   const [movementType, setMovementType] = useState("income");
