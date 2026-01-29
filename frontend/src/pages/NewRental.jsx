@@ -1202,32 +1202,20 @@ export default function NewRental() {
       `;
     }).join('');
     
-    // Generate HTML for pack items
+    // Generate HTML for pack items - SINGLE LINE PER PACK
     const packsHtml = Object.values(packItems).map(packData => {
       const packDays = packData.days;
-      const packPrice = getPackPrice(packData.pack);
+      // CRITICAL: Use days-specific price
+      const packPricePerDay = getPackPrice(packData.pack, packDays);
+      const packTotal = packPricePerDay * packDays;
       const packName = packData.pack.name;
       
-      // List pack components
-      const componentsHtml = packData.items.map(item => {
-        const typeLabel = getTypeLabel(item.item_type);
-        const description = `${typeLabel} ${item.brand || ''} ${item.model || ''}`.trim();
-        const sizeStr = item.size ? ` (${item.size})` : '';
-        return `<div class="pack-component">• ${description}${sizeStr}</div>`;
-      }).join('');
-      
       return `
-        <tr class="pack-row">
-          <td colspan="4" class="pack-header">
-            <div class="pack-name">📦 ${packName}</div>
-            ${componentsHtml}
-          </td>
-        </tr>
-        <tr class="pack-total-row">
-          <td class="pack-label">Pack completo</td>
+        <tr class="item-row pack-row">
+          <td class="item-desc">📦 ${packName}</td>
           <td class="item-days">${packDays}</td>
-          <td class="item-unit">-</td>
-          <td class="item-subtotal bold">€${packPrice.toFixed(2)}</td>
+          <td class="item-unit">€${packPricePerDay.toFixed(2)}</td>
+          <td class="item-subtotal">€${packTotal.toFixed(2)}</td>
         </tr>
       `;
     }).join('');
