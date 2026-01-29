@@ -985,18 +985,25 @@ async def delete_item_type(type_id: str, current_user: dict = Depends(get_curren
     """Delete a custom item type (cannot delete default types)"""
     item_type = await db.item_types.find_one({"id": type_id})
     if not item_type:
-        raise HTTPException(status_code=404, detail="Item type not found")
+        raise HTTPException(status_code=404, detail="Tipo de artículo no encontrado")
+    
+    # Cannot delete default types
+    if item_type.get("is_default", False):
+        raise HTTPException(
+            status_code=400,
+            detail="No se pueden eliminar tipos predeterminados del sistema"
+        )
     
     # Check if any items use this type
     items_count = await db.items.count_documents({"item_type": item_type["value"]})
     if items_count > 0:
         raise HTTPException(
             status_code=400,
-            detail=f"Cannot delete this type. {items_count} items are using it."
+            detail=f"No se puede eliminar este tipo porque {items_count} artículos lo están usando. Cambia el tipo de esos productos primero."
         )
     
     await db.item_types.delete_one({"id": type_id})
-    return {"message": "Item type deleted successfully"}
+    return {"message": "Tipo eliminado correctamente"}
 
     item = await db.items.find_one({"id": item_id})
     if not item:
