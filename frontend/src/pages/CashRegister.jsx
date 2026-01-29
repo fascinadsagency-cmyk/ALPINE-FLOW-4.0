@@ -1082,31 +1082,60 @@ export default function CashRegister() {
                 </div>
               </div>
               
-              {/* Desglose por método de pago - ESPERADO */}
+              {/* Desglose DETALLADO por método de pago */}
               <div className="border-t border-slate-300 pt-3">
-                <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Saldo Esperado por Método</p>
+                <p className="text-xs font-semibold text-slate-500 uppercase mb-3">Desglose Detallado por Método</p>
                 <div className="grid grid-cols-2 gap-4">
+                  {/* EFECTIVO */}
                   <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-2">
                       <Banknote className="h-4 w-4 text-blue-600" />
-                      <p className="text-xs text-blue-600 font-medium">EFECTIVO Esperado</p>
+                      <p className="text-xs text-blue-600 font-bold">💵 EFECTIVO</p>
                     </div>
-                    <p className="text-2xl font-bold text-blue-700">€{(discrepancy.expectedCash || 0).toFixed(2)}</p>
-                    <p className="text-xs text-blue-500 mt-1">
-                      (Ventas: €{(summary?.by_payment_method?.cash?.income || 0).toFixed(2)} - 
-                      Dev: €{(summary?.by_payment_method?.cash?.refund || 0).toFixed(2)})
-                    </p>
+                    <div className="space-y-1 text-xs text-blue-700">
+                      <div className="flex justify-between">
+                        <span>+ Ventas:</span>
+                        <span className="font-semibold">€{(summary?.by_payment_method?.cash?.income || 0).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>- Salidas:</span>
+                        <span className="font-semibold">€{(summary?.by_payment_method?.cash?.expense || 0).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>- Devoluc.:</span>
+                        <span className="font-semibold">€{(summary?.by_payment_method?.cash?.refund || 0).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between pt-2 border-t border-blue-300 font-bold text-blue-900">
+                        <span>Esperado:</span>
+                        <span className="text-lg">€{(discrepancy.expectedCash || 0).toFixed(2)}</span>
+                      </div>
+                    </div>
                   </div>
+                  
+                  {/* TARJETA */}
                   <div className="p-3 rounded-lg bg-purple-50 border border-purple-200">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-2">
                       <CreditCard className="h-4 w-4 text-purple-600" />
-                      <p className="text-xs text-purple-600 font-medium">TARJETA Esperado</p>
+                      <p className="text-xs text-purple-600 font-bold">💳 TARJETA</p>
                     </div>
-                    <p className="text-2xl font-bold text-purple-700">€{(discrepancy.expectedCard || 0).toFixed(2)}</p>
-                    <p className="text-xs text-purple-500 mt-1">
-                      (Ventas: €{(summary?.by_payment_method?.card?.income || 0).toFixed(2)} - 
-                      Dev: €{(summary?.by_payment_method?.card?.refund || 0).toFixed(2)})
-                    </p>
+                    <div className="space-y-1 text-xs text-purple-700">
+                      <div className="flex justify-between">
+                        <span>+ Ventas:</span>
+                        <span className="font-semibold">€{(summary?.by_payment_method?.card?.income || 0).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>- Salidas:</span>
+                        <span className="font-semibold">€{(summary?.by_payment_method?.card?.expense || 0).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>- Devoluc.:</span>
+                        <span className="font-semibold">€{(summary?.by_payment_method?.card?.refund || 0).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between pt-2 border-t border-purple-300 font-bold text-purple-900">
+                        <span>Esperado:</span>
+                        <span className="text-lg">€{(discrepancy.expectedCard || 0).toFixed(2)}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
