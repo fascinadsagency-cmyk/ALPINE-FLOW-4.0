@@ -666,7 +666,7 @@ async def import_customers(request: CustomerImportRequest, current_user: dict = 
                 "city": customer.city.strip() if customer.city else "",
                 "source": customer.source.strip() if customer.source else "",
                 "notes": customer.notes.strip() if customer.notes else "",
-                "created_at": datetime.now(timezone.utc),
+                "created_at": datetime.now(timezone.utc).isoformat(),
                 "total_rentals": 0
             }
             
