@@ -1207,16 +1207,15 @@ export default function NewRental() {
     // Generate HTML for pack items - SINGLE LINE PER PACK
     const packsHtml = Object.values(packItems).map(packData => {
       const packDays = packData.days;
-      // CRITICAL: Use days-specific price
-      const packPricePerDay = getPackPrice(packData.pack, packDays);
-      const packTotal = packPricePerDay * packDays;
+      // CRITICAL: Pack price is TOTAL for the selected days, NOT per day
+      const packTotal = getPackPrice(packData.pack, packDays);
       const packName = packData.pack.name;
       
       return `
         <tr class="item-row pack-row">
           <td class="item-desc">📦 ${packName}</td>
           <td class="item-days">${packDays}</td>
-          <td class="item-unit">€${packPricePerDay.toFixed(2)}</td>
+          <td class="item-unit">-</td>
           <td class="item-subtotal">€${packTotal.toFixed(2)}</td>
         </tr>
       `;
