@@ -108,6 +108,7 @@ export default function CashRegister() {
   // Historic panel state
   const [activeTab, setActiveTab] = useState("today");
   const [closureHistory, setClosureHistory] = useState([]);
+  const [revertClosureId, setRevertClosureId] = useState(null); // For reopen confirmation modal
   const [historicMovements, setHistoricMovements] = useState([]);
   const [historicLoading, setHistoricLoading] = useState(false);
   
