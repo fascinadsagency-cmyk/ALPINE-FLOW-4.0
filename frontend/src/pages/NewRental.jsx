@@ -670,7 +670,7 @@ export default function NewRental() {
   }, [showItemSearch, itemSearchTerm, itemSearchType, itemSearchCategory]);
 
   const addItemFromSearch = (item) => {
-    setItems([...items, { ...item, customPrice: null }]);
+    setItems([...items, { ...item, customPrice: null, itemDays: numDays }]);
     toast.success(`${item.brand} ${item.model} añadido`);
     // Update search results
     setSearchResults(searchResults.filter(i => i.barcode !== item.barcode));
@@ -695,7 +695,7 @@ export default function NewRental() {
         return;
       }
       
-      setItems([...items, { ...item, customPrice: null }]);
+      setItems([...items, { ...item, customPrice: null, itemDays: numDays }]);
       toast.success(`${item.brand} ${item.model} añadido`);
       setBarcodeInput("");
     } catch (error) {
@@ -706,6 +706,18 @@ export default function NewRental() {
 
   const removeItem = (itemId) => {
     setItems(items.filter(i => (i.id || i.barcode) !== itemId));
+  };
+
+  // Update item days
+  const updateItemDays = (itemId, newDays) => {
+    const days = parseInt(newDays) || 1;
+    if (days < 1) return;
+    setItems(items.map(item => 
+      (item.id || item.barcode) === itemId 
+        ? { ...item, itemDays: days }
+        : item
+    ));
+    setEditingItemDays(null);
   };
 
   // QUICK ADD: Configuración estricta - Solo 3 productos genéricos
