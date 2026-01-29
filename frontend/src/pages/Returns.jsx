@@ -22,7 +22,13 @@ import {
   Phone,
   RefreshCcw,
   Banknote,
-  Zap
+  Zap,
+  Mail,
+  MapPin,
+  IdCard,
+  MessageCircle,
+  ExternalLink,
+  Package
 } from "lucide-react";
 import { toast } from "sonner";
 
