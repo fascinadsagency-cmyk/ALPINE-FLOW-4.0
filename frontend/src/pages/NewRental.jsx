@@ -1070,8 +1070,7 @@ export default function NewRental() {
     }));
   };
 
-  // Estado para edición de precios
-  const [editingItemPrice, setEditingItemPrice] = useState(null);
+  // Estado para edición de precios de packs
   const [editingPackPrice, setEditingPackPrice] = useState(null);
 
   const calculateTotal = () => {
