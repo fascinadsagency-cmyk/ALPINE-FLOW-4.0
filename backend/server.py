@@ -2109,17 +2109,29 @@ async def update_rental_days(rental_id: str, update_data: UpdateRentalDaysReques
     
     # Create cash movement if there's a price difference
     if price_difference != 0:
+        # Validate active cash session FIRST
+        date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+        
+        if not active_session:
+            raise HTTPException(
+                status_code=400,
+                detail="No hay sesión de caja activa. Abre la caja primero desde 'Gestión de Caja'."
+            )
+        
         customer_name = rental.get("customer_name", "Cliente")
         movement_type = "income" if price_difference > 0 else "expense"
         concept = f"Ampliación Alquiler #{rental_id[:8]} - {customer_name}" if price_difference > 0 else f"Reducción Alquiler #{rental_id[:8]} - {customer_name}"
         
         cash_doc = {
             "id": str(uuid.uuid4()),
+            "session_id": active_session["id"],  # CRITICAL: Link to active session
             "movement_type": movement_type,
             "amount": abs(price_difference),
             "payment_method": rental.get("payment_method", "cash"),
-            "category": "rental",
+            "category": "rental_adjustment",
             "concept": concept,
+            "reference_id": f"{rental_id}_days_{str(uuid.uuid4())[:8]}",
             "notes": f"Modificación de {rental['days']} a {update_data.days} días",
             "rental_id": rental_id,
             "customer_name": customer_name,
