@@ -774,10 +774,13 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Código Interno</TableHead>
+                    <TableHead className="font-semibold">Código Interno</TableHead>
+                    <TableHead>Cód. Barras</TableHead>
+                    <TableHead>Nº Serie</TableHead>
                     <TableHead>Tipo</TableHead>
                     <TableHead>Marca / Modelo</TableHead>
                     <TableHead>Talla</TableHead>
+                    <TableHead>Fijación</TableHead>
                     <TableHead>Estado</TableHead>
                     {showProfitability && (
                       <>
@@ -789,7 +792,6 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                     )}
                     {!showProfitability && (
                       <>
-                        <TableHead>Código Barras</TableHead>
                         <TableHead>Días Uso</TableHead>
                         <TableHead>Usos para Mant.</TableHead>
                       </>
@@ -806,8 +808,14 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                     
                     return (
                       <TableRow key={item.id} className={`hover:bg-slate-50 ${showProfitability && isAmortized ? 'bg-emerald-50/30' : ''}`}>
-                        <TableCell className="font-mono text-sm font-semibold text-primary">
+                        <TableCell className="font-mono text-sm font-bold text-primary">
                           {item.internal_code || '-'}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-slate-500">
+                          {item.barcode || '-'}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-slate-500">
+                          {item.serial_number || '-'}
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">
@@ -818,6 +826,9 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                           {item.brand} {item.model}
                         </TableCell>
                         <TableCell>{item.size}</TableCell>
+                        <TableCell className="text-sm text-slate-600">
+                          {item.binding || '-'}
+                        </TableCell>
                         <TableCell>{getStatusBadge(item.status)}</TableCell>
                         
                         {showProfitability && (
