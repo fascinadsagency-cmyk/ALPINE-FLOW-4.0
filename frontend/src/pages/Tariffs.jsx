@@ -147,6 +147,12 @@ export default function Tariffs() {
     return total;
   };
 
+  // Helper to get item label from dynamic types
+  const getItemLabel = (value) => {
+    const found = itemTypes.find(t => t.value === value);
+    return found ? found.label : value;
+  };
+
   const createPack = async () => {
     if (!newPack.name || newPack.items.length === 0) {
       toast.error("Nombre y al menos un artículo son obligatorios");
