@@ -114,6 +114,11 @@ class ItemResponse(BaseModel):
     category: str = "MEDIA"
     maintenance_interval: int = 30
     created_at: str
+    # Financial fields (optional for response)
+    acquisition_cost: Optional[float] = None
+    total_revenue: Optional[float] = None
+    net_profit: Optional[float] = None
+    amortization_percent: Optional[float] = None
 
 class TariffCreate(BaseModel):
     item_type: str
