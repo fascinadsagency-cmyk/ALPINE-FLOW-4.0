@@ -665,20 +665,42 @@ export default function Returns() {
             <div className="lg:col-span-12">
               <Card className="border-slate-200">
                 <CardHeader className="pb-3 bg-slate-50">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-slate-600" />
-                    Devoluciones Pendientes
-                  </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-slate-600" />
+                      Devoluciones Pendientes
+                    </CardTitle>
+                    
+                    {/* Filter Badge and Clear */}
+                    {typeFilter && (
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-amber-100 text-amber-800 border border-amber-300 px-3 py-1">
+                          <Filter className="h-3 w-3 mr-1" />
+                          Filtrando: {getTypeLabel(typeFilter)}
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={clearFilter}
+                          className="text-slate-500 hover:text-slate-700"
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Quitar filtro
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent className="pt-6">
                   {/* Today's Returns */}
-                  {pendingReturns.today.length > 0 && (
+                  {filteredToday.length > 0 && (
                     <div className="mb-6">
                       <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                        📅 HOY ({pendingReturns.today.length})
+                        📅 HOY ({filteredToday.length})
+                        {typeFilter && <span className="text-xs font-normal text-amber-600">(filtrado)</span>}
                       </h3>
                       <div className="space-y-2">
-                        {pendingReturns.today.map((rental) => (
+                        {filteredToday.map((rental) => (
                           <div 
                             key={rental.id}
                             className="flex items-center justify-between p-4 rounded-lg bg-blue-50 border border-blue-200"
