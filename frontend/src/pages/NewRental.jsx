@@ -1175,17 +1175,17 @@ export default function NewRental() {
       }
       
       // 4. Store rental data for printing
-      const cleanTotal = Number(total.toFixed(2));
-      const paid = paymentMethodSelected !== 'pending' ? cleanTotal : 0;
+      const finalTotal = Number(total.toFixed(2));
+      const finalPaid = paymentMethodSelected !== 'pending' ? finalTotal : 0;
       
       setCompletedRental({
         ...rentalData,
         customer_name: customer?.name || 'Cliente',
         customer_dni: customer?.dni || '',
         items_detail: items,
-        total_amount: cleanTotal,
-        paid_amount: paid,
-        change: paymentMethodSelected === "cash" ? Number((cashGivenAmount - cleanTotal).toFixed(2)) : 0
+        total_amount: finalTotal,
+        paid_amount: finalPaid,
+        change: paymentMethodSelected === "cash" ? Number((cashGivenAmount - finalTotal).toFixed(2)) : 0
       });
       
       // Close payment dialog
