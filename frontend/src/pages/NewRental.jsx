@@ -2067,19 +2067,46 @@ export default function NewRental() {
                               )}
                             </div>
                             
-                            {/* Precio Total (IVA incluido) */}
+                            {/* Precio Total (IVA incluido) - EDITABLE */}
                             <div className="col-span-3 text-right">
                               <p className="text-xs text-slate-500 font-medium uppercase">Total (IVA inc.)</p>
                               {group.price === 0 && !item.is_generic ? (
                                 <Badge variant="destructive" className="text-xs">
                                   <AlertCircle className="h-3 w-3 mr-1" /> Sin tarifa
                                 </Badge>
+                              ) : editingItemPrice === (item.id || item.barcode) ? (
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  defaultValue={totalItemPrice.toFixed(2)}
+                                  className="h-8 w-24 text-right text-lg font-bold ml-auto"
+                                  autoFocus
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      updateItemPrice(item.id || item.barcode, e.target.value);
+                                      setEditingItemPrice(null);
+                                    }
+                                    if (e.key === 'Escape') setEditingItemPrice(null);
+                                  }}
+                                  onBlur={(e) => {
+                                    updateItemPrice(item.id || item.barcode, e.target.value);
+                                    setEditingItemPrice(null);
+                                  }}
+                                />
                               ) : (
-                                <p className={`text-lg font-bold ${
-                                  item.customPrice !== null ? 'text-emerald-600' : 'text-slate-900'
-                                }`}>
-                                  €{totalItemPrice.toFixed(2)}
-                                </p>
+                                <div 
+                                  className="cursor-pointer hover:bg-slate-100 rounded px-2 py-1 inline-block"
+                                  onClick={() => setEditingItemPrice(item.id || item.barcode)}
+                                >
+                                  <p className={`text-lg font-bold ${group.isEdited ? 'text-orange-600' : 'text-slate-900'}`}>
+                                    €{totalItemPrice.toFixed(2)}
+                                    <Edit2 className="h-3 w-3 ml-1 inline opacity-50" />
+                                  </p>
+                                  {group.isEdited && (
+                                    <Badge className="bg-orange-500 text-white text-xs mt-1">EDITADO</Badge>
+                                  )}
+                                </div>
                               )}
                             </div>
                             
