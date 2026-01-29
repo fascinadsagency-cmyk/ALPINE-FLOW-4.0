@@ -987,7 +987,7 @@ export default function NewRental() {
         basePrice: basePackPrice,  // Precio original sin editar
         isEdited: isPackPriceEdited,  // Flag para mostrar "EDITADO"
         days: packDays,
-        packId: `pack-${idx}`
+        packId: dp.instanceId || `pack-${Date.now()}`  // Use unique instance ID
       });
     });
 
