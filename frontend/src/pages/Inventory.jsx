@@ -143,6 +143,9 @@ export default function Inventory() {
   });
   const [showColumnConfig, setShowColumnConfig] = useState(false);
   
+  // Delete type confirmation modal
+  const [deleteTypeData, setDeleteTypeData] = useState(null); // { typeId, typeName }
+  
   // DnD sensors
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
