@@ -40,7 +40,7 @@ const CATEGORY_OPTIONS = [
 
 // Column definitions for customizable table
 const ALL_COLUMNS = [
-  { id: "internal_code", label: "Código Interno", width: "w-28", required: true },
+  { id: "internal_code", label: "Código/Nombre", width: "w-32", required: true },
   { id: "barcode", label: "Cód. Barras", width: "w-28" },
   { id: "serial_number", label: "Nº Serie", width: "w-28" },
   { id: "item_type", label: "Tipo", width: "w-24" },
@@ -49,14 +49,16 @@ const ALL_COLUMNS = [
   { id: "binding", label: "Fijación", width: "w-28" },
   { id: "category", label: "Gama", width: "w-24" },
   { id: "status", label: "Estado", width: "w-24" },
+  { id: "stock", label: "Stock", width: "w-24" },
   { id: "location", label: "Ubicación", width: "w-24" },
   { id: "days_used", label: "Días Uso", width: "w-20" },
   { id: "maintenance", label: "Mantenimiento", width: "w-28" },
   { id: "purchase_price", label: "Coste", width: "w-20" },
+  { id: "rental_price", label: "Precio Alq.", width: "w-20" },
   { id: "purchase_date", label: "F. Compra", width: "w-24" },
 ];
 
-const DEFAULT_VISIBLE_COLUMNS = ["internal_code", "barcode", "serial_number", "item_type", "brand_model", "size", "binding", "status", "days_used", "maintenance"];
+const DEFAULT_VISIBLE_COLUMNS = ["internal_code", "barcode", "item_type", "brand_model", "size", "status", "stock", "days_used", "maintenance"];
 const DEFAULT_COLUMN_ORDER = ALL_COLUMNS.map(c => c.id);
 
 // Sortable Header Component
