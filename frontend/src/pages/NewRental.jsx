@@ -951,17 +951,56 @@ export default function NewRental() {
     }
   };
 
+  // HELPER: Safe fetch with HTML error handling and retry
+  const safeFetch = async (url, options, retries = 2) => {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch(url, options);
+        const text = await response.text();
+        
+        // Check if response is HTML (server error)
+        if (text.trim().startsWith('<!') || text.trim().startsWith('<html')) {
+          console.warn(`Attempt ${attempt + 1}: Server returned HTML, retrying...`);
+          if (attempt < retries) {
+            await new Promise(r => setTimeout(r, 1000)); // Wait 1 second
+            continue;
+          }
+          throw new Error('El servidor está ocupado. Inténtalo de nuevo.');
+        }
+        
+        // Parse JSON
+        const data = text ? JSON.parse(text) : {};
+        return { ok: response.ok, status: response.status, data };
+      } catch (e) {
+        if (attempt === retries) throw e;
+        await new Promise(r => setTimeout(r, 1000));
+      }
+    }
+  };
+
+  // HELPER: Get active session ID with retry
+  const getActiveSessionId = async () => {
+    const API = process.env.REACT_APP_BACKEND_URL;
+    const result = await safeFetch(`${API}/api/cash/sessions/active`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    return result.ok && result.data?.id ? result.data.id : null;
+  };
+
   const openCashAndContinue = async () => {
     if (!openingCashBalance && openingCashBalance !== "0") {
       toast.error("Introduce el fondo de caja inicial (puede ser 0)");
       return;
     }
 
+    setProcessingPayment(true);
+    
     try {
       const API = process.env.REACT_APP_BACKEND_URL;
       
-      // Open new cash session
-      const openSessionRes = await fetch(`${API}/api/cash/sessions`, {
+      // === ACCIÓN 1: Abrir caja y esperar respuesta ===
+      toast.info("Abriendo caja...");
+      const openResult = await safeFetch(`${API}/api/cash/sessions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -972,28 +1011,53 @@ export default function NewRental() {
         })
       });
       
-      if (!openSessionRes.ok) {
-        const errorData = await openSessionRes.json();
-        const errMsg = errorData.detail;
+      if (!openResult.ok) {
+        const errMsg = openResult.data?.detail;
         throw new Error(typeof errMsg === 'string' ? errMsg : "No se pudo abrir la caja");
       }
       
-      const newSession = await openSessionRes.json();
-      toast.success("✅ Nueva jornada iniciada correctamente");
+      toast.success("✅ Caja abierta correctamente");
       
-      // Close auto-open dialog
+      // === ACCIÓN 2: Obtener ID de sesión activa (nueva consulta) ===
+      await new Promise(r => setTimeout(r, 500)); // Pequeña pausa para sincronización
+      const activeSessionId = await getActiveSessionId();
+      
+      if (!activeSessionId) {
+        throw new Error("No se pudo obtener el ID de la caja activa");
+      }
+      
+      // Close dialog
       setShowAutoOpenCashDialog(false);
       setOpeningCashBalance("");
       
-      // Resume payment process with new session ID
+      // === ACCIÓN 3: Procesar el cobro con el nuevo ID ===
       if (pendingPaymentData) {
-        setProcessingPayment(true);
-        await completePendingRental(pendingPaymentData.total, pendingPaymentData.cashGiven, newSession.id);
+        toast.info("Procesando cobro...");
+        await completePendingRental(pendingPaymentData.total, pendingPaymentData.cashGiven, activeSessionId);
         setPendingPaymentData(null);
       }
       
     } catch (error) {
-      toast.error(error.message || "Error al abrir caja");
+      console.error("Error en apertura/cobro:", error);
+      toast.error(error.message || "Error al procesar");
+      setProcessingPayment(false);
+    }
+  };
+
+  // MODO EMERGENCIA: Guardar venta offline si todo falla
+  const saveOfflineSale = (rentalData) => {
+    try {
+      const offlineSales = JSON.parse(localStorage.getItem('offline_sales') || '[]');
+      offlineSales.push({
+        ...rentalData,
+        offline_id: `OFF-${Date.now()}`,
+        created_at: new Date().toISOString()
+      });
+      localStorage.setItem('offline_sales', JSON.stringify(offlineSales));
+      toast.warning("⚠️ Venta guardada en modo offline. Se sincronizará después.");
+      return true;
+    } catch (e) {
+      return false;
     }
   };
 
