@@ -1234,12 +1234,15 @@ export default function NewRental() {
       }
     });
     
-    // Generate HTML for standalone items - Full description with type, model, size and code
+    // Generate HTML for standalone items - TARIFA ESCALONADA (sin P.UNIT)
     const standaloneHtml = standaloneItems.map(item => {
       const typeLabel = getTypeLabel(item.item_type);
       const days = item.itemDays || numDays;
-      const unitPrice = item.customPrice || item.custom_price || item.price_per_day || 0;
-      const subtotalItem = unitPrice * days;
+      
+      // LOOK-UP: Buscar el precio TOTAL para X días en la tarifa
+      const tariff = tariffs.find(t => t.item_type === item.item_type);
+      const dayField = days <= 10 ? `day_${days}` : 'day_11_plus';
+      const totalPrice = item.customPrice || item.custom_price || (tariff ? tariff[dayField] : 0) || 0;
       
       // Build full description: "Esquís Atomic Redster (42) [SKI-001]"
       const modelStr = `${item.brand || ''} ${item.model || ''}`.trim();
@@ -1251,8 +1254,7 @@ export default function NewRental() {
         <tr class="item-row">
           <td class="item-desc">${description}</td>
           <td class="item-days">${days}</td>
-          <td class="item-unit">€${unitPrice.toFixed(2)}</td>
-          <td class="item-subtotal">€${subtotalItem.toFixed(2)}</td>
+          <td class="item-total">€${totalPrice.toFixed(2)}</td>
         </tr>
       `;
     }).join('');
@@ -1277,8 +1279,7 @@ export default function NewRental() {
         <tr class="item-row pack-row">
           <td class="item-desc">${fusedPackName}</td>
           <td class="item-days">${packDays}</td>
-          <td class="item-unit">-</td>
-          <td class="item-subtotal">€${packTotal.toFixed(2)}</td>
+          <td class="item-total">€${packTotal.toFixed(2)}</td>
         </tr>
       `;
     }).join('');
