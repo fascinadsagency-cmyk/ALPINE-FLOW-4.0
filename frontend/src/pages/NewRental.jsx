@@ -1462,24 +1462,65 @@ export default function NewRental() {
                           
                           {/* Precio y Acciones */}
                           <div className="col-span-2 flex items-center justify-end gap-2">
-                            <div 
-                              className="cursor-pointer hover:bg-slate-200 px-2 py-1 rounded transition-colors flex items-center gap-1"
-                              onClick={() => setEditingItemPrice(item.barcode)}
-                              title="Click para editar precio"
-                            >
-                              <div className="text-right">
-                                <p className="text-sm font-semibold text-slate-900">
-                                  €{itemPrice.toFixed(2)}
-                                </p>
-                                <p className="text-xs text-slate-500">{numDays}d</p>
+                            {editingItemPrice === item.barcode ? (
+                              /* Modo Edición: Input activo */
+                              <div className="flex items-center gap-1">
+                                <div className="relative">
+                                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 text-sm">€</span>
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    defaultValue={itemPrice.toFixed(2)}
+                                    className="h-9 w-24 pl-6 pr-2 text-sm font-semibold text-right"
+                                    autoFocus
+                                    data-testid={`price-input-${item.barcode}`}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        updateItemPrice(item.barcode, e.target.value);
+                                      }
+                                      if (e.key === 'Escape') {
+                                        setEditingItemPrice(null);
+                                      }
+                                    }}
+                                    onBlur={(e) => {
+                                      updateItemPrice(item.barcode, e.target.value);
+                                    }}
+                                  />
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setEditingItemPrice(null)}
+                                  className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600"
+                                >
+                                  <Check className="h-4 w-4" />
+                                </Button>
                               </div>
-                              <Edit2 className="h-3 w-3 opacity-50" />
-                            </div>
+                            ) : (
+                              /* Modo Visualización: Click para editar */
+                              <div 
+                                className="cursor-pointer hover:bg-slate-200 px-2 py-1 rounded transition-colors flex items-center gap-1 group"
+                                onClick={() => setEditingItemPrice(item.barcode)}
+                                title="Click para editar precio"
+                                data-testid={`edit-price-btn-${item.barcode}`}
+                              >
+                                <div className="text-right">
+                                  <p className={`text-sm font-semibold ${item.customPrice !== null ? 'text-emerald-600' : 'text-slate-900'}`}>
+                                    €{itemPrice.toFixed(2)}
+                                    {item.customPrice !== null && <span className="ml-1 text-xs">(editado)</span>}
+                                  </p>
+                                  <p className="text-xs text-slate-500">{numDays}d</p>
+                                </div>
+                                <Edit2 className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
+                              </div>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => removeItem(item.barcode)}
                               className="h-8 w-8 p-0"
+                              data-testid={`remove-item-${item.barcode}`}
                             >
                               <X className="h-4 w-4" />
                             </Button>
