@@ -995,11 +995,11 @@ export default function NewRental() {
   };
 
   // Calcula el precio total de un item (precio unitario * cantidad * días)
+  // Get total price for an item - TARIFA ESCALONADA (sin multiplicación por días)
   const getItemTotalPrice = (item) => {
-    const unitPrice = getItemPriceWithPack(item);
+    const totalPrice = getItemPriceWithPack(item);  // Ya es precio total escalonado
     const qty = item.quantity || 1;
-    const days = item.itemDays || numDays;
-    return unitPrice * qty * days;
+    return totalPrice * qty;  // Solo multiplicar por cantidad, NO por días
   };
 
   // Calculate subtotal using grouped items - TARIFAS ESCALONADAS (sin multiplicación)
