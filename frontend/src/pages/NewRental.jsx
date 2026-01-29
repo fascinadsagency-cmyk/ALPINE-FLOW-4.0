@@ -1296,16 +1296,14 @@ export default function NewRental() {
             .items-table th.col-subtotal { width: 20%; text-align: right; }
             
             .item-row td { padding: 4px 2px; border-bottom: 1px dotted #ccc; }
-            .item-desc { max-width: 50%; word-wrap: break-word; font-weight: 500; }
+            .item-desc { max-width: 50%; word-wrap: break-word; font-weight: 500; font-size: 10px; }
             .item-days { text-align: center; }
             .item-unit { text-align: right; color: #666; }
             .item-subtotal { text-align: right; font-weight: bold; }
             
-            /* Pack Row Styles */
+            /* Pack Row - highlighted */
             .pack-row { background: #fffbeb; }
-            .pack-row .item-desc { padding: 6px 2px; }
-            .pack-name { font-weight: bold; color: #92400e; font-size: 11px; }
-            .pack-refs { font-size: 8px; color: #666; font-family: monospace; margin-top: 2px; }
+            .pack-row .item-desc { color: #92400e; font-weight: bold; }
             
             /* Totals */
             .totals-table { width: 100%; margin-top: 8px; }
