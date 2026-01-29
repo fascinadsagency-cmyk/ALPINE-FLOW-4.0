@@ -1831,6 +1831,96 @@ export default function NewRental() {
         </DialogContent>
       </Dialog>
 
+      {/* Auto Cash Opening Dialog - PRIORITY (Before Payment) */}
+      <Dialog open={showAutoOpenCashDialog} onOpenChange={(open) => {
+        // Don't allow closing without completing
+        if (!open && !openingCashBalance) {
+          toast.error("Debes introducir el fondo de caja para continuar");
+          return;
+        }
+        setShowAutoOpenCashDialog(open);
+      }}>
+        <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+              🏪 Iniciando Nueva Jornada
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-5 py-4">
+            {/* Alert Info */}
+            <div className="p-4 rounded-lg bg-amber-50 border-2 border-amber-300">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-amber-900">No hay caja abierta</p>
+                  <p className="text-sm text-amber-800 mt-1">
+                    Para procesar este cobro, necesitas abrir la caja del día.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Opening Balance Input */}
+            <div className="space-y-3">
+              <Label className="text-base font-bold text-slate-900">
+                Fondo de Caja Inicial (Efectivo) *
+              </Label>
+              <p className="text-sm text-slate-600">
+                Introduce el dinero en efectivo con el que empiezas la jornada
+              </p>
+              <Input
+                type="number"
+                value={openingCashBalance}
+                onChange={(e) => setOpeningCashBalance(e.target.value)}
+                placeholder="0.00"
+                className="h-16 text-3xl font-bold text-center"
+                min="0"
+                step="0.01"
+                autoFocus
+              />
+              <p className="text-xs text-slate-500">
+                Ejemplo: Si tienes €100 en la caja para empezar, introduce <span className="font-mono font-bold">100</span>
+              </p>
+            </div>
+
+            {/* Preview */}
+            {openingCashBalance && (
+              <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-300 animate-fade-in">
+                <p className="text-sm text-emerald-700 font-medium">Resumen de Apertura</p>
+                <p className="text-3xl font-black text-emerald-900 mt-2">
+                  Fondo: €{parseFloat(openingCashBalance).toFixed(2)}
+                </p>
+                {pendingPaymentData && (
+                  <p className="text-sm text-emerald-700 mt-2">
+                    + Primera venta: €{pendingPaymentData.total.toFixed(2)}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Info box */}
+            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <p className="text-xs text-blue-800">
+                💡 <strong>Nota:</strong> Este proceso solo ocurre una vez al día. Las siguientes ventas se procesarán automáticamente.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button 
+              onClick={openCashAndContinue}
+              disabled={!openingCashBalance && openingCashBalance !== "0"}
+              className="bg-emerald-600 hover:bg-emerald-700 w-full"
+              size="lg"
+            >
+              <CheckCircle className="h-5 w-5 mr-2" />
+              Abrir Caja y Continuar con el Cobro
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Payment Dialog - NEW */}
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
         <DialogContent className="sm:max-w-lg">
