@@ -145,6 +145,7 @@ export default function NewRental() {
   const [discountValue, setDiscountValue] = useState("");
   const [discountReason, setDiscountReason] = useState("");
   const [editingItemPrice, setEditingItemPrice] = useState(null);
+  const [editingItemDays, setEditingItemDays] = useState(null);
   
   // Sources
   const [sources, setSources] = useState([]);
