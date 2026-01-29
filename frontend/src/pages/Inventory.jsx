@@ -1181,11 +1181,28 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                             <SelectValue placeholder="Seleccionar tipo" />
                           </SelectTrigger>
                           <SelectContent>
-                            {itemTypes.map(type => (
-                              <SelectItem key={type.value} value={type.value}>
-                                {type.label}
-                              </SelectItem>
-                            ))}
+                            {itemTypes.length === 0 ? (
+                              <div className="p-2 text-sm text-slate-500 text-center">
+                                No hay tipos creados
+                              </div>
+                            ) : (
+                              itemTypes.map(type => (
+                                <SelectItem key={type.value} value={type.value}>
+                                  {type.label}
+                                </SelectItem>
+                              ))
+                            )}
+                            <div className="border-t my-1"></div>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setShowAddTypeDialog(true);
+                              }}
+                              className="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-slate-100 rounded text-primary font-medium"
+                            >
+                              <Plus className="h-4 w-4" />
+                              Añadir nuevo tipo
+                            </button>
                           </SelectContent>
                         </Select>
                       </div>
