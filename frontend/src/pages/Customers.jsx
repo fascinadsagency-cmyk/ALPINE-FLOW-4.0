@@ -302,31 +302,77 @@ export default function Customers() {
       {/* Search and Filters */}
       <Card className="border-slate-200 mb-6">
         <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-              <Input
-                placeholder="Buscar por nombre o DNI en tiempo real..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="h-12 pl-10 text-base"
-                data-testid="customer-search"
-              />
+          <div className="flex flex-col gap-4">
+            {/* Status Filter Buttons */}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={selectedStatus === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedStatus("all")}
+                className="gap-2"
+                data-testid="filter-all"
+              >
+                <Users className="h-4 w-4" />
+                Todos
+                <Badge variant="secondary" className="ml-1 bg-slate-200 text-slate-700">
+                  {statusCounts.total}
+                </Badge>
+              </Button>
+              <Button
+                variant={selectedStatus === "active" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedStatus("active")}
+                className={`gap-2 ${selectedStatus === "active" ? "bg-emerald-600 hover:bg-emerald-700" : "border-emerald-300 text-emerald-700 hover:bg-emerald-50"}`}
+                data-testid="filter-active"
+              >
+                <Package className="h-4 w-4" />
+                Activos Hoy
+                <Badge className={`ml-1 ${selectedStatus === "active" ? "bg-emerald-800 text-white" : "bg-emerald-100 text-emerald-700"}`}>
+                  {statusCounts.active}
+                </Badge>
+              </Button>
+              <Button
+                variant={selectedStatus === "inactive" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedStatus("inactive")}
+                className={`gap-2 ${selectedStatus === "inactive" ? "bg-slate-600 hover:bg-slate-700" : "border-slate-300 text-slate-600 hover:bg-slate-50"}`}
+                data-testid="filter-inactive"
+              >
+                <History className="h-4 w-4" />
+                Inactivos
+                <Badge variant="secondary" className="ml-1">
+                  {statusCounts.inactive}
+                </Badge>
+              </Button>
             </div>
-            <Select value={selectedProvider} onValueChange={setSelectedProvider}>
-              <SelectTrigger className="w-full md:w-64 h-12">
-                <SelectValue placeholder="Filtrar por proveedor" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los proveedores</SelectItem>
-                <SelectItem value="none">Sin proveedor</SelectItem>
-                {providers.map(provider => (
-                  <SelectItem key={provider.id} value={provider.name}>
-                    {provider.name} ({provider.discount_percent}% dto.)
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+
+            {/* Search and Provider Filter */}
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                <Input
+                  placeholder="Buscar por nombre, DNI o teléfono..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="h-12 pl-10 text-base"
+                  data-testid="customer-search"
+                />
+              </div>
+              <Select value={selectedProvider} onValueChange={setSelectedProvider}>
+                <SelectTrigger className="w-full md:w-64 h-12">
+                  <SelectValue placeholder="Filtrar por proveedor" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los proveedores</SelectItem>
+                  <SelectItem value="none">Sin proveedor</SelectItem>
+                  {providers.map(provider => (
+                    <SelectItem key={provider.id} value={provider.name}>
+                      {provider.name} ({provider.discount_percent}% dto.)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
