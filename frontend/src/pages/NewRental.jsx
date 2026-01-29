@@ -1396,50 +1396,6 @@ export default function NewRental() {
                             </Button>
                           </div>
                         </div>
-                              <Badge className={getCategoryBadge(item.category || 'MEDIA')}>
-                                {item.category || 'MEDIA'}
-                              </Badge>
-                              <span className="font-mono text-sm text-slate-500">{item.barcode}</span>
-                            </div>
-                            <p className="font-medium text-slate-900 mt-1">
-                              {item.brand} {item.model}
-                            </p>
-                            <p className="text-sm text-slate-500">Talla: {item.size}</p>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            {editingItemPrice === item.barcode ? (
-                              <Input
-                                type="number"
-                                defaultValue={itemPrice}
-                                className="w-20 h-8 text-right"
-                                autoFocus
-                                onBlur={(e) => updateItemPrice(item.barcode, e.target.value)}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') updateItemPrice(item.barcode, e.target.value);
-                                  if (e.key === 'Escape') setEditingItemPrice(null);
-                                }}
-                              />
-                            ) : (
-                              <button
-                                onClick={() => setEditingItemPrice(item.barcode)}
-                                className="font-semibold text-lg flex items-center gap-1 text-slate-900 hover:text-primary cursor-pointer"
-                                title="Click para editar precio"
-                              >
-                                €{itemPrice.toFixed(2)}
-                                <Edit2 className="h-3 w-3 opacity-50" />
-                              </button>
-                            )}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeItem(item.barcode)}
-                              className="text-slate-400 hover:text-red-500"
-                              data-testid={`remove-item-${index}`}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
                       );
                     })}
                   </div>
