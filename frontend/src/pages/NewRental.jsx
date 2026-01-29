@@ -857,6 +857,89 @@ export default function NewRental() {
     return tariff.day_11_plus > 0;
   };
 
+  // Group items by detected packs for unified display
+  const getGroupedCartItems = () => {
+    if (detectedPacks.length === 0) {
+      // No packs - return items as individual entries
+      return items.map(item => ({
+        type: 'single',
+        item: item,
+        items: [item],
+        price: item.customPrice !== null ? item.customPrice : getItemPriceFromTariff(item),
+        days: item.itemDays || numDays
+      }));
+    }
+
+    // Create a set of item IDs that are part of packs
+    const packItemIds = new Set();
+    detectedPacks.forEach(dp => {
+      dp.items.forEach(item => packItemIds.add(item.id || item.barcode));
+    });
+
+    const groups = [];
+
+    // Add detected packs as groups
+    detectedPacks.forEach((dp, idx) => {
+      const packPrice = getPackPrice(dp.pack);
+      // Use the first item's days as the pack days (they should be synchronized)
+      const packDays = dp.items[0]?.itemDays || numDays;
+      
+      groups.push({
+        type: 'pack',
+        pack: dp.pack,
+        items: dp.items,
+        price: packPrice,
+        days: packDays,
+        packId: `pack-${idx}`
+      });
+    });
+
+    // Add remaining items that are NOT part of any pack
+    items.forEach(item => {
+      const itemId = item.id || item.barcode;
+      if (!packItemIds.has(itemId)) {
+        groups.push({
+          type: 'single',
+          item: item,
+          items: [item],
+          price: item.customPrice !== null ? item.customPrice : getItemPriceFromTariff(item),
+          days: item.itemDays || numDays
+        });
+      }
+    });
+
+    return groups;
+  };
+
+  // Get price from tariff for an item (without pack division)
+  const getItemPriceFromTariff = (item) => {
+    if (item.customPrice !== null && item.customPrice !== undefined) return item.customPrice;
+    if (item.rental_price) return item.rental_price;
+    
+    const tariff = tariffs.find(t => t.item_type === item.item_type);
+    if (!tariff) return 0;
+    
+    const days = item.itemDays || numDays;
+    const dayField = days <= 10 ? `day_${days}` : 'day_11_plus';
+    return tariff[dayField] || tariff.day_1 || 0;
+  };
+
+  // Update days for all items in a pack
+  const updatePackDays = (packItems, newDays) => {
+    const days = parseInt(newDays) || 1;
+    if (days < 1) return;
+    
+    const packItemIds = new Set(packItems.map(i => i.id || i.barcode));
+    setItems(items.map(item => {
+      const itemId = item.id || item.barcode;
+      if (packItemIds.has(itemId)) {
+        return { ...item, itemDays: days, manualDaysEdit: true };
+      }
+      return item;
+    }));
+    setEditingItemDays(null);
+  };
+
   // Calcula el precio total de un item (precio unitario * cantidad * días)
   const getItemTotalPrice = (item) => {
     const unitPrice = getItemPriceWithPack(item);
@@ -865,8 +948,18 @@ export default function NewRental() {
     return unitPrice * qty * days;
   };
 
+  // Calculate subtotal using grouped items
   const calculateSubtotal = () => {
-    return items.reduce((sum, item) => sum + getItemTotalPrice(item), 0);
+    const groups = getGroupedCartItems();
+    return groups.reduce((sum, group) => {
+      if (group.type === 'pack') {
+        return sum + (group.price * group.days);
+      } else {
+        const item = group.item;
+        const qty = item.quantity || 1;
+        return sum + (group.price * qty * group.days);
+      }
+    }, 0);
   };
 
   const getProviderDiscount = () => {
