@@ -58,6 +58,7 @@ class CustomerCreate(BaseModel):
     dni: str
     name: str
     phone: Optional[str] = ""
+    email: Optional[str] = ""
     address: Optional[str] = ""
     city: Optional[str] = ""
     source: Optional[str] = ""  # Proveedor/Fuente
