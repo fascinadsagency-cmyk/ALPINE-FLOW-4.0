@@ -2469,11 +2469,22 @@ async def deliver_external_repair(
     
     # Create cash movement (income from workshop)
     if repair["price"] > 0:
+        # Validate active cash session FIRST
+        date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+        
+        if not active_session:
+            raise HTTPException(
+                status_code=400,
+                detail="No hay sesión de caja activa. Abre la caja primero desde 'Gestión de Caja'."
+            )
+        
         cash_movement_id = str(uuid.uuid4())
         # Build description from notes or services
         work_desc = repair.get("notes", "") or ", ".join(repair.get("services", ["Reparación"]))
         cash_doc = {
             "id": cash_movement_id,
+            "session_id": active_session["id"],  # CRITICAL: Link to active session
             "movement_type": "income",
             "amount": repair["price"],
             "payment_method": delivery.payment_method,
