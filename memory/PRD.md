@@ -11,39 +11,45 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 
 ## Funcionalidades Implementadas
 
-### 1. Módulo de Rentabilidad en Inventario (NUEVO 2026-01-29)
-**Botón "Ver Rentabilidad" activa el modo financiero:**
-- ✅ Panel resumen: Artículos, Coste Total, Ingresos Totales, Beneficio Neto, Amortizados
-- ✅ Columna **Coste**: Precio de adquisición del artículo
-- ✅ Columna **Ingresos**: Suma de todos los alquileres cerrados de ese artículo
-- ✅ Columna **Amortización**: 
-  - Barra de progreso con colores (rojo <50%, amarillo <80%, verde >80%)
-  - Badge "AMORTIZADO" cuando ingresos >= coste
-- ✅ Columna **Beneficio Neto**: Ingresos - Coste (verde si positivo, rojo si negativo)
-- ✅ **Filtro de ordenación**: Mayor/Menor Beneficio, Más Ingresos, Mayor Amortización
+### 1. Módulo de Caja - REDISEÑADO (2026-01-29)
+**3 Pestañas principales:**
 
-### 2. Filtro de Estado en Clientes
-- Todos / Activos Hoy / Inactivos con contadores
-- Badge "Activo" y fila resaltada
+**A) Caja del Día:**
+- Sin límite horario para cerrar caja (siempre disponible)
+- Navegación por fechas (anterior/siguiente)
+- Tarjetas: Entradas, Salidas, Devoluciones, Efectivo, Tarjeta
+- Saldo Neto del Día
+- Tabla de movimientos con reimprimir ticket
 
-### 3. Acceso a Ficha de Cliente - Estandarizado
-- Nombre clicable en: Devoluciones, Alquileres Activos, Base de Datos de Clientes
-- Modal con contacto directo (Llamar, WhatsApp, Email)
+**B) Cierres Pasados:**
+- Histórico completo de cierres
+- Columnas: Fecha, Empleado, Esperado/Real Efectivo, Esperado/Real Tarjeta, Descuadre Total
+- Botón **Reabrir** para revertir cierres
 
-### 4. Modificar Duración de Alquileres
-- Flujo de 3 pasos con ajuste financiero automático en Caja
+**C) Histórico Movimientos:**
+- Buscador con filtros: Fecha desde/hasta, Tipo de operación, Búsqueda por concepto
+- Lista cronológica infinita de movimientos
+- Botón **Reimprimir Ticket** en cada movimiento
 
-### 5. Sistema de Caja
-- Impresión de tickets desde movimientos
-- Historial de cierres con reversión
+**Formulario de Cierre (Arqueo Manual):**
+- Campo obligatorio: Efectivo Real Contado
+- Campo obligatorio: Total Datáfono/Tarjeta
+- Cálculo automático de descuadre (Efectivo + Tarjeta)
+- Indicador visual: Verde (cuadra), Amarillo (pequeña diferencia), Rojo (descuadre grande)
+- Observaciones del cierre
 
-### 6. Funcionalidades Base
-- Dashboard estratégico con KPIs
-- Proceso de Alquiler con Auto-Combo
-- Devolución Rápida
-- Inventario con código interno
-- Tarifas y Packs
-- Taller/Mantenimiento
+### 2. Rentabilidad en Inventario
+- Columnas: Coste, Ingresos, Amortización (barra), Beneficio
+- Ordenación por rentabilidad
+
+### 3. Filtro de Estado en Clientes
+- Todos / Activos Hoy / Inactivos
+
+### 4. Acceso a Ficha de Cliente
+- Nombre clicable en: Devoluciones, Alquileres Activos, Base de Datos
+
+### 5. Modificar Duración de Alquileres
+- Flujo de 3 pasos con ajuste financiero
 
 ## Próximas Tareas (Backlog)
 
@@ -61,14 +67,15 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 
 ## Última Actualización
 Fecha: 2026-01-29
-Versión: 2.5.0
+Versión: 2.6.0
 
 ## Changelog
-- **v2.5.0** (2026-01-29): Módulo de Rentabilidad en Inventario
-  - Nuevo endpoint /api/items/with-profitability
-  - Panel resumen con métricas financieras globales
-  - Columnas: Coste, Ingresos, Amortización (barra), Beneficio
-  - Ordenación por rentabilidad
-  - Badge "AMORTIZADO" para artículos que superaron su coste
+- **v2.6.0** (2026-01-29): Rediseño completo del Módulo de Caja
+  - 3 pestañas: Caja del Día, Cierres Pasados, Histórico Movimientos
+  - Sin límite horario para cerrar caja
+  - Arqueo manual con Efectivo + Tarjeta separados
+  - Cálculo de descuadre automático
+  - Histórico de movimientos con filtros y reimpresión
+  - Botón Reabrir para revertir cierres
+- **v2.5.0** (2026-01-29): Rentabilidad en Inventario
 - **v2.4.0** (2026-01-29): Filtro de Estado en Clientes
-- **v2.3.0** (2026-01-29): Nombre clicable en Clientes
