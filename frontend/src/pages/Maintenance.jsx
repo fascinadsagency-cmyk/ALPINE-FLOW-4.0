@@ -474,40 +474,78 @@ export default function Maintenance() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {alertItems.map((item) => (
                     <div 
                       key={item.id} 
-                      className="flex items-center justify-between p-4 bg-white rounded-xl border border-red-200 hover:shadow-md transition-shadow"
+                      className="p-4 bg-white rounded-xl border border-red-200 hover:shadow-md transition-shadow"
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-xl bg-red-100 flex items-center justify-center">
+                      <div className="flex items-start justify-between gap-4">
+                        {/* Icon */}
+                        <div className="h-12 w-12 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
                           <Wrench className="h-6 w-6 text-red-600" />
                         </div>
-                        <div>
-                          <p className="font-bold text-slate-900">{item.brand} {item.model}</p>
-                          <div className="flex items-center gap-2 text-sm text-slate-500">
-                            <span className="font-mono">{item.barcode}</span>
-                            <span>•</span>
-                            <span className="text-red-600 font-medium">{item.days_used} usos</span>
+                        
+                        {/* Info Grid */}
+                        <div className="flex-1 grid grid-cols-4 gap-4">
+                          {/* Modelo */}
+                          <div>
+                            <p className="text-xs text-slate-500 uppercase font-medium mb-1">Modelo</p>
+                            <p className="font-bold text-slate-900">
+                              {item.name || `${item.brand || ''} ${item.model || ''}`.trim() || 'Sin nombre'}
+                            </p>
+                            {item.item_type && (
+                              <Badge variant="outline" className="mt-1 text-xs">
+                                {item.item_type}
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          {/* Número Interno */}
+                          <div>
+                            <p className="text-xs text-slate-500 uppercase font-medium mb-1">Nº Interno</p>
+                            <p className="font-mono font-bold text-blue-700">
+                              {item.internal_code || item.barcode || '-'}
+                            </p>
+                          </div>
+                          
+                          {/* Talla */}
+                          <div>
+                            <p className="text-xs text-slate-500 uppercase font-medium mb-1">Talla</p>
+                            <p className="font-bold text-slate-900">
+                              {item.size || '-'}
+                            </p>
+                          </div>
+                          
+                          {/* Usos Histórico */}
+                          <div>
+                            <p className="text-xs text-slate-500 uppercase font-medium mb-1">Usos Histórico</p>
+                            <div className="flex items-center gap-2">
+                              <span className="text-2xl font-bold text-red-600">
+                                {item.days_used || 0}
+                              </span>
+                              <span className="text-xs text-slate-500">salidas</span>
+                            </div>
                           </div>
                         </div>
+                        
+                        {/* Action Button */}
+                        <Button 
+                          onClick={() => markMaintenanceComplete(item)}
+                          disabled={processingItem === item.id}
+                          className="bg-emerald-600 hover:bg-emerald-700 h-12 px-6 flex-shrink-0"
+                          data-testid={`complete-maintenance-${item.id}`}
+                        >
+                          {processingItem === item.id ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                          ) : (
+                            <>
+                              <RotateCcw className="h-5 w-5 mr-2" />
+                              PUESTA A PUNTO LISTA
+                            </>
+                          )}
+                        </Button>
                       </div>
-                      <Button 
-                        onClick={() => markMaintenanceComplete(item)}
-                        disabled={processingItem === item.id}
-                        className="bg-emerald-600 hover:bg-emerald-700 h-12 px-6"
-                        data-testid={`complete-maintenance-${item.id}`}
-                      >
-                        {processingItem === item.id ? (
-                          <Loader2 className="h-5 w-5 animate-spin" />
-                        ) : (
-                          <>
-                            <RotateCcw className="h-5 w-5 mr-2" />
-                            PUESTA A PUNTO LISTA
-                          </>
-                        )}
-                      </Button>
                     </div>
                   ))}
                 </div>
