@@ -945,19 +945,30 @@ async def get_items_with_profitability(
 ):
     """Get all items with profitability metrics calculated from closed rentals"""
     query = {}
-    if status:
+    
+    # CRITICAL: Always exclude deleted items
+    query["status"] = {"$nin": ["deleted"]}
+    
+    if status and status != "all":
         query["status"] = status
     if item_type:
         query["item_type"] = item_type
     if category:
         query["category"] = category
     if search:
-        query["$or"] = [
+        search_conditions = [
             {"internal_code": {"$regex": search, "$options": "i"}},
             {"barcode": {"$regex": search, "$options": "i"}},
             {"brand": {"$regex": search, "$options": "i"}},
             {"model": {"$regex": search, "$options": "i"}},
-            {"size": {"$regex": search, "$options": "i"}}
+            {"size": {"$regex": search, "$options": "i"}},
+            {"name": {"$regex": search, "$options": "i"}}
+        ]
+        if query:
+            existing_query = dict(query)
+            query = {"$and": [existing_query, {"$or": search_conditions}]}
+        else:
+            query["$or"] = search_conditions
         ]
     
     items = await db.items.find(query, {"_id": 0}).to_list(500)
