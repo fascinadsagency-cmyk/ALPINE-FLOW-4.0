@@ -999,39 +999,68 @@ export default function NewRental() {
 
   const completePendingRental = async (total, cashGivenAmount, sessionId = null) => {
     try {
-      const paid = paymentMethodSelected !== 'pending' ? total : 0;
+      // Clean all numeric values
+      const cleanTotal = Number(total.toFixed(2));
+      const cleanDeposit = Number(parseFloat(deposit) || 0);
+      const paid = paymentMethodSelected !== 'pending' ? cleanTotal : 0;
+      
+      // Prepare items - handle both regular and generic items
+      const itemsToSend = items.map(i => {
+        if (i.is_generic) {
+          return {
+            barcode: i.barcode || i.id,
+            person_name: "",
+            is_generic: true,
+            quantity: Number(i.quantity || 1),
+            unit_price: Number(i.rental_price || 0)
+          };
+        }
+        return { 
+          barcode: i.barcode, 
+          person_name: "",
+          quantity: 1,
+          unit_price: Number(getItemPriceWithPack(i) || 0)
+        };
+      });
       
       const rentalResponse = await rentalApi.create({
         customer_id: customer.id,
         start_date: startDate,
         end_date: endDate,
-        items: items.map(i => ({ barcode: i.barcode, person_name: "" })),
+        items: itemsToSend,
         payment_method: paymentMethodSelected,
-        total_amount: total,
-        paid_amount: paid,
-        deposit: parseFloat(deposit) || 0,
+        total_amount: cleanTotal,
+        paid_amount: Number(paid.toFixed(2)),
+        deposit: cleanDeposit,
         notes: notes + (discountReason ? ` | Descuento: ${discountReason}` : '')
       });
       
       // 2. Register cash movement (income) if payment completed
       if (paid > 0) {
         try {
-          const API = import.meta.env.VITE_API_URL;
-          await fetch(`${API}/cash/movements`, {
+          const API = process.env.REACT_APP_BACKEND_URL;
+          const movementData = {
+            movement_type: 'income',
+            amount: Number(paid.toFixed(2)),
+            payment_method: paymentMethodSelected,
+            category: 'rental',
+            concept: `Alquiler #${rentalResponse.data.id?.substring(0, 8)} - ${customer.name}`,
+            reference_id: rentalResponse.data.id,
+            notes: `Cliente: ${customer.dni || customer.name}`
+          };
+          
+          // Include session_id if available
+          if (sessionId) {
+            movementData.session_id = sessionId;
+          }
+          
+          await fetch(`${API}/api/cash/movements`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${localStorage.getItem('token')}`
             },
-            body: JSON.stringify({
-              movement_type: 'income',
-              amount: paid,
-              payment_method: paymentMethodSelected,
-              category: 'rental',
-              concept: `Alquiler #${rentalResponse.data.id} - ${customer.name}`,
-              reference_id: rentalResponse.data.id,
-              notes: `Cliente: ${customer.dni || customer.name}`
-            })
+            body: JSON.stringify(movementData)
           });
         } catch (cashError) {
           console.error("Error registering cash movement:", cashError);
@@ -1039,25 +1068,42 @@ export default function NewRental() {
         }
       }
       
-      // 3. Store rental data for printing
+      // 3. Update stock for generic items
+      for (const item of items) {
+        if (item.is_generic) {
+          try {
+            const API = process.env.REACT_APP_BACKEND_URL;
+            await fetch(`${API}/api/items/generic/rent?item_id=${item.id}&quantity=${item.quantity || 1}`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+              }
+            });
+          } catch (stockError) {
+            console.error("Error updating generic stock:", stockError);
+          }
+        }
+      }
+      
+      // 4. Store rental data for printing
       setCompletedRental({
         ...rentalResponse.data,
         customer_name: customer.name,
         customer_dni: customer.dni,
         items_detail: items,
-        total_amount: total,
+        total_amount: cleanTotal,
         paid_amount: paid,
-        change: paymentMethodSelected === "cash" ? cashGivenAmount - total : 0
+        change: paymentMethodSelected === "cash" ? Number((cashGivenAmount - cleanTotal).toFixed(2)) : 0
       });
       
       // Close payment dialog
       setShowPaymentDialog(false);
       setCashGiven("");
       
-      // 4. Show success dialog with print button
+      // 5. Show success dialog with print button
       setShowSuccessDialog(true);
       
-      // 5. Auto-print if enabled
+      // 6. Auto-print if enabled
       const autoPrint = localStorage.getItem('auto_print_enabled') === 'true';
       if (autoPrint) {
         setTimeout(() => printRentalTicket(), 500);
@@ -1067,7 +1113,8 @@ export default function NewRental() {
       
     } catch (error) {
       console.error("Error creating rental:", error);
-      toast.error(error.message || error.response?.data?.detail || "Error al crear alquiler");
+      const errorMsg = error.response?.data?.detail;
+      toast.error(typeof errorMsg === 'string' ? errorMsg : "Error al crear alquiler");
     } finally {
       setProcessingPayment(false);
     }
