@@ -1241,15 +1241,6 @@ export default function NewRental() {
     setShowAutoOpenCashDialog(false);
   };
 
-  const updateItemPrice = (itemId, newPrice) => {
-    setItems(items.map(item => 
-      (item.id || item.barcode) === itemId 
-        ? { ...item, customPrice: parseFloat(newPrice) || null }
-        : item
-    ));
-    setEditingItemPrice(null);
-  };
-
   const printRentalTicket = () => {
     if (!completedRental) return;
     
