@@ -448,6 +448,21 @@ metadata:
           agent: "testing"
           comment: "✅ COMPREHENSIVE EDITABLE ITEM TYPES SYSTEM TEST COMPLETED (12/12): Backend API testing ✅ (GET /api/item-types returns 5 default types, POST /api/item-types creates custom types successfully, custom types persist in database), Frontend UI testing ✅ (Login with admin2/admin123, Navigate to Inventory, Add Item dialog opens, Type selector shows all default types, 'Añadir nuevo tipo' button present with divider line, Custom types 'Snowblade' and 'Trineo' appear with 'Personalizado' badges, Item creation with custom types works, Types appear in main filters), Visual Elements ✅ (Plus icon in button, primary color styling, hover effects, blue tip box in creation dialog, proper form validation), Complete Workflow ✅ (Create custom type → Auto-select in form → Create item → Appears in table → Available in filters). ALL FUNCTIONALITY WORKING EXACTLY AS SPECIFIED IN REQUIREMENTS."
 
+  - task: "Cash Management Frontend - Detailed Payment Method Breakdown"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/CashRegister.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test frontend cash management module with detailed breakdown by payment method: login with admin2/admin123, navigate to /caja page, validate closing dialog structure with Resumen del Día (3 cards), Desglose Detallado por Método (EFECTIVO/TARJETA cards), Arqueo Manual section, dynamic discrepancy calculation, ticket printing format, history and reprint functionality"
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE FRONTEND CASH MANAGEMENT TESTING COMPLETED (11/11): Login with admin2/admin123 ✅, Navigation to /caja page ✅, Main page structure verification (5 summary cards: Entradas €895.45, Salidas €40.00, Devoluciones €109.00, Efectivo €626.45, Tarjeta €120.00) ✅, Balance card showing €746.45 with 25 operations ✅, Cash closing dialog opening ✅, Resumen del Día section with 3 colored cards (green Total Ventas, red Total Salidas, orange Devoluciones) ✅, Desglose Detallado por Método section with EFECTIVO card (blue bg-blue-50 with 💵 icon) and TARJETA card (purple bg-purple-50 with 💳 icon) ✅, Detailed breakdown lines (+ Ventas, - Salidas, - Devoluc., Esperado) in both cards ✅, Arqueo Manual section with dark bg-slate-900 and large input fields for 'Efectivo Real Contado' and 'Total Datáfono/Tarjeta' ✅, Dynamic discrepancy calculation with contextual messages (¡Cuadra perfectamente!, Hay más dinero del esperado, Falta dinero) ✅, History tab with detailed table structure and reprint functionality ✅. ALL FRONTEND VISUAL ELEMENTS, PROFESSIONAL STYLING, AND DETAILED BREAKDOWN BY PAYMENT METHOD WORKING EXACTLY AS SPECIFIED IN REQUIREMENTS."
+
 test_plan:
   current_focus: []
   stuck_tasks: []
