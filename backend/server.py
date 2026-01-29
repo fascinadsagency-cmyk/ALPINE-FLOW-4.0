@@ -2224,10 +2224,12 @@ async def process_refund(rental_id: str, refund: RefundRequest, current_user: di
     
     # Create NEGATIVE cash movement (refund)
     refund_movement_id = str(uuid.uuid4())
+    operation_number = await get_next_operation_number()
     refund_doc = {
         "id": refund_movement_id,
-        "session_id": active_session["id"],  # CRITICAL: Link to active session
-        "movement_type": "refund",  # Special type for refunds
+        "operation_number": operation_number,
+        "session_id": active_session["id"],
+        "movement_type": "refund",
         "amount": refund.refund_amount,
         "payment_method": refund.payment_method,
         "category": "refund",
@@ -2244,6 +2246,7 @@ async def process_refund(rental_id: str, refund: RefundRequest, current_user: di
     
     return {
         "message": "Reembolso procesado correctamente",
+        "operation_number": operation_number,
         "refund_amount": refund.refund_amount,
         "days_refunded": refund.days_to_refund,
         "new_days": new_days,
