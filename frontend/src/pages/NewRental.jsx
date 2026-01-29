@@ -1229,18 +1229,20 @@ export default function NewRental() {
     }).join('');
     
     // Generate HTML for pack items - SINGLE LINE PER PACK with FUSED name format
+    // PASO 1: Consolidación - Códigos de hijos fusionados en el nombre
+    // PASO 2: Filtrado - Solo esta línea aparece, los hijos fueron filtrados arriba
     const packsHtml = Object.values(packItems).map(packData => {
       const packDays = packData.days;
       // CRITICAL: Pack price is TOTAL for the selected days, NOT per day
       const packTotal = getPackPrice(packData.pack, packDays);
       
-      // Build reference codes: "SKI-001 / BOT-002"
-      const refCodes = packData.items.map(item => 
+      // CONSOLIDACIÓN: Extraer códigos de los HIJOS
+      const childCodes = packData.items.map(item => 
         item.internal_code || item.barcode?.substring(0, 10) || 'N/A'
       ).join(' / ');
       
-      // FUSED NAME FORMAT: "Pack Esquí Plata [SKI-001 / BOT-204]"
-      const fusedPackName = `${packData.pack.name} [${refCodes}]`;
+      // NOMBRE FUSIONADO: "Pack Esquí Plata (SKI-001 / BOT-204)"
+      const fusedPackName = `${packData.pack.name} (${childCodes})`;
       
       return `
         <tr class="item-row pack-row">
