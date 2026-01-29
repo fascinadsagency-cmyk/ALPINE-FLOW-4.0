@@ -884,9 +884,10 @@ export default function NewRental() {
 
     // Add detected packs as groups
     detectedPacks.forEach((dp, idx) => {
-      const packPrice = getPackPrice(dp.pack);
       // Use the first item's days as the pack days (they should be synchronized)
       const packDays = dp.items[0]?.itemDays || numDays;
+      // CRITICAL: Get pack price using the pack's specific days, not global numDays
+      const packPrice = getPackPrice(dp.pack, packDays);
       
       groups.push({
         type: 'pack',
