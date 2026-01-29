@@ -1923,11 +1923,13 @@ async def process_payment(rental_id: str, payment: PaymentRequest, current_user:
     
     # CREATE CASH MOVEMENT - This is MANDATORY for accounting integrity
     cash_movement_id = str(uuid.uuid4())
+    operation_number = await get_next_operation_number()
     customer = await db.customers.find_one({"id": rental.get("customer_id")})
     customer_name = customer.get("name", rental.get("customer_name", "Cliente")) if customer else rental.get("customer_name", "Cliente")
     
     cash_doc = {
         "id": cash_movement_id,
+        "operation_number": operation_number,
         "session_id": active_session["id"],
         "movement_type": "income",
         "amount": payment.amount,
@@ -1946,7 +1948,7 @@ async def process_payment(rental_id: str, payment: PaymentRequest, current_user:
         "message": "Payment processed",
         "paid_amount": new_paid,
         "pending_amount": max(0, new_pending),
-        "cash_movement_id": cash_movement_id
+        "operation_number": operation_number
     }
 
 class UpdateRentalDaysRequest(BaseModel):
