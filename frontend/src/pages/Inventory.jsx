@@ -1228,7 +1228,15 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                     };
                     
                     return (
-                      <TableRow key={item.id} className="hover:bg-slate-50">
+                      <TableRow key={item.id} className={`hover:bg-slate-50 ${isSelected ? 'bg-blue-50' : ''}`}>
+                        {/* CHECKBOX */}
+                        <TableCell className="text-center">
+                          <Checkbox 
+                            checked={isSelected}
+                            onCheckedChange={() => toggleSelectItem(item.id)}
+                            aria-label={`Seleccionar ${item.internal_code || item.barcode}`}
+                          />
+                        </TableCell>
                         {orderedVisibleColumns.map((col) => (
                           <TableCell key={col.id}>{renderCell(col.id)}</TableCell>
                         ))}
