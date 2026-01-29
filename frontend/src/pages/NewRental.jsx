@@ -911,13 +911,12 @@ export default function NewRental() {
       toast.success("Alquiler completado y registrado en caja");
       
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Error al crear alquiler");
+      console.error("Error creating rental:", error);
+      toast.error(error.message || error.response?.data?.detail || "Error al crear alquiler");
     } finally {
       setProcessingPayment(false);
     }
   };
-
-  const printRentalTicket = () => {
 
   const printRentalTicket = () => {
     if (!completedRental) return;
