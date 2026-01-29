@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,9 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { customerApi } from "@/lib/api";
-import { Search, Users, History, Loader2, Phone, MapPin, Plus, Edit2, Trash2, AlertTriangle, FileText, DollarSign, Calendar, Package, ArrowUpRight, ArrowDownLeft, Banknote, Mail, MessageCircle } from "lucide-react";
+import { Search, Users, History, Loader2, Phone, MapPin, Plus, Edit2, Trash2, AlertTriangle, FileText, DollarSign, Calendar, Package, ArrowUpRight, ArrowDownLeft, Banknote, Mail, MessageCircle, Upload, FileSpreadsheet, CheckCircle, XCircle, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
+import * as XLSX from "xlsx";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
