@@ -1325,49 +1325,77 @@ export default function NewRental() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {/* Items List - Clean without pack banners */}
+                    {/* Items List - Optimized with Priority Columns */}
                     {items.map((item, index) => {
                       const itemPrice = getItemPriceWithPack(item);
                       
                       return (
                         <div 
                           key={item.barcode}
-                          className="flex items-center justify-between p-4 rounded-xl bg-slate-50 animate-fade-in"
+                          className="grid grid-cols-12 gap-3 items-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors animate-fade-in"
                         >
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-slate-600">{item.brand} {item.model}</span>
-                              <Badge variant="outline" className="text-xs">
-                                {item.size}
-                              </Badge>
-                            </div>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-xs text-slate-500">{item.barcode}</span>
-                              <Badge className={`${
-                                item.category === 'ALTA' ? 'bg-purple-100 text-purple-700' :
-                                item.category === 'MEDIA' ? 'bg-blue-100 text-blue-700' :
-                                'bg-green-100 text-green-700'
-                              } text-xs`}>
-                                {item.category}
-                              </Badge>
-                            </div>
+                          {/* Código Interno - Priority #1 */}
+                          <div className="col-span-2">
+                            <p className="text-xs text-slate-500 font-medium uppercase">Código</p>
+                            <p className="font-mono font-bold text-slate-900">{item.barcode}</p>
                           </div>
-                          <div className="flex items-center gap-4">
+                          
+                          {/* Tipo de Artículo - Priority #2 */}
+                          <div className="col-span-2">
+                            <p className="text-xs text-slate-500 font-medium uppercase">Tipo</p>
+                            <Badge variant="outline" className="font-semibold">{item.item_type}</Badge>
+                          </div>
+                          
+                          {/* Modelo - Priority #3 */}
+                          <div className="col-span-3">
+                            <p className="text-xs text-slate-500 font-medium uppercase">Modelo</p>
+                            <p className="font-medium text-slate-900">{item.brand} {item.model}</p>
+                          </div>
+                          
+                          {/* Talla/Tamaño - Priority #4 */}
+                          <div className="col-span-1">
+                            <p className="text-xs text-slate-500 font-medium uppercase">Talla</p>
+                            <Badge variant="outline" className="text-sm font-bold">
+                              {item.size}
+                            </Badge>
+                          </div>
+                          
+                          {/* Categoría */}
+                          <div className="col-span-2">
+                            <Badge className={`${
+                              item.category === 'ALTA' ? 'bg-purple-100 text-purple-700' :
+                              item.category === 'MEDIA' ? 'bg-blue-100 text-blue-700' :
+                              'bg-green-100 text-green-700'
+                            } text-xs`}>
+                              {item.category}
+                            </Badge>
+                          </div>
+                          
+                          {/* Precio y Acciones */}
+                          <div className="col-span-2 flex items-center justify-end gap-2">
                             <div 
-                              className="cursor-pointer hover:bg-slate-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2"
+                              className="cursor-pointer hover:bg-slate-200 px-2 py-1 rounded transition-colors flex items-center gap-1"
                               onClick={() => setEditingItemPrice(item.barcode)}
                               title="Click para editar precio"
                             >
                               <div className="text-right">
-                                <p className="text-lg font-semibold text-slate-900">
+                                <p className="text-sm font-semibold text-slate-900">
                                   €{itemPrice.toFixed(2)}
                                 </p>
-                                <p className="text-xs text-slate-500">{numDays}d × €{(itemPrice/numDays).toFixed(2)}</p>
+                                <p className="text-xs text-slate-500">{numDays}d</p>
                               </div>
                               <Edit2 className="h-3 w-3 opacity-50" />
                             </div>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="outline">{item.item_type}</Badge>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeItem(item.barcode)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
                               <Badge className={getCategoryBadge(item.category || 'MEDIA')}>
                                 {item.category || 'MEDIA'}
                               </Badge>
