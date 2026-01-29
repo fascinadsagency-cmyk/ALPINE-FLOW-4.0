@@ -2451,6 +2451,90 @@ async def get_dashboard(current_user: dict = Depends(get_current_user)):
         "alerts": alerts
     }
 
+@api_router.get("/dashboard/returns-control")
+async def get_returns_control(current_user: dict = Depends(get_current_user)):
+    """
+    Get pending returns by item type for today - the 'control tower' for end of day
+    """
+    today = datetime.now(timezone.utc)
+    today_str = today.strftime("%Y-%m-%d")
+    
+    # Get all rentals that should return today and are not yet returned
+    pending_returns = await db.rentals.find({
+        "end_date": today_str,
+        "status": {"$in": ["active", "pending"]}
+    }, {"_id": 0}).to_list(500)
+    
+    # Get item details for all items in pending returns
+    item_ids = []
+    for rental in pending_returns:
+        for item in rental.get("items", []):
+            item_ids.append(item.get("item_id"))
+    
+    items_data = {}
+    if item_ids:
+        items_cursor = await db.items.find(
+            {"id": {"$in": item_ids}},
+            {"_id": 0, "id": 1, "item_type": 1, "brand": 1, "model": 1, "internal_code": 1}
+        ).to_list(500)
+        for item in items_cursor:
+            items_data[item["id"]] = item
+    
+    # Get all item types (dynamic categories)
+    item_types = await db.item_types.find({}, {"_id": 0}).to_list(100)
+    type_labels = {t["value"]: t["label"] for t in item_types}
+    
+    # Count by item type
+    counts_by_type = {}
+    details_by_type = {}
+    
+    for rental in pending_returns:
+        for item in rental.get("items", []):
+            item_id = item.get("item_id")
+            item_info = items_data.get(item_id, {})
+            item_type = item_info.get("item_type", "unknown")
+            
+            if item_type not in counts_by_type:
+                counts_by_type[item_type] = 0
+                details_by_type[item_type] = []
+            
+            counts_by_type[item_type] += 1
+            details_by_type[item_type].append({
+                "rental_id": rental.get("id"),
+                "customer_name": rental.get("customer_name"),
+                "internal_code": item_info.get("internal_code", "-"),
+                "brand": item_info.get("brand", "-"),
+                "model": item_info.get("model", "-")
+            })
+    
+    # Build response with label names
+    pending_by_category = []
+    for item_type, count in sorted(counts_by_type.items(), key=lambda x: -x[1]):
+        label = type_labels.get(item_type, item_type.capitalize())
+        pending_by_category.append({
+            "item_type": item_type,
+            "label": label,
+            "count": count,
+            "details": details_by_type.get(item_type, [])[:5]  # Limit details to 5
+        })
+    
+    # Calculate total
+    total_pending = sum(counts_by_type.values())
+    
+    # Get store closing hour (default 20:00)
+    closing_hour = 20
+    current_hour = today.hour
+    is_past_closing = current_hour >= closing_hour
+    
+    return {
+        "date": today_str,
+        "total_pending": total_pending,
+        "pending_by_category": pending_by_category,
+        "is_past_closing": is_past_closing,
+        "closing_hour": closing_hour,
+        "current_hour": current_hour
+    }
+
 @api_router.get("/dashboard/analytics")
 async def get_dashboard_analytics(
     period: Optional[str] = None,
