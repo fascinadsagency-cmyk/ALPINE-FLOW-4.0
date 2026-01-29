@@ -43,7 +43,11 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
 - ✅ **Botonera de Añadido Rápido:** Cascos, Bastones, Máscara
 
 ### 4. Sistema de Tickets/Comprobantes
-- ⏳ Impresión como comprobante (parcialmente implementado)
+- ✅ Impresión de ticket de alquiler con desglose completo
+- ✅ Formato profesional para impresora térmica 80mm
+- ✅ Nº Ticket con formato AXXXXXX
+- ✅ Desglose por artículo: [Tipo/Modelo] | [Días] | [P.Unit] | [Subtotal]
+- ✅ Agrupación visual de packs con precio único
 
 ### 5. Gestión de Datos
 - ✅ Importador CSV/Excel para clientes e inventario
