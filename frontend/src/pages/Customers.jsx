@@ -455,39 +455,101 @@ export default function Customers() {
                       <Label className="text-xs text-slate-500">DNI/Pasaporte</Label>
                       <p className="text-lg font-mono font-semibold text-slate-900">{selectedCustomer.dni}</p>
                     </div>
-                    <div>
-                      <Label className="text-xs text-slate-500">Teléfono</Label>
-                      <p className="text-base text-slate-700">{selectedCustomer.phone || '-'}</p>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-slate-500">Población</Label>
-                      <p className="text-base text-slate-700">{selectedCustomer.city || '-'}</p>
-                    </div>
-                    {selectedCustomer.address && (
-                      <div className="col-span-2">
-                        <Label className="text-xs text-slate-500">Dirección</Label>
-                        <p className="text-base text-slate-700">{selectedCustomer.address}</p>
-                      </div>
-                    )}
-                    {selectedCustomer.source && (
-                      <div>
-                        <Label className="text-xs text-slate-500">Colaborador/Proveedor</Label>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                            {selectedCustomer.source}
-                          </Badge>
-                          {getProviderDiscount(selectedCustomer.source) > 0 && (
-                            <Badge className="bg-emerald-100 text-emerald-700">
-                              Descuento: {getProviderDiscount(selectedCustomer.source)}%
-                            </Badge>
-                          )}
+                  </div>
+
+                  {/* Contact Actions */}
+                  <div className="mt-4 pt-4 border-t border-slate-200 space-y-3">
+                    {/* Phone */}
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                      <div className="flex items-center gap-3">
+                        <Phone className="h-5 w-5 text-emerald-600" />
+                        <div>
+                          <p className="text-xs text-emerald-600 font-medium">Teléfono</p>
+                          <p className="font-semibold text-slate-900">{selectedCustomer.phone || 'No registrado'}</p>
                         </div>
                       </div>
-                    )}
-                    <div>
-                      <Label className="text-xs text-slate-500">Total Alquileres</Label>
-                      <p className="text-base font-semibold text-slate-900">{customerHistory?.total_rentals || 0}</p>
+                      {selectedCustomer.phone && (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-100"
+                            onClick={() => callPhone(selectedCustomer.phone)}
+                          >
+                            <Phone className="h-3 w-3" />
+                            Llamar
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="gap-1 bg-green-600 hover:bg-green-700 text-white"
+                            onClick={() => sendWhatsAppMessage(selectedCustomer.phone, selectedCustomer.name)}
+                            data-testid="whatsapp-btn"
+                          >
+                            <MessageCircle className="h-3 w-3" />
+                            WhatsApp
+                          </Button>
+                        </div>
+                      )}
                     </div>
+
+                    {/* Email (if exists) */}
+                    {selectedCustomer.email && (
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200">
+                        <div className="flex items-center gap-3">
+                          <Mail className="h-5 w-5 text-blue-600" />
+                          <div>
+                            <p className="text-xs text-blue-600 font-medium">Email</p>
+                            <p className="font-semibold text-slate-900">{selectedCustomer.email}</p>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-100"
+                          onClick={() => sendEmail(selectedCustomer.email, selectedCustomer.name)}
+                        >
+                          <Mail className="h-3 w-3" />
+                          Enviar Email
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Address/Hotel */}
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-purple-50 border border-purple-200">
+                      <div className="flex items-center gap-3">
+                        <MapPin className="h-5 w-5 text-purple-600" />
+                        <div>
+                          <p className="text-xs text-purple-600 font-medium">Población / Dirección</p>
+                          <p className="font-semibold text-slate-900">
+                            {selectedCustomer.city || selectedCustomer.address || 'No registrado'}
+                            {selectedCustomer.city && selectedCustomer.address && ` - ${selectedCustomer.address}`}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Provider Info */}
+                  {selectedCustomer.source && (
+                    <div className="mt-4 pt-4 border-t border-slate-200">
+                      <Label className="text-xs text-slate-500">Colaborador/Proveedor</Label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          {selectedCustomer.source}
+                        </Badge>
+                        {getProviderDiscount(selectedCustomer.source) > 0 && (
+                          <Badge className="bg-emerald-100 text-emerald-700">
+                            Descuento: {getProviderDiscount(selectedCustomer.source)}%
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Total Rentals */}
+                  <div className="mt-4 pt-4 border-t border-slate-200">
+                    <Label className="text-xs text-slate-500">Total Alquileres</Label>
+                    <p className="text-base font-semibold text-slate-900">{customerHistory?.total_rentals || 0}</p>
                   </div>
 
                   {/* Observaciones */}
