@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the automatic pricing system and non-intrusive pack detection in New Rental: silent pack detection without toasts, discrete 'Tarifa: Pack' indicator with badge, compact pack suggestions (1 line format), automatic pack completion without interruptions, price calculations and visual elements validation"
+user_problem_statement: "🎯 TESTING MÓDULO DE GESTIÓN DE CAJA - DESGLOSE DETALLADO POR MÉTODO DE PAGO: Validate that the Cash Management module correctly shows detailed breakdown by payment method (cash and card) both in the closing dialog and in the printed cash count ticket. Test backend endpoints /api/cash/summary, /api/cash/close, /api/cash/closings with by_payment_method structure containing cash: {income, expense, refund}, card: {income, expense, refund}, total_income, total_expense, total_refunds, movements_count."
 
 backend:
   - task: "Inventory Internal Code Flow"
