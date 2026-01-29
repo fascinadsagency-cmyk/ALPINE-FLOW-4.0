@@ -241,6 +241,87 @@ export default function Dashboard() {
         </Card>
       </div>
 
+      {/* ============ CONTROL DE DEVOLUCIONES - TORRE DE CONTROL ============ */}
+      {returnsControl && returnsControl.total_pending > 0 && (
+        <Card className="border-2 border-amber-300 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 shadow-lg" data-testid="returns-control-panel">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-amber-500 flex items-center justify-center">
+                  <RotateCcw className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <span className="text-amber-900">Control de Devoluciones</span>
+                  <p className="text-xs font-normal text-amber-700 mt-0.5">Material pendiente por recoger HOY</p>
+                </div>
+              </CardTitle>
+              <div className="flex items-center gap-3">
+                {returnsControl.is_past_closing && returnsControl.total_pending > 0 && (
+                  <Badge className="bg-red-500 text-white animate-pulse px-3 py-1">
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    ¡RETRASO!
+                  </Badge>
+                )}
+                <div className={`text-3xl font-bold ${returnsControl.is_past_closing ? 'text-red-600' : 'text-amber-700'}`}>
+                  {returnsControl.total_pending}
+                  <span className="text-sm font-normal ml-1">artículos</span>
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+              {returnsControl.pending_by_category.map((cat) => (
+                <button
+                  key={cat.item_type}
+                  onClick={() => navigate(`/returns?filter=${cat.item_type}`)}
+                  className={`group p-4 rounded-xl border-2 transition-all hover:shadow-md hover:scale-[1.02] ${
+                    returnsControl.is_past_closing 
+                      ? 'border-red-300 bg-red-50 hover:border-red-400 hover:bg-red-100' 
+                      : 'border-amber-200 bg-white hover:border-amber-400 hover:bg-amber-50'
+                  }`}
+                  data-testid={`return-control-${cat.item_type}`}
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <div className={`text-4xl font-bold mb-2 ${
+                      returnsControl.is_past_closing ? 'text-red-600' : 'text-amber-700'
+                    }`}>
+                      {cat.count}
+                    </div>
+                    <p className="text-sm font-semibold text-slate-700 group-hover:text-slate-900">
+                      {cat.label}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">por devolver</p>
+                  </div>
+                  <div className="mt-3 flex items-center justify-center gap-1 text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                    Ver lista
+                    <ChevronRight className="h-3 w-3" />
+                  </div>
+                </button>
+              ))}
+            </div>
+            
+            {returnsControl.is_past_closing && (
+              <div className="mt-4 p-3 rounded-lg bg-red-100 border border-red-300 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-red-600" />
+                  <span className="text-sm font-medium text-red-800">
+                    Son las {returnsControl.current_hour}:00h y hay material sin devolver
+                  </span>
+                </div>
+                <Button 
+                  size="sm" 
+                  className="bg-red-600 hover:bg-red-700"
+                  onClick={() => navigate("/returns")}
+                >
+                  Gestionar ahora
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* ============ WEEKLY AVAILABILITY CALENDAR ============ */}
       <Card className="border-slate-200">
         <CardHeader className="pb-3">
