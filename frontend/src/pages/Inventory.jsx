@@ -406,51 +406,113 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
       {/* Filters */}
       <Card className="border-slate-200 mb-6">
         <CardContent className="pt-6">
-          <div className="flex flex-wrap gap-4">
-            <form onSubmit={handleSearch} className="flex gap-2 flex-1 min-w-[200px]">
-              <Input
-                placeholder="Buscar por código, marca o modelo..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="h-11"
-                data-testid="inventory-search"
-              />
-              <Button type="submit" className="h-11">
-                <Search className="h-4 w-4" />
+          <div className="flex flex-col gap-4">
+            {/* Profitability Toggle */}
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <Button
+                variant={showProfitability ? "default" : "outline"}
+                onClick={() => setShowProfitability(!showProfitability)}
+                className={`gap-2 ${showProfitability ? "bg-emerald-600 hover:bg-emerald-700" : ""}`}
+                data-testid="toggle-profitability"
+              >
+                <BarChart3 className="h-4 w-4" />
+                {showProfitability ? "Modo Rentabilidad Activo" : "Ver Rentabilidad"}
               </Button>
-            </form>
-            <div className="flex gap-2">
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-40 h-11" data-testid="filter-status">
-                  <SelectValue placeholder="Estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  {STATUS_OPTIONS.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="w-40 h-11" data-testid="filter-type">
-                  <SelectValue placeholder="Tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {itemTypes.map(type => (
-                    <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="w-40 h-11" data-testid="filter-category">
-                  <SelectValue placeholder="Categoría" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORY_OPTIONS.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              
+              {showProfitability && (
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-52 h-10">
+                    <ArrowUpDown className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Ordenar por..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Sin ordenar</SelectItem>
+                    <SelectItem value="profit">Mayor Beneficio</SelectItem>
+                    <SelectItem value="profit_asc">Menor Beneficio</SelectItem>
+                    <SelectItem value="revenue">Más Ingresos</SelectItem>
+                    <SelectItem value="amortization">Mayor Amortización</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
+            {/* Profitability Summary */}
+            {showProfitability && profitabilitySummary && (
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="text-center">
+                  <p className="text-xs text-slate-500">Artículos</p>
+                  <p className="text-xl font-bold text-slate-900">{profitabilitySummary.total_items}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-slate-500">Coste Total</p>
+                  <p className="text-xl font-bold text-slate-900">€{profitabilitySummary.total_cost.toLocaleString()}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-slate-500">Ingresos Totales</p>
+                  <p className="text-xl font-bold text-emerald-600">€{profitabilitySummary.total_revenue.toLocaleString()}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-slate-500">Beneficio Neto</p>
+                  <p className={`text-xl font-bold ${profitabilitySummary.total_profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                    €{profitabilitySummary.total_profit.toLocaleString()}
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-slate-500">Amortizados</p>
+                  <p className="text-xl font-bold text-blue-600">
+                    {profitabilitySummary.amortized_count} ({profitabilitySummary.amortized_percent}%)
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Standard Filters */}
+            <div className="flex flex-wrap gap-4">
+              <form onSubmit={handleSearch} className="flex gap-2 flex-1 min-w-[200px]">
+                <Input
+                  placeholder="Buscar por código, marca o modelo..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="h-11"
+                  data-testid="inventory-search"
+                />
+                <Button type="submit" className="h-11">
+                  <Search className="h-4 w-4" />
+                </Button>
+              </form>
+              <div className="flex gap-2">
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="w-40 h-11" data-testid="filter-status">
+                    <SelectValue placeholder="Estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STATUS_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={filterType} onValueChange={setFilterType}>
+                  <SelectTrigger className="w-40 h-11" data-testid="filter-type">
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    {itemTypes.map(type => (
+                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={filterCategory} onValueChange={setFilterCategory}>
+                  <SelectTrigger className="w-40 h-11" data-testid="filter-category">
+                    <SelectValue placeholder="Categoría" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORY_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </CardContent>
