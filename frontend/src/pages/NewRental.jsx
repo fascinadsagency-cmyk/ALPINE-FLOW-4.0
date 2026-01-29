@@ -1025,6 +1025,40 @@ export default function NewRental() {
     return provider?.discount_percent || 0;
   };
 
+  // Actualizar precio personalizado de un item individual
+  const updateItemPrice = (itemId, newPrice) => {
+    const price = parseFloat(newPrice);
+    setItems(items.map(item => {
+      if ((item.id || item.barcode) === itemId) {
+        return { ...item, customPrice: isNaN(price) ? null : price };
+      }
+      return item;
+    }));
+  };
+
+  // Actualizar precio de un pack completo (se guarda en el primer item del pack)
+  const updatePackPrice = (packItems, newPrice) => {
+    const price = parseFloat(newPrice);
+    const packItemIds = new Set(packItems.map(i => i.id || i.barcode));
+    
+    // Guardamos el precio del pack en el primer item como customPackPrice
+    setItems(items.map((item, idx) => {
+      const itemId = item.id || item.barcode;
+      if (packItemIds.has(itemId)) {
+        // Solo el primer item del pack guarda el precio personalizado
+        const isFirstPackItem = items.findIndex(i => packItemIds.has(i.id || i.barcode)) === idx;
+        if (isFirstPackItem) {
+          return { ...item, customPackPrice: isNaN(price) ? null : price };
+        }
+      }
+      return item;
+    }));
+  };
+
+  // Estado para edición de precios
+  const [editingItemPrice, setEditingItemPrice] = useState(null);
+  const [editingPackPrice, setEditingPackPrice] = useState(null);
+
   const calculateTotal = () => {
     const subtotal = calculateSubtotal();
     let total = subtotal;
