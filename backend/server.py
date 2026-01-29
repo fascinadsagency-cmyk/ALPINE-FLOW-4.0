@@ -3690,8 +3690,10 @@ async def audit_and_sync_cash_movements(current_user: dict = Depends(get_current
         if rental["id"] not in existing_refs:
             # Missing movement! Create it
             cash_movement_id = str(uuid.uuid4())
+            operation_number = await get_next_operation_number()
             cash_doc = {
                 "id": cash_movement_id,
+                "operation_number": operation_number,
                 "session_id": session_id,
                 "movement_type": "income",
                 "amount": rental["paid_amount"],
@@ -3707,6 +3709,7 @@ async def audit_and_sync_cash_movements(current_user: dict = Depends(get_current
             await db.cash_movements.insert_one(cash_doc)
             created_movements.append({
                 "type": "rental",
+                "operation_number": operation_number,
                 "rental_id": rental["id"][:8],
                 "amount": rental["paid_amount"],
                 "payment_method": rental.get("payment_method", "cash")
