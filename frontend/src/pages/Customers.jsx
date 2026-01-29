@@ -22,6 +22,8 @@ export default function Customers() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProvider, setSelectedProvider] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all"); // all, active, inactive
+  const [statusCounts, setStatusCounts] = useState({ total: 0, active: 0, inactive: 0 });
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerHistory, setCustomerHistory] = useState(null);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -41,7 +43,7 @@ export default function Customers() {
   });
 
   useEffect(() => {
-    loadCustomers();
+    loadCustomersWithStatus();
     loadProviders();
   }, []);
 
@@ -53,6 +55,30 @@ export default function Customers() {
       setProviders(response.data);
     } catch (error) {
       console.error("Error loading providers:", error);
+    }
+  };
+
+  const loadCustomersWithStatus = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API}/customers/with-status`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      setAllCustomers(response.data.customers);
+      setCustomers(response.data.customers);
+      setStatusCounts(response.data.counts);
+    } catch (error) {
+      toast.error("Error al cargar clientes");
+      // Fallback to old method
+      try {
+        const fallbackResponse = await customerApi.getAll("");
+        setCustomers(fallbackResponse.data);
+        setAllCustomers(fallbackResponse.data);
+      } catch (e) {
+        console.error("Fallback also failed:", e);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
