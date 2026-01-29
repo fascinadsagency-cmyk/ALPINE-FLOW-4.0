@@ -1815,31 +1815,24 @@ export default function NewRental() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {/* GROUPED CART ITEMS - Packs shown as unified blocks */}
+                    {/* GROUPED CART ITEMS - Solo PADRES (packs) e items sueltos */}
+                    {/* Los HIJOS ya fueron filtrados en getGroupedCartItems() */}
                     {getGroupedCartItems().map((group, groupIndex) => {
                       if (group.type === 'pack') {
-                        // PACK: Single unified line with embedded reference codes
-                        const packTotal = group.price;  // Already total for selected days
-                        
-                        // Build reference string in EXACT format: "[SKI-001 / BOT-002]"
-                        const refCodes = group.items.map(i => 
-                          i.internal_code || i.barcode?.substring(0, 10) || 'N/A'
-                        ).join(' / ');
-                        
-                        // FUSED NAME: "Pack Gama Media [SKI-001 / BOT-002]"
-                        const fusedPackName = `${group.pack.name} [${refCodes}]`;
+                        // PACK (PADRE): Una sola línea con códigos de hijos incrustados
+                        const packTotal = group.price;  // Precio TOTAL (no multiplicar por días)
                         
                         return (
                           <div 
                             key={group.packId}
                             className="grid grid-cols-12 gap-2 items-center p-4 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-400 animate-fade-in"
                           >
-                            {/* Pack Name with Fused Codes */}
+                            {/* Nombre FUSIONADO: "Pack Gama Media (SKI-001 / BOT-204)" */}
                             <div className="col-span-5">
                               <div className="flex items-center gap-2">
                                 <Package className="h-5 w-5 text-amber-600 flex-shrink-0" />
                                 <span className="font-bold text-amber-800 text-sm leading-tight">
-                                  {fusedPackName}
+                                  {group.fusedName}
                                 </span>
                               </div>
                             </div>
