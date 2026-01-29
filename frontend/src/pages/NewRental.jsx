@@ -1002,18 +1002,19 @@ export default function NewRental() {
     return unitPrice * qty * days;
   };
 
-  // Calculate subtotal using grouped items
+  // Calculate subtotal using grouped items - TARIFAS ESCALONADAS (sin multiplicación)
   const calculateSubtotal = () => {
     const groups = getGroupedCartItems();
     return groups.reduce((sum, group) => {
       if (group.type === 'pack') {
-        // PACK: price is already the TOTAL for the selected days (not per day)
+        // PACK: price es el TOTAL escalonado para los días seleccionados
         return sum + group.price;
       } else {
         const item = group.item;
         const qty = item.quantity || 1;
-        // SINGLE ITEM: price is per day, multiply by days
-        return sum + (group.price * qty * group.days);
+        // SINGLE ITEM: price ya es el TOTAL escalonado (look-up), solo multiplicar por cantidad
+        // NO multiplicar por días - el precio ya incluye los días
+        return sum + (group.price * qty);
       }
     }, 0);
   };
