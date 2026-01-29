@@ -94,6 +94,13 @@ export default function Returns() {
       barcodeRef.current.focus();
     }
     loadPendingReturns();
+    loadItemTypes();
+    
+    // Check URL filter
+    const filterParam = searchParams.get('filter');
+    if (filterParam) {
+      setTypeFilter(filterParam);
+    }
     
     // Auto-refresh every 30 seconds
     const interval = setInterval(() => {
@@ -103,6 +110,17 @@ export default function Returns() {
     return () => clearInterval(interval);
   }, []);
 
+  const loadItemTypes = async () => {
+    try {
+      const response = await axios.get(`${API}/item-types`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      setItemTypes(response.data || []);
+    } catch (error) {
+      console.error("Error loading item types:", error);
+    }
+  };
+
   const loadPendingReturns = async () => {
     try {
       const response = await axios.get(`${API}/rentals/pending/returns`);
@@ -111,6 +129,28 @@ export default function Returns() {
       console.error("Error loading pending returns:", error);
     }
   };
+
+  const clearFilter = () => {
+    setTypeFilter("");
+    setSearchParams({});
+  };
+
+  const getTypeLabel = (typeValue) => {
+    const found = itemTypes.find(t => t.value === typeValue);
+    return found ? found.label : typeValue;
+  };
+
+  // Filter rentals by item type
+  const filterRentalsByType = (rentals) => {
+    if (!typeFilter) return rentals;
+    
+    return rentals.filter(rental => 
+      rental.items?.some(item => item.item_type === typeFilter)
+    );
+  };
+
+  const filteredToday = filterRentalsByType(pendingReturns.today || []);
+  const filteredOtherDays = filterRentalsByType(pendingReturns.other_days || []);
 
   const handleBarcodeScan = async (e) => {
     if (e.key !== 'Enter' || !barcodeInput.trim()) return;
