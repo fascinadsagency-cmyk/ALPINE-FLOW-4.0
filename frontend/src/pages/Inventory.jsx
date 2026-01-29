@@ -962,62 +962,56 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                       <TableHead className="text-right w-24">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
                 <TableBody>
                   {items.map((item) => {
                     const usesRemaining = (item.maintenance_interval || 30) - (item.days_used || 0);
                     const needsMaintenance = usesRemaining <= 0;
-                    const isAmortized = (item.amortization_percent || 0) >= 100;
-                    const acquisitionCost = item.acquisition_cost || item.purchase_price || 0;
+                    
+                    // Cell render function
+                    const renderCell = (colId) => {
+                      switch(colId) {
+                        case 'internal_code':
+                          return <span className="font-mono text-sm font-bold text-primary">{item.internal_code || '-'}</span>;
+                        case 'barcode':
+                          return <span className="font-mono text-xs text-slate-500">{item.barcode || '-'}</span>;
+                        case 'serial_number':
+                          return <span className="font-mono text-xs text-slate-500">{item.serial_number || '-'}</span>;
+                        case 'item_type':
+                          return <Badge variant="outline">{itemTypes.find(t => t.value === item.item_type)?.label || item.item_type}</Badge>;
+                        case 'brand_model':
+                          return <span className="font-medium">{item.brand} {item.model}</span>;
+                        case 'size':
+                          return item.size;
+                        case 'binding':
+                          return <span className="text-sm text-slate-600">{item.binding || '-'}</span>;
+                        case 'category':
+                          return <Badge className={getCategoryBadge(item.category)}>{item.category}</Badge>;
+                        case 'status':
+                          return getStatusBadge(item.status);
+                        case 'location':
+                          return <span className="text-sm">{item.location || '-'}</span>;
+                        case 'days_used':
+                          return <span className="text-center">{item.days_used || 0}</span>;
+                        case 'maintenance':
+                          return needsMaintenance ? (
+                            <Badge variant="destructive" className="animate-pulse"><AlertCircle className="h-3 w-3 mr-1" />¡MANT!</Badge>
+                          ) : (
+                            <Badge variant="outline" className="bg-emerald-50 text-emerald-700">{usesRemaining} usos</Badge>
+                          );
+                        case 'purchase_price':
+                          return <span className="font-mono">€{(item.purchase_price || 0).toFixed(0)}</span>;
+                        case 'purchase_date':
+                          return <span className="text-xs">{item.purchase_date || '-'}</span>;
+                        default:
+                          return '-';
+                      }
+                    };
                     
                     return (
-                      <TableRow key={item.id} className={`hover:bg-slate-50 ${showProfitability && isAmortized ? 'bg-emerald-50/30' : ''}`}>
-                        <TableCell className="font-mono text-sm font-bold text-primary">
-                          {item.internal_code || '-'}
-                        </TableCell>
-                        <TableCell className="font-mono text-xs text-slate-500">
-                          {item.barcode || '-'}
-                        </TableCell>
-                        <TableCell className="font-mono text-xs text-slate-500">
-                          {item.serial_number || '-'}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {itemTypes.find(t => t.value === item.item_type)?.label || item.item_type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {item.brand} {item.model}
-                        </TableCell>
-                        <TableCell>{item.size}</TableCell>
-                        <TableCell className="text-sm text-slate-600">
-                          {item.binding || '-'}
-                        </TableCell>
-                        <TableCell>{getStatusBadge(item.status)}</TableCell>
-                        
-                        {showProfitability && (
-                          <>
-                            <TableCell className="text-right font-mono">
-                              €{acquisitionCost.toFixed(0)}
-                            </TableCell>
-                            <TableCell className="text-right font-mono text-emerald-600 font-semibold">
-                              €{(item.total_revenue || 0).toFixed(0)}
-                            </TableCell>
-                            <TableCell>
-                              {isAmortized ? (
-                                <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 whitespace-nowrap">
-                                  <TrendingUp className="h-3 w-3 mr-1" />
-                                  AMORTIZADO
-                                </Badge>
-                              ) : (
-                                <div className="space-y-1">
-                                  <Progress 
-                                    value={Math.min(item.amortization_percent || 0, 100)} 
-                                    className={`h-2 ${(item.amortization_percent || 0) < 50 ? '[&>div]:bg-red-500' : (item.amortization_percent || 0) < 80 ? '[&>div]:bg-amber-500' : '[&>div]:bg-emerald-500'}`}
-                                  />
-                                  <p className="text-xs text-slate-500 text-center">{(item.amortization_percent || 0).toFixed(0)}%</p>
+                      <TableRow key={item.id} className="hover:bg-slate-50">
+                        {orderedVisibleColumns.map((col) => (
+                          <TableCell key={col.id}>{renderCell(col.id)}</TableCell>
+                        ))}
                                 </div>
                               )}
                             </TableCell>
