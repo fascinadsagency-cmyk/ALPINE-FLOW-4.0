@@ -1199,21 +1199,6 @@ async def reassign_item_types(
     
     return {"updated_count": result.modified_count, "message": f"{result.modified_count} artículos reasignados"}
 
-    item = await db.items.find_one({"id": item_id})
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-    
-    # Check if item is currently rented
-    if item["status"] == "rented":
-        raise HTTPException(status_code=400, detail="Cannot delete: item is currently rented")
-    
-    # Move to retired status instead of deleting for traceability
-    await db.items.update_one(
-        {"id": item_id},
-        {"$set": {"status": "retired", "retired_at": datetime.now(timezone.utc).isoformat()}}
-    )
-    return {"message": "Item retired successfully"}
-
 @api_router.put("/items/{item_id}/status")
 async def update_item_status(item_id: str, status: str = Query(...), current_user: dict = Depends(get_current_user)):
     result = await db.items.update_one({"id": item_id}, {"$set": {"status": status}})
