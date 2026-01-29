@@ -1105,10 +1105,12 @@ async def import_items_csv(file: UploadFile = File(...), current_user: dict = De
 class ItemImportItem(BaseModel):
     internal_code: str
     barcode: Optional[str] = ""
+    serial_number: Optional[str] = ""
     item_type: str
     brand: str
     model: Optional[str] = ""
     size: str
+    binding: Optional[str] = ""
     category: Optional[str] = "MEDIA"
     purchase_price: Optional[float] = 0
     purchase_date: Optional[str] = ""
