@@ -1222,6 +1222,267 @@ export default function Customers() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Import Customers Dialog */}
+      <Dialog open={showImportDialog} onOpenChange={closeImportDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileSpreadsheet className="h-6 w-6 text-primary" />
+              Importar Clientes
+            </DialogTitle>
+            <DialogDescription>
+              Importa clientes desde un archivo CSV o Excel
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Step Indicator */}
+          <div className="flex items-center justify-center gap-2 py-4">
+            {[1, 2, 3, 4].map((step) => (
+              <div key={step} className="flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
+                  importStep >= step 
+                    ? 'bg-primary text-white' 
+                    : 'bg-slate-200 text-slate-500'
+                }`}>
+                  {importStep > step ? <CheckCircle className="h-5 w-5" /> : step}
+                </div>
+                {step < 4 && (
+                  <div className={`w-12 h-1 mx-1 ${
+                    importStep > step ? 'bg-primary' : 'bg-slate-200'
+                  }`} />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Step 1: File Upload */}
+          {importStep === 1 && (
+            <div className="py-6">
+              <div 
+                className="border-2 border-dashed border-slate-300 rounded-xl p-12 text-center hover:border-primary hover:bg-slate-50 transition-colors cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv,.xls,.xlsx"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  data-testid="import-file-input"
+                />
+                <Upload className="h-12 w-12 mx-auto text-slate-400 mb-4" />
+                <p className="text-lg font-semibold text-slate-700">
+                  Arrastra o haz clic para seleccionar
+                </p>
+                <p className="text-sm text-slate-500 mt-2">
+                  Formatos aceptados: CSV, XLS, XLSX
+                </p>
+                {importLoading && (
+                  <div className="mt-4">
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
+                    <p className="text-sm text-slate-500 mt-2">Procesando archivo...</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-800 font-medium mb-2">💡 Consejos para la importación:</p>
+                <ul className="text-sm text-blue-700 space-y-1">
+                  <li>• La primera fila debe contener los nombres de las columnas</li>
+                  <li>• Campos obligatorios: DNI, Nombre y Teléfono</li>
+                  <li>• Los duplicados por DNI serán detectados automáticamente</li>
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Column Mapping */}
+          {importStep === 2 && (
+            <div className="py-4 space-y-4">
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-sm text-amber-800">
+                  <strong>📄 Archivo:</strong> {importFile?.name} ({importData.length} registros)
+                </p>
+              </div>
+
+              <p className="text-sm text-slate-600">
+                Asocia las columnas de tu archivo con los campos del sistema:
+              </p>
+
+              <div className="space-y-3">
+                {systemFields.map(field => (
+                  <div key={field.value} className="flex items-center gap-4 p-3 rounded-lg bg-slate-50">
+                    <div className="w-40 flex items-center gap-2">
+                      <span className={`font-medium ${field.required ? 'text-slate-900' : 'text-slate-600'}`}>
+                        {field.label}
+                      </span>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-slate-400" />
+                    <Select
+                      value={columnMapping[field.value]?.toString() ?? "-1"}
+                      onValueChange={(v) => setColumnMapping({
+                        ...columnMapping,
+                        [field.value]: v === "-1" ? -1 : parseInt(v)
+                      })}
+                    >
+                      <SelectTrigger className="flex-1 h-11" data-testid={`mapping-${field.value}`}>
+                        <SelectValue placeholder="Seleccionar columna..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="-1">-- No importar --</SelectItem>
+                        {fileColumns.map(col => (
+                          <SelectItem key={col.index} value={col.index.toString()}>
+                            {col.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </div>
+
+              <DialogFooter className="pt-4">
+                <Button variant="outline" onClick={resetImport}>
+                  Volver
+                </Button>
+                <Button onClick={goToPreview} data-testid="go-to-preview-btn">
+                  Previsualizar
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+
+          {/* Step 3: Preview */}
+          {importStep === 3 && (
+            <div className="py-4 space-y-4">
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <p className="text-sm text-emerald-800">
+                  <strong>✅ Vista previa:</strong> Mostrando las primeras 5 filas de {importData.length} registros
+                </p>
+              </div>
+
+              <div className="overflow-x-auto border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-100">
+                      {systemFields.filter(f => columnMapping[f.value] !== undefined && columnMapping[f.value] !== -1).map(field => (
+                        <TableHead key={field.value} className="font-semibold">
+                          {field.label}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {getMappedPreview().map((row, idx) => (
+                      <TableRow key={idx}>
+                        {systemFields.filter(f => columnMapping[f.value] !== undefined && columnMapping[f.value] !== -1).map(field => (
+                          <TableCell key={field.value} className="text-sm">
+                            {row[field.value] || <span className="text-slate-400">-</span>}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>📊 Resumen:</strong> Se importarán {importData.length} clientes. 
+                  Los duplicados por DNI serán omitidos automáticamente.
+                </p>
+              </div>
+
+              <DialogFooter className="pt-4">
+                <Button variant="outline" onClick={() => setImportStep(2)}>
+                  Volver al Mapeo
+                </Button>
+                <Button 
+                  onClick={executeImport} 
+                  disabled={importLoading}
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                  data-testid="execute-import-btn"
+                >
+                  {importLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Importando...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Importar {importData.length} Clientes
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+
+          {/* Step 4: Results */}
+          {importStep === 4 && importResult && (
+            <div className="py-6 space-y-6">
+              <div className="text-center">
+                {importResult.imported > 0 ? (
+                  <CheckCircle className="h-16 w-16 mx-auto text-emerald-500 mb-4" />
+                ) : (
+                  <XCircle className="h-16 w-16 mx-auto text-orange-500 mb-4" />
+                )}
+                <h3 className="text-2xl font-bold text-slate-900">
+                  Importación Completada
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <Card className="border-emerald-200 bg-emerald-50">
+                  <CardContent className="pt-6 text-center">
+                    <p className="text-3xl font-bold text-emerald-600">{importResult.imported}</p>
+                    <p className="text-sm text-emerald-700 mt-1">Importados</p>
+                  </CardContent>
+                </Card>
+                <Card className="border-amber-200 bg-amber-50">
+                  <CardContent className="pt-6 text-center">
+                    <p className="text-3xl font-bold text-amber-600">{importResult.duplicates}</p>
+                    <p className="text-sm text-amber-700 mt-1">Duplicados (omitidos)</p>
+                  </CardContent>
+                </Card>
+                <Card className="border-red-200 bg-red-50">
+                  <CardContent className="pt-6 text-center">
+                    <p className="text-3xl font-bold text-red-600">{importResult.errors}</p>
+                    <p className="text-sm text-red-700 mt-1">Errores</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {importResult.duplicate_dnis && importResult.duplicate_dnis.length > 0 && (
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm font-medium text-amber-800 mb-2">DNIs duplicados omitidos:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {importResult.duplicate_dnis.slice(0, 10).map((dni, idx) => (
+                      <Badge key={idx} variant="outline" className="bg-white">
+                        {dni}
+                      </Badge>
+                    ))}
+                    {importResult.duplicate_dnis.length > 10 && (
+                      <Badge variant="secondary">
+                        +{importResult.duplicate_dnis.length - 10} más
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <DialogFooter>
+                <Button onClick={closeImportDialog} className="w-full" data-testid="close-import-btn">
+                  Cerrar
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
