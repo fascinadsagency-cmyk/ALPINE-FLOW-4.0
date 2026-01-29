@@ -963,14 +963,16 @@ export default function NewRental() {
     return groups;
   };
 
-  // Get price from tariff for an item (without pack division)
+  // Get TOTAL price from tariff for an item (LOOK-UP escalonado, NO multiplicación)
   const getItemPriceFromTariff = (item) => {
+    // Si tiene precio personalizado, usarlo
     if (item.customPrice !== null && item.customPrice !== undefined) return item.customPrice;
-    if (item.rental_price) return item.rental_price;
     
+    // Buscar tarifa del tipo de artículo
     const tariff = tariffs.find(t => t.item_type === item.item_type);
-    if (!tariff) return 0;
+    if (!tariff) return item.rental_price || 0;
     
+    // LOOK-UP: Buscar el precio TOTAL para X días (NO es precio/día)
     const days = item.itemDays || numDays;
     const dayField = days <= 10 ? `day_${days}` : 'day_11_plus';
     return tariff[dayField] || tariff.day_1 || 0;
