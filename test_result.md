@@ -243,6 +243,21 @@ backend:
           agent: "testing"
           comment: "✅ COMPREHENSIVE TEST PASSED: Complete Flow - Customer with Provider→Create Rental with Discount→Modify Days→Partial Return→Verify Status. Full integration working correctly"
 
+  - task: "Cash Management System - Detailed Payment Method Breakdown"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test cash management system with detailed breakdown by payment method: GET /api/cash/summary structure with by_payment_method {cash: {income, expense, refund}, card: {income, expense, refund}}, POST /api/cash/close functionality, GET /api/cash/closings history, and compatibility with old closings"
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE CASH MANAGEMENT SYSTEM TEST COMPLETED (7/7): Authentication ✅, Create Test Movements (2 cash income €150, 1 card income €75, 1 cash expense €20, 1 card refund €15) ✅, Cash Summary Structure ✅ (by_payment_method with cash/card methods, each containing income/expense/refund keys, movements_count: 25), Cash Summary Calculations ✅ (Cash: €745.45 income, €40.0 expense | Card: €150.0 income, €30.0 refund), Cash Closing ✅ (successfully closed with detailed breakdown, discrepancy calculations working), Cash Closings History ✅ (found closings with detailed breakdown: Cash(income=595.45, expense=20.0), Card(income=75.0, refund=15.0)), Old Closings Compatibility ✅ (system handles both old format without by_payment_method and new format with detailed breakdown). ALL CASH MANAGEMENT ENDPOINTS WORKING CORRECTLY WITH DETAILED PAYMENT METHOD BREAKDOWN AS SPECIFIED IN REQUIREMENTS."
+
 frontend:
   - task: "Automatic Pack Pricing System - Silent Detection"
     implemented: true
