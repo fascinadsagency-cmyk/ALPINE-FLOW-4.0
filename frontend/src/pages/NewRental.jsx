@@ -23,6 +23,7 @@ import {
   Edit2,
   X,
   AlertTriangle,
+  AlertCircle,
   Sparkles,
   CheckCircle,
   Printer
