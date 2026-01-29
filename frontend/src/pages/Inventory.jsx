@@ -241,6 +241,200 @@ export default function Inventory() {
     }
   };
 
+  // ============== UNIVERSAL IMPORT FUNCTIONS ==============
+  const handleImportFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validExtensions = ['.csv', '.xls', '.xlsx'];
+    const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    
+    if (!validExtensions.includes(fileExt)) {
+      toast.error("Formato no válido. Usa CSV, XLS o XLSX");
+      return;
+    }
+
+    setImportFile(file);
+    parseImportFile(file);
+  };
+
+  const parseImportFile = async (file) => {
+    setImportLoading(true);
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+
+      if (jsonData.length < 2) {
+        toast.error("El archivo debe tener al menos una fila de cabecera y una de datos");
+        setImportLoading(false);
+        return;
+      }
+
+      const headers = jsonData[0].map((h, idx) => ({
+        index: idx,
+        name: String(h).trim() || `Columna ${idx + 1}`
+      }));
+
+      const rows = jsonData.slice(1).filter(row => row.some(cell => cell !== ''));
+
+      setFileColumns(headers);
+      setImportData(rows);
+      
+      // Auto-map columns
+      const autoMapping = {};
+      headers.forEach(header => {
+        const headerLower = header.name.toLowerCase();
+        inventoryFields.forEach(field => {
+          const fieldLower = field.label.toLowerCase().replace(' *', '');
+          if (
+            headerLower === field.value ||
+            headerLower.includes(field.value.replace('_', ' ')) ||
+            headerLower.includes(field.value.replace('_', '')) ||
+            (field.value === 'internal_code' && (headerLower.includes('interno') || headerLower.includes('código') || headerLower.includes('codigo') || headerLower.includes('ref'))) ||
+            (field.value === 'barcode' && (headerLower.includes('barras') || headerLower.includes('ean') || headerLower.includes('upc'))) ||
+            (field.value === 'item_type' && (headerLower.includes('tipo') || headerLower.includes('categoría') || headerLower.includes('categoria'))) ||
+            (field.value === 'brand' && (headerLower.includes('marca') || headerLower.includes('fabricante'))) ||
+            (field.value === 'model' && (headerLower.includes('modelo') || headerLower.includes('referencia'))) ||
+            (field.value === 'size' && (headerLower.includes('talla') || headerLower.includes('tamaño') || headerLower.includes('medida'))) ||
+            (field.value === 'category' && (headerLower.includes('gama') || headerLower.includes('nivel') || headerLower.includes('calidad'))) ||
+            (field.value === 'purchase_price' && (headerLower.includes('precio') || headerLower.includes('coste') || headerLower.includes('costo') || headerLower.includes('pvp'))) ||
+            (field.value === 'purchase_date' && (headerLower.includes('fecha') || headerLower.includes('compra'))) ||
+            (field.value === 'location' && (headerLower.includes('ubicación') || headerLower.includes('ubicacion') || headerLower.includes('almacén') || headerLower.includes('almacen')))
+          ) {
+            if (!autoMapping[field.value]) {
+              autoMapping[field.value] = header.index;
+            }
+          }
+        });
+      });
+
+      setColumnMapping(autoMapping);
+      setImportStep(2);
+    } catch (error) {
+      console.error("Error parsing file:", error);
+      toast.error("Error al leer el archivo");
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  const getMappedInventoryPreview = () => {
+    return importData.slice(0, 5).map(row => {
+      const mapped = {};
+      Object.entries(columnMapping).forEach(([field, colIndex]) => {
+        if (colIndex !== undefined && colIndex !== null && colIndex !== -1) {
+          mapped[field] = row[colIndex] || '';
+        }
+      });
+      return mapped;
+    });
+  };
+
+  const validateInventoryMapping = () => {
+    const requiredFields = inventoryFields.filter(f => f.required).map(f => f.value);
+    const missingFields = requiredFields.filter(field => 
+      columnMapping[field] === undefined || columnMapping[field] === null || columnMapping[field] === -1
+    );
+
+    if (missingFields.length > 0) {
+      const missingLabels = missingFields.map(f => 
+        inventoryFields.find(sf => sf.value === f)?.label
+      ).join(', ');
+      toast.error(`Campos obligatorios sin mapear: ${missingLabels}`);
+      return false;
+    }
+    return true;
+  };
+
+  const goToInventoryPreview = () => {
+    if (validateInventoryMapping()) {
+      setImportStep(3);
+    }
+  };
+
+  const executeInventoryImport = async () => {
+    setImportLoading(true);
+    try {
+      const itemsToImport = importData.map(row => {
+        const item = {};
+        Object.entries(columnMapping).forEach(([field, colIndex]) => {
+          if (colIndex !== undefined && colIndex !== null && colIndex !== -1) {
+            let value = row[colIndex] || '';
+            if (field === 'internal_code') {
+              value = String(value).toUpperCase().trim();
+            }
+            if (field === 'category') {
+              value = String(value).toUpperCase().trim();
+              if (!['SUPERIOR', 'ALTA', 'MEDIA'].includes(value)) {
+                value = 'MEDIA';
+              }
+            }
+            if (field === 'purchase_price') {
+              value = parseFloat(String(value).replace(',', '.')) || 0;
+            }
+            item[field] = value;
+          }
+        });
+        return item;
+      }).filter(i => i.internal_code && i.item_type && i.brand && i.size);
+
+      if (itemsToImport.length === 0) {
+        toast.error("No hay artículos válidos para importar");
+        setImportLoading(false);
+        return;
+      }
+
+      const response = await axios.post(`${API}/items/import`, {
+        items: itemsToImport
+      }, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      setImportResult(response.data);
+      setImportStep(4);
+      
+      if (response.data.imported > 0) {
+        toast.success(`${response.data.imported} artículos importados correctamente`);
+        loadItems();
+      }
+    } catch (error) {
+      console.error("Import error:", error);
+      let errorMessage = "Error al importar artículos";
+      if (error.response?.data) {
+        if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        } else if (error.response.data.detail) {
+          errorMessage = typeof error.response.data.detail === 'string' 
+            ? error.response.data.detail 
+            : JSON.stringify(error.response.data.detail);
+        }
+      }
+      toast.error(errorMessage);
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  const resetInventoryImport = () => {
+    setImportStep(1);
+    setImportFile(null);
+    setImportData([]);
+    setFileColumns([]);
+    setColumnMapping({});
+    setImportResult(null);
+    if (importFileRef.current) {
+      importFileRef.current.value = '';
+    }
+  };
+
+  const closeImportDialog = () => {
+    setShowImportDialog(false);
+    resetInventoryImport();
+  };
+
   const exportCSV = async () => {
     try {
       const response = await axios.get(`${API}/items/export-csv`, {
