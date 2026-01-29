@@ -788,6 +788,7 @@ export default function CashRegister() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Fecha</TableHead>
+                      <TableHead className="text-center">Turno</TableHead>
                       <TableHead>Empleado</TableHead>
                       <TableHead className="text-right">Esperado Efectivo</TableHead>
                       <TableHead className="text-right">Real Efectivo</TableHead>
@@ -802,8 +803,13 @@ export default function CashRegister() {
                       const totalDiscrepancy = (closure.discrepancy_total || 
                         ((closure.physical_cash || 0) - (closure.expected_balance || 0)));
                       return (
-                        <TableRow key={closure.date}>
+                        <TableRow key={closure.id || closure.date}>
                           <TableCell className="font-semibold">{closure.date}</TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="outline" className="font-mono">
+                              #{closure.closure_number || 1}
+                            </Badge>
+                          </TableCell>
                           <TableCell>{closure.closed_by || '-'}</TableCell>
                           <TableCell className="text-right">€{(closure.expected_cash || closure.expected_balance || 0).toFixed(2)}</TableCell>
                           <TableCell className="text-right font-semibold">€{(closure.physical_cash || 0).toFixed(2)}</TableCell>
@@ -830,7 +836,7 @@ export default function CashRegister() {
                                 variant="outline"
                                 size="sm"
                                 className="gap-1 text-orange-600 border-orange-300 hover:bg-orange-50"
-                                onClick={() => revertClosure(closure.date)}
+                                onClick={() => revertClosure(closure.id)}
                                 data-testid={`revert-closure-${closure.date}`}
                               >
                                 <Undo2 className="h-3 w-3" />
