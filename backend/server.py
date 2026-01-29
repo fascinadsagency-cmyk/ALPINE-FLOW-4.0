@@ -3062,12 +3062,10 @@ async def get_cash_summary(date: Optional[str] = None, current_user: dict = Depe
 
 @api_router.post("/cash/close")
 async def close_cash_register(closing: CashClosingCreate, current_user: dict = Depends(get_current_user)):
-    # Check if already closed
-    existing = await db.cash_closings.find_one({"date": closing.date})
-    if existing:
-        raise HTTPException(status_code=400, detail="Cash register already closed for this date")
+    # NO RESTRICTIONS: Allow closing cash register at any time, multiple times per day
+    # This gives full control to the administrator over when to start/end accounting periods
     
-    # Get summary
+    # Get summary for current moment
     summary = await get_cash_summary(closing.date, current_user)
     
     closing_id = str(uuid.uuid4())
@@ -3090,7 +3088,8 @@ async def close_cash_register(closing: CashClosingCreate, current_user: dict = D
         "closed_by": current_user["username"],
         "closed_at": datetime.now(timezone.utc).isoformat(),
         "movements_count": summary["movements_count"],
-        "by_payment_method": summary["by_payment_method"]
+        "by_payment_method": summary["by_payment_method"],
+        "closure_number": await get_next_closure_number(closing.date)  # Support multiple closures per day
     }
     await db.cash_closings.insert_one(doc)
     return CashClosingResponse(**doc)
