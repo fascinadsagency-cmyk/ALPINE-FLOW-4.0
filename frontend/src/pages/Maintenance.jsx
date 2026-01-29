@@ -716,32 +716,68 @@ export default function Maintenance() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-5 py-4 max-h-[60vh] overflow-y-auto">
-            {/* Customer Search */}
+            {/* Customer Search - Enhanced */}
             <div>
-              <Label className="text-base font-semibold">Cliente</Label>
-              <div className="relative mt-2">
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-base font-semibold">Cliente</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowNewCustomerDialog(true)}
+                  className="h-8 text-xs"
+                  data-testid="new-customer-btn-external"
+                >
+                  <UserPlus className="h-3 w-3 mr-1" />
+                  Nuevo Cliente
+                </Button>
+              </div>
+              <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
-                  placeholder="Buscar cliente existente..."
+                  placeholder="Buscar por nombre, teléfono o DNI..."
                   value={customerSearch}
-                  onChange={(e) => {
-                    setCustomerSearch(e.target.value);
-                    searchCustomers(e.target.value);
-                  }}
+                  onChange={(e) => setCustomerSearch(e.target.value)}
+                  onKeyDown={handleCustomerSearchKeyDown}
                   className="h-12 pl-10"
+                  data-testid="external-customer-search"
                 />
-                {customerSuggestions.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
-                    {customerSuggestions.map(c => (
+                {showSuggestions && customerSuggestions.length > 0 && (
+                  <div className="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                    <div className="px-3 py-2 text-xs text-slate-500 border-b bg-slate-50">
+                      {customerSuggestions.length} cliente(s) encontrado(s)
+                    </div>
+                    {customerSuggestions.map((c, index) => (
                       <button
                         key={c.id}
-                        className="w-full px-4 py-3 text-left hover:bg-slate-50 flex justify-between border-b last:border-b-0"
+                        className={`w-full px-4 py-3 text-left flex items-center justify-between border-b last:border-b-0 transition-colors ${
+                          index === selectedIndex 
+                            ? 'bg-orange-50 border-l-4 border-l-orange-500' 
+                            : 'hover:bg-slate-50'
+                        }`}
                         onClick={() => selectCustomer(c)}
+                        data-testid={`customer-suggestion-${index}`}
                       >
-                        <span className="font-medium">{c.name}</span>
-                        <span className="text-slate-400 text-sm">{c.phone || c.dni}</span>
+                        <div>
+                          <span className="font-medium text-slate-900">{c.name}</span>
+                          <div className="text-xs text-slate-500 mt-0.5">
+                            <span className="font-mono">{c.dni}</span>
+                            {c.city && <span className="ml-2">📍 {c.city}</span>}
+                          </div>
+                        </div>
+                        <span className="text-slate-400 text-sm">{c.phone || '-'}</span>
                       </button>
                     ))}
+                    <button
+                      className="w-full px-4 py-3 text-left text-sm text-orange-600 hover:bg-orange-50 flex items-center gap-2 border-t"
+                      onClick={() => {
+                        setShowSuggestions(false);
+                        setShowNewCustomerDialog(true);
+                      }}
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      Crear nuevo cliente...
+                    </button>
                   </div>
                 )}
               </div>
