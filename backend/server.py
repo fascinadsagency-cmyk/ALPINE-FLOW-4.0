@@ -2191,14 +2191,32 @@ async def quick_return(rental_id: str, current_user: dict = Depends(get_current_
     
     # Mark all items as returned
     for item in rental["items"]:
+        if item.get("returned"):
+            continue  # Skip already returned items
+            
         item["returned"] = True
         item["return_date"] = datetime.now(timezone.utc).isoformat()
         
-        # Update item availability
-        await db.items.update_one(
-            {"barcode": item["barcode"]},
-            {"$set": {"status": "available"}}
-        )
+        # Get the item document to check if it's generic
+        item_doc = await db.items.find_one({"id": item.get("item_id")})
+        
+        if item_doc and item_doc.get("is_generic"):
+            # GENERIC ITEM: Return stock
+            quantity_to_return = item.get("quantity", 1)
+            current_available = item_doc.get("stock_available", 0)
+            total_stock = item_doc.get("stock_total", 0)
+            new_available = min(current_available + quantity_to_return, total_stock)
+            
+            await db.items.update_one(
+                {"id": item.get("item_id")},
+                {"$set": {"stock_available": new_available}}
+            )
+        else:
+            # REGULAR ITEM: Update status to available
+            await db.items.update_one(
+                {"barcode": item["barcode"]},
+                {"$set": {"status": "available"}}
+            )
     
     # Update rental status
     await db.rentals.update_one(
