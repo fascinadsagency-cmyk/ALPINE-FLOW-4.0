@@ -2201,10 +2201,21 @@ async def process_refund(rental_id: str, refund: RefundRequest, current_user: di
         }
     )
     
+    # Validate active cash session FIRST
+    date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+    
+    if not active_session:
+        raise HTTPException(
+            status_code=400,
+            detail="No hay sesión de caja activa. Abre la caja primero desde 'Gestión de Caja'."
+        )
+    
     # Create NEGATIVE cash movement (refund)
     refund_movement_id = str(uuid.uuid4())
     refund_doc = {
         "id": refund_movement_id,
+        "session_id": active_session["id"],  # CRITICAL: Link to active session
         "movement_type": "refund",  # Special type for refunds
         "amount": refund.refund_amount,
         "payment_method": refund.payment_method,
