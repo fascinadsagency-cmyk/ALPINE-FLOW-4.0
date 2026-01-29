@@ -793,7 +793,52 @@ export default function NewRental() {
     setProcessingPayment(true);
     
     try {
-      // 1. Create rental
+      // 1. Check if there's an active cash session
+      const API = import.meta.env.VITE_API_URL;
+      const sessionCheck = await fetch(`${API}/cash/sessions/active`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      const activeSession = await sessionCheck.json();
+      
+      // 2. If no active session, prompt user to open cash register
+      if (!activeSession || !activeSession.id) {
+        const shouldOpenCash = window.confirm(
+          `⚠️ NO HAY CAJA ABIERTA\n\n` +
+          `No se puede registrar el cobro de €${total.toFixed(2)} sin una caja activa.\n\n` +
+          `¿Deseas abrir una nueva caja ahora para registrar este cobro?\n\n` +
+          `(Se abrirá con fondo inicial de €0, puedes cambiarlo después)`
+        );
+        
+        if (!shouldOpenCash) {
+          toast.error("Cobro cancelado. Abre la caja primero desde 'Gestión de Caja'.");
+          setProcessingPayment(false);
+          return;
+        }
+        
+        // Open new cash session with 0 opening balance
+        const openSessionRes = await fetch(`${API}/cash/sessions/open`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({
+            opening_balance: 0,
+            notes: `Apertura automática por venta de €${total.toFixed(2)}`
+          })
+        });
+        
+        if (!openSessionRes.ok) {
+          throw new Error("No se pudo abrir la caja automáticamente");
+        }
+        
+        toast.success("✅ Nueva caja abierta automáticamente");
+      }
+      
+      // 3. Create rental
       const paid = paymentMethodSelected !== 'pending' ? total : 0;
       
       const rentalResponse = await rentalApi.create({
