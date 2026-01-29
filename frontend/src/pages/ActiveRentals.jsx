@@ -425,6 +425,87 @@ export default function ActiveRentals() {
     return getDaysRemaining(endDate) < 0;
   };
 
+  // Open customer info modal
+  const openCustomerModal = async (rental) => {
+    setCustomerLoading(true);
+    setShowCustomerModal(true);
+    
+    try {
+      let customerData = {
+        name: rental.customer_name,
+        dni: rental.customer_dni,
+        phone: rental.customer_phone,
+        email: rental.customer_email,
+        hotel: rental.customer_hotel || rental.hotel,
+        notes: rental.customer_notes,
+        items: rental.items || [],
+        rental_id: rental.id,
+        start_date: rental.start_date,
+        end_date: rental.end_date,
+        days: rental.days,
+        total_amount: rental.total_amount
+      };
+      
+      // Try to get more customer details from API
+      if (rental.customer_id) {
+        try {
+          const response = await axios.get(`${API}/customers/${rental.customer_id}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          });
+          customerData = {
+            ...customerData,
+            ...response.data,
+            items: rental.items || [],
+            rental_id: rental.id
+          };
+        } catch (e) {
+          // Continue with rental data
+        }
+      }
+      
+      setSelectedCustomer(customerData);
+    } catch (error) {
+      toast.error("Error al cargar datos del cliente");
+    } finally {
+      setCustomerLoading(false);
+    }
+  };
+
+  // Send WhatsApp with predefined message
+  const sendWhatsAppMessage = (phone, customerName) => {
+    if (!phone) {
+      toast.error("No hay teléfono registrado para este cliente");
+      return;
+    }
+    const cleanPhone = phone.replace(/\D/g, '');
+    const message = encodeURIComponent(
+      `Hola ${customerName}, te contactamos de la tienda de esquí. ¿En qué podemos ayudarte?`
+    );
+    window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
+  };
+
+  // Call phone directly
+  const callPhone = (phone) => {
+    if (!phone) {
+      toast.error("No hay teléfono registrado");
+      return;
+    }
+    window.open(`tel:${phone}`, '_self');
+  };
+
+  // Send email
+  const sendEmail = (email, customerName) => {
+    if (!email) {
+      toast.error("No hay email registrado");
+      return;
+    }
+    const subject = encodeURIComponent("Información sobre tu alquiler - Tienda de Esquí");
+    const body = encodeURIComponent(
+      `Hola ${customerName},\n\nTe contactamos desde la tienda de esquí respecto a tu alquiler.\n\nGracias.`
+    );
+    window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+  };
+
   const diffInfo = editingRental ? getDifferenceLabel() : null;
 
   return (
