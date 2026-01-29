@@ -1302,9 +1302,11 @@ export default function NewRental() {
             .item-unit { text-align: right; color: #666; }
             .item-subtotal { text-align: right; font-weight: bold; }
             
-            /* Pack Row - slightly highlighted */
+            /* Pack Row Styles */
             .pack-row { background: #fffbeb; }
-            .pack-row .item-desc { color: #92400e; }
+            .pack-row .item-desc { padding: 6px 2px; }
+            .pack-name { font-weight: bold; color: #92400e; font-size: 11px; }
+            .pack-refs { font-size: 8px; color: #666; font-family: monospace; margin-top: 2px; }
             
             /* Totals */
             .totals-table { width: 100%; margin-top: 8px; }
