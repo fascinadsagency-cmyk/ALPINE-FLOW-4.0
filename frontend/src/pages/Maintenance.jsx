@@ -163,7 +163,7 @@ export default function Maintenance() {
     }
     
     try {
-      const response = await customerApi.search(term);
+      const response = await customerApi.getAll(term);
       setCustomerSuggestions(response.data.slice(0, 8));
       setShowSuggestions(response.data.length > 0);
       setSelectedIndex(-1);
