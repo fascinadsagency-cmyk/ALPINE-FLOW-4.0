@@ -1293,13 +1293,9 @@ export default function NewRental() {
             .item-unit { text-align: right; color: #666; }
             .item-subtotal { text-align: right; font-weight: bold; }
             
-            /* Pack Styles */
-            .pack-row td { padding: 6px 2px 2px 2px; }
-            .pack-header { background: #f5f5f5; border-radius: 4px; padding: 4px !important; }
-            .pack-name { font-weight: bold; font-size: 11px; margin-bottom: 4px; }
-            .pack-component { font-size: 9px; color: #555; margin-left: 8px; line-height: 1.4; }
-            .pack-total-row td { border-bottom: 1px dotted #999; padding: 3px 2px; }
-            .pack-label { font-style: italic; color: #666; }
+            /* Pack Row - slightly highlighted */
+            .pack-row { background: #fffbeb; }
+            .pack-row .item-desc { color: #92400e; }
             
             /* Totals */
             .totals-table { width: 100%; margin-top: 8px; }
