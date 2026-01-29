@@ -1,74 +1,54 @@
 # AlpineFlow - Sistema de Gestión de Alquiler de Equipos de Esquí
 
 ## Stack Tecnológico
-- **Frontend**: React + Tailwind CSS + Shadcn UI + XLSX
+- **Frontend**: React + Tailwind CSS + Shadcn UI + XLSX + @dnd-kit
 - **Backend**: FastAPI + Python
 - **Base de datos**: MongoDB
 - **Autenticación**: JWT
 
 ## Funcionalidades Implementadas
 
-### 1. Panel de Control de Devoluciones en Dashboard (2026-01-29) ✨ NUEVO
-**"Torre de control" para el cierre del día:**
+### 1. Corrección de Módulo de Caja (2026-01-29) ✨ CORREGIDO
+**Sincronización 100% fiable:**
 
-- **Métricas dinámicas** por categoría de artículo (Botas, Esquís, Snowboards, Cascos, etc.)
-- **Conteo en tiempo real** de artículos pendientes de devolver HOY
-- **Detección automática** de todas las categorías de inventario
-- **Alerta visual** en ROJO si la hora actual supera la hora de cierre (20:00)
-- **Enlace directo**: Al hacer clic en una categoría, navega a Devoluciones filtrada
+- **Conteo de operaciones**: Ahora muestra correctamente el número de movimientos
+- **Saldo esperado**: Coincide exactamente con la facturación real por método de pago
+- **Desglose por método**: Efectivo y Tarjeta calculados correctamente (income - expense - refund)
+- **Impresión automática de arqueo**: Al cerrar caja se genera ticket térmico 80mm
+- **Reimprimir cierres**: Botón de impresora en cada cierre pasado
 
-**Endpoint**: `GET /api/dashboard/returns-control`
+**Ticket de Arqueo incluye:**
+- Fecha/Hora apertura y cierre
+- Nº de operaciones
+- Resumen del día (Entradas, Salidas, Devoluciones)
+- Total esperado vs Total contado
+- Descuadre resultante (efectivo y tarjeta por separado)
+- Notas del cierre
 
-### 2. Filtro por Categoría en Devoluciones
-- Aceptación de parámetro `?filter=<item_type>` en la URL
-- Badge visual "Filtrando: [Categoría]" con botón para quitar filtro
-- Filtrado dinámico de la lista de devoluciones pendientes
+### 2. Panel de Control de Devoluciones en Dashboard
+- Métricas dinámicas por categoría de artículo
+- Alerta visual ROJA si supera hora de cierre
+- Enlace directo a devoluciones filtradas
 
-### 3. Nuevos Campos en Inventario (2026-01-29) ✨ NUEVO
-- **Número de Serie**: Identificador único del fabricante
-- **Fijación**: Modelo/tipo de fijación instalada (para esquís)
+### 3. Nuevos Campos en Inventario
+- Número de Serie (fabricante)
+- Fijación (modelo de fijación)
+- Reorganización de columnas de identificación
 
-### 4. Reorganización de Columnas en Inventario
-Orden correlativo de códigos de identificación:
-1. Código Interno (Tu identificador corto)
-2. Código de Barras (EAN/UPC)
-3. Número de Serie (Fabricante)
-4. Tipo | Marca/Modelo | Talla | Fijación | Estado
-
-### 5. Búsqueda Mejorada en Inventario
-El buscador localiza artículos por:
-- Código Interno
-- Código de Barras
-- Número de Serie
-- Marca, Modelo, Talla
-
-### 6. Importador Universal (Clientes e Inventario)
-- Soporte para CSV, XLS, XLSX
-- Mapeo de campos inteligente
+### 4. Importador Universal (Clientes e Inventario)
+- Soporte CSV, XLS, XLSX
+- Mapeo inteligente de campos
 - Detección de duplicados
-- Previsualización antes de importar
 
-### 7. Módulo de Caja (Rediseñado)
-- 3 Pestañas: Caja del Día, Cierres Pasados, Histórico
-- Arqueo manual con efectivo y tarjeta
-
-### 8. Rentabilidad en Inventario
-- Coste, Ingresos, Amortización, Beneficio
-
-## API Endpoints Nuevos
-
-```
-GET /api/dashboard/returns-control
-Response: { total_pending, pending_by_category, is_past_closing, closing_hour }
-
-GET /api/devoluciones?filter=<item_type>  (filtro en frontend)
-```
+### 5. Email Opcional en Clientes
+- Campos obligatorios: DNI*, Nombre*, Teléfono*
+- Asteriscos rojos visuales
 
 ## Próximas Tareas
 
 ### P1 - Alta Prioridad
 - [ ] Pestaña de Soporte y Mejoras
-- [ ] Finalizar Sistema de Impresión
+- [ ] Personalización de columnas en Inventario (drag & drop)
 
 ### P2 - Media Prioridad
 - [ ] Integraciones (WhatsApp, TPV, VeriFactu, Email)
@@ -78,6 +58,7 @@ GET /api/devoluciones?filter=<item_type>  (filtro en frontend)
 - Contraseña: test123456
 
 ## Changelog
-- **v3.0.0** (2026-01-29): Panel de Control de Devoluciones en Dashboard, nuevos campos en inventario (Nº Serie, Fijación), búsqueda mejorada, filtros en devoluciones
+- **v3.1.0** (2026-01-29): Corrección de sincronización de caja, impresión automática de arqueos, botón reimprimir en histórico
+- **v3.0.0** (2026-01-29): Panel de Control de Devoluciones, nuevos campos en inventario
 - **v2.9.0**: Importador de inventario
 - **v2.8.0**: Importador de clientes, Email opcional
