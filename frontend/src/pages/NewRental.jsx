@@ -226,6 +226,21 @@ export default function NewRental() {
     }
   };
 
+  const loadItemTypes = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/item-types`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setItemTypes([{ value: "all", label: "Todos" }, ...data.map(t => ({ value: t.value, label: t.label }))]);
+      }
+    } catch (error) {
+      console.log("Item types not loaded");
+      setItemTypes([{ value: "all", label: "Todos" }]);
+    }
+  };
+
   // AUTO-COMBO: Detect packs formed by current items
   const detectPacks = (currentItems) => {
     if (!packs || packs.length === 0 || currentItems.length === 0) {
