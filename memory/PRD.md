@@ -11,35 +11,33 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 
 ## Funcionalidades Implementadas
 
-### 1. Filtro de Estado en Base de Datos de Clientes (NUEVO 2026-01-29)
-**Selector de filtro con 3 opciones:**
-- ✅ **Todos**: Muestra base de datos completa (histórico)
-- ✅ **Activos Hoy**: Clientes con alquiler abierto actualmente
-- ✅ **Inactivos**: Clientes sin material alquilado
+### 1. Módulo de Rentabilidad en Inventario (NUEVO 2026-01-29)
+**Botón "Ver Rentabilidad" activa el modo financiero:**
+- ✅ Panel resumen: Artículos, Coste Total, Ingresos Totales, Beneficio Neto, Amortizados
+- ✅ Columna **Coste**: Precio de adquisición del artículo
+- ✅ Columna **Ingresos**: Suma de todos los alquileres cerrados de ese artículo
+- ✅ Columna **Amortización**: 
+  - Barra de progreso con colores (rojo <50%, amarillo <80%, verde >80%)
+  - Badge "AMORTIZADO" cuando ingresos >= coste
+- ✅ Columna **Beneficio Neto**: Ingresos - Coste (verde si positivo, rojo si negativo)
+- ✅ **Filtro de ordenación**: Mayor/Menor Beneficio, Más Ingresos, Mayor Amortización
 
-**Características:**
-- Contador dinámico al lado de cada opción (ej: Activos Hoy (2))
-- Filtrado instantáneo sin recarga
-- Integración con búsqueda (buscar dentro del filtro seleccionado)
-- Indicador visual "Activo" badge verde en la tabla
-- Filas de clientes activos con fondo verde suave
+### 2. Filtro de Estado en Clientes
+- Todos / Activos Hoy / Inactivos con contadores
+- Badge "Activo" y fila resaltada
 
-### 2. Acceso a Ficha de Cliente - Estandarizado
-**Disponible en:** Devoluciones, Alquileres Activos, Base de Datos
-- Nombre clicable → Modal de ficha completa
-- Botones: Llamar, WhatsApp, Email
-- Historial de alquileres y pagos
+### 3. Acceso a Ficha de Cliente - Estandarizado
+- Nombre clicable en: Devoluciones, Alquileres Activos, Base de Datos de Clientes
+- Modal con contacto directo (Llamar, WhatsApp, Email)
 
-### 3. Modificar Duración de Alquileres
-- Flujo de 3 pasos (días → pago → ticket)
-- Soporte para reembolsos
-- Ajuste financiero automático en Caja
+### 4. Modificar Duración de Alquileres
+- Flujo de 3 pasos con ajuste financiero automático en Caja
 
-### 4. Sistema de Caja
+### 5. Sistema de Caja
 - Impresión de tickets desde movimientos
 - Historial de cierres con reversión
 
-### 5. Funcionalidades Base
+### 6. Funcionalidades Base
 - Dashboard estratégico con KPIs
 - Proceso de Alquiler con Auto-Combo
 - Devolución Rápida
@@ -63,14 +61,14 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 
 ## Última Actualización
 Fecha: 2026-01-29
-Versión: 2.4.0
+Versión: 2.5.0
 
 ## Changelog
+- **v2.5.0** (2026-01-29): Módulo de Rentabilidad en Inventario
+  - Nuevo endpoint /api/items/with-profitability
+  - Panel resumen con métricas financieras globales
+  - Columnas: Coste, Ingresos, Amortización (barra), Beneficio
+  - Ordenación por rentabilidad
+  - Badge "AMORTIZADO" para artículos que superaron su coste
 - **v2.4.0** (2026-01-29): Filtro de Estado en Clientes
-  - Nuevo endpoint /api/customers/with-status
-  - Botones: Todos, Activos Hoy, Inactivos con contadores
-  - Badge "Activo" en tabla para clientes con alquiler
-  - Filtrado instantáneo combinado con búsqueda
 - **v2.3.0** (2026-01-29): Nombre clicable en Clientes
-- **v2.2.0** (2026-01-29): Ficha de Cliente en Alquileres Activos
-- **v2.1.0** (2026-01-29): Ficha de Cliente en Devoluciones
