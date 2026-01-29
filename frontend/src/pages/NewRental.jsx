@@ -1655,60 +1655,38 @@ export default function NewRental() {
                 </div>
               )}
 
-              {/* Quick Add Accessories Buttons */}
-              <div className="flex flex-wrap gap-2 mt-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <span className="text-xs text-slate-500 w-full mb-1">Añadir rápido:</span>
+              {/* Quick Add Bar - Compact toolbar for last-second accessories */}
+              <div className="flex items-center justify-center gap-2 py-2 px-3 bg-slate-100/80 rounded-lg border border-slate-200/60 mt-2">
+                <span className="text-xs text-slate-500 font-medium">Añadir:</span>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    setItemSearchType('helmet');
-                    setItemSearchCategory('all');
-                    setShowItemSearch(true);
-                  }}
-                  className="flex items-center gap-1.5 h-8"
+                  onClick={() => quickAddItem('helmet')}
+                  className="h-7 px-2.5 text-xs font-medium hover:bg-white hover:shadow-sm transition-all"
                   data-testid="quick-add-helmet"
                 >
-                  <span>🪖</span> Casco
+                  <Plus className="h-3 w-3 mr-1" />
+                  Casco
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    setItemSearchType('goggles');
-                    setItemSearchCategory('all');
-                    setShowItemSearch(true);
-                  }}
-                  className="flex items-center gap-1.5 h-8"
+                  onClick={() => quickAddItem('goggles')}
+                  className="h-7 px-2.5 text-xs font-medium hover:bg-white hover:shadow-sm transition-all"
                   data-testid="quick-add-goggles"
                 >
-                  <span>🥽</span> Máscara
+                  <Plus className="h-3 w-3 mr-1" />
+                  Máscara
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    setItemSearchType('poles');
-                    setItemSearchCategory('all');
-                    setShowItemSearch(true);
-                  }}
-                  className="flex items-center gap-1.5 h-8"
+                  onClick={() => quickAddItem('poles')}
+                  className="h-7 px-2.5 text-xs font-medium hover:bg-white hover:shadow-sm transition-all"
                   data-testid="quick-add-poles"
                 >
-                  <span>🎿</span> Bastones
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setItemSearchType('boots');
-                    setItemSearchCategory('all');
-                    setShowItemSearch(true);
-                  }}
-                  className="flex items-center gap-1.5 h-8"
-                  data-testid="quick-add-boots"
-                >
-                  <span>🥾</span> Botas
+                  <Plus className="h-3 w-3 mr-1" />
+                  Bastones
                 </Button>
               </div>
 
