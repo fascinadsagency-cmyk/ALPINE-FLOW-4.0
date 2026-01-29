@@ -115,12 +115,19 @@ export default function Customers() {
       filtered = filtered.filter(c => c.source === selectedProvider);
     }
 
+    // Filter by status (active/inactive)
+    if (selectedStatus === "active") {
+      filtered = filtered.filter(c => c.has_active_rental === true);
+    } else if (selectedStatus === "inactive") {
+      filtered = filtered.filter(c => c.has_active_rental !== true);
+    }
+
     setCustomers(filtered);
   };
 
   useEffect(() => {
     filterCustomers();
-  }, [searchTerm, selectedProvider, allCustomers]);
+  }, [searchTerm, selectedProvider, selectedStatus, allCustomers]);
 
   const viewHistory = async (customer) => {
     setSelectedCustomer(customer);
