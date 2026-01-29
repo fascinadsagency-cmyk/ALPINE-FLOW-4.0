@@ -90,7 +90,51 @@ class CashSessionTester:
             self.log_test("Open Cash Session", False, f"Exception: {str(e)}")
             return False
     
-    def create_test_customer(self):
+    def create_test_items(self):
+        """Create test inventory items for rental testing"""
+        try:
+            items = [
+                {
+                    "barcode": "SKI-001",
+                    "internal_code": "SKI-TEST-001",
+                    "item_type": "ski",
+                    "brand": "Test Brand",
+                    "model": "Test Model",
+                    "size": "170",
+                    "purchase_price": 100.0,
+                    "purchase_date": "2024-01-01",
+                    "category": "MEDIA"
+                },
+                {
+                    "barcode": "SKI-002", 
+                    "internal_code": "SKI-TEST-002",
+                    "item_type": "ski",
+                    "brand": "Test Brand",
+                    "model": "Test Model",
+                    "size": "175",
+                    "purchase_price": 100.0,
+                    "purchase_date": "2024-01-01",
+                    "category": "MEDIA"
+                }
+            ]
+            
+            created_count = 0
+            for item in items:
+                response = requests.post(f"{BACKEND_URL}/items", json=item, headers=self.headers)
+                if response.status_code in [200, 201]:
+                    created_count += 1
+                elif response.status_code == 400 and "already exists" in response.text:
+                    created_count += 1  # Item already exists, that's fine
+                else:
+                    print(f"Failed to create item {item['barcode']}: {response.status_code} - {response.text}")
+            
+            self.log_test("Create Test Items", created_count >= 2, 
+                         f"Created/verified {created_count}/2 test items for rental testing")
+            return created_count >= 2
+            
+        except Exception as e:
+            self.log_test("Create Test Items", False, f"Exception: {str(e)}")
+            return False
         """Create a test customer for rental testing"""
         try:
             customer_data = {
