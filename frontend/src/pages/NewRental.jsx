@@ -702,8 +702,8 @@ export default function NewRental() {
     }
   };
 
-  const removeItem = (barcode) => {
-    setItems(items.filter(i => i.barcode !== barcode));
+  const removeItem = (itemId) => {
+    setItems(items.filter(i => (i.id || i.barcode) !== itemId));
   };
 
   // QUICK ADD: Configuración estricta - Solo 3 productos genéricos
