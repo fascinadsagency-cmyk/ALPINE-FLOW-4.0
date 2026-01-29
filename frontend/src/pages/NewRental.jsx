@@ -766,46 +766,104 @@ export default function NewRental() {
       return;
     }
     
-    setLoading(true);
+    // Instead of completing immediately, open payment dialog
+    setShowPaymentDialog(true);
+  };
+
+  const processPaymentAndCompleteRental = async () => {
+    if (!paymentMethodSelected) {
+      toast.error("Selecciona un método de pago");
+      return;
+    }
+
+    // Validate cash payment
+    if (paymentMethodSelected === "cash" && !cashGiven) {
+      toast.error("Introduce el efectivo entregado");
+      return;
+    }
+
+    const total = calculateTotal();
+    const cashGivenAmount = parseFloat(cashGiven) || 0;
+
+    if (paymentMethodSelected === "cash" && cashGivenAmount < total) {
+      toast.error(`El efectivo entregado (€${cashGivenAmount.toFixed(2)}) es menor que el total (€${total.toFixed(2)})`);
+      return;
+    }
+
+    setProcessingPayment(true);
+    
     try {
-      const total = calculateTotal();
-      const paid = parseFloat(paidAmount) || (paymentMethod !== 'pending' ? total : 0);
+      // 1. Create rental
+      const paid = paymentMethodSelected !== 'pending' ? total : 0;
       
-      const response = await rentalApi.create({
+      const rentalResponse = await rentalApi.create({
         customer_id: customer.id,
         start_date: startDate,
         end_date: endDate,
         items: items.map(i => ({ barcode: i.barcode, person_name: "" })),
-        payment_method: paymentMethod,
+        payment_method: paymentMethodSelected,
         total_amount: total,
         paid_amount: paid,
         deposit: parseFloat(deposit) || 0,
         notes: notes + (discountReason ? ` | Descuento: ${discountReason}` : '')
       });
       
-      // Store rental data for printing
+      // 2. Register cash movement (income) if payment completed
+      if (paid > 0) {
+        try {
+          const API = import.meta.env.VITE_API_URL;
+          await fetch(`${API}/cash/movements`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              movement_type: 'income',
+              amount: paid,
+              payment_method: paymentMethodSelected,
+              category: 'rental',
+              concept: `Alquiler #${rentalResponse.data.id} - ${customer.name}`,
+              reference_id: rentalResponse.data.id,
+              notes: `Cliente: ${customer.dni || customer.name}`
+            })
+          });
+        } catch (cashError) {
+          console.error("Error registering cash movement:", cashError);
+          toast.error("Alquiler creado pero no se pudo registrar en caja. Regístralo manualmente.");
+        }
+      }
+      
+      // 3. Store rental data for printing
       setCompletedRental({
-        ...response.data,
+        ...rentalResponse.data,
         customer_name: customer.name,
         customer_dni: customer.dni,
         items_detail: items,
         total_amount: total,
-        paid_amount: paid
+        paid_amount: paid,
+        change: paymentMethodSelected === "cash" ? cashGivenAmount - total : 0
       });
       
-      // Show success dialog with print button
+      // Close payment dialog
+      setShowPaymentDialog(false);
+      setCashGiven("");
+      
+      // 4. Show success dialog with print button
       setShowSuccessDialog(true);
       
-      // Check if auto-print is enabled
+      // 5. Auto-print if enabled
       const autoPrint = localStorage.getItem('auto_print_enabled') === 'true';
       if (autoPrint) {
         setTimeout(() => printRentalTicket(), 500);
       }
       
+      toast.success("Alquiler completado y registrado en caja");
+      
     } catch (error) {
       toast.error(error.response?.data?.detail || "Error al crear alquiler");
     } finally {
-      setLoading(false);
+      setProcessingPayment(false);
     }
   };
 
