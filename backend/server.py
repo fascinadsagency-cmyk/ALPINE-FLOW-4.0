@@ -2003,6 +2003,180 @@ async def process_payment(rental_id: str, payment: PaymentRequest, current_user:
         "operation_number": operation_number
     }
 
+# ==================== SWAP/CANJE ENDPOINT ====================
+
+class SwapItemRequest(BaseModel):
+    old_item_barcode: str
+    new_item_barcode: str
+    new_days: int
+    payment_method: str = "cash"
+    delta_amount: float = 0
+
+@api_router.post("/rentals/{rental_id}/swap-item")
+async def swap_rental_item(rental_id: str, data: SwapItemRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Swap an item in an active rental with another item.
+    - Returns the old item to inventory (status: maintenance/available)
+    - Assigns the new item to the rental (status: rented)
+    - Records the swap history
+    - Creates cash movement if there's a price difference
+    """
+    rental = await db.rentals.find_one({"id": rental_id})
+    if not rental:
+        raise HTTPException(status_code=404, detail="Alquiler no encontrado")
+    
+    if rental.get("status") == "returned":
+        raise HTTPException(status_code=400, detail="El alquiler ya está cerrado")
+    
+    # Find the old item in the rental
+    old_item_index = None
+    old_item_data = None
+    for i, item in enumerate(rental["items"]):
+        if item.get("barcode") == data.old_item_barcode or item.get("internal_code") == data.old_item_barcode:
+            old_item_index = i
+            old_item_data = item
+            break
+    
+    if old_item_index is None:
+        raise HTTPException(status_code=404, detail="Artículo original no encontrado en el alquiler")
+    
+    # Get old item from inventory
+    old_item = await db.items.find_one({"$or": [
+        {"barcode": data.old_item_barcode},
+        {"internal_code": data.old_item_barcode}
+    ]})
+    
+    # Get new item from inventory
+    new_item = await db.items.find_one({"$or": [
+        {"barcode": data.new_item_barcode},
+        {"internal_code": data.new_item_barcode}
+    ]})
+    
+    if not new_item:
+        raise HTTPException(status_code=404, detail="Nuevo artículo no encontrado en inventario")
+    
+    if new_item.get("status") == "rented":
+        raise HTTPException(status_code=400, detail="El nuevo artículo ya está alquilado")
+    
+    if new_item.get("status") not in ["available", "dirty"]:
+        raise HTTPException(status_code=400, detail=f"El nuevo artículo no está disponible (estado: {new_item.get('status')})")
+    
+    # Calculate days used by old item
+    start_date = datetime.fromisoformat(rental["start_date"].replace('Z', '+00:00') if 'Z' in rental["start_date"] else rental["start_date"])
+    if start_date.tzinfo is None:
+        start_date = start_date.replace(tzinfo=timezone.utc)
+    now = datetime.now(timezone.utc)
+    days_used = max(1, (now - start_date).days + 1)
+    
+    # Update old item status to maintenance (needs cleaning) and increment days_used
+    if old_item:
+        await db.items.update_one(
+            {"id": old_item["id"]},
+            {"$set": {"status": "maintenance"}, "$inc": {"days_used": days_used}}
+        )
+    
+    # Update new item status to rented
+    await db.items.update_one(
+        {"id": new_item["id"]},
+        {"$set": {"status": "rented"}}
+    )
+    
+    # Create new item entry for rental
+    new_item_entry = {
+        "item_id": new_item["id"],
+        "barcode": new_item.get("barcode"),
+        "internal_code": new_item.get("internal_code"),
+        "item_type": new_item.get("item_type"),
+        "brand": new_item.get("brand"),
+        "model": new_item.get("model"),
+        "size": new_item.get("size"),
+        "price": old_item_data.get("price", 0),  # Keep same price initially
+        "returned": False,
+        "swapped_from": data.old_item_barcode,
+        "swapped_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Update rental items array
+    rental["items"][old_item_index] = {
+        **old_item_data,
+        "returned": True,
+        "returned_at": datetime.now(timezone.utc).isoformat(),
+        "swapped_to": data.new_item_barcode,
+        "swap_reason": "item_swap"
+    }
+    rental["items"].append(new_item_entry)
+    
+    # Update rental days if changed
+    if data.new_days != rental.get("days"):
+        new_end_date = start_date + timedelta(days=data.new_days)
+        rental["end_date"] = new_end_date.strftime("%Y-%m-%d")
+        rental["days"] = data.new_days
+    
+    # Add swap to history
+    swap_record = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "old_item": data.old_item_barcode,
+        "new_item": data.new_item_barcode,
+        "old_days": rental.get("days"),
+        "new_days": data.new_days,
+        "delta_amount": data.delta_amount,
+        "performed_by": current_user["username"]
+    }
+    
+    swap_history = rental.get("swap_history", [])
+    swap_history.append(swap_record)
+    
+    # Update total if there's a price difference
+    new_total = rental.get("total_amount", 0) + data.delta_amount
+    new_pending = rental.get("pending_amount", 0) + data.delta_amount
+    
+    await db.rentals.update_one(
+        {"id": rental_id},
+        {"$set": {
+            "items": rental["items"],
+            "days": rental.get("days"),
+            "end_date": rental.get("end_date"),
+            "total_amount": new_total,
+            "pending_amount": max(0, new_pending),
+            "swap_history": swap_history,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Create cash movement if there's a price difference
+    operation_number = None
+    if data.delta_amount != 0:
+        # Get active session
+        active_session = await db.cash_sessions.find_one({"status": "open"})
+        if active_session:
+            operation_number = await get_next_operation_number()
+            
+            movement_type = "swap_supplement" if data.delta_amount > 0 else "swap_refund"
+            
+            cash_doc = {
+                "id": str(uuid.uuid4()),
+                "session_id": active_session["id"],
+                "type": movement_type,
+                "amount": abs(data.delta_amount),
+                "description": f"Cambio de artículo: {data.old_item_barcode} → {data.new_item_barcode}",
+                "payment_method": data.payment_method,
+                "rental_id": rental_id,
+                "customer_name": rental.get("customer_name"),
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "created_by": current_user["username"],
+                "operation_number": operation_number
+            }
+            await db.cash_movements.insert_one(cash_doc)
+    
+    return {
+        "message": "Cambio realizado correctamente",
+        "old_item": data.old_item_barcode,
+        "new_item": data.new_item_barcode,
+        "delta_amount": data.delta_amount,
+        "operation_number": operation_number,
+        "swap_history": swap_history
+    }
+
 class UpdateRentalDaysRequest(BaseModel):
     days: int
     new_total: float
