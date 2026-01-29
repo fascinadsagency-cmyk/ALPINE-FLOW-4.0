@@ -202,6 +202,86 @@ export default function Returns() {
     window.open(`https://wa.me/${cleanPhone}`, '_blank');
   };
 
+  // Open customer info modal
+  const openCustomerModal = async (rentalData) => {
+    setCustomerLoading(true);
+    setShowCustomerModal(true);
+    
+    try {
+      // Get full customer data if we have customer_id
+      let customerData = {
+        name: rentalData.customer_name,
+        dni: rentalData.customer_dni,
+        phone: rentalData.customer_phone,
+        email: rentalData.customer_email,
+        hotel: rentalData.customer_hotel || rentalData.hotel,
+        notes: rentalData.customer_notes,
+        pending_items: rentalData.pending_items || [],
+        rental_id: rentalData.id,
+        end_date: rentalData.end_date,
+        days_overdue: rentalData.days_overdue || 0
+      };
+      
+      // Try to get more customer details from API
+      if (rentalData.customer_id) {
+        try {
+          const response = await axios.get(`${API}/customers/${rentalData.customer_id}`);
+          customerData = {
+            ...customerData,
+            ...response.data,
+            pending_items: rentalData.pending_items || [],
+            rental_id: rentalData.id,
+            end_date: rentalData.end_date,
+            days_overdue: rentalData.days_overdue || 0
+          };
+        } catch (e) {
+          // Continue with rental data if customer fetch fails
+        }
+      }
+      
+      setSelectedCustomer(customerData);
+    } catch (error) {
+      toast.error("Error al cargar datos del cliente");
+    } finally {
+      setCustomerLoading(false);
+    }
+  };
+
+  // Send WhatsApp with predefined message
+  const sendWhatsAppMessage = (phone, customerName) => {
+    if (!phone) {
+      toast.error("No hay teléfono registrado para este cliente");
+      return;
+    }
+    const cleanPhone = phone.replace(/\D/g, '');
+    const message = encodeURIComponent(
+      `Hola ${customerName}, te contactamos de la tienda de esquí por la devolución del material. ¿Cuándo podrías pasarte a devolverlo? Gracias.`
+    );
+    window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
+  };
+
+  // Call phone directly
+  const callPhone = (phone) => {
+    if (!phone) {
+      toast.error("No hay teléfono registrado");
+      return;
+    }
+    window.open(`tel:${phone}`, '_self');
+  };
+
+  // Send email
+  const sendEmail = (email, customerName) => {
+    if (!email) {
+      toast.error("No hay email registrado");
+      return;
+    }
+    const subject = encodeURIComponent("Recordatorio de devolución de material - Tienda de Esquí");
+    const body = encodeURIComponent(
+      `Hola ${customerName},\n\nTe contactamos desde la tienda de esquí para recordarte la devolución del material alquilado.\n\nPor favor, contacta con nosotros para coordinar la devolución.\n\nGracias.`
+    );
+    window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+  };
+
   // Calculate refund amount based on days
   const calculateRefundAmount = (days) => {
     if (!rental || days <= 0) return 0;
