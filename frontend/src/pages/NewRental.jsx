@@ -840,11 +840,12 @@ export default function NewRental() {
     return tariff.day_11_plus > 0;
   };
 
-  // Calcula el precio total de un item (precio unitario * cantidad)
+  // Calcula el precio total de un item (precio unitario * cantidad * días)
   const getItemTotalPrice = (item) => {
     const unitPrice = getItemPriceWithPack(item);
     const qty = item.quantity || 1;
-    return unitPrice * qty;
+    const days = item.itemDays || numDays;
+    return unitPrice * qty * days;
   };
 
   const calculateSubtotal = () => {
