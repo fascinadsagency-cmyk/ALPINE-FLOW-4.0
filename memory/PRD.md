@@ -8,22 +8,38 @@
 
 ## Funcionalidades Implementadas
 
-### 1. Corrección de Módulo de Caja (2026-01-29) ✨ CORREGIDO
-**Sincronización 100% fiable:**
+### 1. Módulo de Gestión de Caja - Desglose Profesional ✨ COMPLETADO
+**Funcionalidad 100% operativa con desglose detallado:**
 
-- **Conteo de operaciones**: Ahora muestra correctamente el número de movimientos
-- **Saldo esperado**: Coincide exactamente con la facturación real por método de pago
-- **Desglose por método**: Efectivo y Tarjeta calculados correctamente (income - expense - refund)
-- **Impresión automática de arqueo**: Al cerrar caja se genera ticket térmico 80mm
-- **Reimprimir cierres**: Botón de impresora en cada cierre pasado
+- **Diálogo de Cierre Mejorado**: 
+  * Resumen Global del Día (Ventas, Salidas, Devoluciones)
+  * Desglose Detallado por Método de Pago con dos tarjetas profesionales:
+    - 💵 **EFECTIVO** (fondo azul): + Ventas, - Salidas, - Devoluciones → Esperado
+    - 💳 **TARJETA** (fondo morado): + Ventas, - Salidas, - Devoluciones → Esperado
+  * Cálculo de Descuadre Dinámico con feedback visual (verde/amarillo/rojo)
+  * Mensajes contextuales ("¡Cuadra perfectamente!", "Hay más dinero", "Falta dinero")
 
-**Ticket de Arqueo incluye:**
-- Fecha/Hora apertura y cierre
-- Nº de operaciones
-- Resumen del día (Entradas, Salidas, Devoluciones)
-- Total esperado vs Total contado
-- Descuadre resultante (efectivo y tarjeta por separado)
-- Notas del cierre
+- **Ticket de Arqueo Profesional (formato térmico 80mm)**:
+  * Encabezado con fecha, hora y empleado
+  * Nº de operaciones
+  * RESUMEN GLOBAL DEL DÍA: Entradas, Salidas, Devoluciones
+  * **DESGLOSE POR MÉTODO DE PAGO** (nuevo):
+    - Sección **💵 EFECTIVO**: + Ventas, - Salidas, - Devoluciones, Esperado, Contado, Descuadre
+    - Sección **💳 TARJETA**: + Ventas, - Salidas, - Devoluciones, Esperado, Datáfono, Descuadre
+  * DESCUADRE TOTAL en recuadro destacado (verde/amarillo/rojo según cantidad)
+  * Notas del cierre
+  * Footer: "Documento de arqueo - Conservar con la recaudación"
+
+- **Backend Mejorado**:
+  * Endpoint `/api/cash/summary` devuelve `by_payment_method` con estructura completa
+  * Endpoint `/api/cash/close` guarda el desglose detallado para reimprimir
+  * Modelo `CashClosingResponse` actualizado con campos: `total_refunds`, `movements_count`, `by_payment_method`
+
+- **Funcionalidades Adicionales**:
+  * Impresión automática al cerrar caja
+  * Reimprimir cierres históricos con desglose completo
+  * Retrocompatibilidad con cierres antiguos (sin errores)
+  * Cálculos precisos: Esperado = Ventas - Salidas - Devoluciones (por cada método)
 
 ### 2. Panel de Control de Devoluciones en Dashboard
 - Métricas dinámicas por categoría de artículo
