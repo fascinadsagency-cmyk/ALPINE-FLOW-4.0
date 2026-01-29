@@ -1888,9 +1888,9 @@ export default function NewRental() {
                               )}
                             </div>
                             
-                            {/* Precio Total Pack - Tarifa escalonada */}
+                            {/* Precio Total Pack (IVA incluido) */}
                             <div className="col-span-3 text-right">
-                              <p className="text-xs text-amber-700 uppercase">Precio ({group.days}d)</p>
+                              <p className="text-xs text-amber-700 uppercase">Total (IVA inc.)</p>
                               <p className="text-xl font-bold text-amber-700">€{packTotal.toFixed(2)}</p>
                             </div>
                             
