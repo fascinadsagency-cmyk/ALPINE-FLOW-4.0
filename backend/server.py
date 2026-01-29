@@ -3385,6 +3385,7 @@ class CashMovementCreate(BaseModel):
 class CashMovementResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
+    operation_number: Optional[str] = None  # Format: AXXXXXX
     movement_type: str
     amount: float
     payment_method: str
