@@ -3506,6 +3506,23 @@ async def get_cash_sessions(current_user: dict = Depends(get_current_user)):
 
 # ==================== CASH MOVEMENTS ROUTES ====================
 
+async def get_next_operation_number():
+    """
+    Generate sequential operation number in format AXXXXXX (A + 6 digits).
+    This is a GLOBAL counter for all cash movements (sales, refunds, expenses).
+    """
+    # Get or create the counter document
+    counter = await db.counters.find_one_and_update(
+        {"_id": "operation_number"},
+        {"$inc": {"sequence": 1}},
+        upsert=True,
+        return_document=True
+    )
+    
+    sequence = counter.get("sequence", 1)
+    # Format as A + 6 digits (e.g., A000001, A000042, A123456)
+    return f"A{sequence:06d}"
+
 @api_router.post("/cash/movements")
 async def create_cash_movement(movement: CashMovementCreate, current_user: dict = Depends(get_current_user)):
     # Check if there's an active session
@@ -3516,9 +3533,12 @@ async def create_cash_movement(movement: CashMovementCreate, current_user: dict 
         raise HTTPException(status_code=400, detail="No active cash session. Please open the cash register first.")
     
     movement_id = str(uuid.uuid4())
+    operation_number = await get_next_operation_number()
+    
     doc = {
         "id": movement_id,
-        "session_id": active_session["id"],  # Link movement to session
+        "operation_number": operation_number,
+        "session_id": active_session["id"],
         "movement_type": movement.movement_type,
         "amount": movement.amount,
         "payment_method": movement.payment_method,
