@@ -420,13 +420,13 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
               </Button>
               
               {showProfitability && (
-                <Select value={sortBy} onValueChange={setSortBy}>
+                <Select value={sortBy || "none"} onValueChange={(v) => setSortBy(v === "none" ? "" : v)}>
                   <SelectTrigger className="w-52 h-10">
                     <ArrowUpDown className="h-4 w-4 mr-2" />
                     <SelectValue placeholder="Ordenar por..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Sin ordenar</SelectItem>
+                    <SelectItem value="none">Sin ordenar</SelectItem>
                     <SelectItem value="profit">Mayor Beneficio</SelectItem>
                     <SelectItem value="profit_asc">Menor Beneficio</SelectItem>
                     <SelectItem value="revenue">Más Ingresos</SelectItem>
