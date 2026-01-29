@@ -742,10 +742,11 @@ async def get_items(
     if category:
         query["category"] = category
     if search:
-        # Prioritize internal_code search first
+        # Search by internal_code, barcode, serial_number, brand, model, size
         query["$or"] = [
             {"internal_code": {"$regex": search, "$options": "i"}},
             {"barcode": {"$regex": search, "$options": "i"}},
+            {"serial_number": {"$regex": search, "$options": "i"}},
             {"brand": {"$regex": search, "$options": "i"}},
             {"model": {"$regex": search, "$options": "i"}},
             {"size": {"$regex": search, "$options": "i"}}
