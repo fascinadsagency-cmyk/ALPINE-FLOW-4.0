@@ -863,7 +863,6 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                         
                         {!showProfitability && (
                           <>
-                            <TableCell className="font-mono text-sm text-slate-500">{item.barcode}</TableCell>
                             <TableCell className="text-center">{item.days_used}</TableCell>
                             <TableCell>
                               {needsMaintenance ? (
