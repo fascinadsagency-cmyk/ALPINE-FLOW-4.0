@@ -922,8 +922,14 @@ export default function NewRental() {
       // Use the first item's days as the pack days
       const packDays = packItemObjects[0]?.itemDays || numDays;
       
-      // CRITICAL: Get pack price - this is the TOTAL for selected days, NOT per day
-      const packPrice = getPackPrice(dp.pack, packDays);
+      // CRITICAL: Get pack price - check for custom price first
+      const firstPackItem = packItemObjects[0];
+      const customPackPrice = firstPackItem?.customPackPrice;
+      const basePackPrice = getPackPrice(dp.pack, packDays);
+      const packPrice = customPackPrice !== null && customPackPrice !== undefined 
+        ? customPackPrice 
+        : basePackPrice;
+      const isPackPriceEdited = customPackPrice !== null && customPackPrice !== undefined;
       
       // PASO 1: CONSOLIDACIÓN - Extraer códigos de los HIJOS y fusionarlos en el nombre
       const childCodes = packItemObjects.map(item => 
@@ -939,7 +945,9 @@ export default function NewRental() {
         fusedName: fusedName,  // Nombre con códigos de hijos incrustados
         childCodes: childCodes,
         items: packItemObjects,  // Solo para referencia interna, NO para renderizar filas
-        price: packPrice,  // Precio TOTAL del pack (no multiplicar por días)
+        price: packPrice,  // Precio TOTAL del pack (puede ser personalizado)
+        basePrice: basePackPrice,  // Precio original sin editar
+        isEdited: isPackPriceEdited,  // Flag para mostrar "EDITADO"
         days: packDays,
         packId: `pack-${idx}`
       });
@@ -950,11 +958,18 @@ export default function NewRental() {
       const itemId = item.id || item.barcode;
       // Si el item es HIJO de un pack, NO lo añadimos
       if (!packItemIds.has(itemId)) {
+        const basePrice = getItemPriceFromTariff(item);
+        const customPrice = item.customPrice;
+        const finalPrice = customPrice !== null && customPrice !== undefined ? customPrice : basePrice;
+        const isEdited = customPrice !== null && customPrice !== undefined;
+        
         groups.push({
           type: 'single',
           item: item,
           items: [item],
-          price: item.customPrice !== null ? item.customPrice : getItemPriceFromTariff(item),
+          price: finalPrice,
+          basePrice: basePrice,
+          isEdited: isEdited,
           days: item.itemDays || numDays
         });
       }
