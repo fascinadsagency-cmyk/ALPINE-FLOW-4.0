@@ -1884,13 +1884,31 @@ async def process_return(rental_id: str, return_input: ReturnInput, current_user
         "pending_amount": rental["pending_amount"]
     }
 
+class PaymentRequest(BaseModel):
+    amount: float
+    payment_method: str = "cash"
+
 @api_router.post("/rentals/{rental_id}/payment")
-async def process_payment(rental_id: str, amount: float = Query(...), current_user: dict = Depends(get_current_user)):
+async def process_payment(rental_id: str, payment: PaymentRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Procesar un pago adicional para un alquiler existente.
+    SIEMPRE crea un movimiento de caja vinculado a la sesión activa.
+    """
     rental = await db.rentals.find_one({"id": rental_id})
     if not rental:
         raise HTTPException(status_code=404, detail="Rental not found")
     
-    new_paid = rental["paid_amount"] + amount
+    # Validate active cash session
+    date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+    
+    if not active_session:
+        raise HTTPException(
+            status_code=400,
+            detail="No hay sesión de caja activa. Abre la caja primero desde 'Gestión de Caja'."
+        )
+    
+    new_paid = rental["paid_amount"] + payment.amount
     new_pending = rental["total_amount"] - new_paid
     
     await db.rentals.update_one(
@@ -1898,7 +1916,33 @@ async def process_payment(rental_id: str, amount: float = Query(...), current_us
         {"$set": {"paid_amount": new_paid, "pending_amount": max(0, new_pending)}}
     )
     
-    return {"message": "Payment processed", "paid_amount": new_paid, "pending_amount": max(0, new_pending)}
+    # CREATE CASH MOVEMENT - This is MANDATORY for accounting integrity
+    cash_movement_id = str(uuid.uuid4())
+    customer = await db.customers.find_one({"id": rental.get("customer_id")})
+    customer_name = customer.get("name", rental.get("customer_name", "Cliente")) if customer else rental.get("customer_name", "Cliente")
+    
+    cash_doc = {
+        "id": cash_movement_id,
+        "session_id": active_session["id"],
+        "movement_type": "income",
+        "amount": payment.amount,
+        "payment_method": payment.payment_method,
+        "category": "rental_payment",
+        "concept": f"Pago adicional Alquiler #{rental_id[:8]} - {customer_name}",
+        "reference_id": f"{rental_id}_pay_{cash_movement_id[:8]}",
+        "customer_name": customer_name,
+        "notes": f"Pago de €{payment.amount:.2f} sobre deuda pendiente",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": current_user["username"]
+    }
+    await db.cash_movements.insert_one(cash_doc)
+    
+    return {
+        "message": "Payment processed",
+        "paid_amount": new_paid,
+        "pending_amount": max(0, new_pending),
+        "cash_movement_id": cash_movement_id
+    }
 
 class UpdateRentalDaysRequest(BaseModel):
     days: int
