@@ -609,6 +609,78 @@ async def delete_customer(customer_id: str, current_user: dict = Depends(get_cur
     await db.customers.delete_one({"id": customer_id})
     return {"message": "Customer deleted successfully"}
 
+# Import customers endpoint
+class CustomerImportItem(BaseModel):
+    dni: str
+    name: str
+    phone: Optional[str] = ""
+    email: Optional[str] = ""
+    address: Optional[str] = ""
+    city: Optional[str] = ""
+    source: Optional[str] = ""
+    notes: Optional[str] = ""
+
+class CustomerImportRequest(BaseModel):
+    customers: List[CustomerImportItem]
+
+@api_router.post("/customers/import")
+async def import_customers(request: CustomerImportRequest, current_user: dict = Depends(get_current_user)):
+    imported = 0
+    duplicates = 0
+    errors = 0
+    duplicate_dnis = []
+    
+    for customer in request.customers:
+        try:
+            dni_upper = customer.dni.strip().upper()
+            if not dni_upper or not customer.name.strip():
+                errors += 1
+                continue
+            
+            # Check for existing customer by DNI
+            existing = await db.customers.find_one({"dni": dni_upper})
+            if existing:
+                duplicates += 1
+                duplicate_dnis.append(dni_upper)
+                continue
+            
+            # Check for existing by email if provided
+            if customer.email and customer.email.strip():
+                existing_email = await db.customers.find_one({"email": customer.email.strip().lower()})
+                if existing_email:
+                    duplicates += 1
+                    duplicate_dnis.append(f"{dni_upper} (email)")
+                    continue
+            
+            customer_id = str(uuid.uuid4())
+            doc = {
+                "id": customer_id,
+                "dni": dni_upper,
+                "name": customer.name.strip(),
+                "phone": customer.phone.strip() if customer.phone else "",
+                "email": customer.email.strip().lower() if customer.email else "",
+                "address": customer.address.strip() if customer.address else "",
+                "city": customer.city.strip() if customer.city else "",
+                "source": customer.source.strip() if customer.source else "",
+                "notes": customer.notes.strip() if customer.notes else "",
+                "created_at": datetime.now(timezone.utc),
+                "total_rentals": 0
+            }
+            
+            await db.customers.insert_one(doc)
+            imported += 1
+            
+        except Exception as e:
+            errors += 1
+            print(f"Error importing customer {customer.dni}: {str(e)}")
+    
+    return {
+        "imported": imported,
+        "duplicates": duplicates,
+        "errors": errors,
+        "duplicate_dnis": duplicate_dnis[:50]  # Limit to 50 for response size
+    }
+
 # ==================== INVENTORY ROUTES ====================
 
 @api_router.post("/items", response_model=ItemResponse)
