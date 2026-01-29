@@ -443,14 +443,18 @@ export default function NewRental() {
     return getItemPrice(item);
   };
 
-  const getPackPrice = (pack) => {
-    if (numDays <= 10 && pack[`day_${numDays}`]) {
-      return pack[`day_${numDays}`];
+  const getPackPrice = (pack, days = null) => {
+    // Use provided days or fall back to global numDays
+    const targetDays = days !== null ? days : numDays;
+    
+    if (targetDays <= 10 && pack[`day_${targetDays}`]) {
+      return pack[`day_${targetDays}`];
     }
-    if (numDays > 10 && pack.day_11_plus) {
+    if (targetDays > 10 && pack.day_11_plus) {
       return pack.day_11_plus;
     }
-    return 0;
+    // Fallback to day_1 if available
+    return pack.day_1 || 0;
   };
 
   // Smart date handlers
