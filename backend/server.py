@@ -70,6 +70,7 @@ class CustomerResponse(BaseModel):
     dni: str
     name: str
     phone: str
+    email: str = ""
     address: str
     city: str
     source: str = ""
