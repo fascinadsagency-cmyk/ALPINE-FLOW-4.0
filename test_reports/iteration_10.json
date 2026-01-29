@@ -1,0 +1,84 @@
+{
+  "summary": "Iteration 10 - Tested new Centralized Swap (Modo Canje) feature. All 7 requested features verified successfully: CAMBIOS button visible, modal opens correctly, auto-focus on scanner input, auto-detection of item type, price delta display with correct colors, backend endpoint functional, inventory updates.",
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  
+  "passed_tests": [
+    "1. CAMBIOS button appears in Actions column of each active rental - PASSED",
+    "2. Clicking CAMBIOS opens 'Gestión de Cambios' modal - PASSED",
+    "3. Scanner input has auto-focus when modal opens (data-testid='swap-barcode-input') - PASSED",
+    "4. Auto-detection: Entering J005 (ski) detects matching ski item in rental - PASSED",
+    "5. Auto-detection: Entering 4041 (boot) detects matching boot item in rental - PASSED",
+    "6. Price delta shows DOWNGRADE in RED for refund scenarios - PASSED",
+    "7. Toast notification shows 'Sustitución detectada: [old] → [new]' - PASSED",
+    "8. Confirm button shows correct action: 'Abonar €32.50 y Cambiar' - PASSED",
+    "9. POST /api/rentals/{rental_id}/central-swap endpoint exists - PASSED",
+    "10. Endpoint validates rental exists - PASSED",
+    "11. Endpoint validates rental is active (not returned) - PASSED",
+    "12. Endpoint validates old item exists in rental - PASSED",
+    "13. Endpoint validates new item exists in inventory - PASSED",
+    "14. Endpoint validates new item is available (not already rented) - PASSED",
+    "15. Request validation: requires old_item_barcode - PASSED",
+    "16. Request validation: requires new_item_barcode - PASSED",
+    "17. Request validation: requires days_remaining - PASSED",
+    "18. Items search API works for barcode scanner - PASSED",
+    "19. Rental items have required fields for swap detection (item_type, barcode) - PASSED",
+    "20. Tariffs available for price calculation - PASSED"
+  ],
+  
+  "test_report_links": [
+    "/app/backend/tests/test_central_swap.py",
+    "/app/test_reports/pytest/pytest_central_swap.xml"
+  ],
+  
+  "action_items": [],
+  
+  "critical_code_review_comments": [],
+  
+  "updated_files": [
+    "/app/backend/tests/test_central_swap.py"
+  ],
+  
+  "success_rate": {
+    "backend": "100% (14/14 tests passed)",
+    "frontend": "100% (all swap modal features working)"
+  },
+  
+  "test_credentials": {
+    "username": "testcaja",
+    "password": "test1234"
+  },
+  
+  "seed_data_creation": "None - used existing test data (Erika Quijano Guerrero rental with ski and boot items)",
+  
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  
+  "context_for_next_testing_agent": "Centralized Swap (Modo Canje) feature is fully functional. The CAMBIOS button is in the Actions column of each active rental. The modal has auto-focus on the barcode scanner input. Auto-detection works by matching item_type between the scanned item and items in the rental. Price delta calculation uses tariffs and shows correct colors (green for upgrade/charge, red for downgrade/refund). Test items available: J005 (ski), 4041 (boot). The rental for 'Erika Quijano Guerrero' has multiple items including skis and boots for testing swaps.",
+  
+  "feature_verification": {
+    "cambios_button_visible": true,
+    "modal_opens_correctly": true,
+    "auto_focus_on_scanner": true,
+    "auto_detection_works": true,
+    "price_delta_display_correct": true,
+    "backend_endpoint_functional": true,
+    "inventory_update_logic_present": true
+  },
+  
+  "screenshots": [
+    ".screenshots/active_rentals_cambios.png - Shows CAMBIOS button in Actions column",
+    ".screenshots/swap_modal.png - Shows modal with scanner input",
+    ".screenshots/swap_after_enter.png - Shows auto-detection with ski item J005",
+    ".screenshots/swap_boot_detection.png - Shows auto-detection with boot item 4041"
+  ]
+}
