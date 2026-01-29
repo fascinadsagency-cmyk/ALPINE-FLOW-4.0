@@ -1902,17 +1902,13 @@ export default function NewRental() {
                               <p className="text-xl font-bold text-amber-700">€{packTotal.toFixed(2)}</p>
                             </div>
                             
-                            {/* Remove Pack Button */}
+                            {/* Remove Pack Button - BORRADO EN CASCADA */}
                             <div className="col-span-1 text-right">
                               <Button
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                onClick={() => {
-                                  // Remove all items that are part of this pack
-                                  const packItemIds = new Set(group.items.map(i => i.id || i.barcode));
-                                  setItems(items.filter(item => !packItemIds.has(item.id || item.barcode)));
-                                }}
+                                onClick={() => removePackComplete(group.items)}
                               >
                                 <X className="h-4 w-4" />
                               </Button>
