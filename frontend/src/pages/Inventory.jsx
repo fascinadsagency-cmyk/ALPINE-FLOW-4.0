@@ -297,18 +297,27 @@ export default function Inventory() {
     // Validation depends on item type
     if (newItem.is_generic) {
       // Generic item validation
-      if (!newItem.name || !newItem.item_type || !newItem.stock_total) {
-        toast.error("Completa todos los campos obligatorios (Nombre, Tipo, Stock)");
+      const stockNum = parseInt(newItem.stock_total);
+      if (!newItem.name?.trim()) {
+        toast.error("El nombre es obligatorio");
         return;
       }
-      if (parseInt(newItem.stock_total) < 1) {
+      if (!newItem.item_type) {
+        toast.error("Selecciona un tipo de artículo");
+        return;
+      }
+      if (!newItem.stock_total || isNaN(stockNum) || stockNum < 1) {
         toast.error("El stock debe ser al menos 1 unidad");
         return;
       }
     } else {
       // Regular item validation
-      if (!newItem.internal_code || !newItem.item_type) {
-        toast.error("Completa los campos obligatorios (Código Interno, Tipo)");
+      if (!newItem.internal_code?.trim()) {
+        toast.error("El código interno es obligatorio");
+        return;
+      }
+      if (!newItem.item_type) {
+        toast.error("Selecciona un tipo de artículo");
         return;
       }
     }
@@ -316,6 +325,7 @@ export default function Inventory() {
     try {
       const itemToCreate = {
         ...newItem,
+        name: newItem.name?.trim() || "",
         barcode: newItem.is_generic ? "" : (newItem.barcode || `BC-${newItem.internal_code}`),
         serial_number: newItem.serial_number || "",
         binding: newItem.binding || "",
