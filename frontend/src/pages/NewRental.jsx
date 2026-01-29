@@ -725,13 +725,13 @@ export default function NewRental() {
     setItems(items.filter(i => (i.id || i.barcode) !== itemId));
   };
 
-  // Update item days
+  // Update item days (marks as manually edited)
   const updateItemDays = (itemId, newDays) => {
     const days = parseInt(newDays) || 1;
     if (days < 1) return;
     setItems(items.map(item => 
       (item.id || item.barcode) === itemId 
-        ? { ...item, itemDays: days }
+        ? { ...item, itemDays: days, manualDaysEdit: true }
         : item
     ));
     setEditingItemDays(null);
