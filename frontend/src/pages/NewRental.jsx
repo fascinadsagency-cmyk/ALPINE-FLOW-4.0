@@ -802,23 +802,36 @@ export default function NewRental() {
     }
     
     const tariff = tariffs.find(t => t.item_type === item.item_type);
-    if (!tariff) return 0;
-    
-    // Use daily pricing if available (day_1 to day_10, then day_11_plus)
-    if (numDays <= 10 && tariff[`day_${numDays}`] !== null && tariff[`day_${numDays}`] !== undefined) {
-      return tariff[`day_${numDays}`];
+    if (!tariff) {
+      // Sin tarifa configurada - retornar 0 (se mostrará alerta en UI)
+      return 0;
     }
-    if (numDays > 10 && tariff.day_11_plus !== null && tariff.day_11_plus !== undefined) {
+    
+    // Usar exclusivamente precios diarios (day_1 a day_10, luego day_11_plus)
+    if (numDays <= 10) {
+      const dayPrice = tariff[`day_${numDays}`];
+      if (dayPrice !== null && dayPrice !== undefined && dayPrice > 0) {
+        return dayPrice;
+      }
+    } else if (tariff.day_11_plus !== null && tariff.day_11_plus !== undefined && tariff.day_11_plus > 0) {
       return tariff.day_11_plus;
     }
     
-    // Fallback to legacy pricing structure
-    if (numDays === 1 && tariff.days_1) return tariff.days_1;
-    if (numDays <= 3 && tariff.days_2_3) return tariff.days_2_3;
-    if (numDays <= 7 && tariff.days_4_7) return tariff.days_4_7;
-    if (tariff.week) return tariff.week;
-    
+    // Sin precio configurado para estos días - retornar 0
     return 0;
+  };
+
+  // Verifica si un artículo tiene tarifa configurada
+  const itemHasTariff = (item) => {
+    if (item.is_generic && item.rental_price) return true;
+    if (item.customPrice !== null && item.customPrice !== undefined) return true;
+    const tariff = tariffs.find(t => t.item_type === item.item_type);
+    if (!tariff) return false;
+    // Verificar que tenga al menos un precio diario
+    for (let i = 1; i <= 10; i++) {
+      if (tariff[`day_${i}`] > 0) return true;
+    }
+    return tariff.day_11_plus > 0;
   };
 
   // Calcula el precio total de un item (precio unitario * cantidad)
