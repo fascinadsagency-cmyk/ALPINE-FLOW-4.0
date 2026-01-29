@@ -1653,27 +1653,6 @@ export default function NewRental() {
                               <X className="h-4 w-4" />
                             </Button>
                           </div>
-                              >
-                                <div className="text-right">
-                                  <p className={`text-sm font-semibold ${item.customPrice !== null ? 'text-emerald-600' : 'text-slate-900'}`}>
-                                    €{itemPrice.toFixed(2)}
-                                    {item.customPrice !== null && <span className="ml-1 text-xs">(editado)</span>}
-                                  </p>
-                                  <p className="text-xs text-slate-500">{numDays}d</p>
-                                </div>
-                                <Edit2 className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
-                              </div>
-                            )}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeItem(item.barcode)}
-                              className="h-8 w-8 p-0"
-                              data-testid={`remove-item-${item.barcode}`}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
                         </div>
                       );
                     })}
