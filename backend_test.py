@@ -66,7 +66,18 @@ class CashSessionTester:
         try:
             # First close any existing session
             try:
-                requests.post(f"{BACKEND_URL}/cash/sessions/close", headers=self.headers)
+                # Try to get active session first
+                active_response = requests.get(f"{BACKEND_URL}/cash/sessions/active", headers=self.headers)
+                if active_response.status_code == 200 and active_response.json():
+                    # Close existing session
+                    close_data = {
+                        "date": TEST_DATE,
+                        "physical_cash": 0,
+                        "card_total": 0,
+                        "notes": "Closing for test setup"
+                    }
+                    requests.post(f"{BACKEND_URL}/cash/close", json=close_data, headers=self.headers)
+                    requests.post(f"{BACKEND_URL}/cash/sessions/close", json=close_data, headers=self.headers)
             except:
                 pass
             
