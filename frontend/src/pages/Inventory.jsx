@@ -911,36 +911,49 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
 
       {/* Add Item Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Añadir Artículo</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-base font-semibold">Código Interno * <span className="text-primary">🏷️</span></Label>
-                <Input
-                  value={newItem.internal_code}
-                  onChange={(e) => setNewItem({ ...newItem, internal_code: e.target.value.toUpperCase() })}
-                  placeholder="Ej: SKI-G-001"
-                  className="h-11 mt-1 font-mono font-semibold text-base border-2 border-primary/50 focus:border-primary"
-                  data-testid="new-item-internal-code"
-                  autoFocus
-                />
-                <p className="text-xs text-primary font-medium mt-1">Tu numeración principal de tienda</p>
-              </div>
-              <div>
-                <Label>Código de Barras <span className="text-slate-400 text-xs">(Opcional)</span></Label>
-                <Input
-                  value={newItem.barcode}
-                  onChange={(e) => setNewItem({ ...newItem, barcode: e.target.value })}
-                  placeholder="Escanear o dejar vacío"
-                  className="h-11 mt-1 font-mono"
-                  data-testid="new-item-barcode"
-                />
-                <p className="text-xs text-slate-500 mt-1">Se auto-genera si está vacío</p>
+            {/* Códigos de identificación - Agrupados */}
+            <div className="p-3 bg-slate-50 rounded-lg border">
+              <p className="text-xs font-semibold text-slate-500 uppercase mb-3">Identificación</p>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <Label className="text-sm font-semibold">Código Interno *</Label>
+                  <Input
+                    value={newItem.internal_code}
+                    onChange={(e) => setNewItem({ ...newItem, internal_code: e.target.value.toUpperCase() })}
+                    placeholder="SKI-001"
+                    className="h-10 mt-1 font-mono font-semibold text-sm border-2 border-primary/50 focus:border-primary"
+                    data-testid="new-item-internal-code"
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm">Cód. Barras</Label>
+                  <Input
+                    value={newItem.barcode}
+                    onChange={(e) => setNewItem({ ...newItem, barcode: e.target.value })}
+                    placeholder="Auto-genera"
+                    className="h-10 mt-1 font-mono text-sm"
+                    data-testid="new-item-barcode"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm">Nº Serie</Label>
+                  <Input
+                    value={newItem.serial_number}
+                    onChange={(e) => setNewItem({ ...newItem, serial_number: e.target.value })}
+                    placeholder="Fabricante"
+                    className="h-10 mt-1 font-mono text-sm"
+                    data-testid="new-item-serial"
+                  />
+                </div>
               </div>
             </div>
+            
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Tipo *</Label>
@@ -976,6 +989,22 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                   </Select>
                 </div>
               </div>
+              <div>
+                <Label>Categoría</Label>
+                <Select 
+                  value={newItem.category} 
+                  onValueChange={(v) => setNewItem({ ...newItem, category: v })}
+                >
+                  <SelectTrigger className="h-11 mt-1" data-testid="new-item-category">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="SUPERIOR">Gama Superior</SelectItem>
+                    <SelectItem value="ALTA">Gama Alta</SelectItem>
+                    <SelectItem value="MEDIA">Gama Media</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -988,7 +1017,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                 />
               </div>
               <div>
-                <Label>Modelo *</Label>
+                <Label>Modelo</Label>
                 <Input
                   value={newItem.model}
                   onChange={(e) => setNewItem({ ...newItem, model: e.target.value })}
@@ -1008,16 +1037,16 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                 />
               </div>
               <div>
-                <Label>Categoría</Label>
-                <Select 
-                  value={newItem.category} 
-                  onValueChange={(v) => setNewItem({ ...newItem, category: v })}
-                >
-                  <SelectTrigger className="h-11 mt-1" data-testid="new-item-category">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="SUPERIOR">Gama Superior</SelectItem>
+                <Label>Fijación</Label>
+                <Input
+                  value={newItem.binding}
+                  onChange={(e) => setNewItem({ ...newItem, binding: e.target.value })}
+                  placeholder="Ej: Marker Griffon 13"
+                  className="h-11 mt-1"
+                  data-testid="new-item-binding"
+                />
+              </div>
+            </div>
                     <SelectItem value="ALTA">Gama Alta</SelectItem>
                     <SelectItem value="MEDIA">Gama Media</SelectItem>
                   </SelectContent>
