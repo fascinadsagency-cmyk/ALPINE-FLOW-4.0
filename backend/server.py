@@ -79,20 +79,25 @@ class CustomerResponse(BaseModel):
     total_rentals: int = 0
 
 class ItemCreate(BaseModel):
-    barcode: str
-    internal_code: str  # Internal shop code (REQUIRED - main identifier)
+    barcode: Optional[str] = ""  # Optional for generic items
+    internal_code: Optional[str] = ""  # Optional for generic items
     serial_number: Optional[str] = ""  # Manufacturer serial number
-    item_type: str  # ski, snowboard, boots, helmet, poles
-    brand: str
-    model: str
-    size: str
+    item_type: str  # Required - type from custom types
+    brand: Optional[str] = ""  # Optional for generic items
+    model: Optional[str] = ""  # Optional for generic items
+    size: Optional[str] = ""
     binding: Optional[str] = ""  # Binding type/model for skis
-    purchase_price: float
-    purchase_date: str
+    purchase_price: float = 0
+    purchase_date: Optional[str] = ""
     location: str = ""
     maintenance_interval: int = 30  # days between maintenance
     category: str = "MEDIA"  # SUPERIOR, ALTA, MEDIA
     acquisition_cost: Optional[float] = None  # Cost for profitability tracking
+    # Generic item fields
+    is_generic: bool = False  # If true, managed by quantity not individual tracking
+    name: Optional[str] = ""  # Display name for generic items (e.g., "Casco Adulto")
+    stock_total: int = 0  # Total units for generic items
+    rental_price: Optional[float] = None  # Quick rental price for generic items
 
 class BulkItemCreate(BaseModel):
     items: List[ItemCreate]
@@ -104,20 +109,20 @@ class GenerateBarcodeRequest(BaseModel):
 class ItemResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
-    barcode: str
-    internal_code: str  # Internal shop code (main identifier)
+    barcode: str = ""
+    internal_code: str = ""  # Internal shop code (main identifier)
     serial_number: str = ""  # Manufacturer serial number
     item_type: str
-    brand: str
-    model: str
-    size: str
+    brand: str = ""
+    model: str = ""
+    size: str = ""
     binding: str = ""  # Binding type/model
     status: str  # available, rented, maintenance, retired
-    purchase_price: float
-    purchase_date: str
-    location: str
-    days_used: int
-    amortization: float
+    purchase_price: float = 0
+    purchase_date: str = ""
+    location: str = ""
+    days_used: int = 0
+    amortization: float = 0
     category: str = "MEDIA"
     maintenance_interval: int = 30
     created_at: str
@@ -126,6 +131,12 @@ class ItemResponse(BaseModel):
     total_revenue: Optional[float] = None
     net_profit: Optional[float] = None
     amortization_percent: Optional[float] = None
+    # Generic item fields
+    is_generic: bool = False
+    name: str = ""
+    stock_total: int = 0
+    stock_available: int = 0
+    rental_price: Optional[float] = None
 
 class TariffCreate(BaseModel):
     item_type: str
