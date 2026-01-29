@@ -63,6 +63,9 @@ export default function Inventory() {
   const [barcodeCount, setBarcodeCount] = useState(5);
   const [itemTypes, setItemTypes] = useState([]);
   const [newTypeName, setNewTypeName] = useState("");
+  const [showProfitability, setShowProfitability] = useState(false);
+  const [profitabilitySummary, setProfitabilitySummary] = useState(null);
+  const [sortBy, setSortBy] = useState("");
   const fileInputRef = useRef(null);
   
   const [newItem, setNewItem] = useState({
@@ -73,6 +76,7 @@ export default function Inventory() {
     model: "",
     size: "",
     purchase_price: "",
+    acquisition_cost: "",
     purchase_date: new Date().toISOString().split('T')[0],
     location: "",
     maintenance_interval: "30",
