@@ -812,43 +812,79 @@ export default function NewRental() {
         activeSession = data;
       }
       
-      // 2. If no active session, prompt user to open cash register
+      // 2. If no active session, show modal to open cash register
       if (!activeSession || !activeSession.id) {
-        const shouldOpenCash = window.confirm(
-          `⚠️ NO HAY CAJA ABIERTA\n\n` +
-          `No se puede registrar el cobro de €${total.toFixed(2)} sin una caja activa.\n\n` +
-          `¿Deseas abrir una nueva caja ahora para registrar este cobro?\n\n` +
-          `(Se abrirá con fondo inicial de €0, puedes cambiarlo después)`
-        );
-        
-        if (!shouldOpenCash) {
-          toast.error("Cobro cancelado. Abre la caja primero desde 'Gestión de Caja'.");
-          setProcessingPayment(false);
-          return;
-        }
-        
-        // Open new cash session with 0 opening balance
-        const openSessionRes = await fetch(`${API}/cash/sessions/open`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({
-            opening_balance: 0,
-            notes: `Apertura automática por venta de €${total.toFixed(2)}`
-          })
+        // Store payment data to resume after opening cash
+        setPendingPaymentData({
+          paymentMethod: paymentMethodSelected,
+          cashGiven: cashGivenAmount,
+          total: total
         });
         
-        if (!openSessionRes.ok) {
-          const errorData = await openSessionRes.json();
-          throw new Error(errorData.detail || "No se pudo abrir la caja automáticamente");
-        }
-        
-        toast.success("✅ Nueva caja abierta automáticamente");
+        // Close payment dialog and show auto-open cash dialog
+        setShowPaymentDialog(false);
+        setShowAutoOpenCashDialog(true);
+        setProcessingPayment(false);
+        return;
       }
       
-      // 3. Create rental
+      // 3. Continue with rental creation (session exists)
+      await completePendingRental(total, cashGivenAmount);
+      
+    } catch (error) {
+      console.error("Error creating rental:", error);
+      toast.error(error.message || error.response?.data?.detail || "Error al crear alquiler");
+      setProcessingPayment(false);
+    }
+  };
+
+  const openCashAndContinue = async () => {
+    if (!openingCashBalance && openingCashBalance !== "0") {
+      toast.error("Introduce el fondo de caja inicial (puede ser 0)");
+      return;
+    }
+
+    try {
+      const API = import.meta.env.VITE_API_URL;
+      
+      // Open new cash session
+      const openSessionRes = await fetch(`${API}/cash/sessions/open`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          opening_balance: parseFloat(openingCashBalance),
+          notes: `Apertura automática - Primera venta del día`
+        })
+      });
+      
+      if (!openSessionRes.ok) {
+        const errorData = await openSessionRes.json();
+        throw new Error(errorData.detail || "No se pudo abrir la caja");
+      }
+      
+      toast.success("✅ Nueva jornada iniciada correctamente");
+      
+      // Close auto-open dialog
+      setShowAutoOpenCashDialog(false);
+      setOpeningCashBalance("");
+      
+      // Resume payment process
+      if (pendingPaymentData) {
+        setProcessingPayment(true);
+        await completePendingRental(pendingPaymentData.total, pendingPaymentData.cashGiven);
+        setPendingPaymentData(null);
+      }
+      
+    } catch (error) {
+      toast.error(error.message || "Error al abrir caja");
+    }
+  };
+
+  const completePendingRental = async (total, cashGivenAmount) => {
+    try {
       const paid = paymentMethodSelected !== 'pending' ? total : 0;
       
       const rentalResponse = await rentalApi.create({
