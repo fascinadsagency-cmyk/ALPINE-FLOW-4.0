@@ -52,6 +52,11 @@ export default function ActiveRentals() {
   const [updating, setUpdating] = useState(false);
   const [modificationResult, setModificationResult] = useState(null);
 
+  // Customer modal state
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [customerLoading, setCustomerLoading] = useState(false);
+
   useEffect(() => {
     loadActiveRentals();
   }, []);
