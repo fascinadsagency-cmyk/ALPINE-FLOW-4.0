@@ -23,7 +23,13 @@ import {
   Printer,
   CheckCircle,
   ArrowUpRight,
-  ArrowDownLeft
+  ArrowDownLeft,
+  Phone,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Package,
+  IdCard
 } from "lucide-react";
 import { toast } from "sonner";
 
