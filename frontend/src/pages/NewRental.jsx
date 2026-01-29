@@ -1599,167 +1599,197 @@ export default function NewRental() {
                     <p>Escanea artículos para añadirlos</p>
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    {/* Items List - With Days Column */}
-                    {items.map((item, index) => {
-                      const itemPrice = getItemPriceWithPack(item);
-                      const qty = item.quantity || 1;
-                      const days = item.itemDays || numDays;
-                      const totalItemPrice = itemPrice * qty * days;
-                      
-                      return (
-                        <div 
-                          key={item.id || item.barcode}
-                          className={`grid grid-cols-12 gap-2 items-center p-3 rounded-xl transition-colors animate-fade-in ${
-                            item.is_generic ? 'bg-emerald-50 hover:bg-emerald-100' : 'bg-slate-50 hover:bg-slate-100'
-                          }`}
-                        >
-                          {/* Nombre/Código */}
-                          <div className="col-span-3">
-                            <p className="text-xs text-slate-500 font-medium uppercase">
-                              {item.is_generic ? 'Artículo' : 'Código'}
-                            </p>
-                            {item.is_generic ? (
-                              <p className="font-bold text-emerald-700 truncate">{item.name}</p>
-                            ) : (
-                              <p className="font-mono font-bold text-slate-900">{item.internal_code || item.barcode}</p>
-                            )}
-                          </div>
-                          
-                          {/* Tipo */}
-                          <div className="col-span-2">
-                            <p className="text-xs text-slate-500 font-medium uppercase">Tipo</p>
-                            <Badge variant="outline" className="font-semibold text-xs">
-                              {itemTypes.find(t => t.value === item.item_type)?.label || item.item_type}
-                            </Badge>
-                          </div>
-                          
-                          {/* Cantidad/Modelo */}
-                          <div className="col-span-2">
-                            {item.is_generic ? (
-                              <>
-                                <p className="text-xs text-slate-500 font-medium uppercase">Cant.</p>
-                                <Badge className="bg-emerald-600 text-white font-bold">x{qty}</Badge>
-                              </>
-                            ) : (
-                              <>
-                                <p className="text-xs text-slate-500 font-medium uppercase">Info</p>
-                                <p className="font-medium text-slate-900 text-sm truncate">{item.brand} {item.size}</p>
-                              </>
-                            )}
-                          </div>
-                          
-                          {/* DÍAS - Nueva columna editable */}
-                          <div className="col-span-1">
-                            <p className="text-xs text-slate-500 font-medium uppercase">Días</p>
-                            {editingItemDays === (item.id || item.barcode) ? (
-                              <Input
-                                type="number"
-                                min="1"
-                                defaultValue={days}
-                                className="h-7 w-14 text-center text-sm font-bold"
-                                autoFocus
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') updateItemDays(item.id || item.barcode, e.target.value);
-                                  if (e.key === 'Escape') setEditingItemDays(null);
-                                }}
-                                onBlur={(e) => updateItemDays(item.id || item.barcode, e.target.value)}
-                              />
-                            ) : (
-                              <Badge 
-                                variant="outline" 
-                                className="cursor-pointer hover:bg-blue-100 font-bold text-blue-700 border-blue-300"
-                                onClick={() => setEditingItemDays(item.id || item.barcode)}
-                                title="Click para editar días"
-                              >
-                                {days}d <Edit2 className="h-3 w-3 ml-1 inline" />
-                              </Badge>
-                            )}
-                          </div>
-                          
-                          {/* Precio Unitario */}
-                          <div className="col-span-1">
-                            <p className="text-xs text-slate-500 font-medium uppercase">P.Unit</p>
-                            {itemPrice === 0 && !item.is_generic ? (
-                              <Badge variant="destructive" className="text-xs">
-                                <AlertCircle className="h-3 w-3" />
-                              </Badge>
-                            ) : (
-                              <p className="text-sm font-medium text-slate-700">€{itemPrice.toFixed(2)}</p>
-                            )}
-                          </div>
-                          
-                          {/* Precio Total y Acciones */}
-                          <div className="col-span-2 flex items-center justify-end gap-2">
-                            {editingItemPrice === (item.id || item.barcode) ? (
-                              /* Modo Edición: Input activo */
-                              <div className="flex items-center gap-1">
-                                <div className="relative">
-                                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 text-sm">€</span>
-                                  <Input
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    defaultValue={itemPrice.toFixed(2)}
-                                    className="h-9 w-20 pl-5 pr-1 text-sm font-semibold text-right"
-                                    autoFocus
-                                    data-testid={`price-input-${item.id || item.barcode}`}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        updateItemPrice(item.id || item.barcode, e.target.value);
-                                      }
-                                      if (e.key === 'Escape') {
-                                        setEditingItemPrice(null);
-                                      }
-                                    }}
-                                    onBlur={(e) => {
-                                      updateItemPrice(item.id || item.barcode, e.target.value);
-                                    }}
-                                  />
+                  <div className="space-y-3">
+                    {/* GROUPED CART ITEMS - Packs shown as unified blocks */}
+                    {getGroupedCartItems().map((group, groupIndex) => {
+                      if (group.type === 'pack') {
+                        // PACK: Render as unified block
+                        const packTotal = group.price * group.days;
+                        const packItemNames = group.items.map(i => 
+                          i.name || `${i.brand || ''} ${i.model || ''}`.trim() || i.item_type
+                        ).join(' + ');
+                        
+                        return (
+                          <div 
+                            key={group.packId}
+                            className="rounded-xl border-2 border-amber-400 bg-gradient-to-r from-amber-50 to-orange-50 overflow-hidden animate-fade-in"
+                          >
+                            {/* Pack Header */}
+                            <div className="bg-amber-100 px-4 py-2 flex items-center gap-2">
+                              <Package className="h-5 w-5 text-amber-600" />
+                              <span className="font-bold text-amber-800">{group.pack.name}</span>
+                              <Badge className="bg-amber-500 text-white text-xs">PACK</Badge>
+                            </div>
+                            
+                            {/* Pack Content */}
+                            <div className="p-4">
+                              <div className="grid grid-cols-12 gap-2 items-center">
+                                {/* Componentes del Pack */}
+                                <div className="col-span-5">
+                                  <p className="text-xs text-amber-700 font-medium uppercase mb-1">Incluye</p>
+                                  <p className="font-medium text-slate-800 text-sm">{packItemNames}</p>
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {group.items.map((item, idx) => (
+                                      <Badge key={idx} variant="outline" className="text-xs bg-white">
+                                        {item.internal_code || item.barcode?.substring(0, 8)}
+                                      </Badge>
+                                    ))}
+                                  </div>
                                 </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setEditingItemPrice(null)}
-                                  className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600"
+                                
+                                {/* Días del Pack */}
+                                <div className="col-span-2">
+                                  <p className="text-xs text-amber-700 font-medium uppercase mb-1">Días</p>
+                                  {editingItemDays === group.packId ? (
+                                    <Input
+                                      type="number"
+                                      min="1"
+                                      defaultValue={group.days}
+                                      className="h-8 w-16 text-center text-sm font-bold"
+                                      autoFocus
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') updatePackDays(group.items, e.target.value);
+                                        if (e.key === 'Escape') setEditingItemDays(null);
+                                      }}
+                                      onBlur={(e) => updatePackDays(group.items, e.target.value)}
+                                    />
+                                  ) : (
+                                    <Badge 
+                                      className="cursor-pointer bg-amber-500 hover:bg-amber-600 text-white font-bold"
+                                      onClick={() => setEditingItemDays(group.packId)}
+                                    >
+                                      {group.days}d <Edit2 className="h-3 w-3 ml-1 inline" />
+                                    </Badge>
+                                  )}
+                                </div>
+                                
+                                {/* Precio Unitario Pack */}
+                                <div className="col-span-2">
+                                  <p className="text-xs text-amber-700 font-medium uppercase mb-1">Precio Pack</p>
+                                  <p className="font-bold text-amber-800">€{group.price.toFixed(2)}/día</p>
+                                </div>
+                                
+                                {/* Total Pack */}
+                                <div className="col-span-3 text-right">
+                                  <p className="text-xs text-amber-700 font-medium uppercase mb-1">Total</p>
+                                  <p className="text-xl font-bold text-amber-700">€{packTotal.toFixed(2)}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      } else {
+                        // SINGLE ITEM: Render normally
+                        const item = group.item;
+                        const qty = item.quantity || 1;
+                        const days = group.days;
+                        const totalItemPrice = group.price * qty * days;
+                        
+                        return (
+                          <div 
+                            key={item.id || item.barcode}
+                            className={`grid grid-cols-12 gap-2 items-center p-3 rounded-xl transition-colors animate-fade-in ${
+                              item.is_generic ? 'bg-emerald-50 hover:bg-emerald-100' : 'bg-slate-50 hover:bg-slate-100'
+                            }`}
+                          >
+                            {/* Nombre/Código */}
+                            <div className="col-span-3">
+                              <p className="text-xs text-slate-500 font-medium uppercase">
+                                {item.is_generic ? 'Artículo' : 'Código'}
+                              </p>
+                              {item.is_generic ? (
+                                <p className="font-bold text-emerald-700 truncate">{item.name}</p>
+                              ) : (
+                                <p className="font-mono font-bold text-slate-900">{item.internal_code || item.barcode}</p>
+                              )}
+                            </div>
+                            
+                            {/* Tipo */}
+                            <div className="col-span-2">
+                              <p className="text-xs text-slate-500 font-medium uppercase">Tipo</p>
+                              <Badge variant="outline" className="font-semibold text-xs">
+                                {itemTypes.find(t => t.value === item.item_type)?.label || item.item_type}
+                              </Badge>
+                            </div>
+                            
+                            {/* Cantidad/Info */}
+                            <div className="col-span-2">
+                              {item.is_generic ? (
+                                <>
+                                  <p className="text-xs text-slate-500 font-medium uppercase">Cant.</p>
+                                  <Badge className="bg-emerald-600 text-white font-bold">x{qty}</Badge>
+                                </>
+                              ) : (
+                                <>
+                                  <p className="text-xs text-slate-500 font-medium uppercase">Info</p>
+                                  <p className="font-medium text-slate-900 text-sm truncate">{item.brand} {item.size}</p>
+                                </>
+                              )}
+                            </div>
+                            
+                            {/* Días */}
+                            <div className="col-span-1">
+                              <p className="text-xs text-slate-500 font-medium uppercase">Días</p>
+                              {editingItemDays === (item.id || item.barcode) ? (
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  defaultValue={days}
+                                  className="h-7 w-14 text-center text-sm font-bold"
+                                  autoFocus
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') updateItemDays(item.id || item.barcode, e.target.value);
+                                    if (e.key === 'Escape') setEditingItemDays(null);
+                                  }}
+                                  onBlur={(e) => updateItemDays(item.id || item.barcode, e.target.value)}
+                                />
+                              ) : (
+                                <Badge 
+                                  variant="outline" 
+                                  className="cursor-pointer hover:bg-blue-100 font-bold text-blue-700 border-blue-300"
+                                  onClick={() => setEditingItemDays(item.id || item.barcode)}
                                 >
-                                  <Check className="h-4 w-4" />
-                                </Button>
+                                  {days}d <Edit2 className="h-3 w-3 ml-1 inline" />
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            {/* Precio Unitario */}
+                            <div className="col-span-1">
+                              <p className="text-xs text-slate-500 font-medium uppercase">P.Unit</p>
+                              {group.price === 0 && !item.is_generic ? (
+                                <Badge variant="destructive" className="text-xs">
+                                  <AlertCircle className="h-3 w-3" />
+                                </Badge>
+                              ) : (
+                                <p className="text-sm font-medium text-slate-700">€{group.price.toFixed(2)}</p>
+                              )}
+                            </div>
+                            
+                            {/* Total y Acciones */}
+                            <div className="col-span-3 flex items-center justify-end gap-2">
+                              <div className="text-right">
+                                <p className={`text-sm font-bold ${
+                                  item.customPrice !== null ? 'text-emerald-600' : 'text-slate-900'
+                                }`}>
+                                  €{totalItemPrice.toFixed(2)}
+                                </p>
+                                <p className="text-xs text-slate-500">
+                                  {qty > 1 ? `${qty}x` : ''}{days}d
+                                </p>
                               </div>
-                            ) : (
-                              /* Modo Visualización: Click para editar */
-                              <div 
-                                className="cursor-pointer hover:bg-slate-200 px-2 py-1 rounded transition-colors flex items-center gap-1 group"
-                                onClick={() => setEditingItemPrice(item.id || item.barcode)}
-                                title="Click para editar precio"
-                                data-testid={`edit-price-btn-${item.id || item.barcode}`}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeItem(item.id || item.barcode)}
+                                className="h-8 w-8 p-0"
                               >
-                                <div className="text-right">
-                                  <p className={`text-sm font-bold ${
-                                    days !== numDays || qty > 1 ? 'text-emerald-600' : 
-                                    item.customPrice !== null ? 'text-emerald-600' : 'text-slate-900'
-                                  }`}>
-                                    €{totalItemPrice.toFixed(2)}
-                                  </p>
-                                  <p className="text-xs text-slate-500">
-                                    {qty > 1 ? `${qty}x` : ''}{days}d
-                                  </p>
-                                </div>
-                                <Edit2 className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
-                              </div>
-                            )}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeItem(item.id || item.barcode)}
-                              className="h-8 w-8 p-0"
-                              data-testid={`remove-item-${item.id || item.barcode}`}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                      );
+                        );
+                      }
                     })}
                   </div>
                 )}
