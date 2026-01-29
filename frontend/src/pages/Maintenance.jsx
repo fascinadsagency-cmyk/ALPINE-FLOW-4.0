@@ -99,26 +99,36 @@ export default function Maintenance() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const itemsRes = await itemApi.getAll({});
-      const items = itemsRes.data;
-      
-      // Calculate maintenance alerts (Mi Flota)
-      const needsMaintenance = [];
-      const upcoming = [];
-      
-      items.forEach(item => {
-        const interval = item.maintenance_interval || 30;
-        const daysUsed = item.days_used || 0;
-        const remaining = interval - (daysUsed % interval);
-        
-        if (item.status !== 'maintenance' && item.status !== 'retired') {
-          if (remaining <= 0 || daysUsed >= interval) {
-            needsMaintenance.push({ ...item, remaining: 0, progress: 100 });
-          } else if (remaining <= 5) {
-            upcoming.push({ ...item, remaining, progress: ((daysUsed % interval) / interval) * 100 });
-          }
-        }
+      // Use the unified fleet endpoint (same query as Dashboard)
+      const fleetRes = await axios.get(`${API}/maintenance/fleet`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
+      
+      const fleetData = fleetRes.data;
+      
+      // Items currently in maintenance + items that need maintenance
+      const allMaintenanceItems = [
+        ...fleetData.in_maintenance.map(item => ({
+          ...item,
+          remaining: 0,
+          progress: 100,
+          maintenanceStatus: 'in_progress'
+        })),
+        ...fleetData.needs_maintenance.map(item => ({
+          ...item,
+          remaining: item.maintenance_remaining_days || 0,
+          progress: item.maintenance_progress || 100,
+          maintenanceStatus: 'needs_attention'
+        }))
+      ];
+      
+      // Separate into alert (needs now) and upcoming (soon)
+      const needsMaintenance = allMaintenanceItems.filter(i => 
+        i.maintenanceStatus === 'in_progress' || i.remaining <= 0 || i.progress >= 100
+      );
+      const upcoming = allMaintenanceItems.filter(i => 
+        i.maintenanceStatus !== 'in_progress' && i.remaining > 0 && i.remaining <= 5
+      );
       
       setAlertItems(needsMaintenance);
       setUpcomingItems(upcoming.sort((a, b) => a.remaining - b.remaining));
@@ -127,6 +137,7 @@ export default function Maintenance() {
       await loadExternalRepairs();
       
     } catch (error) {
+      console.error("Error loading maintenance data:", error);
       toast.error("Error al cargar datos de mantenimiento");
     } finally {
       setLoading(false);
