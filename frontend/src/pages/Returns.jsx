@@ -577,21 +577,42 @@ export default function Returns() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-1 gap-2">
                       {pendingItems.map((item) => (
                         <div 
                           key={item.barcode}
-                          className="flex items-center justify-between p-3 rounded-lg bg-white border border-amber-200"
+                          className="grid grid-cols-12 gap-3 items-center p-3 rounded-lg bg-white border border-amber-200 hover:shadow-sm transition-shadow"
                         >
-                          <div>
-                            <p className="font-medium text-slate-900">{item.brand} {item.model}</p>
-                            <p className="text-sm text-slate-500">
-                              {item.item_type} • Talla {item.size} • <span className="font-mono">{item.barcode}</span>
-                            </p>
+                          {/* Código Interno - Priority Column */}
+                          <div className="col-span-2">
+                            <p className="text-xs text-slate-500 font-medium uppercase">Código</p>
+                            <p className="font-mono font-bold text-slate-900 text-lg">{item.barcode}</p>
                           </div>
-                          <Badge variant="outline" className="text-amber-600 border-amber-300">
-                            Pendiente
-                          </Badge>
+                          
+                          {/* Tipo de Artículo */}
+                          <div className="col-span-2">
+                            <p className="text-xs text-slate-500 font-medium uppercase">Tipo</p>
+                            <p className="font-semibold text-slate-900">{item.item_type}</p>
+                          </div>
+                          
+                          {/* Modelo */}
+                          <div className="col-span-3">
+                            <p className="text-xs text-slate-500 font-medium uppercase">Modelo</p>
+                            <p className="font-medium text-slate-900">{item.brand} {item.model}</p>
+                          </div>
+                          
+                          {/* Talla/Tamaño */}
+                          <div className="col-span-2">
+                            <p className="text-xs text-slate-500 font-medium uppercase">Talla</p>
+                            <p className="font-bold text-slate-900 text-lg">Talla {item.size}</p>
+                          </div>
+                          
+                          {/* Estado */}
+                          <div className="col-span-3 text-right">
+                            <Badge variant="outline" className="text-amber-600 border-amber-300 font-semibold">
+                              🔍 Pendiente
+                            </Badge>
+                          </div>
                         </div>
                       ))}
                     </div>
