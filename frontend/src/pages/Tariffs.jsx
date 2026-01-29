@@ -35,6 +35,7 @@ const DEFAULT_TARIFF = {
 export default function Tariffs() {
   const [tariffs, setTariffs] = useState({});
   const [packs, setPacks] = useState([]);
+  const [itemTypes, setItemTypes] = useState(DEFAULT_ITEM_TYPES);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showPackDialog, setShowPackDialog] = useState(false);
@@ -65,16 +66,21 @@ export default function Tariffs() {
 
   const loadData = async () => {
     try {
-      const [tariffsRes, packsRes] = await Promise.all([
+      const [tariffsRes, packsRes, itemTypesRes] = await Promise.all([
         tariffApi.getAll(),
-        axios.get(`${API}/packs`).catch(() => ({ data: [] }))
+        axios.get(`${API}/packs`).catch(() => ({ data: [] })),
+        axios.get(`${API}/item-types`).catch(() => ({ data: DEFAULT_ITEM_TYPES }))
       ]);
+      
+      // Load dynamic item types
+      const loadedTypes = itemTypesRes.data || DEFAULT_ITEM_TYPES;
+      setItemTypes(loadedTypes);
       
       const tariffMap = {};
       tariffsRes.data.forEach(t => {
         tariffMap[t.item_type] = t;
       });
-      ITEM_TYPES.forEach(type => {
+      loadedTypes.forEach(type => {
         if (!tariffMap[type.value]) {
           tariffMap[type.value] = { ...DEFAULT_TARIFF, item_type: type.value };
         }
