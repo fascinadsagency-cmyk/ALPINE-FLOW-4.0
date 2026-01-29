@@ -242,14 +242,8 @@ export default function Inventory() {
       setItemTypes(response.data);
     } catch (error) {
       console.error("Error loading item types:", error);
-      // Fallback to default types if API fails
-      setItemTypes([
-        { value: "ski", label: "Esquís", is_default: true },
-        { value: "snowboard", label: "Snowboard", is_default: true },
-        { value: "boots", label: "Botas", is_default: true },
-        { value: "helmet", label: "Casco", is_default: true },
-        { value: "poles", label: "Bastones", is_default: true },
-      ]);
+      // No fallback - empty list if API fails (user creates their own types)
+      setItemTypes([]);
     }
   };
 
