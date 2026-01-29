@@ -732,6 +732,37 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
     }
   };
 
+  const deleteItemType = async (typeId, typeName) => {
+    if (!window.confirm(`¿Estás seguro de que deseas eliminar el tipo "${typeName}"?\n\nSi hay artículos usando este tipo, no se podrá eliminar.`)) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API}/item-types/${typeId}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      toast.success(`Tipo "${typeName}" eliminado correctamente`);
+      
+      // Reload types to update all dropdowns
+      await loadItemTypes();
+      
+    } catch (error) {
+      const errorMessage = error.response?.data?.detail || "Error al eliminar tipo";
+      
+      // Check if error is about items using the type
+      if (errorMessage.includes("items are using it") || errorMessage.includes("productos asociados")) {
+        const itemsCount = errorMessage.match(/\d+/)?.[0] || "algunos";
+        toast.error(
+          `No se puede eliminar este tipo porque ${itemsCount} artículos lo están usando. Cambia el tipo de esos productos primero.`,
+          { duration: 5000 }
+        );
+      } else {
+        toast.error(errorMessage);
+      }
+    }
+  };
+
   return (
     <div className="p-6 lg:p-8" data-testid="inventory-page">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
