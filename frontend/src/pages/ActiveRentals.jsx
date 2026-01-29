@@ -102,6 +102,152 @@ export default function ActiveRentals() {
     setModificationResult(null);
   };
 
+  // ========== SWAP/CANJE FUNCTIONS ==========
+  const openSwapModal = (rental, item) => {
+    setSwapModal({ rental, item });
+    setSwapNewBarcode("");
+    setSwapNewItem(null);
+    setSwapNewDays(rental.days.toString());
+    setSwapStep(1);
+    setSwapDelta(null);
+    setSwapPaymentMethod("cash");
+  };
+
+  const closeSwapModal = () => {
+    setSwapModal(null);
+    setSwapNewBarcode("");
+    setSwapNewItem(null);
+    setSwapNewDays("");
+    setSwapStep(1);
+    setSwapDelta(null);
+  };
+
+  const searchNewItem = async () => {
+    if (!swapNewBarcode.trim()) {
+      toast.error("Escanea o introduce el código del nuevo artículo");
+      return;
+    }
+
+    setSwapLoading(true);
+    try {
+      // Search for the item by barcode or internal_code
+      const response = await axios.get(`${API}/items?search=${swapNewBarcode}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      const items = response.data;
+      const foundItem = items.find(i => 
+        i.barcode === swapNewBarcode || 
+        i.internal_code === swapNewBarcode ||
+        i.barcode?.toLowerCase() === swapNewBarcode.toLowerCase() ||
+        i.internal_code?.toLowerCase() === swapNewBarcode.toLowerCase()
+      );
+
+      if (!foundItem) {
+        toast.error("Artículo no encontrado");
+        return;
+      }
+
+      if (foundItem.status === 'rented') {
+        toast.error("Este artículo ya está alquilado");
+        return;
+      }
+
+      if (foundItem.status !== 'available') {
+        toast.error(`Artículo no disponible (Estado: ${foundItem.status})`);
+        return;
+      }
+
+      setSwapNewItem(foundItem);
+      calculateSwapDelta(foundItem, parseInt(swapNewDays) || swapModal.rental.days);
+      setSwapStep(2);
+
+    } catch (error) {
+      toast.error("Error al buscar artículo");
+    } finally {
+      setSwapLoading(false);
+    }
+  };
+
+  const calculateSwapDelta = async (newItem, days) => {
+    if (!swapModal || !newItem) return;
+
+    const oldItem = swapModal.item;
+    const rental = swapModal.rental;
+
+    try {
+      // Get tariffs to calculate prices
+      const tariffsRes = await axios.get(`${API}/tariffs`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const tariffs = tariffsRes.data;
+
+      // Calculate old item price for the days
+      const oldTariff = tariffs.find(t => t.item_type === oldItem.item_type);
+      const oldDayField = rental.days <= 10 ? `day_${rental.days}` : 'day_11_plus';
+      const oldPrice = oldTariff?.[oldDayField] || oldItem.price || 0;
+
+      // Calculate new item price for the (potentially new) days
+      const newTariff = tariffs.find(t => t.item_type === newItem.item_type);
+      const newDayField = days <= 10 ? `day_${days}` : 'day_11_plus';
+      const newPrice = newTariff?.[newDayField] || newItem.rental_price || 0;
+
+      // Calculate delta
+      const delta = newPrice - oldPrice;
+
+      setSwapDelta({
+        oldPrice,
+        newPrice,
+        delta,
+        days,
+        isUpgrade: delta > 0,
+        isDowngrade: delta < 0,
+        isSamePrice: delta === 0
+      });
+
+    } catch (error) {
+      console.error("Error calculating swap delta:", error);
+      setSwapDelta({ oldPrice: 0, newPrice: 0, delta: 0, days, isSamePrice: true });
+    }
+  };
+
+  const confirmSwap = async () => {
+    if (!swapModal || !swapNewItem) return;
+
+    setSwapLoading(true);
+    try {
+      const response = await axios.post(`${API}/rentals/${swapModal.rental.id}/swap-item`, {
+        old_item_barcode: swapModal.item.barcode,
+        new_item_barcode: swapNewItem.barcode,
+        new_days: parseInt(swapNewDays) || swapModal.rental.days,
+        payment_method: swapPaymentMethod,
+        delta_amount: swapDelta?.delta || 0
+      }, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      const result = response.data;
+
+      if (swapDelta?.delta > 0) {
+        toast.success(`✅ Cambio realizado. Suplemento cobrado: €${swapDelta.delta.toFixed(2)}`);
+      } else if (swapDelta?.delta < 0) {
+        toast.success(`✅ Cambio realizado. Abono al cliente: €${Math.abs(swapDelta.delta).toFixed(2)}`);
+      } else {
+        toast.success("✅ Cambio realizado sin diferencia de precio");
+      }
+
+      closeSwapModal();
+      loadActiveRentals();
+
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al procesar el cambio");
+    } finally {
+      setSwapLoading(false);
+    }
+  };
+
+  // ========== END SWAP FUNCTIONS ==========
+
   const calculateNewTotal = () => {
     if (!editingRental || newDays === "") return editingRental?.total_amount || 0;
     
