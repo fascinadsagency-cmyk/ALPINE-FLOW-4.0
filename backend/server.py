@@ -3002,11 +3002,70 @@ class CashClosingResponse(BaseModel):
     by_payment_method: Optional[dict] = {}
     closure_number: Optional[int] = 1
 
+# ==================== CASH SESSIONS ROUTES ====================
+
+@api_router.post("/cash/sessions/open")
+async def open_cash_session(session: CashSessionCreate, current_user: dict = Depends(get_current_user)):
+    """Open a new cash session/shift"""
+    date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    # Check if there's already an open session for today
+    existing_open = await db.cash_sessions.find_one({"date": date, "status": "open"})
+    if existing_open:
+        raise HTTPException(status_code=400, detail="There is already an open cash session for today. Please close it first.")
+    
+    # Get next session number for today
+    sessions_today = await db.cash_sessions.count_documents({"date": date})
+    session_number = sessions_today + 1
+    
+    session_id = str(uuid.uuid4())
+    doc = {
+        "id": session_id,
+        "date": date,
+        "session_number": session_number,
+        "opened_at": datetime.now(timezone.utc).isoformat(),
+        "opened_by": current_user["username"],
+        "opening_balance": session.opening_balance,
+        "status": "open",
+        "closed_at": None,
+        "closure_id": None,
+        "notes": session.notes or ""
+    }
+    await db.cash_sessions.insert_one(doc)
+    return CashSessionResponse(**doc)
+
+@api_router.get("/cash/sessions/active")
+async def get_active_session(current_user: dict = Depends(get_current_user)):
+    """Get the currently active (open) cash session"""
+    date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    session = await db.cash_sessions.find_one({"date": date, "status": "open"}, {"_id": 0})
+    
+    if not session:
+        return None
+    
+    return CashSessionResponse(**session)
+
+@api_router.get("/cash/sessions")
+async def get_cash_sessions(current_user: dict = Depends(get_current_user)):
+    """Get all cash sessions (history)"""
+    sessions = await db.cash_sessions.find({}, {"_id": 0}).sort("opened_at", -1).to_list(100)
+    return [CashSessionResponse(**s) for s in sessions]
+
+# ==================== CASH MOVEMENTS ROUTES ====================
+
 @api_router.post("/cash/movements")
 async def create_cash_movement(movement: CashMovementCreate, current_user: dict = Depends(get_current_user)):
+    # Check if there's an active session
+    date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+    
+    if not active_session:
+        raise HTTPException(status_code=400, detail="No active cash session. Please open the cash register first.")
+    
     movement_id = str(uuid.uuid4())
     doc = {
         "id": movement_id,
+        "session_id": active_session["id"],  # Link movement to session
         "movement_type": movement.movement_type,
         "amount": movement.amount,
         "payment_method": movement.payment_method,
