@@ -866,6 +866,7 @@ export default function CashRegister() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead className="w-24">Referencia</TableHead>
                           <TableHead>Hora</TableHead>
                           <TableHead>Tipo</TableHead>
                           <TableHead>Cliente</TableHead>
@@ -878,12 +879,15 @@ export default function CashRegister() {
                       <TableBody>
                         {movements.map((movement) => (
                           <TableRow key={movement.id}>
+                            <TableCell className="font-mono text-sm font-bold text-blue-700">
+                              {movement.operation_number || '-'}
+                            </TableCell>
                             <TableCell className="font-mono text-sm">
                               {movement.created_at.split('T')[1]?.substring(0, 5) || '-'}
                             </TableCell>
                             <TableCell>{getMovementTypeBadge(movement.movement_type)}</TableCell>
                             <TableCell className="text-slate-600">{movement.customer_name || '-'}</TableCell>
-                            <TableCell className="max-w-[200px] truncate">{movement.concept}</TableCell>
+                            <TableCell className="max-w-[180px] truncate">{movement.concept}</TableCell>
                             <TableCell>
                               <Badge variant="outline">
                                 {PAYMENT_METHODS.find(p => p.value === movement.payment_method)?.label || movement.payment_method}
