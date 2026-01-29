@@ -1356,6 +1356,15 @@ export default function NewRental() {
             .pack-row { background: #fffbeb; }
             .pack-row .item-desc { color: #92400e; font-weight: bold; }
             
+            /* IVA Note */
+            .iva-note { 
+              font-size: 8px; 
+              color: #666; 
+              text-align: right; 
+              margin-top: 4px;
+              font-style: italic;
+            }
+            
             /* Totals */
             .totals-table { width: 100%; margin-top: 8px; }
             .totals-table td { padding: 3px 0; }
