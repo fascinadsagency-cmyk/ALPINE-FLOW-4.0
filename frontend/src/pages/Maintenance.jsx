@@ -66,6 +66,16 @@ export default function Maintenance() {
   // Customer search for external
   const [customerSearch, setCustomerSearch] = useState("");
   const [customerSuggestions, setCustomerSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [showNewCustomerDialog, setShowNewCustomerDialog] = useState(false);
+  const [newCustomer, setNewCustomer] = useState({
+    dni: "",
+    name: "",
+    phone: "",
+    address: "",
+    city: ""
+  });
   
   const [newExternalRepair, setNewExternalRepair] = useState({
     customer_name: "",
