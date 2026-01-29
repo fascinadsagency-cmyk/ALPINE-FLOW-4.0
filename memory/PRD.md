@@ -146,10 +146,11 @@ POST /api/cash/close            - Cerrar caja con arqueo
 
 ### P0 - Crítico
 - ✅ ~~Bug de contabilidad~~ RESUELTO
+- ✅ ~~Bug de persistencia de inventario~~ RESUELTO
 
 ### P1 - Alta Prioridad
+- ⏳ **Rediseñar ticket de cliente** - Debe incluir tipo de producto, modelo, días, precios desglosados
 - ⏳ Personalización de tabla de Inventario (Drag & Drop)
-- ⏳ Sistema de Impresión Automática
 
 ### P2 - Media Prioridad
 - Pestaña de Soporte y Mejoras
