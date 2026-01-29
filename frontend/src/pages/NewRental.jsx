@@ -1848,10 +1848,10 @@ export default function NewRental() {
                                   )}
                                 </div>
                                 
-                                {/* Precio Unitario Pack */}
+                                {/* Precio Pack para X días */}
                                 <div className="col-span-2">
-                                  <p className="text-xs text-amber-700 font-medium uppercase mb-1">Precio Pack</p>
-                                  <p className="font-bold text-amber-800">€{group.price.toFixed(2)}/día</p>
+                                  <p className="text-xs text-amber-700 font-medium uppercase mb-1">Tarifa {group.days}d</p>
+                                  <p className="font-bold text-amber-800">€{group.price.toFixed(2)}</p>
                                 </div>
                                 
                                 {/* Total Pack */}
