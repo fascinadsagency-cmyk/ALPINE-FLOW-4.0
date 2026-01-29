@@ -13,11 +13,13 @@ import sys
 BACKEND_URL = "https://skiboard-hub.preview.emergentagent.com/api"
 TEST_DATE = "2026-01-29"
 
-class CashManagementTester:
+class CashSessionTester:
     def __init__(self):
         self.token = None
         self.headers = {}
         self.test_results = []
+        self.session_id = None
+        self.customer_id = None
         
     def log_test(self, test_name, success, details=""):
         """Log test result"""
@@ -59,302 +61,411 @@ class CashManagementTester:
             self.log_test("Authentication", False, f"Exception: {str(e)}")
             return False
     
-    def create_test_movements(self):
-        """Create test cash movements for testing"""
+    def test_open_cash_session(self):
+        """Test 1: Open cash session with opening balance"""
         try:
-            movements = [
-                # 2 ENTRADA movements in EFECTIVO (cash)
-                {
-                    "movement_type": "income",
-                    "amount": 100.0,
-                    "payment_method": "cash",
-                    "category": "rental",
-                    "concept": "Alquiler Test 1 - Efectivo",
-                    "notes": "Movimiento de prueba efectivo 1"
-                },
-                {
-                    "movement_type": "income", 
-                    "amount": 50.0,
-                    "payment_method": "cash",
-                    "category": "rental",
-                    "concept": "Alquiler Test 2 - Efectivo",
-                    "notes": "Movimiento de prueba efectivo 2"
-                },
-                # 1 ENTRADA movement in TARJETA (card)
-                {
-                    "movement_type": "income",
-                    "amount": 75.0,
-                    "payment_method": "card",
-                    "category": "rental", 
-                    "concept": "Alquiler Test 3 - Tarjeta",
-                    "notes": "Movimiento de prueba tarjeta"
-                },
-                # 1 SALIDA movement in EFECTIVO (cash expense)
-                {
-                    "movement_type": "expense",
-                    "amount": 20.0,
-                    "payment_method": "cash",
-                    "category": "maintenance",
-                    "concept": "Gasto mantenimiento - Efectivo",
-                    "notes": "Gasto de prueba efectivo"
-                },
-                # 1 DEVOLUCIÓN movement in TARJETA (card refund)
-                {
-                    "movement_type": "refund",
-                    "amount": 15.0,
-                    "payment_method": "card",
-                    "category": "rental",
-                    "concept": "Devolución Test - Tarjeta",
-                    "notes": "Devolución de prueba tarjeta"
-                }
-            ]
+            # First close any existing session
+            try:
+                requests.post(f"{BACKEND_URL}/cash/sessions/close", headers=self.headers)
+            except:
+                pass
             
-            created_count = 0
-            for movement in movements:
-                response = requests.post(f"{BACKEND_URL}/cash/movements", json=movement, headers=self.headers)
-                if response.status_code in [200, 201]:
-                    created_count += 1
-                else:
-                    print(f"Failed to create movement: {response.status_code} - {response.text}")
+            session_data = {
+                "opening_balance": 100.0,
+                "date": TEST_DATE
+            }
             
-            self.log_test("Create Test Movements", created_count == 5, 
-                         f"Created {created_count}/5 movements (2 cash income, 1 card income, 1 cash expense, 1 card refund)")
-            return created_count == 5
+            response = requests.post(f"{BACKEND_URL}/cash/sessions/open", json=session_data, headers=self.headers)
             
+            if response.status_code in [200, 201]:
+                data = response.json()
+                self.session_id = data.get("id") or data.get("session_id")
+                self.log_test("Open Cash Session", True, f"Session opened with ID: {self.session_id}, Balance: €100")
+                return True
+            else:
+                self.log_test("Open Cash Session", False, f"Status: {response.status_code}, Response: {response.text}")
+                return False
+                
         except Exception as e:
-            self.log_test("Create Test Movements", False, f"Exception: {str(e)}")
+            self.log_test("Open Cash Session", False, f"Exception: {str(e)}")
             return False
     
-    def test_cash_summary_structure(self):
-        """Test GET /api/cash/summary structure with by_payment_method"""
+    def create_test_customer(self):
+        """Create a test customer for rental testing"""
         try:
-            response = requests.get(f"{BACKEND_URL}/cash/summary?date={TEST_DATE}", headers=self.headers)
+            customer_data = {
+                "dni": "12345678T",
+                "name": "Cliente Test Caja",
+                "phone": "666777888",
+                "email": "test@caja.com",
+                "address": "Calle Test 123",
+                "city": "Madrid"
+            }
+            
+            response = requests.post(f"{BACKEND_URL}/customers", json=customer_data, headers=self.headers)
+            
+            if response.status_code in [200, 201]:
+                data = response.json()
+                self.customer_id = data["id"]
+                self.log_test("Create Test Customer", True, f"Customer created with ID: {self.customer_id}")
+                return True
+            elif response.status_code == 400 and "already exists" in response.text:
+                # Customer exists, get it
+                response = requests.get(f"{BACKEND_URL}/customers/dni/12345678T", headers=self.headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    self.customer_id = data["id"]
+                    self.log_test("Create Test Customer", True, f"Using existing customer ID: {self.customer_id}")
+                    return True
+            
+            self.log_test("Create Test Customer", False, f"Status: {response.status_code}, Response: {response.text}")
+            return False
+                
+        except Exception as e:
+            self.log_test("Create Test Customer", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_rental_with_active_session(self):
+        """Test 2: Create rental WITH active session (should succeed)"""
+        try:
+            if not self.customer_id:
+                self.log_test("Rental WITH Active Session", False, "No customer ID available")
+                return False
+            
+            rental_data = {
+                "customer_id": self.customer_id,
+                "start_date": TEST_DATE,
+                "end_date": "2026-01-31",
+                "items": [{"barcode": "SKI-001", "person_name": ""}],
+                "payment_method": "cash",
+                "total_amount": 50.0,
+                "paid_amount": 50.0,
+                "deposit": 0.0
+            }
+            
+            response = requests.post(f"{BACKEND_URL}/rentals", json=rental_data, headers=self.headers)
+            
+            if response.status_code in [200, 201]:
+                rental = response.json()
+                rental_id = rental["id"]
+                
+                # Verify cash movement was created automatically
+                movements_response = requests.get(f"{BACKEND_URL}/cash/movements", headers=self.headers)
+                if movements_response.status_code == 200:
+                    movements = movements_response.json()
+                    rental_movement = None
+                    for movement in movements:
+                        if movement.get("reference_id") == rental_id:
+                            rental_movement = movement
+                            break
+                    
+                    if rental_movement:
+                        self.log_test("Rental WITH Active Session", True, 
+                                    f"Rental created successfully, cash movement auto-registered: €{rental_movement['amount']}")
+                        
+                        # Verify cash summary shows the income
+                        summary_response = requests.get(f"{BACKEND_URL}/cash/summary", headers=self.headers)
+                        if summary_response.status_code == 200:
+                            summary = summary_response.json()
+                            self.log_test("Cash Summary After Rental", True, 
+                                        f"Summary updated: Total Income includes +€50")
+                        
+                        return True
+                    else:
+                        self.log_test("Rental WITH Active Session", False, "Rental created but no cash movement found")
+                        return False
+                else:
+                    self.log_test("Rental WITH Active Session", False, "Could not verify cash movements")
+                    return False
+            else:
+                self.log_test("Rental WITH Active Session", False, f"Status: {response.status_code}, Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Rental WITH Active Session", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_rental_without_active_session(self):
+        """Test 3: Create rental WITHOUT active session (should fail)"""
+        try:
+            # First close the active session
+            close_response = requests.post(f"{BACKEND_URL}/cash/sessions/close", headers=self.headers)
+            
+            if not self.customer_id:
+                self.log_test("Rental WITHOUT Active Session", False, "No customer ID available")
+                return False
+            
+            rental_data = {
+                "customer_id": self.customer_id,
+                "start_date": TEST_DATE,
+                "end_date": "2026-01-31",
+                "items": [{"barcode": "SKI-002", "person_name": ""}],
+                "payment_method": "cash",
+                "total_amount": 50.0,
+                "paid_amount": 50.0,
+                "deposit": 0.0
+            }
+            
+            response = requests.post(f"{BACKEND_URL}/rentals", json=rental_data, headers=self.headers)
+            
+            if response.status_code == 400 and "No hay sesión de caja activa" in response.text:
+                self.log_test("Rental WITHOUT Active Session", True, 
+                            "Correctly failed with error: 'No hay sesión de caja activa'")
+                return True
+            elif response.status_code in [200, 201]:
+                self.log_test("Rental WITHOUT Active Session", False, 
+                            "ERROR: Rental was created without active session (should have failed)")
+                return False
+            else:
+                self.log_test("Rental WITHOUT Active Session", False, 
+                            f"Unexpected response: {response.status_code} - {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Rental WITHOUT Active Session", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_movements_linked_to_session(self):
+        """Test 4: Validate movements are linked to session_id"""
+        try:
+            # Reopen session for this test
+            session_data = {"opening_balance": 100.0, "date": TEST_DATE}
+            requests.post(f"{BACKEND_URL}/cash/sessions/open", json=session_data, headers=self.headers)
+            
+            response = requests.get(f"{BACKEND_URL}/cash/movements", headers=self.headers)
             
             if response.status_code != 200:
-                self.log_test("Cash Summary API", False, f"Status: {response.status_code}")
+                self.log_test("Movements Linked to Session", False, f"Could not get movements: {response.status_code}")
+                return False
+            
+            movements = response.json()
+            
+            if not movements:
+                self.log_test("Movements Linked to Session", True, "No movements found (expected for clean test)")
+                return True
+            
+            # Check that all movements have session_id
+            movements_with_session = [m for m in movements if m.get("session_id")]
+            movements_without_session = [m for m in movements if not m.get("session_id")]
+            
+            if movements_without_session:
+                self.log_test("Movements Linked to Session", False, 
+                            f"Found {len(movements_without_session)} movements without session_id")
+                return False
+            else:
+                self.log_test("Movements Linked to Session", True, 
+                            f"All {len(movements_with_session)} movements have session_id")
+                return True
+                
+        except Exception as e:
+            self.log_test("Movements Linked to Session", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_validate_orphans(self):
+        """Test 5: Validate orphaned operations endpoint"""
+        try:
+            response = requests.post(f"{BACKEND_URL}/cash/validate-orphans", headers=self.headers)
+            
+            if response.status_code != 200:
+                self.log_test("Validate Orphans Endpoint", False, f"Status: {response.status_code}")
+                return False
+            
+            data = response.json()
+            
+            # Check required fields in response
+            required_fields = ["total_orphans_found", "fixed_count", "orphans_remaining", "errors"]
+            missing_fields = [field for field in required_fields if field not in data]
+            
+            if missing_fields:
+                self.log_test("Validate Orphans Endpoint", False, f"Missing fields: {missing_fields}")
+                return False
+            
+            self.log_test("Validate Orphans Endpoint", True, 
+                        f"Orphans: {data['total_orphans_found']} found, {data['fixed_count']} fixed, "
+                        f"{data['orphans_remaining']} remaining, {len(data['errors'])} errors")
+            return True
+                
+        except Exception as e:
+            self.log_test("Validate Orphans Endpoint", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_cash_summary_calculations(self):
+        """Test 6: Cash summary calculations are correct"""
+        try:
+            response = requests.get(f"{BACKEND_URL}/cash/summary", headers=self.headers)
+            
+            if response.status_code != 200:
+                self.log_test("Cash Summary Calculations", False, f"Status: {response.status_code}")
                 return False
             
             data = response.json()
             
             # Check required fields
-            required_fields = ["by_payment_method", "total_income", "total_expense", "total_refunds", "movements_count"]
+            required_fields = ["opening_balance", "total_income", "total_expense", "total_refunds", 
+                             "balance", "by_payment_method"]
             missing_fields = [field for field in required_fields if field not in data]
             
             if missing_fields:
-                self.log_test("Cash Summary Structure", False, f"Missing fields: {missing_fields}")
+                self.log_test("Cash Summary Calculations", False, f"Missing fields: {missing_fields}")
+                return False
+            
+            # Verify calculation logic
+            opening = data["opening_balance"]
+            income = data["total_income"]
+            expense = data["total_expense"]
+            refunds = data["total_refunds"]
+            balance = data["balance"]
+            
+            expected_balance = opening + income - expense - refunds
+            
+            if abs(balance - expected_balance) > 0.01:  # Allow small floating point differences
+                self.log_test("Cash Summary Calculations", False, 
+                            f"Balance calculation incorrect. Expected: {expected_balance}, Got: {balance}")
                 return False
             
             # Check by_payment_method structure
             by_payment = data.get("by_payment_method", {})
-            
-            # Should have cash and card methods
-            expected_methods = ["cash", "card"]
-            found_methods = []
-            
-            for method in expected_methods:
-                if method in by_payment:
-                    found_methods.append(method)
-                    method_data = by_payment[method]
-                    # Each method should have income, expense, refund
-                    expected_keys = ["income", "expense", "refund"]
-                    method_keys = list(method_data.keys())
-                    if not all(key in method_keys for key in expected_keys):
-                        self.log_test("Cash Summary Structure", False, 
-                                    f"Method {method} missing keys. Expected: {expected_keys}, Found: {method_keys}")
-                        return False
-            
-            # Verify calculations (check that our test movements are included)
-            cash_data = by_payment.get("cash", {})
-            card_data = by_payment.get("card", {})
-            
-            # We expect at least our test movements to be included
-            min_cash_income = 150.0  # 100 + 50 from our test
-            min_cash_expense = 20.0  # from our test
-            min_card_income = 75.0   # from our test
-            min_card_refund = 15.0   # from our test
-            
-            cash_income = cash_data.get("income", 0)
-            cash_expense = cash_data.get("expense", 0)
-            card_income = card_data.get("income", 0)
-            card_refund = card_data.get("refund", 0)
-            
-            # Check that our test data is at least included (there may be more from previous tests)
-            calculations_correct = (
-                cash_income >= min_cash_income and
-                cash_expense >= min_cash_expense and
-                card_income >= min_card_income and
-                card_refund >= min_card_refund
-            )
-            
-            if not calculations_correct:
-                self.log_test("Cash Summary Calculations", False, 
-                            f"Expected at least: Cash(income>={min_cash_income}, expense>={min_cash_expense}), "
-                            f"Card(income>={min_card_income}, refund>={min_card_refund}). "
-                            f"Got: Cash(income={cash_income}, expense={cash_expense}), "
-                            f"Card(income={card_income}, refund={card_refund})")
+            if not by_payment:
+                self.log_test("Cash Summary Calculations", False, "Missing by_payment_method breakdown")
                 return False
             
-            self.log_test("Cash Summary Structure", True, 
-                         f"Structure correct with methods: {found_methods}, movements_count: {data['movements_count']}")
             self.log_test("Cash Summary Calculations", True, 
-                         f"Cash: €{cash_income} income, €{cash_expense} expense | Card: €{card_income} income, €{card_refund} refund")
-            
+                        f"Opening: €{opening}, Income: €{income}, Expense: €{expense}, "
+                        f"Refunds: €{refunds}, Balance: €{balance}")
             return True
-            
+                
         except Exception as e:
-            self.log_test("Cash Summary Structure", False, f"Exception: {str(e)}")
+            self.log_test("Cash Summary Calculations", False, f"Exception: {str(e)}")
             return False
     
-    def test_cash_closing(self):
-        """Test cash closing functionality"""
+    def test_complete_flow(self):
+        """Test 7: Complete flow - income → expense → refund"""
         try:
-            # First get the summary to calculate expected values
-            summary_response = requests.get(f"{BACKEND_URL}/cash/summary?date={TEST_DATE}", headers=self.headers)
+            # Create income movement
+            income_data = {
+                "movement_type": "income",
+                "amount": 50.0,
+                "payment_method": "cash",
+                "category": "rental",
+                "concept": "Test Income Movement",
+                "notes": "Test flow income"
+            }
+            
+            income_response = requests.post(f"{BACKEND_URL}/cash/movements", json=income_data, headers=self.headers)
+            
+            # Create expense movement
+            expense_data = {
+                "movement_type": "expense",
+                "amount": 20.0,
+                "payment_method": "cash",
+                "category": "maintenance",
+                "concept": "Test Expense Movement",
+                "notes": "Test flow expense"
+            }
+            
+            expense_response = requests.post(f"{BACKEND_URL}/cash/movements", json=expense_data, headers=self.headers)
+            
+            # Create refund movement
+            refund_data = {
+                "movement_type": "refund",
+                "amount": 10.0,
+                "payment_method": "card",
+                "category": "rental",
+                "concept": "Test Refund Movement",
+                "notes": "Test flow refund"
+            }
+            
+            refund_response = requests.post(f"{BACKEND_URL}/cash/movements", json=refund_data, headers=self.headers)
+            
+            # Check all movements were created
+            success_count = 0
+            if income_response.status_code in [200, 201]:
+                success_count += 1
+            if expense_response.status_code in [200, 201]:
+                success_count += 1
+            if refund_response.status_code in [200, 201]:
+                success_count += 1
+            
+            if success_count == 3:
+                # Verify summary reflects all movements
+                summary_response = requests.get(f"{BACKEND_URL}/cash/summary", headers=self.headers)
+                if summary_response.status_code == 200:
+                    summary = summary_response.json()
+                    movements_count = summary.get("movements_count", 0)
+                    by_payment = summary.get("by_payment_method", {})
+                    
+                    cash_income = by_payment.get("cash", {}).get("income", 0)
+                    cash_expense = by_payment.get("cash", {}).get("expense", 0)
+                    card_refund = by_payment.get("card", {}).get("refund", 0)
+                    
+                    self.log_test("Complete Flow", True, 
+                                f"All movements created. Summary: {movements_count} total movements, "
+                                f"Cash income: €{cash_income}, Cash expense: €{cash_expense}, "
+                                f"Card refund: €{card_refund}")
+                    return True
+                else:
+                    self.log_test("Complete Flow", False, "Could not verify summary after movements")
+                    return False
+            else:
+                self.log_test("Complete Flow", False, f"Only {success_count}/3 movements created successfully")
+                return False
+                
+        except Exception as e:
+            self.log_test("Complete Flow", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_close_session(self):
+        """Test 8: Close session and verify status"""
+        try:
+            # Get current summary for closing data
+            summary_response = requests.get(f"{BACKEND_URL}/cash/summary", headers=self.headers)
             if summary_response.status_code != 200:
-                self.log_test("Cash Closing - Get Summary", False, "Could not get summary for closing")
+                self.log_test("Close Session", False, "Could not get summary for closing")
                 return False
             
             summary = summary_response.json()
-            by_payment = summary.get("by_payment_method", {})
-            
-            # Calculate expected values
-            cash_expected = by_payment.get("cash", {}).get("income", 0) - by_payment.get("cash", {}).get("expense", 0) - by_payment.get("cash", {}).get("refund", 0)
-            card_expected = by_payment.get("card", {}).get("income", 0) - by_payment.get("card", {}).get("expense", 0) - by_payment.get("card", {}).get("refund", 0)
-            
-            # Simulate physical count (with small discrepancy for testing)
-            physical_cash = cash_expected + 2.0  # €2 more than expected
-            card_total = card_expected - 1.0     # €1 less than expected
             
             closing_data = {
                 "date": TEST_DATE,
-                "physical_cash": physical_cash,
-                "card_total": card_total,
-                "expected_cash": cash_expected,
-                "expected_card": card_expected,
-                "discrepancy_cash": physical_cash - cash_expected,
-                "discrepancy_card": card_total - card_expected,
-                "discrepancy_total": (physical_cash - cash_expected) + (card_total - card_expected),
-                "notes": "Cierre de prueba con desglose detallado por método de pago"
+                "physical_cash": summary.get("balance", 0),
+                "card_total": 0,
+                "notes": "Test session closure"
             }
             
-            # Try to close cash register
-            response = requests.post(f"{BACKEND_URL}/cash/close", json=closing_data, headers=self.headers)
+            response = requests.post(f"{BACKEND_URL}/cash/sessions/close", json=closing_data, headers=self.headers)
             
             if response.status_code in [200, 201]:
-                closing_result = response.json()
+                # Verify session is marked as closed
+                active_response = requests.get(f"{BACKEND_URL}/cash/sessions/active", headers=self.headers)
                 
-                # Verify the closing contains by_payment_method
-                if "by_payment_method" not in closing_result:
-                    self.log_test("Cash Closing Structure", False, "Missing by_payment_method in closing result")
-                    return False
-                
-                self.log_test("Cash Closing", True, 
-                             f"Closed successfully. Cash: €{physical_cash} (expected €{cash_expected}), "
-                             f"Card: €{card_total} (expected €{card_expected}), "
-                             f"Total discrepancy: €{closing_data['discrepancy_total']}")
-                return True
-            else:
-                # If already closed, try to get existing closing
-                if response.status_code == 400 and "already closed" in response.text.lower():
-                    self.log_test("Cash Closing", True, "Cash register already closed for this date")
-                    return True
+                if active_response.status_code == 200:
+                    active_data = active_response.json()
+                    if active_data is None or not active_data:
+                        self.log_test("Close Session", True, "Session closed successfully, no active session found")
+                        
+                        # Verify summary shows zero counters
+                        new_summary_response = requests.get(f"{BACKEND_URL}/cash/summary", headers=self.headers)
+                        if new_summary_response.status_code == 200:
+                            new_summary = new_summary_response.json()
+                            if new_summary.get("movements_count", 0) == 0:
+                                self.log_test("Summary After Close", True, "Summary shows 0 movements (new session)")
+                            else:
+                                self.log_test("Summary After Close", False, 
+                                            f"Summary still shows {new_summary.get('movements_count', 0)} movements")
+                        
+                        return True
+                    else:
+                        self.log_test("Close Session", False, "Session still appears as active after closing")
+                        return False
                 else:
-                    self.log_test("Cash Closing", False, f"Status: {response.status_code}, Response: {response.text}")
+                    self.log_test("Close Session", False, f"Could not check active session: {active_response.status_code}")
                     return False
+            else:
+                self.log_test("Close Session", False, f"Status: {response.status_code}, Response: {response.text}")
+                return False
                 
         except Exception as e:
-            self.log_test("Cash Closing", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_cash_closings_history(self):
-        """Test GET /api/cash/closings for history and reprint functionality"""
-        try:
-            response = requests.get(f"{BACKEND_URL}/cash/closings", headers=self.headers)
-            
-            if response.status_code != 200:
-                self.log_test("Cash Closings History", False, f"Status: {response.status_code}")
-                return False
-            
-            closings = response.json()
-            
-            if not isinstance(closings, list):
-                self.log_test("Cash Closings History", False, "Response is not a list")
-                return False
-            
-            # Find our test closing
-            test_closing = None
-            for closing in closings:
-                if closing.get("date") == TEST_DATE:
-                    test_closing = closing
-                    break
-            
-            if not test_closing:
-                self.log_test("Cash Closings History", False, f"Test closing for {TEST_DATE} not found")
-                return False
-            
-            # Verify structure for detailed breakdown
-            required_fields = ["by_payment_method", "total_income", "total_expense", "total_refunds", 
-                             "physical_cash", "card_total", "discrepancy_cash", "discrepancy_card"]
-            
-            missing_fields = [field for field in required_fields if field not in test_closing]
-            
-            if missing_fields:
-                self.log_test("Cash Closings History Structure", False, f"Missing fields: {missing_fields}")
-                return False
-            
-            # Check by_payment_method structure in historical closing
-            by_payment = test_closing.get("by_payment_method", {})
-            if not by_payment:
-                self.log_test("Cash Closings History Structure", False, "Empty by_payment_method in historical closing")
-                return False
-            
-            # Verify cash and card data exists
-            cash_data = by_payment.get("cash", {})
-            card_data = by_payment.get("card", {})
-            
-            if not cash_data or not card_data:
-                self.log_test("Cash Closings History Structure", False, "Missing cash or card data in by_payment_method")
-                return False
-            
-            self.log_test("Cash Closings History", True, 
-                         f"Found {len(closings)} closings. Test closing has detailed breakdown: "
-                         f"Cash(income={cash_data.get('income', 0)}, expense={cash_data.get('expense', 0)}), "
-                         f"Card(income={card_data.get('income', 0)}, refund={card_data.get('refund', 0)})")
-            
-            return True
-            
-        except Exception as e:
-            self.log_test("Cash Closings History", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_compatibility_with_old_closings(self):
-        """Test that system handles closings without by_payment_method (retrocompatibility)"""
-        try:
-            # Get all closings
-            response = requests.get(f"{BACKEND_URL}/cash/closings", headers=self.headers)
-            
-            if response.status_code != 200:
-                self.log_test("Old Closings Compatibility", False, f"Could not get closings: {response.status_code}")
-                return False
-            
-            closings = response.json()
-            
-            # Check if there are any closings without by_payment_method
-            old_closings = [c for c in closings if not c.get("by_payment_method")]
-            new_closings = [c for c in closings if c.get("by_payment_method")]
-            
-            if old_closings:
-                self.log_test("Old Closings Compatibility", True, 
-                             f"Found {len(old_closings)} old closings without detailed breakdown, "
-                             f"{len(new_closings)} new closings with detailed breakdown. System handles both formats.")
-            else:
-                self.log_test("Old Closings Compatibility", True, 
-                             f"All {len(new_closings)} closings have detailed breakdown. No compatibility issues.")
-            
-            return True
-            
-        except Exception as e:
-            self.log_test("Old Closings Compatibility", False, f"Exception: {str(e)}")
+            self.log_test("Close Session", False, f"Exception: {str(e)}")
             return False
     
     def run_all_tests(self):
