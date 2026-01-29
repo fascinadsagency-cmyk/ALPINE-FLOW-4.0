@@ -227,7 +227,12 @@ export default function Inventory() {
     purchase_date: new Date().toISOString().split('T')[0],
     location: "",
     maintenance_interval: "30",
-    category: "MEDIA"
+    category: "MEDIA",
+    // Generic item fields
+    is_generic: false,
+    name: "",
+    stock_total: "",
+    rental_price: ""
   });
 
   useEffect(() => {
