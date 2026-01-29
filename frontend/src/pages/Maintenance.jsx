@@ -146,17 +146,30 @@ export default function Maintenance() {
     }
   };
 
-  const searchCustomers = async (term) => {
-    if (term.length < 2) {
+  // Real-time customer search with debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchCustomersRealTime(customerSearch);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [customerSearch]);
+
+  const searchCustomersRealTime = async (term) => {
+    if (!term || term.length < 2) {
       setCustomerSuggestions([]);
+      setShowSuggestions(false);
       return;
     }
     
     try {
       const response = await customerApi.search(term);
-      setCustomerSuggestions(response.data.slice(0, 5));
+      setCustomerSuggestions(response.data.slice(0, 8));
+      setShowSuggestions(response.data.length > 0);
+      setSelectedIndex(-1);
     } catch (error) {
       console.error("Error searching customers:", error);
+      setCustomerSuggestions([]);
+      setShowSuggestions(false);
     }
   };
 
