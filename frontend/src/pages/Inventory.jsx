@@ -201,10 +201,12 @@ export default function Inventory() {
     setNewItem({
       internal_code: "",
       barcode: "",
+      serial_number: "",
       item_type: "ski",
       brand: "",
       model: "",
       size: "",
+      binding: "",
       purchase_price: "",
       purchase_date: new Date().toISOString().split('T')[0],
       location: "",
