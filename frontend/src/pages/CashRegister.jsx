@@ -1414,6 +1414,85 @@ export default function CashRegister() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Open Session Dialog - NEW */}
+      <Dialog open={showOpenSessionDialog} onOpenChange={setShowOpenSessionDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+              🏪 Abrir Caja
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+              <p className="text-sm text-blue-800">
+                Introduce el fondo de caja inicial con el que empiezas el turno. Puede ser €0 si no tienes fondo inicial.
+              </p>
+            </div>
+
+            <div>
+              <Label className="text-base font-semibold">
+                Fondo de Caja Inicial (€) *
+              </Label>
+              <Input
+                type="number"
+                value={openingBalance}
+                onChange={(e) => setOpeningBalance(e.target.value)}
+                placeholder="0.00"
+                className="h-14 text-2xl font-bold text-center mt-2"
+                min="0"
+                step="0.01"
+                autoFocus
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                Ejemplo: Si empiezas con €50 en la caja, introduce 50
+              </p>
+            </div>
+
+            <div>
+              <Label className="text-base font-semibold">Notas (Opcional)</Label>
+              <Input
+                value={sessionNotes}
+                onChange={(e) => setSessionNotes(e.target.value)}
+                placeholder="Turno mañana, caja principal, etc."
+                className="mt-2"
+              />
+            </div>
+
+            {openingBalance && (
+              <div className="p-4 rounded-lg bg-emerald-50 border-2 border-emerald-300">
+                <p className="text-sm text-emerald-700">Resumen</p>
+                <p className="text-xl font-bold text-emerald-900 mt-1">
+                  Caja se abrirá con €{parseFloat(openingBalance).toFixed(2)}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowOpenSessionDialog(false);
+                setOpeningBalance("");
+                setSessionNotes("");
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={openCashSession}
+              disabled={!openingBalance && openingBalance !== "0"}
+              className="bg-emerald-600 hover:bg-emerald-700 min-w-[150px]"
+              size="lg"
+            >
+              <CheckCircle className="h-5 w-5 mr-2" />
+              Abrir Caja
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
