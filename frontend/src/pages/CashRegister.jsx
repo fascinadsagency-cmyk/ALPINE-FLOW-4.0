@@ -866,7 +866,7 @@ export default function CashRegister() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-24">Referencia</TableHead>
+                          <TableHead className="w-24">Nº Ticket</TableHead>
                           <TableHead>Hora</TableHead>
                           <TableHead>Tipo</TableHead>
                           <TableHead>Cliente</TableHead>
