@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,8 +47,12 @@ const PAYMENT_METHODS = [
 ];
 
 export default function Maintenance() {
+  // Read URL params for direct navigation from Dashboard
+  const [searchParams] = useSearchParams();
+  const initialView = searchParams.get("view") || "fleet";
+  
   // View mode: "fleet" (Mi Flota) or "external" (Taller Externo)
-  const [viewMode, setViewMode] = useState("fleet");
+  const [viewMode, setViewMode] = useState(initialView);
   
   // Internal maintenance states (Mi Flota)
   const [alertItems, setAlertItems] = useState([]);
