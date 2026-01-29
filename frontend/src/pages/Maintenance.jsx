@@ -27,7 +27,8 @@ import {
   Search,
   Truck,
   Home,
-  RotateCcw
+  RotateCcw,
+  UserPlus
 } from "lucide-react";
 import { toast } from "sonner";
 
