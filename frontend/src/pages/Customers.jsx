@@ -446,6 +446,12 @@ export default function Customers() {
         return customer;
       }).filter(c => c.dni && c.name); // Filter out empty rows
 
+      if (customersToImport.length === 0) {
+        toast.error("No hay clientes válidos para importar. Verifica que DNI y Nombre estén mapeados.");
+        setImportLoading(false);
+        return;
+      }
+
       const response = await axios.post(`${API}/customers/import`, {
         customers: customersToImport
       }, {
@@ -461,7 +467,22 @@ export default function Customers() {
       }
     } catch (error) {
       console.error("Import error:", error);
-      toast.error(error.response?.data?.detail || "Error al importar clientes");
+      // Extract error message properly
+      let errorMessage = "Error al importar clientes";
+      if (error.response?.data) {
+        if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        } else if (error.response.data.detail) {
+          errorMessage = typeof error.response.data.detail === 'string' 
+            ? error.response.data.detail 
+            : JSON.stringify(error.response.data.detail);
+        } else if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage);
     } finally {
       setImportLoading(false);
     }
