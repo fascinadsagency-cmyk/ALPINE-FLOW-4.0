@@ -725,7 +725,27 @@ export default function ActiveRentals() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">{rental.items.length} artículos</Badge>
+                        <div className="space-y-1">
+                          <Badge variant="outline" className="mb-1">{rental.items.length} artículos</Badge>
+                          <div className="space-y-1">
+                            {rental.items.map((item, idx) => (
+                              <div key={idx} className="flex items-center gap-2 text-xs">
+                                <span className="font-mono text-slate-600">{item.internal_code || item.barcode?.substring(0, 8)}</span>
+                                <span className="text-slate-400">|</span>
+                                <span className="text-slate-700">{item.item_type}</span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-5 w-5 p-0 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                                  onClick={() => openSwapModal(rental, item)}
+                                  title="Cambiar/Sustituir artículo"
+                                >
+                                  <ArrowLeftRight className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1 text-sm">
