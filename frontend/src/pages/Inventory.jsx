@@ -1101,12 +1101,37 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                     </SelectTrigger>
                     <SelectContent>
                       {itemTypes.map(type => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
+                        <div 
+                          key={type.value}
+                          className="flex items-center justify-between hover:bg-slate-100 rounded"
+                        >
+                          <SelectItem 
+                            value={type.value}
+                            className="flex-1 cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2">
+                              {type.label}
+                              {!type.is_default && (
+                                <Badge variant="secondary" className="text-xs">Personalizado</Badge>
+                              )}
+                            </div>
+                          </SelectItem>
                           {!type.is_default && (
-                            <Badge variant="secondary" className="ml-2 text-xs">Personalizado</Badge>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                deleteItemType(type.id, type.label);
+                              }}
+                              title="Eliminar tipo personalizado"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
                           )}
-                        </SelectItem>
+                        </div>
                       ))}
                       <div className="border-t my-1"></div>
                       <button
