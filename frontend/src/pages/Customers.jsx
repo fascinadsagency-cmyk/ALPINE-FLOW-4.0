@@ -304,7 +304,15 @@ export default function Customers() {
                     return (
                       <TableRow key={customer.id} className="hover:bg-slate-50">
                         <TableCell className="font-mono text-sm font-medium">{customer.dni}</TableCell>
-                        <TableCell className="font-semibold">{customer.name}</TableCell>
+                        <TableCell>
+                          <button
+                            onClick={() => viewHistory(customer)}
+                            className="font-semibold text-slate-900 hover:text-primary hover:underline text-left cursor-pointer"
+                            data-testid={`customer-name-${customer.id}`}
+                          >
+                            {customer.name}
+                          </button>
+                        </TableCell>
                         <TableCell>
                           {customer.phone ? (
                             <div className="flex items-center gap-1 text-slate-600">
@@ -353,6 +361,7 @@ export default function Customers() {
                               size="sm"
                               onClick={() => viewHistory(customer)}
                               data-testid={`view-history-${customer.id}`}
+                              title="Ver ficha completa"
                             >
                               <History className="h-4 w-4" />
                             </Button>
@@ -360,6 +369,7 @@ export default function Customers() {
                               variant="ghost"
                               size="sm"
                               onClick={() => openEditDialog(customer)}
+                              title="Editar cliente"
                             >
                               <Edit2 className="h-4 w-4" />
                             </Button>
@@ -368,6 +378,7 @@ export default function Customers() {
                               size="sm"
                               onClick={() => openDeleteDialog(customer)}
                               className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              title="Eliminar cliente"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
