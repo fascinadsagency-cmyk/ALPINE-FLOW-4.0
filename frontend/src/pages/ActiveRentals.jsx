@@ -1243,6 +1243,206 @@ export default function ActiveRentals() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ========== MODAL DE SWAP/CANJE ========== */}
+      <Dialog open={!!swapModal} onOpenChange={closeSwapModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ArrowLeftRight className="h-5 w-5 text-blue-600" />
+              Cambiar / Sustituir Artículo
+            </DialogTitle>
+            <DialogDescription>
+              {swapModal && (
+                <>
+                  Cliente: <strong>{swapModal.rental.customer_name}</strong>
+                  <br />
+                  Artículo actual: <strong>{swapModal.item.internal_code || swapModal.item.barcode}</strong> ({swapModal.item.item_type})
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Progress Steps */}
+          <div className="flex justify-center gap-2 py-2">
+            {[1, 2, 3].map((s) => (
+              <div key={s} className="flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold
+                  ${swapStep >= s ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
+                  {swapStep > s ? <CheckCircle className="h-4 w-4" /> : s}
+                </div>
+                {s < 3 && <div className={`w-8 h-1 ${swapStep > s ? 'bg-blue-600' : 'bg-slate-200'}`} />}
+              </div>
+            ))}
+          </div>
+
+          {/* STEP 1: Scan new item */}
+          {swapStep === 1 && (
+            <div className="space-y-4 py-4">
+              <div className="p-4 rounded-lg bg-slate-50 border">
+                <p className="text-sm text-slate-600 mb-2">Artículo a reemplazar:</p>
+                <div className="flex items-center gap-3">
+                  <Package className="h-8 w-8 text-slate-400" />
+                  <div>
+                    <p className="font-bold text-lg">{swapModal?.item.internal_code || swapModal?.item.barcode}</p>
+                    <p className="text-sm text-slate-500">
+                      {swapModal?.item.brand} {swapModal?.item.model} {swapModal?.item.size && `(${swapModal.item.size})`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-base font-semibold flex items-center gap-2">
+                  <Scan className="h-4 w-4" />
+                  Escanear Nuevo Artículo
+                </Label>
+                <p className="text-xs text-slate-500 mb-2">Introduce o escanea el código del artículo de reemplazo</p>
+                <Input
+                  value={swapNewBarcode}
+                  onChange={(e) => setSwapNewBarcode(e.target.value.toUpperCase())}
+                  placeholder="SKI-001, BOT-002..."
+                  className="h-12 text-lg font-mono"
+                  autoFocus
+                  onKeyDown={(e) => e.key === 'Enter' && searchNewItem()}
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm">Ajustar días (opcional)</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    type="number"
+                    min="1"
+                    value={swapNewDays}
+                    onChange={(e) => setSwapNewDays(e.target.value)}
+                    className="h-10 w-20 text-center font-bold"
+                  />
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 5, 7].map((d) => (
+                      <Button
+                        key={d}
+                        variant={swapNewDays === d.toString() ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setSwapNewDays(d.toString())}
+                        className="w-10"
+                      >
+                        {d}d
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: Confirm swap */}
+          {swapStep === 2 && swapNewItem && (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                {/* Old Item */}
+                <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+                  <p className="text-xs text-red-600 font-semibold mb-1">❌ DEVUELVE</p>
+                  <p className="font-bold">{swapModal?.item.internal_code}</p>
+                  <p className="text-sm text-slate-600">{swapModal?.item.item_type}</p>
+                  <p className="text-xs text-slate-500">{swapModal?.item.brand} {swapModal?.item.model}</p>
+                  {swapDelta && <p className="text-sm font-medium mt-2">€{swapDelta.oldPrice.toFixed(2)}</p>}
+                </div>
+
+                {/* New Item */}
+                <div className="p-3 rounded-lg bg-green-50 border border-green-200">
+                  <p className="text-xs text-green-600 font-semibold mb-1">✅ RECIBE</p>
+                  <p className="font-bold">{swapNewItem.internal_code || swapNewItem.barcode}</p>
+                  <p className="text-sm text-slate-600">{swapNewItem.item_type}</p>
+                  <p className="text-xs text-slate-500">{swapNewItem.brand} {swapNewItem.model}</p>
+                  {swapDelta && <p className="text-sm font-medium mt-2">€{swapDelta.newPrice.toFixed(2)}</p>}
+                </div>
+              </div>
+
+              {/* Delta Display */}
+              {swapDelta && (
+                <div className={`p-4 rounded-lg border-2 text-center ${
+                  swapDelta.isUpgrade ? 'bg-amber-50 border-amber-300' :
+                  swapDelta.isDowngrade ? 'bg-emerald-50 border-emerald-300' :
+                  'bg-slate-50 border-slate-300'
+                }`}>
+                  <p className="text-sm font-medium mb-1">
+                    {swapDelta.isUpgrade ? '⬆️ UPGRADE - Suplemento a cobrar' :
+                     swapDelta.isDowngrade ? '⬇️ DOWNGRADE - Abono al cliente' :
+                     '↔️ MISMO PRECIO - Sin diferencia'}
+                  </p>
+                  <p className={`text-3xl font-bold ${
+                    swapDelta.isUpgrade ? 'text-amber-600' :
+                    swapDelta.isDowngrade ? 'text-emerald-600' :
+                    'text-slate-600'
+                  }`}>
+                    {swapDelta.delta > 0 ? '+' : swapDelta.delta < 0 ? '-' : ''}€{Math.abs(swapDelta.delta).toFixed(2)}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">para {swapDelta.days} días</p>
+                </div>
+              )}
+
+              {/* Payment method if delta != 0 */}
+              {swapDelta && swapDelta.delta !== 0 && (
+                <div>
+                  <Label className="text-sm font-semibold">Método de pago/devolución</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      variant={swapPaymentMethod === "cash" ? "default" : "outline"}
+                      onClick={() => setSwapPaymentMethod("cash")}
+                      className="flex-1"
+                    >
+                      <Banknote className="h-4 w-4 mr-2" />
+                      Efectivo
+                    </Button>
+                    <Button
+                      variant={swapPaymentMethod === "card" ? "default" : "outline"}
+                      onClick={() => setSwapPaymentMethod("card")}
+                      className="flex-1"
+                    >
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Tarjeta
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            {swapStep === 1 && (
+              <>
+                <Button variant="outline" onClick={closeSwapModal}>Cancelar</Button>
+                <Button onClick={searchNewItem} disabled={swapLoading || !swapNewBarcode.trim()}>
+                  {swapLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Scan className="h-4 w-4 mr-2" />}
+                  Buscar Artículo
+                </Button>
+              </>
+            )}
+            {swapStep === 2 && (
+              <>
+                <Button variant="outline" onClick={() => { setSwapStep(1); setSwapNewItem(null); }}>
+                  Volver
+                </Button>
+                <Button 
+                  onClick={confirmSwap} 
+                  disabled={swapLoading}
+                  className={
+                    swapDelta?.isUpgrade ? 'bg-amber-600 hover:bg-amber-700' :
+                    swapDelta?.isDowngrade ? 'bg-emerald-600 hover:bg-emerald-700' :
+                    ''
+                  }
+                >
+                  {swapLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle className="h-4 w-4 mr-2" />}
+                  {swapDelta?.isUpgrade ? `Cobrar €${swapDelta.delta.toFixed(2)}` :
+                   swapDelta?.isDowngrade ? `Abonar €${Math.abs(swapDelta.delta).toFixed(2)}` :
+                   'Confirmar Cambio'}
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
