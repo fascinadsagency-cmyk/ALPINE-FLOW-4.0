@@ -1695,9 +1695,11 @@ async def create_rental(rental: RentalCreate, current_user: dict = Depends(get_c
         active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
         
         cash_movement_id = str(uuid.uuid4())
+        operation_number = await get_next_operation_number()
         cash_doc = {
             "id": cash_movement_id,
-            "session_id": active_session["id"],  # LINK TO SESSION
+            "operation_number": operation_number,
+            "session_id": active_session["id"],
             "movement_type": "income",
             "amount": rental.paid_amount,
             "payment_method": rental.payment_method,
@@ -1710,6 +1712,9 @@ async def create_rental(rental: RentalCreate, current_user: dict = Depends(get_c
             "created_by": current_user["username"]
         }
         await db.cash_movements.insert_one(cash_doc)
+        
+        # Store operation_number in rental for ticket reference
+        await db.rentals.update_one({"id": rental_id}, {"$set": {"operation_number": operation_number}})
     
     return RentalResponse(**doc)
 
