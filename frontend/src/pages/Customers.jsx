@@ -168,8 +168,8 @@ export default function Customers() {
   };
 
   const createCustomer = async () => {
-    if (!newCustomer.name || !newCustomer.dni) {
-      toast.error("Nombre y DNI son obligatorios");
+    if (!newCustomer.name || !newCustomer.dni || !newCustomer.phone) {
+      toast.error("Nombre, DNI y Teléfono son obligatorios");
       return;
     }
 
@@ -177,7 +177,8 @@ export default function Customers() {
       await customerApi.create({
         name: newCustomer.name,
         dni: newCustomer.dni.toUpperCase(),
-        phone: newCustomer.phone || "",
+        phone: newCustomer.phone,
+        email: newCustomer.email || "",
         address: newCustomer.address || "",
         city: newCustomer.city || "",
         source: newCustomer.source || "",
@@ -186,7 +187,7 @@ export default function Customers() {
       toast.success("Cliente creado correctamente");
       setShowNewCustomerDialog(false);
       resetNewCustomerForm();
-      loadCustomers();
+      loadCustomersWithStatus();
     } catch (error) {
       toast.error(error.response?.data?.detail || "Error al crear cliente");
     }
