@@ -937,21 +937,10 @@ async def delete_item(item_id: str, current_user: dict = Depends(get_current_use
 
 @api_router.get("/item-types", response_model=List[ItemTypeResponse])
 async def get_item_types(current_user: dict = Depends(get_current_user)):
-    """Get all item types (default + custom)"""
-    # Default types
-    default_types = [
-        {"id": "default_ski", "value": "ski", "label": "Esquís", "is_default": True, "created_at": ""},
-        {"id": "default_snowboard", "value": "snowboard", "label": "Snowboard", "is_default": True, "created_at": ""},
-        {"id": "default_boots", "value": "boots", "label": "Botas", "is_default": True, "created_at": ""},
-        {"id": "default_helmet", "value": "helmet", "label": "Casco", "is_default": True, "created_at": ""},
-        {"id": "default_poles", "value": "poles", "label": "Bastones", "is_default": True, "created_at": ""},
-    ]
-    
-    # Get custom types from database
+    """Get all item types (only custom types from database)"""
+    # Get custom types from database only - no hardcoded defaults
     custom_types = await db.item_types.find({}, {"_id": 0}).to_list(100)
-    
-    all_types = default_types + [ItemTypeResponse(**t) for t in custom_types]
-    return all_types
+    return [ItemTypeResponse(**t) for t in custom_types]
 
 @api_router.post("/item-types", response_model=ItemTypeResponse)
 async def create_item_type(item_type: ItemTypeCreate, current_user: dict = Depends(get_current_user)):
@@ -959,14 +948,9 @@ async def create_item_type(item_type: ItemTypeCreate, current_user: dict = Depen
     # Normalize value (lowercase, no spaces)
     normalized_value = item_type.value.lower().replace(" ", "_")
     
-    # Check if already exists (check both default and custom)
-    default_values = ["ski", "snowboard", "boots", "helmet", "poles"]
-    if normalized_value in default_values:
-        raise HTTPException(status_code=400, detail="This type already exists as a default type")
-    
     existing = await db.item_types.find_one({"value": normalized_value})
     if existing:
-        raise HTTPException(status_code=400, detail="This type already exists")
+        raise HTTPException(status_code=400, detail="Este tipo ya existe")
     
     type_id = str(uuid.uuid4())
     doc = {
@@ -982,28 +966,75 @@ async def create_item_type(item_type: ItemTypeCreate, current_user: dict = Depen
 
 @api_router.delete("/item-types/{type_id}")
 async def delete_item_type(type_id: str, current_user: dict = Depends(get_current_user)):
-    """Delete a custom item type (cannot delete default types)"""
+    """Delete a custom item type"""
     item_type = await db.item_types.find_one({"id": type_id})
     if not item_type:
         raise HTTPException(status_code=404, detail="Tipo de artículo no encontrado")
-    
-    # Cannot delete default types
-    if item_type.get("is_default", False):
-        raise HTTPException(
-            status_code=400,
-            detail="No se pueden eliminar tipos predeterminados del sistema"
-        )
     
     # Check if any items use this type
     items_count = await db.items.count_documents({"item_type": item_type["value"]})
     if items_count > 0:
         raise HTTPException(
             status_code=400,
-            detail=f"No se puede eliminar este tipo porque {items_count} artículos lo están usando. Cambia el tipo de esos productos primero."
+            detail=f"No se puede eliminar este tipo porque {items_count} artículos lo están usando. Reasígnalos primero."
         )
     
     await db.item_types.delete_one({"id": type_id})
     return {"message": "Tipo eliminado correctamente"}
+
+@api_router.post("/item-types/migrate-legacy")
+async def migrate_legacy_types(current_user: dict = Depends(get_current_user)):
+    """Migrate items with legacy hardcoded types to 'sin_categoria' or create new custom types"""
+    legacy_types = ["ski", "snowboard", "boots", "helmet", "poles", "goggles"]
+    legacy_labels = {
+        "ski": "Esquís", "snowboard": "Snowboard", "boots": "Botas",
+        "helmet": "Casco", "poles": "Bastones", "goggles": "Máscara"
+    }
+    
+    migrated = []
+    
+    for legacy_type in legacy_types:
+        # Count items with this legacy type
+        count = await db.items.count_documents({"item_type": legacy_type})
+        if count > 0:
+            # Check if custom type already exists
+            existing = await db.item_types.find_one({"value": legacy_type})
+            if not existing:
+                # Create custom type to preserve the data
+                type_id = str(uuid.uuid4())
+                doc = {
+                    "id": type_id,
+                    "value": legacy_type,
+                    "label": legacy_labels.get(legacy_type, legacy_type.capitalize()),
+                    "is_default": False,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                await db.item_types.insert_one(doc)
+                migrated.append({"type": legacy_type, "items_count": count, "action": "created_custom_type"})
+            else:
+                migrated.append({"type": legacy_type, "items_count": count, "action": "already_exists"})
+    
+    return {"migrated": migrated, "message": "Migración completada"}
+
+@api_router.post("/item-types/reassign")
+async def reassign_item_types(
+    old_type: str,
+    new_type: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Reassign all items from one type to another"""
+    # Verify new type exists
+    new_type_doc = await db.item_types.find_one({"value": new_type})
+    if not new_type_doc:
+        raise HTTPException(status_code=404, detail="El tipo de destino no existe")
+    
+    # Update all items
+    result = await db.items.update_many(
+        {"item_type": old_type},
+        {"$set": {"item_type": new_type}}
+    )
+    
+    return {"updated_count": result.modified_count, "message": f"{result.modified_count} artículos reasignados"}
 
     item = await db.items.find_one({"id": item_id})
     if not item:
