@@ -950,8 +950,9 @@ export default function NewRental() {
     const groups = [];
 
     // Add detected packs as CONSOLIDATED groups (PADRES)
-    detectedPacks.forEach((dp, idx) => {
-      // Get the actual item objects for this pack
+    // Each detected pack has a unique instanceId for multi-pack support
+    detectedPacks.forEach((dp) => {
+      // Get the actual item objects for THIS SPECIFIC pack instance
       const packItemObjects = items.filter(item => 
         dp.items.includes(item.barcode) || dp.items.includes(item.id)
       );
