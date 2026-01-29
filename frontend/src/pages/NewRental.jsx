@@ -1516,52 +1516,78 @@ export default function NewRental() {
                     {/* Items List - Optimized with Priority Columns */}
                     {items.map((item, index) => {
                       const itemPrice = getItemPriceWithPack(item);
+                      const qty = item.quantity || 1;
+                      const totalItemPrice = itemPrice * qty;
                       
                       return (
                         <div 
-                          key={item.barcode}
-                          className="grid grid-cols-12 gap-3 items-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors animate-fade-in"
+                          key={item.id || item.barcode}
+                          className={`grid grid-cols-12 gap-3 items-center p-3 rounded-xl transition-colors animate-fade-in ${
+                            item.is_generic ? 'bg-emerald-50 hover:bg-emerald-100' : 'bg-slate-50 hover:bg-slate-100'
+                          }`}
                         >
-                          {/* Código Interno - Priority #1 */}
-                          <div className="col-span-2">
-                            <p className="text-xs text-slate-500 font-medium uppercase">Código</p>
-                            <p className="font-mono font-bold text-slate-900">{item.barcode}</p>
+                          {/* Nombre/Código - Priority #1 */}
+                          <div className="col-span-3">
+                            <p className="text-xs text-slate-500 font-medium uppercase">
+                              {item.is_generic ? 'Artículo' : 'Código'}
+                            </p>
+                            {item.is_generic ? (
+                              <p className="font-bold text-emerald-700">{item.name}</p>
+                            ) : (
+                              <p className="font-mono font-bold text-slate-900">{item.internal_code || item.barcode}</p>
+                            )}
                           </div>
                           
                           {/* Tipo de Artículo - Priority #2 */}
                           <div className="col-span-2">
                             <p className="text-xs text-slate-500 font-medium uppercase">Tipo</p>
-                            <Badge variant="outline" className="font-semibold">{item.item_type}</Badge>
-                          </div>
-                          
-                          {/* Modelo - Priority #3 */}
-                          <div className="col-span-3">
-                            <p className="text-xs text-slate-500 font-medium uppercase">Modelo</p>
-                            <p className="font-medium text-slate-900">{item.brand} {item.model}</p>
-                          </div>
-                          
-                          {/* Talla/Tamaño - Priority #4 */}
-                          <div className="col-span-1">
-                            <p className="text-xs text-slate-500 font-medium uppercase">Talla</p>
-                            <Badge variant="outline" className="text-sm font-bold">
-                              {item.size}
+                            <Badge variant="outline" className="font-semibold">
+                              {itemTypes.find(t => t.value === item.item_type)?.label || item.item_type}
                             </Badge>
                           </div>
                           
-                          {/* Categoría */}
+                          {/* Cantidad (para genéricos) o Modelo */}
                           <div className="col-span-2">
-                            <Badge className={`${
-                              item.category === 'ALTA' ? 'bg-purple-100 text-purple-700' :
-                              item.category === 'MEDIA' ? 'bg-blue-100 text-blue-700' :
-                              'bg-green-100 text-green-700'
-                            } text-xs`}>
-                              {item.category}
-                            </Badge>
+                            {item.is_generic ? (
+                              <>
+                                <p className="text-xs text-slate-500 font-medium uppercase">Cantidad</p>
+                                <div className="flex items-center gap-1">
+                                  <Badge className="bg-emerald-600 text-white text-lg font-bold px-3">
+                                    x{qty}
+                                  </Badge>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <p className="text-xs text-slate-500 font-medium uppercase">Modelo</p>
+                                <p className="font-medium text-slate-900">{item.brand} {item.model}</p>
+                              </>
+                            )}
                           </div>
                           
-                          {/* Precio y Acciones */}
+                          {/* Talla/Tamaño (solo para no genéricos) */}
+                          <div className="col-span-1">
+                            {!item.is_generic && (
+                              <>
+                                <p className="text-xs text-slate-500 font-medium uppercase">Talla</p>
+                                <Badge variant="outline" className="text-sm font-bold">
+                                  {item.size}
+                                </Badge>
+                              </>
+                            )}
+                          </div>
+                          
+                          {/* Precio Unitario */}
+                          <div className="col-span-2">
+                            <p className="text-xs text-slate-500 font-medium uppercase">
+                              {qty > 1 ? 'Precio Unit.' : 'Precio'}
+                            </p>
+                            <p className="text-sm font-medium text-slate-700">€{itemPrice.toFixed(2)}</p>
+                          </div>
+                          
+                          {/* Precio Total y Acciones */}
                           <div className="col-span-2 flex items-center justify-end gap-2">
-                            {editingItemPrice === item.barcode ? (
+                            {editingItemPrice === (item.id || item.barcode) ? (
                               /* Modo Edición: Input activo */
                               <div className="flex items-center gap-1">
                                 <div className="relative">
@@ -1573,17 +1599,17 @@ export default function NewRental() {
                                     defaultValue={itemPrice.toFixed(2)}
                                     className="h-9 w-24 pl-6 pr-2 text-sm font-semibold text-right"
                                     autoFocus
-                                    data-testid={`price-input-${item.barcode}`}
+                                    data-testid={`price-input-${item.id || item.barcode}`}
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
-                                        updateItemPrice(item.barcode, e.target.value);
+                                        updateItemPrice(item.id || item.barcode, e.target.value);
                                       }
                                       if (e.key === 'Escape') {
                                         setEditingItemPrice(null);
                                       }
                                     }}
                                     onBlur={(e) => {
-                                      updateItemPrice(item.barcode, e.target.value);
+                                      updateItemPrice(item.id || item.barcode, e.target.value);
                                     }}
                                   />
                                 </div>
@@ -1600,9 +1626,33 @@ export default function NewRental() {
                               /* Modo Visualización: Click para editar */
                               <div 
                                 className="cursor-pointer hover:bg-slate-200 px-2 py-1 rounded transition-colors flex items-center gap-1 group"
-                                onClick={() => setEditingItemPrice(item.barcode)}
+                                onClick={() => setEditingItemPrice(item.id || item.barcode)}
                                 title="Click para editar precio"
-                                data-testid={`edit-price-btn-${item.barcode}`}
+                                data-testid={`edit-price-btn-${item.id || item.barcode}`}
+                              >
+                                <div className="text-right">
+                                  <p className={`text-sm font-bold ${
+                                    qty > 1 ? 'text-emerald-600' : 
+                                    item.customPrice !== null ? 'text-emerald-600' : 'text-slate-900'
+                                  }`}>
+                                    €{totalItemPrice.toFixed(2)}
+                                    {qty > 1 && <span className="ml-1 text-xs font-normal">({qty}x€{itemPrice.toFixed(2)})</span>}
+                                  </p>
+                                  <p className="text-xs text-slate-500">{numDays}d</p>
+                                </div>
+                                <Edit2 className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
+                              </div>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeItem(item.id || item.barcode)}
+                              className="h-8 w-8 p-0"
+                              data-testid={`remove-item-${item.id || item.barcode}`}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
                               >
                                 <div className="text-right">
                                   <p className={`text-sm font-semibold ${item.customPrice !== null ? 'text-emerald-600' : 'text-slate-900'}`}>
