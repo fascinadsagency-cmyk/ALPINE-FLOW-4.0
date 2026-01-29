@@ -106,10 +106,12 @@ class ItemResponse(BaseModel):
     id: str
     barcode: str
     internal_code: str  # Internal shop code (main identifier)
+    serial_number: str = ""  # Manufacturer serial number
     item_type: str
     brand: str
     model: str
     size: str
+    binding: str = ""  # Binding type/model
     status: str  # available, rented, maintenance, retired
     purchase_price: float
     purchase_date: str
