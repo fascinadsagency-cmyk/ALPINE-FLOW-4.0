@@ -182,6 +182,31 @@ export default function CashRegister() {
     }
   };
 
+  // Manual sync function for forced reconciliation
+  const forceSyncMovements = async () => {
+    if (!activeSession) {
+      toast.warning("Abre la caja primero para sincronizar movimientos");
+      return;
+    }
+    
+    setSyncing(true);
+    try {
+      const auditRes = await axios.post(`${API}/cash/audit-sync`);
+      
+      if (auditRes.data.movements_created > 0) {
+        toast.success(`✅ ${auditRes.data.movements_created} movimiento(s) sincronizado(s)`);
+        // Reload all data
+        await loadData();
+      } else {
+        toast.info("✓ Caja sincronizada. Todos los movimientos están correctos.");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al sincronizar");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const openCashSession = async () => {
     if (!openingBalance || parseFloat(openingBalance) < 0) {
       toast.error("Introduce un fondo de caja válido (puede ser 0)");
