@@ -81,10 +81,12 @@ class CustomerResponse(BaseModel):
 class ItemCreate(BaseModel):
     barcode: str
     internal_code: str  # Internal shop code (REQUIRED - main identifier)
+    serial_number: Optional[str] = ""  # Manufacturer serial number
     item_type: str  # ski, snowboard, boots, helmet, poles
     brand: str
     model: str
     size: str
+    binding: Optional[str] = ""  # Binding type/model for skis
     purchase_price: float
     purchase_date: str
     location: str = ""
