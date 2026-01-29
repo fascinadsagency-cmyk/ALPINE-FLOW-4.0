@@ -142,6 +142,11 @@ export default function NewRental() {
   const [cashGiven, setCashGiven] = useState("");
   const [processingPayment, setProcessingPayment] = useState(false);
   
+  // Auto cash opening modal (NEW)
+  const [showAutoOpenCashDialog, setShowAutoOpenCashDialog] = useState(false);
+  const [openingCashBalance, setOpeningCashBalance] = useState("");
+  const [pendingPaymentData, setPendingPaymentData] = useState(null);
+  
   // Price editing
   const [discountType, setDiscountType] = useState('none');
   const [discountValue, setDiscountValue] = useState("");
