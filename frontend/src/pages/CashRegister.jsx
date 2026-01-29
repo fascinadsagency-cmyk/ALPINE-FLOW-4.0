@@ -220,8 +220,13 @@ export default function CashRegister() {
   // Calculate discrepancy when arqueo form changes
   useEffect(() => {
     if (summary) {
-      const expectedCash = (summary.by_method?.cash || 0);
-      const expectedCard = (summary.by_method?.card || 0);
+      // by_payment_method contains: { cash: {income, expense, refund}, card: {...} }
+      const cashData = summary.by_payment_method?.cash || {};
+      const cardData = summary.by_payment_method?.card || {};
+      
+      // Calculate net expected for each method
+      const expectedCash = (cashData.income || 0) - (cashData.expense || 0) - (cashData.refund || 0);
+      const expectedCard = (cardData.income || 0) - (cardData.expense || 0) - (cardData.refund || 0);
       
       const realCash = parseFloat(arqueoForm.physical_cash) || 0;
       const realCard = parseFloat(arqueoForm.card_total) || 0;
@@ -229,28 +234,42 @@ export default function CashRegister() {
       setDiscrepancy({
         cash: realCash - expectedCash,
         card: realCard - expectedCard,
-        total: (realCash + realCard) - (expectedCash + expectedCard)
+        total: (realCash + realCard) - (expectedCash + expectedCard),
+        expectedCash,
+        expectedCard
       });
     }
   }, [arqueoForm, summary]);
 
   const closeCashRegister = async () => {
-    if (!arqueoForm.physical_cash || !arqueoForm.card_total) {
-      toast.error("Debes introducir tanto el efectivo como el total de tarjeta");
+    if (!arqueoForm.physical_cash && arqueoForm.physical_cash !== 0) {
+      toast.error("Debes introducir el efectivo contado (puede ser 0)");
       return;
     }
 
     try {
-      await axios.post(`${API}/cash/close`, {
+      const closingData = {
         date: date,
-        physical_cash: parseFloat(arqueoForm.physical_cash),
-        card_total: parseFloat(arqueoForm.card_total),
-        expected_cash: summary?.by_method?.cash || 0,
-        expected_card: summary?.by_method?.card || 0,
+        physical_cash: parseFloat(arqueoForm.physical_cash) || 0,
+        card_total: parseFloat(arqueoForm.card_total) || 0,
+        expected_cash: discrepancy.expectedCash || 0,
+        expected_card: discrepancy.expectedCard || 0,
         discrepancy_cash: discrepancy.cash,
         discrepancy_card: discrepancy.card,
         discrepancy_total: discrepancy.total,
         notes: arqueoForm.notes
+      };
+      
+      const response = await axios.post(`${API}/cash/close`, closingData);
+      
+      // Auto-print closing ticket
+      printClosingTicket({
+        ...closingData,
+        ...response.data,
+        total_income: summary?.total_income || 0,
+        total_expense: summary?.total_expense || 0,
+        total_refunds: summary?.total_refunds || 0,
+        movements_count: summary?.movements_count || 0
       });
       
       toast.success("Caja cerrada correctamente");
@@ -261,6 +280,105 @@ export default function CashRegister() {
     } catch (error) {
       toast.error(error.response?.data?.detail || "Error al cerrar caja");
     }
+  };
+
+  // Print closing ticket function
+  const printClosingTicket = (closingData) => {
+    const printWindow = window.open('', '_blank', 'width=300,height=600');
+    if (!printWindow) {
+      toast.error("No se pudo abrir ventana de impresión");
+      return;
+    }
+    
+    const formatCurrency = (val) => (val || 0).toFixed(2);
+    const formatDate = (dateStr) => {
+      if (!dateStr) return '-';
+      return new Date(dateStr).toLocaleDateString('es-ES', { 
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    };
+    
+    printWindow.document.write(`
+      <html>
+      <head>
+        <title>Arqueo de Caja</title>
+        <style>
+          body { font-family: 'Courier New', monospace; font-size: 12px; margin: 0; padding: 10px; width: 70mm; }
+          .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
+          .title { font-size: 14px; font-weight: bold; }
+          .section { margin: 10px 0; }
+          .row { display: flex; justify-content: space-between; margin: 3px 0; }
+          .label { }
+          .value { font-weight: bold; }
+          .divider { border-top: 1px dashed #000; margin: 10px 0; }
+          .total { font-size: 14px; font-weight: bold; }
+          .discrepancy { margin-top: 10px; padding: 8px; border: 1px solid #000; }
+          .ok { }
+          .warning { background: #fff3cd; }
+          .error { background: #f8d7da; }
+          .footer { text-align: center; margin-top: 15px; font-size: 10px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="title">ARQUEO DE CAJA</div>
+          <div>Fecha: ${closingData.date}</div>
+          <div>Cerrado: ${formatDate(closingData.closed_at)}</div>
+          <div>Por: ${closingData.closed_by || '-'}</div>
+        </div>
+        
+        <div class="section">
+          <div class="row"><span>Nº Operaciones:</span><span class="value">${closingData.movements_count || 0}</span></div>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="section">
+          <div style="font-weight: bold; margin-bottom: 5px;">RESUMEN DEL DÍA</div>
+          <div class="row"><span>Entradas:</span><span class="value">€${formatCurrency(closingData.total_income)}</span></div>
+          <div class="row"><span>Salidas:</span><span class="value">€${formatCurrency(closingData.total_expense)}</span></div>
+          <div class="row"><span>Devoluciones:</span><span class="value">€${formatCurrency(closingData.total_refunds)}</span></div>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="section">
+          <div style="font-weight: bold; margin-bottom: 5px;">EFECTIVO</div>
+          <div class="row"><span>Esperado:</span><span>€${formatCurrency(closingData.expected_cash)}</span></div>
+          <div class="row"><span>Contado:</span><span class="value">€${formatCurrency(closingData.physical_cash)}</span></div>
+          <div class="row"><span>Descuadre:</span><span class="value" style="color: ${closingData.discrepancy_cash === 0 ? 'green' : 'red'}">€${formatCurrency(closingData.discrepancy_cash)}</span></div>
+        </div>
+        
+        <div class="section">
+          <div style="font-weight: bold; margin-bottom: 5px;">TARJETA</div>
+          <div class="row"><span>Esperado:</span><span>€${formatCurrency(closingData.expected_card)}</span></div>
+          <div class="row"><span>Datáfono:</span><span class="value">€${formatCurrency(closingData.card_total)}</span></div>
+          <div class="row"><span>Descuadre:</span><span class="value" style="color: ${closingData.discrepancy_card === 0 ? 'green' : 'red'}">€${formatCurrency(closingData.discrepancy_card)}</span></div>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="discrepancy ${Math.abs(closingData.discrepancy_total || 0) < 1 ? 'ok' : Math.abs(closingData.discrepancy_total || 0) < 10 ? 'warning' : 'error'}">
+          <div class="row total">
+            <span>DESCUADRE TOTAL:</span>
+            <span>€${formatCurrency(closingData.discrepancy_total)}</span>
+          </div>
+        </div>
+        
+        ${closingData.notes ? `<div class="section"><div style="font-weight: bold;">Notas:</div><div>${closingData.notes}</div></div>` : ''}
+        
+        <div class="footer">
+          <div>--- Documento de arqueo ---</div>
+          <div>Conservar con la recaudación</div>
+        </div>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      printWindow.print();
+    };
   };
 
   const revertClosure = async (closingDate) => {
