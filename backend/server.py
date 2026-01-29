@@ -1078,23 +1078,45 @@ async def update_item(item_id: str, item: ItemCreate, current_user: dict = Depen
     return ItemResponse(**updated)
 
 @api_router.delete("/items/{item_id}")
-async def delete_item(item_id: str, current_user: dict = Depends(get_current_user)):
-    """Delete an item (or retire if rented)"""
+async def delete_item(item_id: str, force: bool = Query(False), current_user: dict = Depends(get_current_user)):
+    """Delete an item permanently or mark as deleted if has history"""
     item = await db.items.find_one({"id": item_id})
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
     
     # Check if item is currently rented
     if item.get("status") == "rented":
-        raise HTTPException(status_code=400, detail="Cannot delete rented item")
+        raise HTTPException(status_code=400, detail="No se puede eliminar un artículo alquilado")
     
-    # Instead of deleting, mark as retired
-    await db.items.update_one(
-        {"id": item_id}, 
-        {"$set": {"status": "retired", "updated_at": datetime.now(timezone.utc).isoformat()}}
-    )
+    # Check if item has rental history
+    rental_history = await db.rentals.count_documents({
+        "items.item_id": item_id
+    })
     
-    return {"message": "Item retired successfully"}
+    # Also check by barcode for legacy rentals
+    if rental_history == 0 and item.get("barcode"):
+        rental_history = await db.rentals.count_documents({
+            "items.barcode": item.get("barcode")
+        })
+    
+    if rental_history > 0 and not force:
+        # Item has history - mark as deleted (soft delete) instead of physical delete
+        await db.items.update_one(
+            {"id": item_id}, 
+            {"$set": {
+                "status": "deleted",
+                "deleted_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        return {"message": "Artículo dado de baja (tiene historial)", "action": "soft_delete", "deleted": True}
+    
+    # No history or force=True - physical delete
+    result = await db.items.delete_one({"id": item_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=500, detail="Error al eliminar el artículo")
+    
+    return {"message": "Artículo eliminado permanentemente", "action": "hard_delete", "deleted": True}
 
 # ==================== ITEM TYPES ROUTES ====================
 
