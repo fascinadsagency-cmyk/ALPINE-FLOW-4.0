@@ -539,3 +539,18 @@ agent_communication:
         - working: true
           agent: "testing"
           comment: "✅ COMPREHENSIVE CASH MANAGEMENT AND PAYMENT SYSTEM TESTING COMPLETED (15/18 scenarios passed): Login with admin2/admin123 ✅, Cash Management System ✅ (Turno #3 already open with €100.00 balance, 0 operations, green banner 'Caja abierta - Turno #3'), Cash Session Status ✅ (enabled buttons: Nueva Entrada, Nueva Salida, Cerrar Caja), New Rental Page Structure ✅ (customer search input 'Busca por nombre o DNI', barcode scanner 'Escanear código de barras', duration configuration, payment section with 'Completar Alquiler' button), Cash Closing Modal ✅ (PERFECT IMPLEMENTATION: 'Cerrar Caja - Arqueo Manual' title, Resumen del Día section with 3 colored cards - green Total Ventas, red Total Salidas, orange Devoluciones), Payment Method Breakdown ✅ (DESGLOSE DETALLADO POR MÉTODO with 💵 EFECTIVO blue card and 💳 TARJETA purple card, each showing + Ventas, - Salidas, - Devoluc., Esperado lines), Arqueo Manual Section ✅ (dark background with large input fields for 'Efectivo Real Contado' and 'Total Datáfono/Tarjeta'), Professional Visual Elements ✅ (consistent styling, proper icons, color coding), Session Management ✅ (cash session system working, turn numbering functional), Integration Confirmed ✅ (rental system connects to cash management). Minor: Complete rental flow interrupted by session timeouts, but all core components verified working. CRITICAL SUCCESS: Complete cash session system working, payment modal system implemented, detailed breakdown by payment method functional, integration between rental and cash management confirmed. ALL CORE FUNCTIONALITY WORKING AS SPECIFIED IN REQUIREMENTS."
+
+  - task: "Sistema de Caja con Sincronización Total - Session Validation and Orphaned Operations"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test Sistema de Caja con Sincronización Total: session validation for all money operations, auto-refresh every 10 seconds, endpoint to validate/recover orphaned operations, mandatory linking of movements to session_id. Test scenarios: 1) Session active prerequisite, 2) Create rental WITH active session (should succeed), 3) Create rental WITHOUT active session (should fail), 4) Validate movements linked to session, 5) Validate orphaned operations endpoint, 6) Cash summary calculations, 7) Complete flow (income→expense→refund), 8) Close session"
+        - working: false
+          agent: "testing"
+          comment: "❌ CRITICAL ISSUES FOUND (10/12 tests passed): ✅ Authentication successful, ✅ Test items/customer creation working, ✅ Cash session opening working (€100 balance), ✅ Rental WITH active session creates cash movement automatically, ❌ CRITICAL: Rental WITHOUT active session was created successfully (SHOULD HAVE FAILED with 'No hay sesión de caja activa' error), ❌ CRITICAL: Found movements without session_id (orphaned operations from previous days), ✅ Validate orphans endpoint working (20 orphans found from 2026-01-28), ✅ Cash summary calculations correct, ✅ Complete flow working (income/expense/refund), ✅ Session closure working. MAIN ISSUES: 1) Session validation not properly enforced for rentals - allows creation without active session, 2) Historical orphaned movements exist (20 from previous testing). The validate-orphans endpoint correctly identifies these issues but the core session validation needs fixing."
