@@ -3218,15 +3218,16 @@ class CashClosingResponse(BaseModel):
 
 # ==================== CASH SESSIONS ROUTES ====================
 
-@api_router.post("/cash/sessions/open")
-async def open_cash_session(session: CashSessionCreate, current_user: dict = Depends(get_current_user)):
-    """Open a new cash session/shift"""
+@api_router.post("/cash/sessions")
+async def create_cash_session(session: CashSessionCreate, current_user: dict = Depends(get_current_user)):
+    """Open a new cash session/shift (simple state change in DB)"""
     date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     # Check if there's already an open session for today
     existing_open = await db.cash_sessions.find_one({"date": date, "status": "open"})
     if existing_open:
-        raise HTTPException(status_code=400, detail="There is already an open cash session for today. Please close it first.")
+        # Return existing session instead of error
+        return CashSessionResponse(**{k: v for k, v in existing_open.items() if k != '_id'})
     
     # Get next session number for today
     sessions_today = await db.cash_sessions.count_documents({"date": date})
@@ -3239,14 +3240,19 @@ async def open_cash_session(session: CashSessionCreate, current_user: dict = Dep
         "session_number": session_number,
         "opened_at": datetime.now(timezone.utc).isoformat(),
         "opened_by": current_user["username"],
-        "opening_balance": session.opening_balance,
+        "opening_balance": session.opening_balance or 0,
         "status": "open",
         "closed_at": None,
         "closure_id": None,
-        "notes": session.notes or ""
+        "notes": ""
     }
     await db.cash_sessions.insert_one(doc)
     return CashSessionResponse(**doc)
+
+@api_router.post("/cash/sessions/open")
+async def open_cash_session(session: CashSessionCreate, current_user: dict = Depends(get_current_user)):
+    """Open a new cash session/shift (alias for compatibility)"""
+    return await create_cash_session(session, current_user)
 
 @api_router.get("/cash/sessions/active")
 async def get_active_session(current_user: dict = Depends(get_current_user)):
