@@ -765,16 +765,27 @@ export default function CashRegister() {
                             {totalDiscrepancy >= 0 ? '+' : ''}€{totalDiscrepancy.toFixed(2)}
                           </TableCell>
                           <TableCell>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="gap-1 text-orange-600 border-orange-300 hover:bg-orange-50"
-                              onClick={() => revertClosure(closure.date)}
-                              data-testid={`revert-closure-${closure.date}`}
-                            >
-                              <Undo2 className="h-3 w-3" />
-                              Reabrir
-                            </Button>
+                            <div className="flex gap-1">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-1"
+                                onClick={() => printClosingTicket(closure)}
+                                data-testid={`print-closure-${closure.date}`}
+                              >
+                                <Printer className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-1 text-orange-600 border-orange-300 hover:bg-orange-50"
+                                onClick={() => revertClosure(closure.date)}
+                                data-testid={`revert-closure-${closure.date}`}
+                              >
+                                <Undo2 className="h-3 w-3" />
+                                Reabrir
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
