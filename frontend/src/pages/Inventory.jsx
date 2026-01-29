@@ -217,7 +217,7 @@ export default function Inventory() {
     internal_code: "",
     barcode: "",
     serial_number: "",
-    item_type: "ski",
+    item_type: "",  // Empty by default - user selects from custom types
     brand: "",
     model: "",
     size: "",
