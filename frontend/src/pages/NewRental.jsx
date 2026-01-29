@@ -148,6 +148,9 @@ export default function NewRental() {
   // Sources
   const [sources, setSources] = useState([]);
   
+  // Item types from API
+  const [itemTypes, setItemTypes] = useState([]);
+  
   const barcodeRef = useRef(null);
   const searchRef = useRef(null);
   const daysRef = useRef(null);
@@ -156,6 +159,7 @@ export default function NewRental() {
     loadTariffs();
     loadSources();
     loadPacks();
+    loadItemTypes();
     const timer = setTimeout(() => setShowTimeHint(false), 5000);
     return () => clearTimeout(timer);
   }, []);
