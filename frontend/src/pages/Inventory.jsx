@@ -341,7 +341,15 @@ export default function Inventory() {
       resetNewItem();
       loadItems();
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Error al crear artículo");
+      // Handle Pydantic validation errors (array of objects) or string errors
+      const detail = error.response?.data?.detail;
+      let errorMsg = "Error al crear artículo";
+      if (typeof detail === 'string') {
+        errorMsg = detail;
+      } else if (Array.isArray(detail) && detail.length > 0) {
+        errorMsg = detail.map(e => e.msg || e.message || JSON.stringify(e)).join(', ');
+      }
+      toast.error(errorMsg);
     }
   };
 
