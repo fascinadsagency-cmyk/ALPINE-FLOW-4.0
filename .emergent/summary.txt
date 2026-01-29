@@ -5,25 +5,20 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
 1.  **Gestión Central:** Alquileres, Devoluciones, Inventario (con código interno manual), Clientes (con historial financiero), Proveedores, Tarifas.
 2.  **Módulos Financieros:**
     *   **Dashboard Estratégico:** Con calendario de ocupación, rankings de rendimiento, y un nuevo panel de Control de Devoluciones.
-    *   **Gestión de Caja:** Con arqueo manual detallado, historial, y posibilidad de revertir cierres. Debe registrar y sincronizar todos los movimientos.
+    *   **Gestión de Caja:** Con arqueo manual detallado, historial, y posibilidad de revertir cierres. Debe registrar y sincronizar todos los movimientos y permitir múltiples turnos/sesiones por día.
     *   **Reportes Flexibles:** Con filtro por rango, botones de selección rápida y comparativa interanual.
     *   **Rentabilidad de Inventario:** Trackear coste, ingresos, amortización y beneficio neto por artículo.
 3.  **Flujos de Trabajo Optimizados:**
-    *   **Auto-Combo Silencioso:** Detección y aplicación de precios de pack en segundo plano.
+    *   **Apertura de Caja Automática:** La caja se abre automáticamente con un modal para introducir el fondo inicial la primera vez que se intenta un cobro tras un cierre.
+    *   **Pasarela de Pago Obligatoria:** Un modal de pago (Efectivo/Tarjeta) intercepta la finalización del alquiler para asegurar el registro del cobro antes de imprimir.
     *   **Devolución Rápida:** Botón de un solo clic para cerrar alquileres.
     *   **Modificar Duración:** Permitir ampliar/acortar alquileres activos con ajuste financiero.
-    *   **Acceso Rápido a Cliente:** Modal con datos del cliente accesible desde cualquier lista.
-    *   **Tipos de Artículo Editables:** Permitir al usuario crear nuevas categorías de inventario y que sean compatibles con todos los módulos (Packs).
-    *   **Filtros de Clientes:** Filtrar base de datos por estado (Activo/Inactivo).
-    *   **Buscador de Clientes Avanzado:** Implementar buscador por nombre/DNI/teléfono con autocompletado en todos los módulos (ej. Taller).
-4.  **Sistema de Tickets/Comprobantes:**
-    *   Impresión obligatoria en flujos de caja.
-    *   Configuración para auto-impresión.
-    *   Posibilidad de reimprimir tickets desde los historiales (implementado para arqueos).
+    *   **Tipos de Artículo Editables:** Permitir al usuario crear y eliminar categorías de inventario, con validación de seguridad para no borrar tipos en uso.
+    *   **Buscador de Clientes Avanzado:** Implementar buscador por nombre/DNI/teléfono con autocompletado.
+4.  **Sistema de Tickets/Comprobantes:** Impresión como comprobante de un pago ya realizado.
 5.  **Gestión de Datos:**
-    *   **Importador Universal (CSV/Excel):** Para clientes e inventario, con mapeo de campos, previsualización y detección de duplicados.
-    *   **Ficha de Cliente Flexible:** Campos obligatorios marcados, campos opcionales (Email) sin validación.
-    *   **Ficha de Artículo Ampliada:** Añadir campos 'Fijación' y 'Número de Serie'. Búsqueda por múltiples identificadores.
+    *   **Importador Universal (CSV/Excel):** Para clientes e inventario.
+    *   **Ficha de Artículo Ampliada:** Añadir campos 'Fijación' y 'Número de Serie'.
     *   **Personalización de Tablas:** Permitir reordenar y ocultar columnas en la tabla de inventario.
 6.  **Soporte y Personalizaciones:** Pestaña para que el usuario pueda abrir tickets de soporte.
 7.  **Integraciones Futuras:** VeriFactu, WhatsApp, TPV, Email, Google Calendar.
@@ -31,16 +26,18 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
 **User's preferred language**: Spanish
 
 **what currently exists?**
-Es un sistema full-stack de gestión de alquileres de esquí (React, FastAPI, MongoDB). En esta sesión se han añadido funcionalidades significativas:
-- **Packs Dinámicos:** El módulo de creación de packs ahora carga los tipos de artículo desde la base de datos, soportando categorías personalizadas.
-- **Buscador de Clientes Mejorado:** Se implementó un buscador con autocompletado (nombre, DNI, teléfono) y creación de clientes en el módulo de Taller Externo, replicando la funcionalidad de Nuevo Alquiler.
-- **Importadores Universales:** Se crearon módulos para importar clientes e inventario desde archivos CSV/Excel, con mapeo de campos, previsualización y detección de duplicados.
-- **Fichas Mejoradas:** El campo email se hizo opcional en clientes. Se añadieron los campos Fijación y Número de Serie al inventario, y se mejoró la búsqueda para incluirlos.
-- **Dashboard de Control:** Se añadió un panel Control de Devoluciones que muestra en tiempo real el material pendiente de devolver hoy, con enlaces directos a la lista filtrada.
-- **Corrección Crítica de Caja:** Se solucionó un bug grave que provocaba que el resumen de caja mostrara saldos y contadores a cero a pesar de haber operaciones. Se añadió un botón para reimprimir arqueos pasados.
+Es un sistema full-stack (React, FastAPI, MongoDB) de gestión de alquileres. En esta sesión, se ha reconstruido casi por completo el módulo de **Gestión de Caja**, transformándolo en un robusto sistema de sesiones/turnos. Los cambios clave son:
+-   **Sistema de Sesiones de Caja:** Se implementó un backend y frontend para manejar sesiones de caja (apertura/cierre). Las operaciones financieras ahora se vinculan a una sesión activa, garantizando que los contadores se reseteen a cero tras cada cierre.
+-   **Apertura de Caja Automática:** Se eliminó la apertura manual. Ahora, al intentar realizar un cobro con la caja cerrada, un modal salta automáticamente para pedir el fondo de caja inicial y abrir una nueva sesión.
+-   **Pasarela de Pago en Alquiler:** Se intercepta el flujo de Completar Alquiler con un modal que obliga a seleccionar el método de pago (efectivo/tarjeta) y registrar el cobro antes de imprimir el ticket.
+-   **Múltiples Cierres Diarios:** Se eliminó la restricción de un cierre por día, añadiendo un  para soportar múltiples turnos.
+-   **Desglose Detallado en Cierres:** El diálogo de cierre y el ticket impreso ahora muestran un desglose completo por método de pago (ingresos, gastos, devoluciones).
+-   **Gestión de Categorías:** Los usuarios ahora pueden eliminar tipos de artículo personalizados desde la interfaz, con una validación de seguridad en el backend que impide borrar tipos en uso.
+-   **Mejoras de UI:** Se han optimizado las columnas en las listas de material pendiente para facilitar la identificación rápida de los artículos.
+-   **Estabilidad:** Se solucionó un error crítico de sintaxis en el frontend que provocaba una pantalla en blanco ().
 
 **Last working item**:
--   **Last item agent was working**: Implementar la corrección definitiva y el desglose detallado en el módulo de **Gestión de Caja**, según los últimos requisitos del usuario. Esto incluye desglosar los totales por método de pago (efectivo/tarjeta) tanto en la pantalla de cierre como en el ticket impreso, y asegurar que el saldo esperado se calcule correctamente reflejando todas las operaciones del día.
+-   **Last item agent was working**: El agente estaba implementando la **apertura de caja automática basada en eventos**. Acababa de modificar el frontend () para que, al intentar completar un alquiler con la caja cerrada, se muestre un modal para introducir el fondo de caja inicial en lugar de un simple . Se disponía a iniciar el testing end-to-end para validar este nuevo flujo.
 -   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
 -   **Which testing method agent to use?**: both
@@ -57,153 +54,121 @@ Es un sistema full-stack de gestión de alquileres de esquí (React, FastAPI, Mo
     -   **Blocked on other issue**: None
 
 **In progress Task List**:
--   **Task 1**: (P0) Finalizar corrección y mejora del módulo de Gestión de Caja.
-    -   **Description**: Completar la implementación del desglose por método de pago en el diálogo de cierre y en la función de impresión del ticket de arqueo, asegurando que todos los cálculos sean correctos y se muestren adecuadamente.
-    -   **Where to resume**: En , el agente ya corrigió inconsistencias en los nombres de las propiedades ( vs ) y añadió el botón de reimprimir. Se debe continuar mejorando el diálogo de cierre () y la función  para incluir el desglose detallado (Ventas Efectivo, Ventas Tarjeta, Reembolsos, Descuadre por método).
-    -   **What will be achieved with this?**: El cierre de caja será 100% fiable, con un desglose profesional que facilita el arqueo y cumple con los requisitos del usuario.
+-   **Task 1**: (P0) Finalizar y validar el flujo de apertura de caja automática.
+    -   **Description**: El agente debe ejecutar un test end-to-end completo para verificar que el nuevo modal de apertura automática funciona como se espera y que el cobro original se procesa correctamente después de abrir la sesión.
+    -   **Where to resume**: El código ya ha sido modificado en . El siguiente paso es invocar al  para una validación completa del frontend y backend.
+    -   **What will be achieved with this?**: Se completará el requisito del usuario de un flujo de caja sin fricción y basado en eventos.
     -   **Status**: IN PROGRESS
     -   **Should Test frontend/backend/both after fix?**: both
     -   **Blocked on something**: None
 -   **Task 2**: (P1) Implementar personalización de la tabla de Inventario (Drag & Drop).
     -   **Description**: Permitir al usuario reordenar las columnas de la tabla de inventario mediante drag and drop y seleccionar su visibilidad.
-    -   **Where to resume**: Se instaló la dependencia . El agente empezó a modificar  para añadir los estados y componentes necesarios, pero fue interrumpido por el bug crítico de la caja. El trabajo debe retomarse desde allí, completando la integración de  y .
-    -   **What will be achieved with this?**: Ofrecerá una experiencia de usuario altamente personalizada, permitiendo a cada tienda adaptar la vista de inventario a sus necesidades.
+    -   **Where to resume**: Se instaló la dependencia . El trabajo en  fue pausado y debe reanudarse.
+    -   **What will be achieved with this?**: Ofrecerá una experiencia de usuario altamente personalizada.
     -   **Status**: IN PROGRESS (Paused)
     -   **Should Test frontend/backend/both after fix?**: frontend
-    -   **Blocked on something**: Tarea 1 (Caja) es más prioritaria.
+    -   **Blocked on something**: Tareas de caja son más prioritarias.
+-   **Task 3**: (P1) Sincronización completa de caja (Omnicanalidad).
+    -   **Description**: El usuario solicitó una reparación profunda para que *todas* las operaciones financieras (Taller, devoluciones, gastos) se vinculen a la sesión de caja activa. El agente solo lo ha implementado para los nuevos alquileres.
+    -   **Where to resume**: Revisar todos los endpoints en  que crean  (ej: , ) y asegurarse de que obtienen y asignan el  de la sesión activa, lanzando un error si no hay ninguna.
+    -   **What will be achieved with this?**: La pestaña de caja será un reflejo 100% fiel de toda la actividad financiera del negocio.
+    -   **Status**: IN PROGRESS (Partially Done)
+    -   **Should Test frontend/backend/both after fix?**: backend
+    -   **Blocked on something**: None
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
     -   (P2) **Crear Pestaña de Soporte y Mejoras:** Crear una nueva página con un formulario para que el usuario pueda solicitar nuevas funcionalidades o reportar problemas.
-    -   (P2) **Finalizar Sistema de Impresión:** Implementar el interruptor Impresión Automática en la página  y conectar su estado a los flujos de trabajo.
+    -   (P2) **Finalizar Sistema de Impresión:** Implementar el interruptor Impresión Automática en  y conectar su estado a los flujos de trabajo.
+    -   (P2) **Refresco en tiempo real (Polling):** El agente añadió polling a . Se debería evaluar añadirlo a otras páginas clave como el Dashboard para que los datos se actualicen automáticamente.
 -   **Future Tasks:**
     -   Integraciones (VeriFactu, WhatsApp API, TPV, Email, Google Calendar).
     -   Sistema de Reservas Online.
     -   Modo Oscuro.
 
 **Completed work in this session**
--   **Módulo de Packs dinámico**: Se actualizó  para cargar los tipos de artículo desde el endpoint , eliminando la lista estática.
--   **Buscador de clientes en Taller**: Se refactorizó  para replicar el buscador avanzado de , incluyendo autocompletado y creación de clientes.
--   **Importador Universal de Clientes**: Se implementó en  y  (), añadiendo soporte para CSV/XLSX, mapeo de campos y previsualización.
--   **Email de cliente opcional**: Se modificaron los modelos de Pydantic en  y el formulario en  para que el email no sea obligatorio.
--   **Importador Universal de Inventario**: Se mejoró el sistema existente en  y  () para igualarlo al de clientes.
--   **Nuevos campos de Inventario**: Se añadieron  y  a los modelos y a la base de datos. Se actualizó la UI en  y la lógica de búsqueda en  para incluirlos.
--   **Panel de Control de Devoluciones**: Se creó el endpoint  y se añadió una nueva sección en  para mostrar las devoluciones pendientes del día, con enlaces a  filtrado.
--   **Corrección del Módulo de Caja**: Se solucionó un bug crítico en  y  que causaba que el resumen de caja mostrara datos incorrectos. Se añadió el botón de reimpresión de arqueos.
+-   **Módulo de Caja reconstruido (Sistema de Sesiones)**: Implementado en  y .
+-   **Apertura de Caja Automática**: Implementada en  con un nuevo modal.
+-   **Pasarela de Pago en Alquiler**: Implementada en  con modal de pago.
+-   **Soporte para Múltiples Cierres Diarios**: Lógica añadida en  y UI en .
+-   **Desglose Detallado en Cierre de Caja**: UI actualizada en .
+-   **Gestión de Categorías de Artículo**: Funcionalidad de eliminación añadida en  y .
+-   **UI Optimizada para Listas de Material**: Columnas actualizadas en  y .
+-   **Corrección de Bug Crítico (White Screen)**: Se arregló un error de sintaxis en  que impedía que la aplicación se cargara.
+-   **Endpoint de Recuperación de Huérfanos**: Se creó  para vincular movimientos sin sesión.
 
 **Earlier issues found/mentioned but not fixed**
--   None. Todos los problemas reportados en esta sesión fueron abordados o están en progreso.
+-   El problema de la **sincronización omnicanal** (Tarea en Progreso 3) fue identificado pero solo parcialmente resuelto. Otros endpoints además de la creación de alquileres siguen creando movimientos de caja huérfanos (sin ).
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**: Errores de sintaxis/indentación en  tras realizar modificaciones.
--   **Recurrence count**: El riesgo persiste debido a la naturaleza monolítica del archivo.
+-   **Recurrence count**: El riesgo persiste y es alto.
 -   **Status**: RECURRING.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Frontend:** React (Hooks), TailwindCSS, Shadcn/UI, Recharts,  (para drag-and-drop),  (para parsing de Excel).
--   **Backend:** FastAPI, Pydantic, motor-asyncio.
+-   **Frontend:** React (Hooks), TailwindCSS, Shadcn/UI,  para polling.
+-   **Backend:** FastAPI, Pydantic, motor-asyncio. El concepto clave añadido es el de **Sesiones de Caja** (), que ahora gobierna toda la lógica financiera.
 -   **Database:** MongoDB.
 -   **Architecture:** SPA con una API RESTful monolítica.
 
 **key DB schema**
--   **items:** Añadidos los campos  (string) y  (string).
--   **customers:** El campo  es ahora opcional.
+-   **cash_sessions:** Nueva colección para gestionar turnos (uid=0(root) gid=0(root) groups=0(root), , , , ).
+-   **cash_movements:** Ahora incluye un campo opcional  para vincularlo a una sesión.
+-   **cash_closings:** Ahora incluye  para permitir múltiples cierres por día y  para el desglose.
 
 **changes in tech stack**
--   yarn add v1.22.22
-[1/4] Resolving packages...
-[2/4] Fetching packages...
-[3/4] Linking dependencies...
-[4/4] Building fresh packages...
-success Saved lockfile.
-success Saved 8 new dependencies.
-info Direct dependencies
-└─ xlsx@0.18.5
-info All dependencies
-├─ cfb@1.2.2
-├─ codepage@1.15.0
-├─ crc-32@1.2.2
-├─ frac@1.1.2
-├─ ssf@0.11.2
-├─ wmf@1.0.2
-├─ word@0.3.0
-└─ xlsx@0.18.5
-Done in 2.80s.: Para leer archivos de Excel en el frontend.
--   yarn add v1.22.22
-[1/4] Resolving packages...
-[2/4] Fetching packages...
-[3/4] Linking dependencies...
-[4/4] Building fresh packages...
-success Saved lockfile.
-success Saved 3 new dependencies.
-info Direct dependencies
-├─ @dnd-kit/core@6.3.1
-└─ @dnd-kit/sortable@10.0.0
-info All dependencies
-├─ @dnd-kit/accessibility@3.1.1
-├─ @dnd-kit/core@6.3.1
-└─ @dnd-kit/sortable@10.0.0
-Done in 1.89s.: Para implementar la funcionalidad de arrastrar y soltar.
+-   Ningún nuevo paquete instalado en esta sesión.
 
 **All files of reference**
--   : Modificado extensamente para añadir nuevos endpoints de importación, nuevos campos en modelos, lógica de búsqueda mejorada, panel de devoluciones y correcciones en caja.
--   : Modificado para usar tipos de artículo dinámicos.
--   : Modificado para mejorar el buscador de clientes.
--   : Modificado para añadir el importador de clientes y hacer el email opcional.
--   : Modificado para añadir el importador de inventario, nuevos campos, y el inicio de la personalización de columnas.
--   : Modificado para añadir el panel de control de devoluciones.
--   : Modificado para aceptar filtros por URL.
--   : Modificado para corregir bugs de sincronización y añadir el botón de reimpresión.
--   : Actualizado con las últimas funcionalidades completadas.
+-   : Modificado masivamente para añadir el sistema de sesiones, actualizar endpoints de caja, alquileres y devoluciones.
+-   : Reescrito en gran parte para manejar el estado de la sesión, mostrar el banner de caja cerrada/abierta y el modal de apertura. Se añadió polling.
+-   : Modificado extensamente para añadir el modal de pago y el modal de apertura automática de caja. Se corrigió un error grave de sintaxis.
+-   : Modificado para permitir la eliminación de tipos de artículo.
+-   : Modificado para mejorar la visualización de la lista de artículos.
 
 **Areas that need refactoring**:
--   **CRÍTICO:**  debe ser descompuesto en una estructura modular (e.g., , , ).
--   **ALTO:** Las páginas de React como ,  y  son extremadamente grandes. Deben descomponerse en componentes más pequeños y reutilizables para mejorar la mantenibilidad.
+-   **CRÍTICO:**  es insostenible. Debe ser descompuesto en una estructura modular (e.g., , , ).
+-   **ALTO:**  se ha vuelto extremadamente complejo con múltiples modales y estados anidados. Debería descomponerse en sub-componentes.
 
 **key api endpoints**
+-    (Abrir nueva sesión)
+-    (Obtener sesión activa)
+-    (Cerrar sesión activa)
 -   
 -   
--   
--    (lógica interna mejorada)
--    (actualizado para incluir nuevos campos)
+-   (Modificados) , , , 
 
 **Critical Info for New Agent**
--   **Prioridad del Usuario:** El usuario prioriza la corrección de bugs críticos sobre el desarrollo de nuevas funcionalidades. La tarea actual es la mejora del módulo de caja, que interrumpió la implementación de la personalización de la tabla de inventario.
--   **Riesgo Arquitectónico:**  es un punto único de fallo. Procede con extrema cautela. Valida siempre que el backend se reinicie sin errores después de cada cambio (backend: stopped
-backend: started y revisa los logs).
--   **Navegación en React:** La navegación programática a veces falla (p.ej.,  redirige a dashboard). Es más fiable usar los paths definidos en  (p.ej., ) o simular clics en el menú lateral para los tests.
+-   **El sistema de Sesiones de Caja es el nuevo núcleo**: Toda operación financiera (entradas/salidas de dinero) **DEBE** estar asociada a una sesión activa. El agente anterior solo lo aseguró para el endpoint de creación de alquileres. Es **crítico** extender esta lógica a devoluciones, pagos de taller, gastos, etc., para evitar movimientos huérfanos.
+-   **Flujo de Apertura Automático**: El flujo ya no es manual. La caja se abre a través de un modal que se dispara al intentar un cobro con la caja cerrada. Este modal está en . La lógica debe replicarse para otras acciones de cobro (ej. Taller).
+-   **Complejidad del Frontend**:  y  son muy complejos. Un pequeño error de sintaxis en  bloqueó toda la aplicación. Procede con extrema cautela y realiza pruebas de compilación y renderizado después de cada cambio.
+-   **Iteración del Usuario**: El usuario es muy activo, proporciona feedback detallado y cambia las prioridades con frecuencia, a menudo interrumpiendo tareas en curso. Prepárate para re-planificar sobre la marcha.
 
 **documents and test reports created in this job**
--   
--   
--   
--   
+-    (actualizado)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Pide implementar la personalización de columnas de la tabla de inventario (drag & drop y selector de visibilidad). **(TAREA PAUSADA)**.
-2.  **Agent**: Finaliza la implementación de los nuevos campos de inventario y el panel de devoluciones del dashboard.
-3.  **User**: Pide añadir un panel de control de devoluciones pendientes en el Dashboard. **(COMPLETADO)**.
-4.  **Agent**: Finaliza la implementación de los nuevos campos en el inventario.
-5.  **User**: Pide añadir 'Fijación' y 'Número de Serie' al inventario y reorganizar columnas. **(COMPLETADO)**.
-6.  **Agent**: Finaliza la implementación del importador universal de inventario.
-7.  **User**: Pide un importador universal de inventario similar al de clientes. **(COMPLETADO)**.
-8.  **User**: Confirma la corrección de caja y pide detalles adicionales para la corrección definitiva. **(TAREA ACTUAL EN PROGRESO)**.
-9.  **User**: Reporta un bug crítico en la caja (saldos a cero) y pide impresión de arqueos. **(CORREGIDO)**.
-10. **Agent**: Falla al ejecutar un comando bash por timeout.
+1.  **User**: Pide que el sistema de caja se reconstruya para sincronizar todas las operaciones en tiempo real, distinguiendo métodos de pago y refrescando la UI automáticamente.
+2.  **Agent**: Implementa la sincronización parcial y el polling.
+3.  **User**: Pide que la apertura de caja sea automática y se dispare al intentar un cobro.
+4.  **Agent**: Implementa el flujo de apertura automática con un modal en .
+5.  **User**: Repite la petición de apertura de caja automática (confirmación).
+6.  **Agent**: Se prepara para testear la implementación de apertura automática.
+7.  **PENDING HUMAN MESSAGES**: No hay mensajes pendientes. El agente estaba a punto de actuar sobre la última petición del usuario, que era una confirmación de la tarea en la que ya estaba trabajando.
 
 **Project Health Check:**
--   **Broken**: No. La aplicación es funcional y estable.
--   **Mocked**:  y  (parcialmente, el interruptor de impresión no es funcional).
+-   **Broken**: No. La aplicación es funcional tras la última corrección de errores.
+-   **Mocked**: , .
 
 **3rd Party Integrations**
--   **Instaladas en esta sesión:**  (v0.18.5),  (v6.3.1).
--   **Planeadas:** VeriFactu, WhatsApp, TPV Bancario, Email, Google Calendar.
+-   
+-   , 
 
 **Testing status**
--   **Testing agent used after significant changes**: YES. Se usó el testing agent para validar los importadores de clientes e inventario, encontrando y corrigiendo bugs.
+-   **Testing agent used after significant changes**: YES. El agente de testing fue crucial para identificar errores de lógica en el backend y para confirmar la corrección de un error crítico en el frontend.
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: []
 -   **Known regressions**: Ninguna.
@@ -212,5 +177,6 @@ backend: started y revisa los logs).
 -   Registra un nuevo usuario desde la interfaz de login.
 
 **What agent forgot to execute**
--   La funcionalidad del interruptor de Impresión Automática en la página de  aún no se ha implementado.
--   La tarea para crear una pestaña de Soporte y Mejoras no se ha iniciado.</analysis>
+-   **Sincronización de Sesiones en todos los Endpoints**: El agente identificó la necesidad de añadir la lógica de  a todos los endpoints financieros (devoluciones, taller, etc.) pero solo la implementó en la creación de alquileres. Esta es la tarea técnica pendiente más crítica.
+-   **Refresco de UI (Polling)**: Solo se implementó en . No se ha extendido a otras páginas que podrían beneficiarse de ello (como el Dashboard).
+-   **Tareas del Handoff Original**: La Pestaña de Soporte y el interruptor de Impresión Automática siguen pendientes.</analysis>

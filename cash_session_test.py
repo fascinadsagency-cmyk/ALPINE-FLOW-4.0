@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import sys
 
 # Configuration
-BACKEND_URL = "https://skiboard-hub.preview.emergentagent.com/api"
+BACKEND_URL = "https://snowgear-hub.preview.emergentagent.com/api"
 TEST_DATE = "2026-01-29"
 
 class CashSessionTester:
