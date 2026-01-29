@@ -1975,9 +1975,9 @@ export default function NewRental() {
                               )}
                             </div>
                             
-                            {/* Precio Total (Tarifa Escalonada) - SIN columna P.UNIT */}
+                            {/* Precio Total (IVA incluido) */}
                             <div className="col-span-3 text-right">
-                              <p className="text-xs text-slate-500 font-medium uppercase">Precio ({days}d)</p>
+                              <p className="text-xs text-slate-500 font-medium uppercase">Total (IVA inc.)</p>
                               {group.price === 0 && !item.is_generic ? (
                                 <Badge variant="destructive" className="text-xs">
                                   <AlertCircle className="h-3 w-3 mr-1" /> Sin tarifa
