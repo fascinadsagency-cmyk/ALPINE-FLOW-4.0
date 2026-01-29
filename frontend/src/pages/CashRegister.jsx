@@ -74,6 +74,7 @@ export default function CashRegister() {
   const [summary, setSummary] = useState(null);
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   
   // Dialog states
   const [showAddDialog, setShowAddDialog] = useState(false);
