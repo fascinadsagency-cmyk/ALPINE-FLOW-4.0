@@ -756,13 +756,14 @@ export default function Returns() {
                   )}
 
                   {/* Other Days Returns */}
-                  {pendingReturns.other_days.length > 0 && (
+                  {filteredOtherDays.length > 0 && (
                     <div>
                       <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                        📋 OTROS DÍAS ACTIVOS ({pendingReturns.other_days.length})
+                        📋 OTROS DÍAS ACTIVOS ({filteredOtherDays.length})
+                        {typeFilter && <span className="text-xs font-normal text-amber-600">(filtrado)</span>}
                       </h3>
                       <div className="space-y-2">
-                        {pendingReturns.other_days.map((rental) => (
+                        {filteredOtherDays.map((rental) => (
                           <div 
                             key={rental.id}
                             className={`flex items-center justify-between p-4 rounded-lg border ${
@@ -824,10 +825,23 @@ export default function Returns() {
                     </div>
                   )}
 
-                  {pendingReturns.today.length === 0 && pendingReturns.other_days.length === 0 && (
+                  {filteredToday.length === 0 && filteredOtherDays.length === 0 && (
                     <div className="text-center py-8 text-slate-400">
                       <Check className="h-12 w-12 mx-auto mb-3" />
-                      <p>No hay devoluciones pendientes</p>
+                      {typeFilter ? (
+                        <div>
+                          <p>No hay devoluciones pendientes de <strong>{getTypeLabel(typeFilter)}</strong></p>
+                          <Button 
+                            variant="link" 
+                            onClick={clearFilter}
+                            className="mt-2 text-primary"
+                          >
+                            Ver todas las devoluciones
+                          </Button>
+                        </div>
+                      ) : (
+                        <p>No hay devoluciones pendientes</p>
+                      )}
                     </div>
                   )}
                 </CardContent>
