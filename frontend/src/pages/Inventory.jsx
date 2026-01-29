@@ -129,6 +129,9 @@ export default function Inventory() {
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   
+  // Filtered items (currently server-side, but we use items directly)
+  const filteredItems = items;
+  
   // Column customization states
   const [columnOrder, setColumnOrder] = useState(() => {
     const saved = localStorage.getItem('inventory_column_order');
