@@ -695,6 +695,32 @@ export default function NewRental() {
     setItems(items.filter(i => i.barcode !== barcode));
   };
 
+  // Quick add: Adds first available item of given type instantly
+  const quickAddItem = async (itemType) => {
+    try {
+      const response = await itemApi.getAll({
+        status: 'available',
+        item_type: itemType
+      });
+      
+      // Filter out already added items
+      const addedBarcodes = items.map(i => i.barcode);
+      const availableItems = response.data.filter(i => !addedBarcodes.includes(i.barcode));
+      
+      if (availableItems.length === 0) {
+        toast.error(`No hay ${itemType === 'helmet' ? 'cascos' : itemType === 'goggles' ? 'máscaras' : 'bastones'} disponibles`);
+        return;
+      }
+      
+      // Add first available item
+      const itemToAdd = availableItems[0];
+      setItems([...items, { ...itemToAdd, customPrice: null }]);
+      toast.success(`${itemToAdd.brand} ${itemToAdd.model} añadido`);
+    } catch (error) {
+      toast.error("Error al añadir artículo");
+    }
+  };
+
   const updateItemPrice = (barcode, newPrice) => {
     setItems(items.map(item => 
       item.barcode === barcode 
