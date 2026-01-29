@@ -2336,6 +2336,84 @@ async def get_maintenance(
     records = await db.maintenance.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
     return [MaintenanceResponse(**r) for r in records]
 
+@api_router.get("/maintenance/fleet")
+async def get_maintenance_fleet(current_user: dict = Depends(get_current_user)):
+    """
+    Get ALL items that need maintenance or are currently in maintenance status.
+    This endpoint uses the SAME query as the Dashboard for consistency.
+    
+    Returns items that:
+    1. Have status 'maintenance' (currently being serviced)
+    2. Need maintenance: days_used >= maintenance_interval (and maintenance_interval > 0)
+    3. Have status indicating repair: 'repair', 'broken'
+    """
+    
+    # 1. Items currently in maintenance status
+    in_maintenance = await db.items.find(
+        {"status": {"$in": ["maintenance", "repair", "broken"]}},
+        {"_id": 0}
+    ).to_list(100)
+    
+    # 2. Items that NEED maintenance (same query as Dashboard)
+    # Exclude items with maintenance_interval <= 0 to avoid false positives with generic items
+    needs_maintenance = await db.items.find(
+        {
+            "$expr": {
+                "$and": [
+                    {"$gt": ["$maintenance_interval", 0]},
+                    {"$gte": ["$days_used", "$maintenance_interval"]}
+                ]
+            },
+            "status": {"$in": ["available", "rented"]}
+        },
+        {"_id": 0}
+    ).to_list(100)
+    
+    # 3. Also include generic items with maintenance_interval = 0 that Dashboard shows
+    # (for consistency with what user sees)
+    generic_needs_maint = await db.items.find(
+        {
+            "is_generic": True,
+            "maintenance_interval": 0,
+            "status": {"$in": ["available", "rented"]}
+        },
+        {"_id": 0}
+    ).to_list(100)
+    
+    # Combine all, avoiding duplicates
+    all_ids = set()
+    result = {
+        "in_maintenance": [],
+        "needs_maintenance": [],
+        "summary": {
+            "in_maintenance_count": 0,
+            "needs_maintenance_count": 0,
+            "total": 0
+        }
+    }
+    
+    for item in in_maintenance:
+        if item["id"] not in all_ids:
+            all_ids.add(item["id"])
+            result["in_maintenance"].append(item)
+    
+    for item in needs_maintenance + generic_needs_maint:
+        if item["id"] not in all_ids:
+            all_ids.add(item["id"])
+            # Calculate remaining days
+            interval = item.get("maintenance_interval", 30) or 30
+            days_used = item.get("days_used", 0)
+            remaining = max(0, interval - (days_used % interval)) if interval > 0 else 0
+            item["maintenance_remaining_days"] = remaining
+            item["maintenance_progress"] = min(100, (days_used / interval * 100)) if interval > 0 else 100
+            result["needs_maintenance"].append(item)
+    
+    result["summary"]["in_maintenance_count"] = len(result["in_maintenance"])
+    result["summary"]["needs_maintenance_count"] = len(result["needs_maintenance"])
+    result["summary"]["total"] = len(all_ids)
+    
+    return result
+
 @api_router.post("/maintenance/{maintenance_id}/complete")
 async def complete_maintenance(maintenance_id: str, current_user: dict = Depends(get_current_user)):
     maintenance = await db.maintenance.find_one({"id": maintenance_id})
