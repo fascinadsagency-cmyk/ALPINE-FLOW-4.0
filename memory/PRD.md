@@ -1,123 +1,166 @@
 # AlpineFlow - Sistema de Gestión de Alquiler de Equipos de Esquí
 
-## Stack Tecnológico
-- **Frontend**: React + Tailwind CSS + Shadcn UI + XLSX + @dnd-kit
-- **Backend**: FastAPI + Python
-- **Base de datos**: MongoDB
-- **Autenticación**: JWT
+## Estado del Proyecto
+**Última actualización:** 2026-01-29
+**Estado:** Operativo - Bug crítico de contabilidad RESUELTO
 
-## Funcionalidades Implementadas
+---
 
-### 1. Módulo de Gestión de Caja - Sistema Sin Restricciones ✨ COMPLETADO
-**Funcionalidad 100% operativa - Control Total del Administrador:**
+## Problema Original
+Crear un sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowboard. El sistema debe priorizar la velocidad y la precisión.
 
-- **🔓 Sin Restricciones Horarias (NUEVO)**:
-  * Botón "Cerrar Caja" disponible 24/7, sin límites de horario
-  * Elimina validaciones de "hora de cierre" o "ya cerrada hoy"
-  * Permite cerrar caja en cualquier momento: 12:00, 20:00, 03:00, etc.
-  * El administrador decide cuándo empieza y termina su jornada contable
+---
 
-- **🔄 Múltiples Turnos por Día**:
-  * Sistema de numeración automática: Turno #1, #2, #3, etc.
-  * Cada cierre recibe un número secuencial único por fecha
-  * Historial con columna "Turno" para distinguir cierres del mismo día
-  * Soporte para múltiples empleados/turnos en una sola fecha
-  * Ticket impreso incluye: "Fecha: 2026-01-29 - Turno #2"
+## Requisitos del Producto (Consolidados)
 
-- **⚡ Cierre Independiente de Estado**:
-  * Permite cerrar incluso con descuadres detectados
-  * Permite cerrar con alquileres activos pendientes
-  * El cierre de caja es puramente administrativo/contable
-  * No bloquea operaciones por validaciones de sistema
+### 1. Gestión Central
+- ✅ Alquileres (crear, modificar duración, devoluciones)
+- ✅ Devoluciones (normal y rápida con un clic)
+- ✅ Inventario (código interno manual, artículos genéricos por stock)
+- ✅ Clientes (con historial financiero)
+- ✅ Proveedores
+- ✅ Tarifas por días
 
-- **Diálogo de Cierre Mejorado**: 
-  * Resumen Global del Día (Ventas, Salidas, Devoluciones)
-  * Desglose Detallado por Método de Pago con dos tarjetas profesionales:
-    - 💵 **EFECTIVO** (fondo azul): + Ventas, - Salidas, - Devoluciones → Esperado
-    - 💳 **TARJETA** (fondo morado): + Ventas, - Salidas, - Devoluciones → Esperado
-  * Cálculo de Descuadre Dinámico con feedback visual (verde/amarillo/rojo)
-  * Mensajes contextuales ("¡Cuadra perfectamente!", "Hay más dinero", "Falta dinero")
+### 2. Módulos Financieros
+- ✅ **Dashboard Estratégico:** Calendario de ocupación, rankings, control de devoluciones
+- ✅ **Gestión de Caja:** 
+  - Arqueo manual detallado
+  - Historial de cierres
+  - Múltiples turnos/sesiones por día
+  - **NUEVO:** Cálculo en tiempo real con agregación MongoDB
+  - **NUEVO:** Sincronización automática de movimientos faltantes
+  - **NUEVO:** Auditoría de integridad contable
+- ✅ **Reportes Flexibles:** Filtro por rango, botones de selección rápida
+- ✅ **Rentabilidad de Inventario:** Trackear coste, ingresos, amortización
 
-- **Ticket de Arqueo Profesional (formato térmico 80mm)**:
-  * Encabezado con fecha, **número de turno**, hora y empleado
-  * Nº de operaciones
-  * RESUMEN GLOBAL DEL DÍA: Entradas, Salidas, Devoluciones
-  * **DESGLOSE POR MÉTODO DE PAGO**:
-    - Sección **💵 EFECTIVO**: + Ventas, - Salidas, - Devoluciones, Esperado, Contado, Descuadre
-    - Sección **💳 TARJETA**: + Ventas, - Salidas, - Devoluciones, Esperado, Datáfono, Descuadre
-  * DESCUADRE TOTAL en recuadro destacado (verde/amarillo/rojo según cantidad)
-  * Notas del cierre
-  * Footer: "Documento de arqueo - Conservar con la recaudación"
+### 3. Flujos de Trabajo Optimizados
+- ✅ **Apertura de Caja Manual:** La caja se abre desde su módulo
+- ✅ **Pasarela de Pago:** Modal de pago (Efectivo/Tarjeta)
+- ✅ **Devolución Rápida:** Botón de un solo clic
+- ✅ **Modificar Duración:** Ampliar/acortar alquileres con ajuste financiero
+- ✅ **Tipos de Artículo Personalizados:** Usuario crea y gestiona categorías
+- ✅ **Artículos Genéricos:** Gestión por stock (Cascos, Bastones, etc.)
+- ✅ **Botonera de Añadido Rápido:** Cascos, Bastones, Máscara
 
-- **Backend Sin Restricciones**:
-  * Eliminada validación "Cash register already closed for this date"
-  * Función `get_next_closure_number()` para numeración automática atómica
-  * Endpoint `/api/cash/close` permite cierres ilimitados por fecha
-  * Endpoint `/api/cash/closings/{closing_id}` elimina cierre específico por ID (no por fecha)
-  * Modelo `CashClosingResponse` incluye: `closure_number`, `total_refunds`, `movements_count`, `by_payment_method`
+### 4. Sistema de Tickets/Comprobantes
+- ⏳ Impresión como comprobante (parcialmente implementado)
 
-- **Funcionalidades Adicionales**:
-  * Banner informativo: "Sistema de caja sin restricciones horarias"
-  * Impresión automática al cerrar caja con número de turno
-  * Reimprimir cierres históricos con desglose completo y número de turno
-  * Revertir cierre específico (por ID) sin afectar otros turnos del mismo día
-  * Retrocompatibilidad con cierres antiguos (sin `closure_number`)
-  * Cálculos precisos: Esperado = Ventas - Salidas - Devoluciones (por cada método)
+### 5. Gestión de Datos
+- ✅ Importador CSV/Excel para clientes e inventario
+- ✅ Ficha de Artículo con campos Fijación y Número de Serie
+- ⏳ Personalización de Tablas (Drag & Drop - pausado)
 
-### 2. Panel de Control de Devoluciones en Dashboard
-- Métricas dinámicas por categoría de artículo
-- Alerta visual ROJA si supera hora de cierre
-- Enlace directo a devoluciones filtradas
+### 6. Soporte
+- ⏳ Pestaña de tickets de soporte (pendiente)
 
-### 3. Nuevos Campos en Inventario
-- Número de Serie (fabricante)
-- Fijación (modelo de fijación)
-- Reorganización de columnas de identificación
+### 7. Integraciones Futuras
+- ⏳ VeriFactu, WhatsApp, TPV, Email, Google Calendar
 
-### 4. Importador Universal (Clientes e Inventario)
-- Soporte CSV, XLS, XLSX
-- Mapeo inteligente de campos
-- Detección de duplicados
+---
 
-### 5. Email Opcional en Clientes
-- Campos obligatorios: DNI*, Nombre*, Teléfono*
-- Asteriscos rojos visuales
+## Arquitectura Técnica
 
-### 6. Edición de Precios en Nuevo Alquiler ✨ NUEVO
-- **Click en precio/lápiz**: Transforma el campo en input editable
-- **Teclas de acceso rápido**: Enter para guardar, Escape para cancelar
-- **Recálculo automático**: El total se actualiza instantáneamente al editar
-- **Indicador visual**: Precios editados se muestran en verde con "(editado)"
-- **Persistencia**: El precio personalizado se envía al cobro y se registra en caja
-- **Sin restricciones**: Administradores y dependientes pueden ajustar precios
+### Stack
+- **Frontend:** React + TailwindCSS + Shadcn/UI
+- **Backend:** FastAPI (Python) - Monolito en `server.py`
+- **Base de Datos:** MongoDB
 
-### 7. Botones de Acceso Rápido en Nuevo Alquiler ✨ NUEVO
-- **Ubicación**: Barra compacta debajo de la lista de artículos, encima del total
-- **Botones**: [+ Casco], [+ Máscara], [+ Bastones]
-- **Comportamiento**: Click instantáneo añade el primer artículo disponible del tipo
-- **Feedback**: Toast de éxito con nombre del artículo añadido
-- **Error handling**: Muestra mensaje si no hay artículos del tipo disponibles
-- **Diseño**: Minimalista, integrado como parte del carrito
+### Endpoints Críticos de Caja
+```
+POST /api/cash/sessions/open    - Abrir sesión de caja
+GET  /api/cash/sessions/active  - Obtener sesión activa
+GET  /api/cash/summary/realtime - Resumen en tiempo real (SUM agregación)
+POST /api/cash/audit-sync       - Sincronizar movimientos faltantes
+POST /api/cash/movements        - Crear movimiento manual
+POST /api/cash/close            - Cerrar caja con arqueo
+```
 
-## Próximas Tareas
+### Esquema de Base de Datos Clave
+```javascript
+// cash_sessions
+{
+  id: string,
+  date: string,
+  session_number: int,
+  opening_balance: float,
+  status: "open" | "closed",
+  opened_at: datetime,
+  closed_at: datetime | null
+}
+
+// cash_movements
+{
+  id: string,
+  session_id: string,  // CRÍTICO: vincula al turno activo
+  movement_type: "income" | "expense" | "refund",
+  amount: float,
+  payment_method: "cash" | "card" | "transfer",
+  category: string,
+  concept: string,
+  reference_id: string,  // ID del alquiler/reparación
+  created_at: datetime
+}
+```
+
+---
+
+## Funcionalidades Implementadas en Esta Sesión
+
+### 1. Corrección del Bug Crítico de Contabilidad
+- **Problema:** Los cobros de alquileres no se registraban en la caja
+- **Solución:**
+  - Todos los endpoints financieros ahora requieren `session_id`
+  - Validación obligatoria de sesión activa antes de cualquier cobro
+  - Soporte completo para artículos genéricos (stock_available)
+
+### 2. Sistema de Auditoría y Sincronización
+- Endpoint `POST /api/cash/audit-sync` detecta y crea movimientos faltantes
+- Sincronización automática al cargar la página de Caja
+- Botón "Sincronizar" para forzar reconciliación manual
+
+### 3. Cálculo en Tiempo Real
+- Endpoint `GET /api/cash/summary/realtime` usa agregación MongoDB
+- Fórmula: `Saldo = Fondo_Apertura + SUM(Ingresos) - SUM(Gastos) - SUM(Devoluciones)`
+- Desglose por método de pago (Efectivo/Tarjeta)
+
+### 4. Correcciones en Endpoints Financieros
+- `POST /api/rentals` - Ahora vincula movimientos a sesión
+- `POST /api/rentals/{id}/payment` - Crea movimiento con session_id
+- `PATCH /api/rentals/{id}/modify-duration` - Requiere sesión activa
+- `POST /api/rentals/{id}/refund` - Vincula devoluciones a sesión
+- `POST /api/external-repairs/{id}/deliver` - Vincula taller a sesión
+
+---
+
+## Tareas Pendientes
+
+### P0 - Crítico
+- ✅ ~~Bug de contabilidad~~ RESUELTO
 
 ### P1 - Alta Prioridad
-- [ ] Pestaña de Soporte y Mejoras
-- [ ] Personalización de columnas en Inventario (drag & drop)
+- ⏳ Personalización de tabla de Inventario (Drag & Drop)
+- ⏳ Sistema de Impresión Automática
 
 ### P2 - Media Prioridad
-- [ ] Integraciones (WhatsApp, TPV, VeriFactu, Email)
+- Pestaña de Soporte y Mejoras
+- Refresco en tiempo real (Polling) en Dashboard
+
+### P3 - Baja Prioridad / Futuro
+- Integraciones (VeriFactu, WhatsApp, TPV)
+- Sistema de Reservas Online
+- Modo Oscuro
+- Refactorización de `server.py` en módulos
+
+---
+
+## Archivos de Referencia Principales
+- `/app/backend/server.py` - Backend monolítico
+- `/app/frontend/src/pages/CashRegister.jsx` - Módulo de caja
+- `/app/frontend/src/pages/NewRental.jsx` - Nuevo alquiler
+- `/app/frontend/src/pages/Inventory.jsx` - Gestión de inventario
+
+---
 
 ## Credenciales de Prueba
-- Usuario: test_packs_user
-- Contraseña: test123456
-
-## Changelog
-- **v3.5.0** (2026-01-29): **Artículos Genéricos (Sin Trazabilidad)** - Gestión por stock/cantidad para cascos, bastones, máscaras. Checkbox "Artículo Genérico" oculta campos de trazabilidad.
-- **v3.4.0** (2026-01-29): **Botones de Acceso Rápido Compactos** - Barra [+ Casco], [+ Máscara], [+ Bastones] con añadido instantáneo de artículos
-- **v3.3.0** (2026-01-29): **Botones de Acceso Rápido** - Añadidos botones Casco, Máscara, Bastones, Botas para añadir artículos rápidamente. Verificación de sintaxis y endpoints completada.
-- **v3.2.0** (2026-01-29): **Edición de Precios en Nuevo Alquiler** - Corregido bug del icono lápiz. Ahora permite editar precios de artículos en tiempo real con recálculo automático del total
-- **v3.1.0** (2026-01-29): Corrección de sincronización de caja, impresión automática de arqueos, botón reimprimir en histórico
-- **v3.0.0** (2026-01-29): Panel de Control de Devoluciones, nuevos campos en inventario
-- **v2.9.0**: Importador de inventario
-- **v2.8.0**: Importador de clientes, Email opcional
+- Usuario: `testcaja`
+- Contraseña: `test1234`
