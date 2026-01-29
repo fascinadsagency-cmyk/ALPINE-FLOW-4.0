@@ -519,47 +519,55 @@ class CashSessionTester:
             print("❌ Authentication failed. Cannot continue tests.")
             return False
         
-        # Step 2: Open cash session (prerequisite)
+        # Step 2: Create test items
+        print("\n📦 Creating test inventory items...")
+        if not self.create_test_items():
+            print("❌ Could not create test items. Cannot test rentals.")
+            return False
+        
+        # Step 3: Open cash session (prerequisite)
         print("\n💰 Opening cash session...")
         if not self.test_open_cash_session():
             print("❌ Could not open cash session. Cannot continue tests.")
             return False
         
-        # Step 3: Create test customer
+        # Step 4: Create test customer
         print("\n👤 Creating test customer...")
         if not self.create_test_customer():
             print("❌ Could not create test customer. Cannot continue tests.")
             return False
         
-        # Step 4: Test rental WITH active session
+        # Step 5: Test rental WITH active session
         print("\n✅ Testing rental creation WITH active session...")
         rental_with_session = self.test_rental_with_active_session()
         
-        # Step 5: Test rental WITHOUT active session
+        # Step 6: Test rental WITHOUT active session
         print("\n❌ Testing rental creation WITHOUT active session...")
         rental_without_session = self.test_rental_without_active_session()
         
-        # Step 6: Reopen session for remaining tests
-        print("\n🔄 Reopening session for remaining tests...")
-        self.test_open_cash_session()
+        # Step 7: Reopen session for remaining tests (if needed)
+        print("\n🔄 Ensuring session is open for remaining tests...")
+        if not rental_without_session:  # If the previous test didn't close the session
+            session_data = {"opening_balance": 100.0, "date": TEST_DATE}
+            requests.post(f"{BACKEND_URL}/cash/sessions/open", json=session_data, headers=self.headers)
         
-        # Step 7: Test movements linked to session
+        # Step 8: Test movements linked to session
         print("\n🔗 Testing movements linked to session...")
         movements_linked = self.test_movements_linked_to_session()
         
-        # Step 8: Test validate orphans endpoint
+        # Step 9: Test validate orphans endpoint
         print("\n🔍 Testing validate orphans endpoint...")
         validate_orphans = self.test_validate_orphans()
         
-        # Step 9: Test cash summary calculations
+        # Step 10: Test cash summary calculations
         print("\n📊 Testing cash summary calculations...")
         summary_calculations = self.test_cash_summary_calculations()
         
-        # Step 10: Test complete flow
+        # Step 11: Test complete flow
         print("\n🔄 Testing complete flow (income → expense → refund)...")
         complete_flow = self.test_complete_flow()
         
-        # Step 11: Test close session
+        # Step 12: Test close session
         print("\n🔒 Testing session closure...")
         close_session = self.test_close_session()
         
