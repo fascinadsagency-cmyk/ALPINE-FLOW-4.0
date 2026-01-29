@@ -182,6 +182,58 @@ export default function Maintenance() {
     });
     setCustomerSearch("");
     setCustomerSuggestions([]);
+    setShowSuggestions(false);
+    setSelectedIndex(-1);
+  };
+
+  // Handle keyboard navigation in customer search
+  const handleCustomerSearchKeyDown = (e) => {
+    if (!showSuggestions || customerSuggestions.length === 0) {
+      return;
+    }
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex(prev => 
+          prev < customerSuggestions.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex(prev => prev > 0 ? prev - 1 : -1);
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex >= 0 && selectedIndex < customerSuggestions.length) {
+          selectCustomer(customerSuggestions[selectedIndex]);
+        }
+        break;
+      case 'Escape':
+        setShowSuggestions(false);
+        setSelectedIndex(-1);
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Create new customer from external repair dialog
+  const createNewCustomerFromRepair = async () => {
+    if (!newCustomer.dni || !newCustomer.name) {
+      toast.error("DNI y nombre son obligatorios");
+      return;
+    }
+    
+    try {
+      const response = await customerApi.create(newCustomer);
+      selectCustomer(response.data);
+      setShowNewCustomerDialog(false);
+      setNewCustomer({ dni: "", name: "", phone: "", address: "", city: "" });
+      toast.success("Cliente creado correctamente");
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al crear cliente");
+    }
   };
 
   // MI FLOTA: Reset item usage (Puesta a punto lista)
