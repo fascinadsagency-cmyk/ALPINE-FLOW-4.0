@@ -1544,7 +1544,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  deleteItemType(type.id, type.label);
+                                  setDeleteTypeData({ typeId: type.id, typeName: type.label });
                                 }}
                                 title="Eliminar tipo"
                               >
