@@ -414,16 +414,24 @@ export default function Customers() {
                   {customers.map((customer) => {
                     const discount = getProviderDiscount(customer.source);
                     return (
-                      <TableRow key={customer.id} className="hover:bg-slate-50">
+                      <TableRow key={customer.id} className={`hover:bg-slate-50 ${customer.has_active_rental ? 'bg-emerald-50/30' : ''}`}>
                         <TableCell className="font-mono text-sm font-medium">{customer.dni}</TableCell>
                         <TableCell>
-                          <button
-                            onClick={() => viewHistory(customer)}
-                            className="font-semibold text-slate-900 hover:text-primary hover:underline text-left cursor-pointer"
-                            data-testid={`customer-name-${customer.id}`}
-                          >
-                            {customer.name}
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => viewHistory(customer)}
+                              className="font-semibold text-slate-900 hover:text-primary hover:underline text-left cursor-pointer"
+                              data-testid={`customer-name-${customer.id}`}
+                            >
+                              {customer.name}
+                            </button>
+                            {customer.has_active_rental && (
+                              <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs">
+                                <Package className="h-3 w-3 mr-1" />
+                                Activo
+                              </Badge>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell>
                           {customer.phone ? (
