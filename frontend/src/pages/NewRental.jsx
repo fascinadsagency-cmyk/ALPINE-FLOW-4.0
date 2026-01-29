@@ -1788,8 +1788,8 @@ export default function NewRental() {
                     {/* GROUPED CART ITEMS - Packs shown as unified blocks */}
                     {getGroupedCartItems().map((group, groupIndex) => {
                       if (group.type === 'pack') {
-                        // PACK: Render as unified block
-                        const packTotal = group.price * group.days;
+                        // PACK: Render as unified block - price IS the total for selected days
+                        const packTotal = group.price;  // Already total, NOT per day
                         const packItemNames = group.items.map(i => 
                           i.name || `${i.brand || ''} ${i.model || ''}`.trim() || i.item_type
                         ).join(' + ');
