@@ -921,6 +921,7 @@ export default function NewRental() {
             <tr><td class="bold">TOTAL:</td><td class="right bold">€${total_val.toFixed(2)}</td></tr>
             <tr><td>Pagado:</td><td class="right">€${completedRental.paid_amount.toFixed(2)}</td></tr>
             <tr><td>Método:</td><td class="right">${PAYMENT_METHODS.find(p => p.value === completedRental.payment_method)?.label || completedRental.payment_method}</td></tr>
+            ${completedRental.change > 0 ? `<tr><td class="bold">CAMBIO:</td><td class="right bold">€${completedRental.change.toFixed(2)}</td></tr>` : ''}
           </table>
           
           <div class="line"></div>
