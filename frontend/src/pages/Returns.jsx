@@ -69,17 +69,14 @@ export default function Returns() {
   const barcodeRef = useRef(null);
 
   const quickReturn = async (rentalId, customerName) => {
-    if (!confirm(`¿Confirmar devolución completa del alquiler de ${customerName}?\n\nTodos los artículos se marcarán como devueltos.`)) {
-      return;
-    }
-
+    // Acción RÁPIDA - Ejecutar inmediatamente sin confirmación
     setLoading(true);
     try {
       await axios.post(`${API}/rentals/${rentalId}/quick-return`, {}, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       
-      toast.success(`✓ Alquiler de ${customerName} cerrado con éxito`);
+      toast.success(`✅ Devolución procesada con éxito - ${customerName}`);
       loadPendingReturns();
       
     } catch (error) {
