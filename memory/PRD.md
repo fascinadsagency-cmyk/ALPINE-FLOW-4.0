@@ -51,9 +51,16 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 ### 5. Modificar Duración de Alquileres
 - Flujo de 3 pasos con ajuste financiero
 
+### 6. Packs con Tipos de Artículo Dinámicos (2026-01-29)
+- El módulo de Packs/Combos ahora carga tipos de artículo desde el endpoint `/api/item-types`
+- Compatible con tipos por defecto (Esquís, Snowboard, Botas, Casco, Bastones)
+- Compatible con tipos personalizados creados por el usuario (Snowblade, Trineo, etc.)
+- Los precios individuales también muestran todos los tipos dinámicamente
+
 ## Próximas Tareas (Backlog)
 
 ### P1 - Alta Prioridad
+- [ ] Buscador de clientes en Taller Externo (Maintenance.jsx)
 - [ ] Pestaña de Soporte y Mejoras
 
 ### P2 - Media Prioridad
