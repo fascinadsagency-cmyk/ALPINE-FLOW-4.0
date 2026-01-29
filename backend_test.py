@@ -486,7 +486,7 @@ class CashSessionTester:
                 "notes": "Test session closure"
             }
             
-            # Try different endpoints for closing session
+            # Use correct endpoint for closing session
             response = requests.post(f"{BACKEND_URL}/cash/close", json=closing_data, headers=self.headers)
             
             if response.status_code in [200, 201]:
@@ -505,15 +505,8 @@ class CashSessionTester:
                     self.log_test("Close Session", True, "Session closed (could not verify active status)")
                     return True
             else:
-                # Try alternative endpoint
-                alt_response = requests.post(f"{BACKEND_URL}/cash/sessions/close", json=closing_data, headers=self.headers)
-                if alt_response.status_code in [200, 201]:
-                    self.log_test("Close Session", True, "Session closed successfully via alternative endpoint")
-                    return True
-                else:
-                    self.log_test("Close Session", False, 
-                                f"Both endpoints failed - /cash/close: {response.status_code}, /cash/sessions/close: {alt_response.status_code}")
-                    return False
+                self.log_test("Close Session", False, f"Status: {response.status_code}, Response: {response.text}")
+                return False
                 
         except Exception as e:
             self.log_test("Close Session", False, f"Exception: {str(e)}")
