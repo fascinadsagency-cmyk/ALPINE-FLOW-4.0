@@ -801,7 +801,11 @@ export default function NewRental() {
         }
       });
       
-      const activeSession = await sessionCheck.json();
+      let activeSession = null;
+      if (sessionCheck.ok) {
+        const data = await sessionCheck.json();
+        activeSession = data;
+      }
       
       // 2. If no active session, prompt user to open cash register
       if (!activeSession || !activeSession.id) {
@@ -832,7 +836,8 @@ export default function NewRental() {
         });
         
         if (!openSessionRes.ok) {
-          throw new Error("No se pudo abrir la caja automáticamente");
+          const errorData = await openSessionRes.json();
+          throw new Error(errorData.detail || "No se pudo abrir la caja automáticamente");
         }
         
         toast.success("✅ Nueva caja abierta automáticamente");
