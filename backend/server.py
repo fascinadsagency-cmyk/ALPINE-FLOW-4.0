@@ -2054,9 +2054,11 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
             concept = f"Ampliación Alquiler ID: {rental_id[:8].upper()} (De {old_days} a {data.new_days} días)"
         
         cash_movement_id = str(uuid.uuid4())
+        operation_number = await get_next_operation_number()
         cash_doc = {
             "id": cash_movement_id,
-            "session_id": active_session["id"],  # CRITICAL: Link to active session
+            "operation_number": operation_number,
+            "session_id": active_session["id"],
             "movement_type": movement_type,
             "amount": abs(data.difference_amount),
             "payment_method": data.payment_method,
@@ -2074,7 +2076,7 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
     updated = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
     return {
         "rental": RentalResponse(**updated),
-        "cash_movement_id": cash_movement_id,
+        "operation_number": operation_number if cash_movement_id else None,
         "old_days": old_days,
         "new_days": data.new_days,
         "old_total": old_total,
