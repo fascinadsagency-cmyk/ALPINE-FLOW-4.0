@@ -819,6 +819,102 @@ async def get_items(
     items = await db.items.find(query, {"_id": 0}).to_list(500)
     return [ItemResponse(**i) for i in items]
 
+@api_router.get("/items/generic")
+async def get_generic_items(
+    item_type: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all generic items with available stock"""
+    query = {"is_generic": True, "stock_available": {"$gt": 0}}
+    if item_type:
+        query["item_type"] = item_type
+    
+    items = await db.items.find(query, {"_id": 0}).to_list(100)
+    return [ItemResponse(**i) for i in items]
+
+@api_router.post("/items/{item_id}/adjust-stock")
+async def adjust_generic_stock(
+    item_id: str,
+    adjustment: int,  # positive to add, negative to subtract
+    current_user: dict = Depends(get_current_user)
+):
+    """Adjust stock for a generic item"""
+    item = await db.items.find_one({"id": item_id})
+    if not item:
+        raise HTTPException(status_code=404, detail="Artículo no encontrado")
+    
+    if not item.get("is_generic"):
+        raise HTTPException(status_code=400, detail="Este artículo no es genérico")
+    
+    new_available = item.get("stock_available", 0) + adjustment
+    new_total = item.get("stock_total", 0)
+    
+    # If adding stock, also increase total
+    if adjustment > 0:
+        new_total += adjustment
+    
+    # Can't go below 0
+    if new_available < 0:
+        raise HTTPException(status_code=400, detail=f"Stock insuficiente. Disponible: {item.get('stock_available', 0)}")
+    
+    await db.items.update_one(
+        {"id": item_id},
+        {"$set": {"stock_available": new_available, "stock_total": new_total}}
+    )
+    
+    return {"stock_available": new_available, "stock_total": new_total}
+
+@api_router.post("/items/generic/rent")
+async def rent_generic_item(
+    item_id: str,
+    quantity: int = 1,
+    current_user: dict = Depends(get_current_user)
+):
+    """Rent units from a generic item (decreases available stock)"""
+    item = await db.items.find_one({"id": item_id})
+    if not item:
+        raise HTTPException(status_code=404, detail="Artículo no encontrado")
+    
+    if not item.get("is_generic"):
+        raise HTTPException(status_code=400, detail="Este artículo no es genérico")
+    
+    available = item.get("stock_available", 0)
+    if available < quantity:
+        raise HTTPException(status_code=400, detail=f"Stock insuficiente. Disponible: {available}, Solicitado: {quantity}")
+    
+    new_available = available - quantity
+    await db.items.update_one(
+        {"id": item_id},
+        {"$set": {"stock_available": new_available}}
+    )
+    
+    return {"rented": quantity, "stock_available": new_available}
+
+@api_router.post("/items/generic/return")
+async def return_generic_item(
+    item_id: str,
+    quantity: int = 1,
+    current_user: dict = Depends(get_current_user)
+):
+    """Return units to a generic item (increases available stock)"""
+    item = await db.items.find_one({"id": item_id})
+    if not item:
+        raise HTTPException(status_code=404, detail="Artículo no encontrado")
+    
+    if not item.get("is_generic"):
+        raise HTTPException(status_code=400, detail="Este artículo no es genérico")
+    
+    available = item.get("stock_available", 0)
+    total = item.get("stock_total", 0)
+    new_available = min(available + quantity, total)  # Can't exceed total
+    
+    await db.items.update_one(
+        {"id": item_id},
+        {"$set": {"stock_available": new_available}}
+    )
+    
+    return {"returned": quantity, "stock_available": new_available}
+
 @api_router.get("/items/with-profitability")
 async def get_items_with_profitability(
     status: Optional[str] = None,
