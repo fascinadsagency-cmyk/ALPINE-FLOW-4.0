@@ -1850,22 +1850,37 @@ async def process_return(rental_id: str, return_input: ReturnInput, current_user
         if item["barcode"] in return_input.barcodes:
             item["returned"] = True
             returned_items.append(item)
-            # Update item status and days used
-            await db.items.update_one(
-                {"id": item["item_id"]},
-                {"$set": {"status": "available"}, "$inc": {"days_used": days}}
-            )
-            # Update amortization
+            
+            # Get the item document to check if it's generic
             item_doc = await db.items.find_one({"id": item["item_id"]})
-            if item_doc:
-                tariff = await db.tariffs.find_one({"item_type": item_doc["item_type"]})
-                if tariff:
-                    daily_rate = tariff.get("days_1", 0)
-                    amortization = item_doc.get("days_used", 0) * daily_rate
-                    await db.items.update_one(
-                        {"id": item["item_id"]},
-                        {"$set": {"amortization": amortization}}
-                    )
+            
+            if item_doc and item_doc.get("is_generic"):
+                # GENERIC ITEM: Return stock instead of changing status
+                quantity_to_return = item.get("quantity", 1)
+                current_available = item_doc.get("stock_available", 0)
+                total_stock = item_doc.get("stock_total", 0)
+                new_available = min(current_available + quantity_to_return, total_stock)
+                
+                await db.items.update_one(
+                    {"id": item["item_id"]},
+                    {"$set": {"stock_available": new_available}}
+                )
+            else:
+                # REGULAR ITEM: Update status and days used
+                await db.items.update_one(
+                    {"id": item["item_id"]},
+                    {"$set": {"status": "available"}, "$inc": {"days_used": days}}
+                )
+                # Update amortization for regular items
+                if item_doc:
+                    tariff = await db.tariffs.find_one({"item_type": item_doc.get("item_type")})
+                    if tariff:
+                        daily_rate = tariff.get("days_1", 0)
+                        amortization = item_doc.get("days_used", 0) * daily_rate
+                        await db.items.update_one(
+                            {"id": item["item_id"]},
+                            {"$set": {"amortization": amortization}}
+                        )
         elif not item.get("returned", False):
             pending_items.append(item)
     
