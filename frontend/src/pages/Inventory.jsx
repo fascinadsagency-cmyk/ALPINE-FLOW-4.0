@@ -759,11 +759,33 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
 
   const deleteItem = async () => {
     try {
-      await axios.delete(`${API}/items/${deletingItem.id}`);
-      toast.success("Artículo eliminado correctamente");
+      const response = await axios.delete(`${API}/items/${deletingItem.id}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      const action = response.data?.action;
+      if (action === "hard_delete") {
+        toast.success("Artículo eliminado permanentemente");
+      } else if (action === "soft_delete") {
+        toast.success("Artículo dado de baja (tiene historial de alquileres)");
+      } else {
+        toast.success("Artículo eliminado correctamente");
+      }
+      
       setShowDeleteDialog(false);
       setDeletingItem(null);
-      loadItems();
+      
+      // CRITICAL: Force full refresh from server - clear local state first
+      setItems([]);
+      await loadItems();
+      
+      // VERIFICATION: Check if item still exists in the refreshed list
+      const stillExists = items.find(i => i.id === deletingItem.id);
+      if (stillExists && stillExists.status !== "deleted") {
+        console.error("WARNING: Item may not have been deleted properly");
+        toast.error("Error de sincronización. Recargando...");
+        window.location.reload();
+      }
     } catch (error) {
       toast.error(error.response?.data?.detail || "Error al eliminar artículo");
     }
