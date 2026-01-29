@@ -456,8 +456,25 @@ export default function NewRental() {
   // Smart date handlers
   const handleNumDaysChange = (value) => {
     const days = Math.max(1, parseInt(value) || 1);
+    const previousDays = numDays;
     setNumDays(days);
     setEndDate(addDays(startDate, days));
+    
+    // UPDATE ALL ITEMS IN CART that haven't been manually edited
+    // Items where itemDays equals the previous global value get updated
+    if (items.length > 0) {
+      setItems(items.map(item => {
+        // If item's days match the previous global value, update it
+        // This means it wasn't manually edited
+        if (item.itemDays === previousDays || !item.manualDaysEdit) {
+          return { ...item, itemDays: days };
+        }
+        // Keep manually edited items unchanged
+        return item;
+      }));
+      toast.info(`Duración actualizada a ${days} día${days !== 1 ? 's' : ''} para todos los artículos`);
+    }
+    
     if (days > 30) {
       toast.info("Alquiler de larga duración: " + days + " días");
     }
