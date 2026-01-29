@@ -2572,11 +2572,13 @@ async def deliver_external_repair(
             )
         
         cash_movement_id = str(uuid.uuid4())
+        operation_number = await get_next_operation_number()
         # Build description from notes or services
         work_desc = repair.get("notes", "") or ", ".join(repair.get("services", ["Reparación"]))
         cash_doc = {
             "id": cash_movement_id,
-            "session_id": active_session["id"],  # CRITICAL: Link to active session
+            "operation_number": operation_number,
+            "session_id": active_session["id"],
             "movement_type": "income",
             "amount": repair["price"],
             "payment_method": delivery.payment_method,
@@ -2590,7 +2592,7 @@ async def deliver_external_repair(
         }
         await db.cash_movements.insert_one(cash_doc)
     
-    return {"message": "Repair delivered and charged", "amount": repair["price"]}
+    return {"message": "Repair delivered and charged", "amount": repair["price"], "operation_number": operation_number if repair["price"] > 0 else None}
 
 @api_router.delete("/external-repairs/{repair_id}")
 async def delete_external_repair(repair_id: str, current_user: dict = Depends(get_current_user)):
