@@ -173,8 +173,8 @@ export default function Inventory() {
   };
 
   const createItem = async () => {
-    if (!newItem.internal_code || !newItem.brand || !newItem.model || !newItem.size) {
-      toast.error("Completa todos los campos obligatorios (Código Interno, Marca, Modelo, Talla)");
+    if (!newItem.internal_code || !newItem.brand || !newItem.size) {
+      toast.error("Completa todos los campos obligatorios (Código Interno, Marca, Talla)");
       return;
     }
     
@@ -183,6 +183,8 @@ export default function Inventory() {
       const itemToCreate = {
         ...newItem,
         barcode: newItem.barcode || `BC-${newItem.internal_code}`,
+        serial_number: newItem.serial_number || "",
+        binding: newItem.binding || "",
         purchase_price: parseFloat(newItem.purchase_price) || 0,
         maintenance_interval: parseInt(newItem.maintenance_interval) || 30
       };
