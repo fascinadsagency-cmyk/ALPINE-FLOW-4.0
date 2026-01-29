@@ -16,21 +16,8 @@ import axios from "axios";
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // Default item types (fallback if API fails)
-const DEFAULT_ITEM_TYPES = [
-  { value: "ski", label: "Esquís" },
-  { value: "snowboard", label: "Snowboard" },
-  { value: "boots", label: "Botas" },
-  { value: "helmet", label: "Casco" },
-  { value: "poles", label: "Bastones" },
-];
-
-const DEFAULT_TARIFF = {
-  days_1: 0,
-  days_2_3: 0,
-  days_4_7: 0,
-  week: 0,
-  season: 0
-};
+// Default item types - will be replaced with custom types from API
+const DEFAULT_ITEM_TYPES = [];
 
 export default function Tariffs() {
   const [tariffs, setTariffs] = useState({});
