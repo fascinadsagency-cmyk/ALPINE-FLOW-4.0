@@ -1234,7 +1234,7 @@ export default function NewRental() {
       }
     });
     
-    // Generate HTML for standalone items - Con desglose completo
+    // Generate HTML for standalone items - TARIFA ESCALONADA
     const standaloneHtml = standaloneItems.map(item => {
       const typeLabel = getTypeLabel(item.item_type);
       const days = item.itemDays || numDays;
@@ -1244,23 +1244,16 @@ export default function NewRental() {
       const dayField = days <= 10 ? `day_${days}` : 'day_11_plus';
       const totalPrice = item.customPrice || item.custom_price || (tariff ? tariff[dayField] : 0) || 0;
       
-      // Precio base (día 1) como referencia
-      const basePrice = tariff?.day_1 || totalPrice;
-      
-      // Build full description: "Esquís Atomic Redster (42)"
+      // Build full description: "Esquís Atomic Redster (42) [SKI-001]"
       const modelStr = `${item.brand || ''} ${item.model || ''}`.trim();
       const sizeStr = item.size ? ` (${item.size})` : '';
-      const description = `${typeLabel} ${modelStr}${sizeStr}`.trim();
-      const codeStr = item.internal_code || item.barcode?.substring(0, 8) || '';
+      const codeStr = item.internal_code ? ` [${item.internal_code}]` : '';
+      const description = `${typeLabel} ${modelStr}${sizeStr}${codeStr}`.trim();
       
       return `
         <tr class="item-row">
-          <td class="item-desc">
-            <div>${description}</div>
-            <div class="item-code">${codeStr}</div>
-          </td>
-          <td class="item-days">${days}d</td>
-          <td class="item-unit">€${basePrice.toFixed(2)}</td>
+          <td class="item-desc">${description}</td>
+          <td class="item-days">${days}</td>
           <td class="item-total">€${totalPrice.toFixed(2)}</td>
         </tr>
       `;
@@ -1270,21 +1263,19 @@ export default function NewRental() {
     const packsHtml = Object.values(packItems).map(packData => {
       const packDays = packData.days;
       const packTotal = getPackPrice(packData.pack, packDays);
-      const packBasePrice = packData.pack.day_1 || packTotal;
       
       // Extraer códigos de los componentes
       const childCodes = packData.items.map(item => 
-        item.internal_code || item.barcode?.substring(0, 8) || 'N/A'
+        item.internal_code || item.barcode?.substring(0, 10) || 'N/A'
       ).join(' / ');
+      
+      // NOMBRE FUSIONADO: "Pack Esquí Plata (SKI-001 / BOT-204)"
+      const fusedPackName = `${packData.pack.name} (${childCodes})`;
       
       return `
         <tr class="item-row pack-row">
-          <td class="item-desc">
-            <div class="pack-name">${packData.pack.name}</div>
-            <div class="item-code">${childCodes}</div>
-          </td>
-          <td class="item-days">${packDays}d</td>
-          <td class="item-unit">€${packBasePrice.toFixed(2)}</td>
+          <td class="item-desc">${fusedPackName}</td>
+          <td class="item-days">${packDays}</td>
           <td class="item-total">€${packTotal.toFixed(2)}</td>
         </tr>
       `;
