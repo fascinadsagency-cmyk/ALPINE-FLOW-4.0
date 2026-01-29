@@ -563,28 +563,58 @@ export default function Maintenance() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {upcomingItems.map((item) => (
                     <div 
                       key={item.id} 
-                      className="flex items-center justify-between p-4 bg-white rounded-xl border border-amber-200"
+                      className="p-4 bg-white rounded-xl border border-amber-200"
                     >
-                      <div className="flex items-center gap-4 flex-1">
-                        <div className="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                      <div className="flex items-start gap-4">
+                        {/* Icon */}
+                        <div className="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
                           <Clock className="h-5 w-5 text-amber-600" />
                         </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-1">
-                            <p className="font-medium text-slate-900">{item.brand} {item.model}</p>
-                            <Badge variant="outline" className="text-amber-700 border-amber-400">
-                              En {item.remaining} salidas
-                            </Badge>
+                        
+                        {/* Info Grid */}
+                        <div className="flex-1 grid grid-cols-5 gap-3 items-center">
+                          {/* Modelo */}
+                          <div>
+                            <p className="text-xs text-slate-500 uppercase font-medium mb-1">Modelo</p>
+                            <p className="font-bold text-slate-900 text-sm">
+                              {item.name || `${item.brand || ''} ${item.model || ''}`.trim() || 'Sin nombre'}
+                            </p>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Progress value={item.progress} className="h-2 flex-1" />
-                            <span className="text-xs text-slate-500 w-12">{Math.round(item.progress)}%</span>
+                          
+                          {/* Número Interno */}
+                          <div>
+                            <p className="text-xs text-slate-500 uppercase font-medium mb-1">Nº Interno</p>
+                            <p className="font-mono font-bold text-blue-700 text-sm">
+                              {item.internal_code || item.barcode || '-'}
+                            </p>
                           </div>
-                          <p className="text-xs text-slate-400 mt-1 font-mono">{item.barcode}</p>
+                          
+                          {/* Talla */}
+                          <div>
+                            <p className="text-xs text-slate-500 uppercase font-medium mb-1">Talla</p>
+                            <p className="font-bold text-slate-900 text-sm">{item.size || '-'}</p>
+                          </div>
+                          
+                          {/* Usos */}
+                          <div>
+                            <p className="text-xs text-slate-500 uppercase font-medium mb-1">Usos</p>
+                            <p className="font-bold text-amber-600">{item.days_used || 0}</p>
+                          </div>
+                          
+                          {/* Progreso */}
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <p className="text-xs text-slate-500 uppercase font-medium">Faltan</p>
+                              <Badge variant="outline" className="text-amber-700 border-amber-400 text-xs">
+                                {item.remaining} salidas
+                              </Badge>
+                            </div>
+                            <Progress value={item.progress} className="h-2" />
+                          </div>
                         </div>
                       </div>
                     </div>
