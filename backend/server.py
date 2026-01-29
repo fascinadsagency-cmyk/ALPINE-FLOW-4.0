@@ -2132,9 +2132,11 @@ async def update_rental_days(rental_id: str, update_data: UpdateRentalDaysReques
         movement_type = "income" if price_difference > 0 else "expense"
         concept = f"Ampliación Alquiler #{rental_id[:8]} - {customer_name}" if price_difference > 0 else f"Reducción Alquiler #{rental_id[:8]} - {customer_name}"
         
+        operation_number = await get_next_operation_number()
         cash_doc = {
             "id": str(uuid.uuid4()),
-            "session_id": active_session["id"],  # CRITICAL: Link to active session
+            "operation_number": operation_number,
+            "session_id": active_session["id"],
             "movement_type": movement_type,
             "amount": abs(price_difference),
             "payment_method": rental.get("payment_method", "cash"),
