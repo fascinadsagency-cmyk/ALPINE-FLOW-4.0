@@ -2982,6 +2982,7 @@ class CashClosingResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
     date: str
+    session_id: Optional[str] = None
     total_income: float
     total_expense: float
     total_refunds: Optional[float] = 0
