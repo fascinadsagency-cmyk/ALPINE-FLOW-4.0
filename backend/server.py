@@ -3100,14 +3100,31 @@ async def get_cash_movements(
 
 @api_router.get("/cash/summary")
 async def get_cash_summary(date: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get cash summary for ACTIVE SESSION only (not full day)"""
     if not date:
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
-    start = f"{date}T00:00:00"
-    end = f"{date}T23:59:59"
+    # Find active session for this date
+    active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
     
+    # If no active session, return zeros
+    if not active_session:
+        return {
+            "date": date,
+            "session_id": None,
+            "session_active": False,
+            "opening_balance": 0,
+            "total_income": 0,
+            "total_expense": 0,
+            "total_refunds": 0,
+            "balance": 0,
+            "by_payment_method": {},
+            "movements_count": 0
+        }
+    
+    # Get movements ONLY for active session
     movements = await db.cash_movements.find(
-        {"created_at": {"$gte": start, "$lte": end}},
+        {"session_id": active_session["id"]},
         {"_id": 0}
     ).to_list(500)
     
@@ -3125,11 +3142,15 @@ async def get_cash_summary(date: Optional[str] = None, current_user: dict = Depe
         if movement_type in by_method[method]:
             by_method[method][movement_type] += m["amount"]
     
-    # Net balance = Income - Expenses - Refunds
-    balance = total_income - total_expense - total_refunds
+    # Net balance = Opening balance + Income - Expenses - Refunds
+    balance = active_session["opening_balance"] + total_income - total_expense - total_refunds
     
     return {
         "date": date,
+        "session_id": active_session["id"],
+        "session_active": True,
+        "session_number": active_session.get("session_number", 1),
+        "opening_balance": active_session["opening_balance"],
         "total_income": total_income,
         "total_expense": total_expense,
         "total_refunds": total_refunds,
