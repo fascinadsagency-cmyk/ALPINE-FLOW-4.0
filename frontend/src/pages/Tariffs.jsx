@@ -19,6 +19,13 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 // Default item types - will be replaced with custom types from API
 const DEFAULT_ITEM_TYPES = [];
 
+// Default tariff structure for new item types
+const DEFAULT_TARIFF = {
+  day_1: 0, day_2: 0, day_3: 0, day_4: 0, day_5: 0,
+  day_6: 0, day_7: 0, day_8: 0, day_9: 0, day_10: 0,
+  day_11_plus: 0
+};
+
 export default function Tariffs() {
   const [tariffs, setTariffs] = useState({});
   const [packs, setPacks] = useState([]);
