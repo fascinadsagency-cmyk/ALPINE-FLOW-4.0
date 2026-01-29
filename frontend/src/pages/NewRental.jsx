@@ -964,25 +964,31 @@ export default function NewRental() {
     });
 
     // PASO 2: Add ONLY items that are NOT part of any pack (items sueltos)
+    // CONDICIÓN DE BLOQUEO: Si el item es componente de pack, NO renderizar
     items.forEach(item => {
       const itemId = item.id || item.barcode;
-      // Si el item es HIJO de un pack, NO lo añadimos
-      if (!packItemIds.has(itemId)) {
-        const basePrice = getItemPriceFromTariff(item);
-        const customPrice = item.customPrice;
-        const finalPrice = customPrice !== null && customPrice !== undefined ? customPrice : basePrice;
-        const isEdited = customPrice !== null && customPrice !== undefined;
-        
-        groups.push({
-          type: 'single',
-          item: item,
-          items: [item],
-          price: finalPrice,
-          basePrice: basePrice,
-          isEdited: isEdited,
-          days: item.itemDays || numDays
-        });
+      const itemBarcode = item.barcode;
+      
+      // BLOQUEO: Si el item es HIJO de un pack, SALTARSE (no añadir)
+      if (packItemIds.has(itemId) || packItemIds.has(itemBarcode)) {
+        return; // CONTINUE - No generar entrada para este item
       }
+      
+      // Solo llegamos aquí si el item NO es parte de ningún pack
+      const basePrice = getItemPriceFromTariff(item);
+      const customPrice = item.customPrice;
+      const finalPrice = customPrice !== null && customPrice !== undefined ? customPrice : basePrice;
+      const isEdited = customPrice !== null && customPrice !== undefined;
+      
+      groups.push({
+        type: 'single',
+        item: item,
+        items: [item],
+        price: finalPrice,
+        basePrice: basePrice,
+        isEdited: isEdited,
+        days: item.itemDays || numDays
+      });
     });
 
     return groups;
