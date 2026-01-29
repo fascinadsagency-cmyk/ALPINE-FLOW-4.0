@@ -1416,7 +1416,7 @@ export default function NewRental() {
                 <tr>
                   <th>Artículo</th>
                   <th class="col-days">Días</th>
-                  <th class="col-total">Precio</th>
+                  <th class="col-total">Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -1424,6 +1424,7 @@ export default function NewRental() {
                 ${standaloneHtml}
               </tbody>
             </table>
+            <p class="iva-note">* Todos los precios incluyen IVA</p>
           </div>
           
           <div class="double-line"></div>
