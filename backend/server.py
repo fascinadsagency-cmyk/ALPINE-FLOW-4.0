@@ -1764,6 +1764,9 @@ async def create_rental(rental: RentalCreate, current_user: dict = Depends(get_c
         
         # Store operation_number in rental for ticket reference
         await db.rentals.update_one({"id": rental_id}, {"$set": {"operation_number": operation_number}})
+        
+        # Add operation_number to response
+        doc["operation_number"] = operation_number
     
     return RentalResponse(**doc)
 
