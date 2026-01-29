@@ -541,16 +541,26 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Código Barras</TableHead>
                     <TableHead>Código Interno</TableHead>
                     <TableHead>Tipo</TableHead>
-                    <TableHead>Categoría</TableHead>
                     <TableHead>Marca / Modelo</TableHead>
                     <TableHead>Talla</TableHead>
                     <TableHead>Estado</TableHead>
-                    <TableHead>Días Uso</TableHead>
-                    <TableHead>Usos para Mant.</TableHead>
-                    <TableHead>Ubicación</TableHead>
+                    {showProfitability && (
+                      <>
+                        <TableHead className="text-right">Coste</TableHead>
+                        <TableHead className="text-right">Ingresos</TableHead>
+                        <TableHead className="w-32">Amortización</TableHead>
+                        <TableHead className="text-right">Beneficio</TableHead>
+                      </>
+                    )}
+                    {!showProfitability && (
+                      <>
+                        <TableHead>Código Barras</TableHead>
+                        <TableHead>Días Uso</TableHead>
+                        <TableHead>Usos para Mant.</TableHead>
+                      </>
+                    )}
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -558,10 +568,11 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                   {items.map((item) => {
                     const usesRemaining = (item.maintenance_interval || 30) - (item.days_used || 0);
                     const needsMaintenance = usesRemaining <= 0;
+                    const isAmortized = (item.amortization_percent || 0) >= 100;
+                    const acquisitionCost = item.acquisition_cost || item.purchase_price || 0;
                     
                     return (
-                      <TableRow key={item.id} className="hover:bg-slate-50">
-                        <TableCell className="font-mono text-sm">{item.barcode}</TableCell>
+                      <TableRow key={item.id} className={`hover:bg-slate-50 ${showProfitability && isAmortized ? 'bg-emerald-50/30' : ''}`}>
                         <TableCell className="font-mono text-sm font-semibold text-primary">
                           {item.internal_code || '-'}
                         </TableCell>
@@ -570,30 +581,61 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                             {itemTypes.find(t => t.value === item.item_type)?.label || item.item_type}
                           </Badge>
                         </TableCell>
-                        <TableCell>
-                          <Badge className={getCategoryBadge(item.category || 'MEDIA')}>
-                            {item.category || 'MEDIA'}
-                          </Badge>
-                        </TableCell>
                         <TableCell className="font-medium">
                           {item.brand} {item.model}
                         </TableCell>
                         <TableCell>{item.size}</TableCell>
                         <TableCell>{getStatusBadge(item.status)}</TableCell>
-                        <TableCell className="text-center">{item.days_used}</TableCell>
-                        <TableCell>
-                          {needsMaintenance ? (
-                            <Badge variant="destructive" className="whitespace-nowrap animate-pulse">
-                              <AlertCircle className="h-3 w-3 mr-1" />
-                              ¡MANTENIMIENTO!
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="whitespace-nowrap bg-emerald-50 text-emerald-700 border-emerald-200">
-                              {usesRemaining} {usesRemaining === 1 ? 'uso' : 'usos'}
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>{item.location || '-'}</TableCell>
+                        
+                        {showProfitability && (
+                          <>
+                            <TableCell className="text-right font-mono">
+                              €{acquisitionCost.toFixed(0)}
+                            </TableCell>
+                            <TableCell className="text-right font-mono text-emerald-600 font-semibold">
+                              €{(item.total_revenue || 0).toFixed(0)}
+                            </TableCell>
+                            <TableCell>
+                              {isAmortized ? (
+                                <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 whitespace-nowrap">
+                                  <TrendingUp className="h-3 w-3 mr-1" />
+                                  AMORTIZADO
+                                </Badge>
+                              ) : (
+                                <div className="space-y-1">
+                                  <Progress 
+                                    value={Math.min(item.amortization_percent || 0, 100)} 
+                                    className={`h-2 ${(item.amortization_percent || 0) < 50 ? '[&>div]:bg-red-500' : (item.amortization_percent || 0) < 80 ? '[&>div]:bg-amber-500' : '[&>div]:bg-emerald-500'}`}
+                                  />
+                                  <p className="text-xs text-slate-500 text-center">{(item.amortization_percent || 0).toFixed(0)}%</p>
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell className={`text-right font-mono font-bold ${(item.net_profit || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                              {(item.net_profit || 0) >= 0 ? '+' : ''}€{(item.net_profit || 0).toFixed(0)}
+                            </TableCell>
+                          </>
+                        )}
+                        
+                        {!showProfitability && (
+                          <>
+                            <TableCell className="font-mono text-sm text-slate-500">{item.barcode}</TableCell>
+                            <TableCell className="text-center">{item.days_used}</TableCell>
+                            <TableCell>
+                              {needsMaintenance ? (
+                                <Badge variant="destructive" className="whitespace-nowrap animate-pulse">
+                                  <AlertCircle className="h-3 w-3 mr-1" />
+                                  ¡MANTENIMIENTO!
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="whitespace-nowrap bg-emerald-50 text-emerald-700 border-emerald-200">
+                                  {usesRemaining} {usesRemaining === 1 ? 'uso' : 'usos'}
+                                </Badge>
+                              )}
+                            </TableCell>
+                          </>
+                        )}
+                        
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
                             <Button
