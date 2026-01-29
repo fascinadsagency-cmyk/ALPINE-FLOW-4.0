@@ -876,10 +876,65 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
       {/* Items Table */}
       <Card className="border-slate-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Package className="h-5 w-5 text-slate-500" />
-            Artículos ({items.length})
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Package className="h-5 w-5 text-slate-500" />
+              Artículos ({items.length})
+            </CardTitle>
+            
+            {/* Column Configuration Button */}
+            <Popover open={showColumnConfig} onOpenChange={setShowColumnConfig}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2" data-testid="column-config-btn">
+                  <Settings2 className="h-4 w-4" />
+                  Columnas
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72" align="end">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-sm">Configurar Columnas</h4>
+                    <Button variant="ghost" size="sm" onClick={resetColumnConfig} className="h-8 text-xs">
+                      <RotateCcw className="h-3 w-3 mr-1" />
+                      Restaurar
+                    </Button>
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    Arrastra las cabeceras para reordenar. Marca/desmarca para mostrar/ocultar.
+                  </p>
+                  <div className="space-y-1 max-h-64 overflow-y-auto">
+                    {ALL_COLUMNS.map((col) => (
+                      <label
+                        key={col.id}
+                        className={`flex items-center gap-2 p-2 rounded hover:bg-slate-50 cursor-pointer ${
+                          col.required ? 'opacity-70' : ''
+                        }`}
+                      >
+                        <Checkbox
+                          checked={visibleColumns.includes(col.id)}
+                          onCheckedChange={() => toggleColumnVisibility(col.id)}
+                          disabled={col.required}
+                          data-testid={`col-toggle-${col.id}`}
+                        />
+                        <span className="text-sm flex-1">{col.label}</span>
+                        {col.required && (
+                          <span className="text-xs text-slate-400">(fija)</span>
+                        )}
+                        {visibleColumns.includes(col.id) ? (
+                          <Eye className="h-3 w-3 text-emerald-500" />
+                        ) : (
+                          <EyeOff className="h-3 w-3 text-slate-300" />
+                        )}
+                      </label>
+                    ))}
+                  </div>
+                  <div className="pt-2 border-t text-xs text-slate-500">
+                    {visibleColumns.length} de {ALL_COLUMNS.length} columnas visibles
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -893,31 +948,20 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="font-semibold">Código Interno</TableHead>
-                    <TableHead>Cód. Barras</TableHead>
-                    <TableHead>Nº Serie</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Marca / Modelo</TableHead>
-                    <TableHead>Talla</TableHead>
-                    <TableHead>Fijación</TableHead>
-                    <TableHead>Estado</TableHead>
-                    {showProfitability && (
-                      <>
-                        <TableHead className="text-right">Coste</TableHead>
-                        <TableHead className="text-right">Ingresos</TableHead>
-                        <TableHead className="w-32">Amortización</TableHead>
-                        <TableHead className="text-right">Beneficio</TableHead>
-                      </>
-                    )}
-                    {!showProfitability && (
-                      <>
-                        <TableHead>Días Uso</TableHead>
-                        <TableHead>Usos para Mant.</TableHead>
-                      </>
-                    )}
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <SortableContext items={orderedVisibleColumns.map(c => c.id)} strategy={horizontalListSortingStrategy}>
+                        {orderedVisibleColumns.map((col) => (
+                          <SortableHeader key={col.id} id={col.id} width={col.width}>
+                            {col.label}
+                          </SortableHeader>
+                        ))}
+                      </SortableContext>
+                      <TableHead className="text-right w-24">Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
