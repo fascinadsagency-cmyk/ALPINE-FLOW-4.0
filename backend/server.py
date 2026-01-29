@@ -1612,28 +1612,71 @@ async def create_rental(rental: RentalCreate, current_user: dict = Depends(get_c
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     
-    # Validate and get items
+    # Validate and get items (supports both regular and generic items)
     items_data = []
     for item_input in rental.items:
+        # Try to find item by barcode OR by ID (for generic items that use ID as barcode)
         item = await db.items.find_one({"barcode": item_input.barcode}, {"_id": 0})
         if not item:
-            raise HTTPException(status_code=404, detail=f"Item {item_input.barcode} not found")
-        if item["status"] != "available":
-            raise HTTPException(status_code=400, detail=f"Item {item_input.barcode} is not available")
+            # Fallback: search by ID (generic items may send their ID as barcode)
+            item = await db.items.find_one({"id": item_input.barcode}, {"_id": 0})
         
-        items_data.append({
-            "item_id": item["id"],
-            "barcode": item["barcode"],
-            "item_type": item["item_type"],
-            "brand": item["brand"],
-            "model": item["model"],
-            "size": item["size"],
-            "person_name": item_input.person_name or "",
-            "returned": False
-        })
+        if not item:
+            raise HTTPException(status_code=404, detail=f"Artículo {item_input.barcode} no encontrado")
         
-        # Mark item as rented
-        await db.items.update_one({"id": item["id"]}, {"$set": {"status": "rented"}})
+        # Handle GENERIC items differently
+        if item.get("is_generic"):
+            quantity = item_input.quantity or 1
+            available = item.get("stock_available", 0)
+            
+            if available < quantity:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Stock insuficiente para {item.get('name', 'artículo genérico')}. Disponible: {available}, Solicitado: {quantity}"
+                )
+            
+            # Decrease available stock
+            new_available = available - quantity
+            await db.items.update_one(
+                {"id": item["id"]},
+                {"$set": {"stock_available": new_available}}
+            )
+            
+            items_data.append({
+                "item_id": item["id"],
+                "barcode": item.get("barcode", item["id"]),
+                "item_type": item.get("item_type", "generic"),
+                "brand": item.get("brand", ""),
+                "model": item.get("model", ""),
+                "size": item.get("size", ""),
+                "name": item.get("name", "Artículo Genérico"),
+                "is_generic": True,
+                "quantity": quantity,
+                "unit_price": item_input.unit_price or item.get("rental_price", 0),
+                "person_name": item_input.person_name or "",
+                "returned": False
+            })
+        else:
+            # Handle REGULAR items
+            if item.get("status") != "available":
+                raise HTTPException(status_code=400, detail=f"Artículo {item_input.barcode} no está disponible")
+            
+            items_data.append({
+                "item_id": item["id"],
+                "barcode": item["barcode"],
+                "item_type": item["item_type"],
+                "brand": item.get("brand", ""),
+                "model": item.get("model", ""),
+                "size": item.get("size", ""),
+                "is_generic": False,
+                "quantity": 1,
+                "unit_price": item_input.unit_price or 0,
+                "person_name": item_input.person_name or "",
+                "returned": False
+            })
+            
+            # Mark regular item as rented
+            await db.items.update_one({"id": item["id"]}, {"$set": {"status": "rented"}})
     
     days = calculate_days(rental.start_date, rental.end_date)
     rental_id = str(uuid.uuid4())
