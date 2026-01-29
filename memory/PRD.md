@@ -113,6 +113,7 @@
 - Contraseña: test123456
 
 ## Changelog
+- **v3.4.0** (2026-01-29): **Botones de Acceso Rápido Compactos** - Barra [+ Casco], [+ Máscara], [+ Bastones] con añadido instantáneo de artículos
 - **v3.3.0** (2026-01-29): **Botones de Acceso Rápido** - Añadidos botones Casco, Máscara, Bastones, Botas para añadir artículos rápidamente. Verificación de sintaxis y endpoints completada.
 - **v3.2.0** (2026-01-29): **Edición de Precios en Nuevo Alquiler** - Corregido bug del icono lápiz. Ahora permite editar precios de artículos en tiempo real con recálculo automático del total
 - **v3.1.0** (2026-01-29): Corrección de sincronización de caja, impresión automática de arqueos, botón reimprimir en histórico
