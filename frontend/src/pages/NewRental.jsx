@@ -1807,6 +1807,137 @@ export default function NewRental() {
         </DialogContent>
       </Dialog>
 
+      {/* Payment Dialog - NEW */}
+      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+              💳 Finalizar Pago
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            {/* Total to Pay - Highlighted */}
+            <div className="p-6 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-300 shadow-lg">
+              <p className="text-sm font-medium text-emerald-700 uppercase tracking-wide">Total a Pagar</p>
+              <p className="text-5xl font-black text-emerald-900 mt-2">
+                €{calculateTotal().toFixed(2)}
+              </p>
+            </div>
+
+            {/* Payment Method Selection */}
+            <div className="space-y-3">
+              <Label className="text-base font-semibold">Método de Pago</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  type="button"
+                  variant={paymentMethodSelected === "cash" ? "default" : "outline"}
+                  className={`h-20 text-lg font-bold ${
+                    paymentMethodSelected === "cash" 
+                      ? "bg-emerald-600 hover:bg-emerald-700" 
+                      : "hover:border-emerald-500"
+                  }`}
+                  onClick={() => setPaymentMethodSelected("cash")}
+                >
+                  💵 EFECTIVO
+                </Button>
+                <Button
+                  type="button"
+                  variant={paymentMethodSelected === "card" ? "default" : "outline"}
+                  className={`h-20 text-lg font-bold ${
+                    paymentMethodSelected === "card" 
+                      ? "bg-blue-600 hover:bg-blue-700" 
+                      : "hover:border-blue-500"
+                  }`}
+                  onClick={() => setPaymentMethodSelected("card")}
+                >
+                  💳 TARJETA
+                </Button>
+              </div>
+            </div>
+
+            {/* Cash Input and Change Calculation */}
+            {paymentMethodSelected === "cash" && (
+              <div className="space-y-4 p-4 rounded-lg bg-slate-50 border-2 border-slate-200">
+                <div>
+                  <Label className="text-base font-semibold">Efectivo Entregado (€)</Label>
+                  <Input
+                    type="number"
+                    value={cashGiven}
+                    onChange={(e) => setCashGiven(e.target.value)}
+                    placeholder="0.00"
+                    className="h-14 text-2xl font-bold text-center mt-2"
+                    min="0"
+                    step="0.01"
+                    autoFocus
+                  />
+                </div>
+
+                {/* Change Display */}
+                {cashGiven && parseFloat(cashGiven) >= calculateTotal() && (
+                  <div className="p-4 rounded-lg bg-blue-50 border-2 border-blue-300 animate-fade-in">
+                    <p className="text-sm font-medium text-blue-700">Cambio a Devolver</p>
+                    <p className="text-4xl font-black text-blue-900 mt-1">
+                      €{(parseFloat(cashGiven) - calculateTotal()).toFixed(2)}
+                    </p>
+                  </div>
+                )}
+
+                {/* Warning if insufficient */}
+                {cashGiven && parseFloat(cashGiven) < calculateTotal() && (
+                  <div className="p-3 rounded-lg bg-red-50 border border-red-300 flex items-start gap-2">
+                    <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-700">
+                      El efectivo entregado es menor que el total a pagar.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Card Payment Info */}
+            {paymentMethodSelected === "card" && (
+              <div className="p-4 rounded-lg bg-blue-50 border-2 border-blue-200">
+                <p className="text-sm text-blue-800">
+                  ✅ Procesa el pago con el datáfono antes de continuar.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowPaymentDialog(false);
+                setCashGiven("");
+              }}
+              disabled={processingPayment}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={processPaymentAndCompleteRental}
+              disabled={processingPayment || (paymentMethodSelected === "cash" && !cashGiven)}
+              className="bg-emerald-600 hover:bg-emerald-700 min-w-[200px]"
+              size="lg"
+            >
+              {processingPayment ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Procesando...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-5 w-5 mr-2" />
+                  Confirmar Pago
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Success Dialog with Print Button */}
       <Dialog open={showSuccessDialog} onOpenChange={closeSuccessDialog}>
         <DialogContent className="sm:max-w-md">
