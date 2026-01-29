@@ -912,6 +912,170 @@ export default function Returns() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Customer Info Modal */}
+      <Dialog open={showCustomerModal} onOpenChange={setShowCustomerModal}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="h-5 w-5 text-primary" />
+              Ficha del Cliente
+            </DialogTitle>
+            <DialogDescription>
+              Información de contacto y material pendiente
+            </DialogDescription>
+          </DialogHeader>
+          
+          {customerLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : selectedCustomer && (
+            <div className="space-y-4 py-4">
+              {/* Customer Name & Status */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900">{selectedCustomer.name}</h3>
+                    {selectedCustomer.days_overdue > 0 && (
+                      <Badge className="bg-red-100 text-red-700 border-red-200 mt-2">
+                        ⚠️ Retrasado {selectedCustomer.days_overdue} {selectedCustomer.days_overdue === 1 ? 'día' : 'días'}
+                      </Badge>
+                    )}
+                  </div>
+                  {selectedCustomer.dni && (
+                    <div className="text-right">
+                      <p className="text-xs text-slate-500">DNI/Pasaporte</p>
+                      <p className="font-mono font-semibold text-slate-700">{selectedCustomer.dni}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Contact Info */}
+              <div className="space-y-3">
+                {/* Phone */}
+                <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                  <div className="flex items-center gap-3">
+                    <Phone className="h-5 w-5 text-emerald-600" />
+                    <div>
+                      <p className="text-xs text-emerald-600 font-medium">Teléfono</p>
+                      <p className="font-semibold text-slate-900">{selectedCustomer.phone || 'No registrado'}</p>
+                    </div>
+                  </div>
+                  {selectedCustomer.phone && (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-100"
+                        onClick={() => callPhone(selectedCustomer.phone)}
+                      >
+                        <Phone className="h-3 w-3" />
+                        Llamar
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="gap-1 bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => sendWhatsAppMessage(selectedCustomer.phone, selectedCustomer.name)}
+                        data-testid="whatsapp-btn"
+                      >
+                        <MessageCircle className="h-3 w-3" />
+                        WhatsApp
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Email */}
+                <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200">
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <p className="text-xs text-blue-600 font-medium">Email</p>
+                      <p className="font-semibold text-slate-900">{selectedCustomer.email || 'No registrado'}</p>
+                    </div>
+                  </div>
+                  {selectedCustomer.email && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-100"
+                      onClick={() => sendEmail(selectedCustomer.email, selectedCustomer.name)}
+                    >
+                      <Mail className="h-3 w-3" />
+                      Enviar Email
+                    </Button>
+                  )}
+                </div>
+
+                {/* Hotel/Address */}
+                <div className="flex items-center justify-between p-3 rounded-lg bg-purple-50 border border-purple-200">
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-5 w-5 text-purple-600" />
+                    <div>
+                      <p className="text-xs text-purple-600 font-medium">Hotel / Alojamiento</p>
+                      <p className="font-semibold text-slate-900">{selectedCustomer.hotel || 'No registrado'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pending Items */}
+              {selectedCustomer.pending_items && selectedCustomer.pending_items.length > 0 && (
+                <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Package className="h-5 w-5 text-amber-600" />
+                    <p className="font-semibold text-amber-800">Material Pendiente de Devolver</p>
+                  </div>
+                  <div className="space-y-2">
+                    {selectedCustomer.pending_items.map((item, index) => (
+                      <div 
+                        key={index}
+                        className="flex items-center justify-between p-2 rounded-lg bg-white border border-amber-200"
+                      >
+                        <div>
+                          <p className="font-medium text-slate-900">{item.brand} {item.model}</p>
+                          <p className="text-xs text-slate-500">
+                            {item.item_type} • Talla {item.size}
+                            {item.barcode && <span className="font-mono ml-2">#{item.barcode}</span>}
+                          </p>
+                        </div>
+                        <Badge variant="outline" className="text-amber-600 border-amber-300">
+                          Pendiente
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Notes */}
+              {selectedCustomer.notes && (
+                <div className="p-3 rounded-lg bg-slate-100 border border-slate-200">
+                  <p className="text-xs text-slate-500 mb-1">Observaciones</p>
+                  <p className="text-sm text-slate-700">{selectedCustomer.notes}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCustomerModal(false)}>
+              Cerrar
+            </Button>
+            {selectedCustomer?.phone && (
+              <Button 
+                className="bg-green-600 hover:bg-green-700"
+                onClick={() => sendWhatsAppMessage(selectedCustomer.phone, selectedCustomer.name)}
+              >
+                <MessageCircle className="h-4 w-4 mr-2" />
+                Contactar por WhatsApp
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
