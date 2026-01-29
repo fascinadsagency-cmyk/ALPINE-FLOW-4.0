@@ -1042,100 +1042,271 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
         </DialogContent>
       </Dialog>
 
-      {/* Import CSV Dialog */}
-      <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
-        <DialogContent className="sm:max-w-lg">
+      {/* Import Dialog - Universal Importer */}
+      <Dialog open={showImportDialog} onOpenChange={closeImportDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Importar Inventario desde CSV</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <FileSpreadsheet className="h-6 w-6 text-primary" />
+              Importar Inventario
+            </DialogTitle>
             <DialogDescription>
-              Sube un archivo CSV con los datos de los artículos
+              Importa artículos desde un archivo CSV o Excel
             </DialogDescription>
           </DialogHeader>
-          
-          <Tabs defaultValue="upload" className="mt-4">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="upload">Subir Archivo</TabsTrigger>
-              <TabsTrigger value="template">Plantilla</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="upload" className="space-y-4 pt-4">
-              <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center">
-                <Upload className="h-10 w-10 mx-auto text-slate-400 mb-3" />
-                <p className="text-slate-600 mb-3">Arrastra un archivo CSV o haz clic para seleccionar</p>
+
+          {/* Step Indicator */}
+          <div className="flex items-center justify-center gap-2 py-4">
+            {[1, 2, 3, 4].map((step) => (
+              <div key={step} className="flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
+                  importStep >= step 
+                    ? 'bg-primary text-white' 
+                    : 'bg-slate-200 text-slate-500'
+                }`}>
+                  {importStep > step ? <CheckCircle className="h-5 w-5" /> : step}
+                </div>
+                {step < 4 && (
+                  <div className={`w-12 h-1 mx-1 ${
+                    importStep > step ? 'bg-primary' : 'bg-slate-200'
+                  }`} />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Step 1: File Upload */}
+          {importStep === 1 && (
+            <div className="py-6">
+              <div 
+                className="border-2 border-dashed border-slate-300 rounded-xl p-12 text-center hover:border-primary hover:bg-slate-50 transition-colors cursor-pointer"
+                onClick={() => importFileRef.current?.click()}
+              >
                 <input
-                  ref={fileInputRef}
+                  ref={importFileRef}
                   type="file"
-                  accept=".csv"
-                  onChange={handleFileUpload}
+                  accept=".csv,.xls,.xlsx"
+                  onChange={handleImportFileSelect}
                   className="hidden"
-                  id="csv-upload"
+                  data-testid="import-inventory-file-input"
                 />
-                <label htmlFor="csv-upload">
-                  <Button variant="outline" className="cursor-pointer" asChild>
-                    <span>
-                      {importLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : (
-                        <Upload className="h-4 w-4 mr-2" />
-                      )}
-                      Seleccionar Archivo
-                    </span>
-                  </Button>
-                </label>
+                <Upload className="h-12 w-12 mx-auto text-slate-400 mb-4" />
+                <p className="text-lg font-semibold text-slate-700">
+                  Arrastra o haz clic para seleccionar
+                </p>
+                <p className="text-sm text-slate-500 mt-2">
+                  Formatos aceptados: CSV, XLS, XLSX
+                </p>
+                {importLoading && (
+                  <div className="mt-4">
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
+                    <p className="text-sm text-slate-500 mt-2">Procesando archivo...</p>
+                  </div>
+                )}
               </div>
               
-              {importResult && (
-                <div className={`p-4 rounded-lg ${importResult.error ? 'bg-red-50' : 'bg-slate-50'}`}>
-                  {importResult.error ? (
-                    <div className="flex items-center gap-2 text-red-600">
-                      <AlertCircle className="h-5 w-5" />
-                      <span>{importResult.error}</span>
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-800 font-medium mb-2">💡 Consejos para la importación:</p>
+                <ul className="text-sm text-blue-700 space-y-1">
+                  <li>• La primera fila debe contener los nombres de las columnas</li>
+                  <li>• Campos obligatorios: Código Interno, Tipo de Artículo, Marca, Talla</li>
+                  <li>• Los duplicados por código interno serán detectados automáticamente</li>
+                </ul>
+              </div>
+              
+              <div className="mt-4 p-4 bg-slate-50 rounded-lg">
+                <Button onClick={downloadTemplate} variant="outline" className="w-full">
+                  <Download className="h-4 w-4 mr-2" />
+                  Descargar Plantilla Excel
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Column Mapping */}
+          {importStep === 2 && (
+            <div className="py-4 space-y-4">
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-sm text-amber-800">
+                  <strong>📄 Archivo:</strong> {importFile?.name} ({importData.length} registros)
+                </p>
+              </div>
+
+              <p className="text-sm text-slate-600">
+                Asocia las columnas de tu archivo con los campos del sistema:
+              </p>
+
+              <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                {inventoryFields.map(field => (
+                  <div key={field.value} className="flex items-center gap-4 p-3 rounded-lg bg-slate-50">
+                    <div className="w-48 flex items-center gap-2">
+                      <span className={`font-medium text-sm ${field.required ? 'text-slate-900' : 'text-slate-600'}`}>
+                        {field.label}
+                      </span>
                     </div>
+                    <ArrowRight className="h-4 w-4 text-slate-400" />
+                    <Select
+                      value={columnMapping[field.value]?.toString() ?? "-1"}
+                      onValueChange={(v) => setColumnMapping({
+                        ...columnMapping,
+                        [field.value]: v === "-1" ? -1 : parseInt(v)
+                      })}
+                    >
+                      <SelectTrigger className="flex-1 h-11" data-testid={`mapping-inventory-${field.value}`}>
+                        <SelectValue placeholder="Seleccionar columna..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="-1">-- No importar --</SelectItem>
+                        {fileColumns.map(col => (
+                          <SelectItem key={col.index} value={col.index.toString()}>
+                            {col.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </div>
+
+              <DialogFooter className="pt-4">
+                <Button variant="outline" onClick={resetInventoryImport}>
+                  Volver
+                </Button>
+                <Button onClick={goToInventoryPreview} data-testid="go-to-inventory-preview-btn">
+                  Previsualizar
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+
+          {/* Step 3: Preview */}
+          {importStep === 3 && (
+            <div className="py-4 space-y-4">
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <p className="text-sm text-emerald-800">
+                  <strong>✅ Vista previa:</strong> Mostrando las primeras 5 filas de {importData.length} registros
+                </p>
+              </div>
+
+              <div className="overflow-x-auto border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-100">
+                      {inventoryFields.filter(f => columnMapping[f.value] !== undefined && columnMapping[f.value] !== -1).map(field => (
+                        <TableHead key={field.value} className="font-semibold text-xs">
+                          {field.label.replace(' *', '')}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {getMappedInventoryPreview().map((row, idx) => (
+                      <TableRow key={idx}>
+                        {inventoryFields.filter(f => columnMapping[f.value] !== undefined && columnMapping[f.value] !== -1).map(field => (
+                          <TableCell key={field.value} className="text-xs">
+                            {row[field.value] || <span className="text-slate-400">-</span>}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>📊 Resumen:</strong> Se importarán {importData.length} artículos. 
+                  Los duplicados por código interno serán omitidos automáticamente.
+                </p>
+              </div>
+
+              <DialogFooter className="pt-4">
+                <Button variant="outline" onClick={() => setImportStep(2)}>
+                  Volver al Mapeo
+                </Button>
+                <Button 
+                  onClick={executeInventoryImport} 
+                  disabled={importLoading}
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                  data-testid="execute-inventory-import-btn"
+                >
+                  {importLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Importando...
+                    </>
                   ) : (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-emerald-600">
-                        <Check className="h-5 w-5" />
-                        <span>{importResult.created} artículos importados</span>
-                      </div>
-                      {importResult.errors?.length > 0 && (
-                        <div className="text-amber-600 text-sm">
-                          {importResult.errors.length} errores (códigos duplicados u otros)
-                        </div>
-                      )}
-                    </div>
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Importar {importData.length} Artículos
+                    </>
                   )}
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+
+          {/* Step 4: Results */}
+          {importStep === 4 && importResult && (
+            <div className="py-6 space-y-6">
+              <div className="text-center">
+                {importResult.imported > 0 ? (
+                  <CheckCircle className="h-16 w-16 mx-auto text-emerald-500 mb-4" />
+                ) : (
+                  <XCircle className="h-16 w-16 mx-auto text-orange-500 mb-4" />
+                )}
+                <h3 className="text-2xl font-bold text-slate-900">
+                  Importación Completada
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <Card className="border-emerald-200 bg-emerald-50">
+                  <CardContent className="pt-6 text-center">
+                    <p className="text-3xl font-bold text-emerald-600">{importResult.imported || 0}</p>
+                    <p className="text-sm text-emerald-700 mt-1">Importados</p>
+                  </CardContent>
+                </Card>
+                <Card className="border-amber-200 bg-amber-50">
+                  <CardContent className="pt-6 text-center">
+                    <p className="text-3xl font-bold text-amber-600">{importResult.duplicates || 0}</p>
+                    <p className="text-sm text-amber-700 mt-1">Duplicados (omitidos)</p>
+                  </CardContent>
+                </Card>
+                <Card className="border-red-200 bg-red-50">
+                  <CardContent className="pt-6 text-center">
+                    <p className="text-3xl font-bold text-red-600">{importResult.errors || 0}</p>
+                    <p className="text-sm text-red-700 mt-1">Errores</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {importResult.duplicate_codes && importResult.duplicate_codes.length > 0 && (
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm font-medium text-amber-800 mb-2">Códigos duplicados omitidos:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {importResult.duplicate_codes.slice(0, 10).map((code, idx) => (
+                      <Badge key={idx} variant="outline" className="bg-white font-mono">
+                        {code}
+                      </Badge>
+                    ))}
+                    {importResult.duplicate_codes.length > 10 && (
+                      <Badge variant="secondary">
+                        +{importResult.duplicate_codes.length - 10} más
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               )}
-            </TabsContent>
-            
-            <TabsContent value="template" className="space-y-4 pt-4">
-              <div className="bg-slate-50 rounded-lg p-4">
-                <h4 className="font-medium mb-2">Columnas requeridas:</h4>
-                <div className="text-sm text-slate-600 space-y-1 font-mono">
-                  <p>barcode, item_type, brand, model, size,</p>
-                  <p>purchase_price, purchase_date, location,</p>
-                  <p>maintenance_interval</p>
-                </div>
-              </div>
-              <div className="bg-slate-50 rounded-lg p-4">
-                <h4 className="font-medium mb-2">Tipos de artículo válidos:</h4>
-                <p className="text-sm text-slate-600">ski, snowboard, boots, helmet, poles</p>
-              </div>
-              <Button onClick={downloadTemplate} variant="outline" className="w-full">
-                <Download className="h-4 w-4 mr-2" />
-                Descargar Plantilla CSV
-              </Button>
-            </TabsContent>
-          </Tabs>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setShowImportDialog(false);
-              setImportResult(null);
-            }}>
-              Cerrar
-            </Button>
-          </DialogFooter>
+
+              <DialogFooter>
+                <Button onClick={closeImportDialog} className="w-full" data-testid="close-inventory-import-btn">
+                  Cerrar
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
