@@ -782,11 +782,12 @@ export default function NewRental() {
           toast.error(`Stock máximo alcanzado para ${config.label}`);
         }
       } else {
-        // Añadir nuevo con cantidad 1
+        // Añadir nuevo con cantidad 1 y días por defecto
         setItems([...items, { 
           ...genericItem, 
           quantity: 1, 
-          customPrice: null 
+          customPrice: null,
+          itemDays: numDays
         }]);
         toast.success(`${config.label} añadido`);
       }
