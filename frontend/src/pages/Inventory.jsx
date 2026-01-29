@@ -2162,6 +2162,56 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
           </DialogContent>
         </Dialog>
       )}
+      
+      {/* BULK DELETE CONFIRMATION DIALOG */}
+      <Dialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="h-5 w-5" />
+              Confirmar Eliminación Masiva
+            </DialogTitle>
+            <DialogDescription>
+              Esta acción eliminará los artículos seleccionados de forma permanente.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-red-600 mb-2">{selectedItems.size}</p>
+              <p className="text-sm text-red-700">artículo{selectedItems.size !== 1 ? 's' : ''} seleccionado{selectedItems.size !== 1 ? 's' : ''}</p>
+            </div>
+            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-xs text-amber-800">
+                <strong>Nota:</strong> Los artículos con historial de alquileres serán dados de baja (no eliminados) para mantener las estadísticas.
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowBulkDeleteDialog(false)} disabled={bulkDeleting}>
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={bulkDeleteItems}
+              disabled={bulkDeleting}
+              className="font-bold"
+            >
+              {bulkDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Procesando...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  ELIMINAR {selectedItems.size} ARTÍCULO{selectedItems.size !== 1 ? 'S' : ''}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       {/* Add New Type Dialog */}
       <Dialog open={showAddTypeDialog} onOpenChange={setShowAddTypeDialog}>
         <DialogContent className="sm:max-w-md">
