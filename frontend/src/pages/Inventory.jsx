@@ -363,17 +363,23 @@ export default function Inventory() {
         Object.entries(columnMapping).forEach(([field, colIndex]) => {
           if (colIndex !== undefined && colIndex !== null && colIndex !== -1) {
             let value = row[colIndex] || '';
+            // Convert all values to strings first (XLSX may parse numbers)
+            value = String(value).trim();
+            
             if (field === 'internal_code') {
-              value = String(value).toUpperCase().trim();
+              value = value.toUpperCase();
+            }
+            if (field === 'item_type') {
+              value = value.toLowerCase();
             }
             if (field === 'category') {
-              value = String(value).toUpperCase().trim();
+              value = value.toUpperCase();
               if (!['SUPERIOR', 'ALTA', 'MEDIA'].includes(value)) {
                 value = 'MEDIA';
               }
             }
             if (field === 'purchase_price') {
-              value = parseFloat(String(value).replace(',', '.')) || 0;
+              value = parseFloat(value.replace(',', '.')) || 0;
             }
             item[field] = value;
           }
