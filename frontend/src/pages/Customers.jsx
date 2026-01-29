@@ -37,11 +37,35 @@ export default function Customers() {
     name: "",
     dni: "",
     phone: "",
+    email: "",
     address: "",
     city: "",
     source: "",
     notes: ""
   });
+
+  // Import states
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [importStep, setImportStep] = useState(1); // 1: upload, 2: mapping, 3: preview, 4: result
+  const [importFile, setImportFile] = useState(null);
+  const [importData, setImportData] = useState([]);
+  const [fileColumns, setFileColumns] = useState([]);
+  const [columnMapping, setColumnMapping] = useState({});
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState(null);
+  const fileInputRef = useRef(null);
+
+  // System fields for mapping
+  const systemFields = [
+    { value: "dni", label: "DNI/Pasaporte *", required: true },
+    { value: "name", label: "Nombre *", required: true },
+    { value: "phone", label: "Teléfono *", required: true },
+    { value: "email", label: "Email", required: false },
+    { value: "address", label: "Dirección", required: false },
+    { value: "city", label: "Ciudad/Población", required: false },
+    { value: "source", label: "Proveedor/Fuente", required: false },
+    { value: "notes", label: "Notas", required: false }
+  ];
 
   useEffect(() => {
     loadCustomersWithStatus();
