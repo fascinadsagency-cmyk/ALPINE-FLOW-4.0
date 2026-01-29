@@ -11,71 +11,70 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 
 ## Funcionalidades Implementadas
 
-### 1. Importador Universal de Clientes (2026-01-29) ✨ NUEVO
+### 1. Importador Universal de Clientes (2026-01-29)
 **Sistema completo de importación masiva:**
 
-**Formatos soportados:**
-- CSV (separador por comas o punto y coma)
-- XLS (Excel 97-2003)
-- XLSX (Excel moderno)
+**Formatos soportados:** CSV, XLS, XLSX
 
 **Flujo de 4 pasos:**
-1. **Subir archivo**: Área de drag & drop con validación de formato
-2. **Mapeo de campos**: Asociar columnas del archivo con campos del sistema
-   - Auto-mapeo inteligente (detecta nombres similares)
-   - Campos obligatorios: DNI*, Nombre*, Teléfono*
-   - Campos opcionales: Email, Dirección, Ciudad, Proveedor, Notas
-3. **Previsualización**: Muestra las primeras 5 filas antes de importar
-4. **Resultados**: Resumen de importados, duplicados (omitidos), errores
+1. **Subir archivo**: Área de drag & drop con validación
+2. **Mapeo de campos**: Auto-mapeo inteligente + mapeo manual
+3. **Previsualización**: Muestra las primeras 5 filas
+4. **Resultados**: Importados, duplicados (omitidos), errores
 
-**Detección de duplicados:**
-- Por DNI (principal)
-- Por Email (secundario)
+**Campos:**
+- Obligatorios: DNI*, Nombre*, Teléfono*
+- Opcionales: Email, Dirección, Ciudad, Proveedor, Notas
 
-### 2. Ajuste de Campos en Ficha de Cliente (2026-01-29) ✨ NUEVO
-**Campos obligatorios (con asterisco rojo):**
-- DNI/Pasaporte *
-- Nombre Completo *
-- Teléfono *
+### 2. Importador Universal de Inventario (2026-01-29) ✨ NUEVO
+**Misma estructura que el importador de clientes:**
 
-**Campos opcionales (sin asterisco):**
-- Email
-- Dirección
-- Población/Ciudad
-- Colaborador/Proveedor
-- Observaciones Internas
+**Formatos soportados:** CSV, XLS, XLSX
 
-### 3. Módulo de Packs con Tipos Personalizados (2026-01-29)
+**Flujo de 4 pasos:** Subir → Mapear → Previsualizar → Resultados
+
+**Campos:**
+- Obligatorios: Código Interno*, Tipo de Artículo*, Marca*, Talla*
+- Opcionales: Código de Barras, Modelo, Gama, Precio de Compra, Fecha, Ubicación
+
+**Detección de duplicados:** Por código interno
+
+### 3. Ajuste de Campos en Ficha de Cliente
+**Campos obligatorios (con asterisco rojo):** DNI*, Nombre*, Teléfono*
+**Campos opcionales (sin asterisco):** Email, Dirección, Ciudad, etc.
+
+### 4. Módulo de Packs con Tipos Personalizados
 - Carga dinámica de tipos de artículo desde `/api/item-types`
-- Compatible con tipos por defecto y personalizados
 
-### 4. Buscador de Clientes en Taller Externo (2026-01-29)
+### 5. Buscador de Clientes en Taller Externo
 - Autocompletado con debounce (300ms)
 - Búsqueda por nombre, teléfono o DNI
-- Opción de crear nuevo cliente desde el diálogo
 
-### 5. Módulo de Caja - REDISEÑADO
-**3 Pestañas:** Caja del Día, Cierres Pasados, Histórico Movimientos
+### 6. Módulo de Caja (Rediseñado)
+- 3 Pestañas: Caja del Día, Cierres Pasados, Histórico
 - Arqueo manual con efectivo y tarjeta
 - Revertir cierres
-- Sin límite horario para cerrar
 
-### 6. Rentabilidad en Inventario
+### 7. Rentabilidad en Inventario
 - Coste, Ingresos, Amortización, Beneficio por artículo
 
-### 7. Filtro de Estado en Clientes
+### 8. Filtro de Estado en Clientes
 - Todos / Activos Hoy / Inactivos
 
-### 8. Modificar Duración de Alquileres
+### 9. Modificar Duración de Alquileres
 - Flujo de 3 pasos con ajuste financiero
 
-## API Endpoints Nuevos
+## API Endpoints
 
-### Importación de Clientes
+### Importación
 ```
 POST /api/customers/import
-Body: { customers: [{ dni, name, phone, email?, address?, city?, source?, notes? }] }
-Response: { imported: number, duplicates: number, errors: number, duplicate_dnis: string[] }
+Body: { customers: [{ dni, name, phone, email?, ... }] }
+Response: { imported, duplicates, errors, duplicate_dnis }
+
+POST /api/items/import
+Body: { items: [{ internal_code, item_type, brand, size, ... }] }
+Response: { imported, duplicates, errors, duplicate_codes }
 ```
 
 ## Próximas Tareas (Backlog)
@@ -97,17 +96,15 @@ Response: { imported: number, duplicates: number, errors: number, duplicate_dnis
 
 ## Refactorización Pendiente
 - **CRÍTICO**: `/app/backend/server.py` es un monolito de +3000 líneas
-- **ALTO**: Páginas grandes de React (CashRegister.jsx, ActiveRentals.jsx, Inventory.jsx, Customers.jsx)
+- **ALTO**: Páginas grandes de React
 
 ## Credenciales de Prueba
 - Usuario: test_packs_user
 - Contraseña: test123456
 
 ## Changelog
-- **v2.8.0** (2026-01-29): 
-  - Importador universal de clientes (CSV/XLS/XLSX) con mapeo y detección de duplicados
-  - Email ahora es opcional, Teléfono es obligatorio
-  - Asteriscos rojos en campos obligatorios del formulario
+- **v2.9.0** (2026-01-29): 
+  - Importador universal de inventario (CSV/XLS/XLSX) con mapeo y detección de duplicados
+- **v2.8.0** (2026-01-29): Importador de clientes, Email opcional
 - **v2.7.0** (2026-01-29): Packs con tipos personalizados, buscador en taller
 - **v2.6.0** (2026-01-29): Rediseño del Módulo de Caja
-- **v2.5.0** (2026-01-29): Rentabilidad en Inventario
