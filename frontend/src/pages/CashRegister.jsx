@@ -756,11 +756,18 @@ export default function CashRegister() {
 
               {/* Actions */}
               <div className="flex flex-wrap gap-2 mb-6">
-                <Button onClick={() => { setMovementType("income"); setShowAddDialog(true); }}>
+                <Button 
+                  onClick={() => { setMovementType("income"); setShowAddDialog(true); }}
+                  disabled={!activeSession}
+                >
                   <ArrowUpRight className="h-4 w-4 mr-2" />
                   Nueva Entrada
                 </Button>
-                <Button variant="outline" onClick={() => { setMovementType("expense"); setShowAddDialog(true); }}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => { setMovementType("expense"); setShowAddDialog(true); }}
+                  disabled={!activeSession}
+                >
                   <ArrowDownLeft className="h-4 w-4 mr-2" />
                   Nueva Salida
                 </Button>
@@ -768,7 +775,11 @@ export default function CashRegister() {
                   <Download className="h-4 w-4 mr-2" />
                   Exportar CSV
                 </Button>
-                <Button variant="destructive" onClick={() => setShowCloseDialog(true)}>
+                <Button 
+                  variant="destructive" 
+                  onClick={() => setShowCloseDialog(true)}
+                  disabled={!activeSession}
+                >
                   <Lock className="h-4 w-4 mr-2" />
                   Cerrar Caja
                 </Button>
