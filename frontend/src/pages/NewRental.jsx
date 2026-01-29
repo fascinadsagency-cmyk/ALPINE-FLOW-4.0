@@ -1595,7 +1595,14 @@ export default function NewRental() {
                             <p className="text-xs text-slate-500 font-medium uppercase">
                               {qty > 1 ? 'Precio Unit.' : 'Precio'}
                             </p>
-                            <p className="text-sm font-medium text-slate-700">€{itemPrice.toFixed(2)}</p>
+                            {itemPrice === 0 && !item.is_generic ? (
+                              <Badge variant="destructive" className="text-xs animate-pulse">
+                                <AlertCircle className="h-3 w-3 mr-1" />
+                                Sin tarifa
+                              </Badge>
+                            ) : (
+                              <p className="text-sm font-medium text-slate-700">€{itemPrice.toFixed(2)}</p>
+                            )}
                           </div>
                           
                           {/* Precio Total y Acciones */}
