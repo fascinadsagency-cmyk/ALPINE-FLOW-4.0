@@ -726,7 +726,33 @@ export default function NewRental() {
     }
   };
 
+  // BORRADO EN CASCADA: Eliminar un pack completo con todos sus componentes
+  const removePackComplete = (packItems) => {
+    // Crear set de IDs de todos los items del pack
+    const packItemIds = new Set(packItems.map(i => i.id || i.barcode));
+    // Filtrar el carrito eliminando todos los items del pack
+    setItems(prevItems => prevItems.filter(item => !packItemIds.has(item.id || item.barcode)));
+  };
+
+  // Eliminar un item - Si es parte de pack, elimina todo el pack
   const removeItem = (itemId) => {
+    // Verificar si el item es parte de un pack detectado
+    const itemBarcode = items.find(i => (i.id || i.barcode) === itemId)?.barcode;
+    
+    for (const dp of detectedPacks) {
+      if (dp.items.includes(itemId) || dp.items.includes(itemBarcode)) {
+        // El item es parte de un pack - BORRADO EN CASCADA
+        // Obtener todos los items del pack
+        const packItemObjects = items.filter(item => 
+          dp.items.includes(item.barcode) || dp.items.includes(item.id)
+        );
+        removePackComplete(packItemObjects);
+        toast.info(`Pack "${dp.pack.name}" eliminado completamente`);
+        return;
+      }
+    }
+    
+    // No es parte de ningún pack - eliminar solo este item
     setItems(items.filter(i => (i.id || i.barcode) !== itemId));
   };
 
