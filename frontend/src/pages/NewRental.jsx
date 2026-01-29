@@ -1490,74 +1490,93 @@ export default function NewRental() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {/* Items List - Optimized with Priority Columns */}
+                    {/* Items List - With Days Column */}
                     {items.map((item, index) => {
                       const itemPrice = getItemPriceWithPack(item);
                       const qty = item.quantity || 1;
-                      const totalItemPrice = itemPrice * qty;
+                      const days = item.itemDays || numDays;
+                      const totalItemPrice = itemPrice * qty * days;
                       
                       return (
                         <div 
                           key={item.id || item.barcode}
-                          className={`grid grid-cols-12 gap-3 items-center p-3 rounded-xl transition-colors animate-fade-in ${
+                          className={`grid grid-cols-12 gap-2 items-center p-3 rounded-xl transition-colors animate-fade-in ${
                             item.is_generic ? 'bg-emerald-50 hover:bg-emerald-100' : 'bg-slate-50 hover:bg-slate-100'
                           }`}
                         >
-                          {/* Nombre/Código - Priority #1 */}
+                          {/* Nombre/Código */}
                           <div className="col-span-3">
                             <p className="text-xs text-slate-500 font-medium uppercase">
                               {item.is_generic ? 'Artículo' : 'Código'}
                             </p>
                             {item.is_generic ? (
-                              <p className="font-bold text-emerald-700">{item.name}</p>
+                              <p className="font-bold text-emerald-700 truncate">{item.name}</p>
                             ) : (
                               <p className="font-mono font-bold text-slate-900">{item.internal_code || item.barcode}</p>
                             )}
                           </div>
                           
-                          {/* Tipo de Artículo - Priority #2 */}
+                          {/* Tipo */}
                           <div className="col-span-2">
                             <p className="text-xs text-slate-500 font-medium uppercase">Tipo</p>
-                            <Badge variant="outline" className="font-semibold">
+                            <Badge variant="outline" className="font-semibold text-xs">
                               {itemTypes.find(t => t.value === item.item_type)?.label || item.item_type}
                             </Badge>
                           </div>
                           
-                          {/* Cantidad (para genéricos) o Modelo */}
+                          {/* Cantidad/Modelo */}
                           <div className="col-span-2">
                             {item.is_generic ? (
                               <>
-                                <p className="text-xs text-slate-500 font-medium uppercase">Cantidad</p>
-                                <div className="flex items-center gap-1">
-                                  <Badge className="bg-emerald-600 text-white text-lg font-bold px-3">
-                                    x{qty}
-                                  </Badge>
-                                </div>
+                                <p className="text-xs text-slate-500 font-medium uppercase">Cant.</p>
+                                <Badge className="bg-emerald-600 text-white font-bold">x{qty}</Badge>
                               </>
                             ) : (
                               <>
-                                <p className="text-xs text-slate-500 font-medium uppercase">Modelo</p>
-                                <p className="font-medium text-slate-900">{item.brand} {item.model}</p>
+                                <p className="text-xs text-slate-500 font-medium uppercase">Info</p>
+                                <p className="font-medium text-slate-900 text-sm truncate">{item.brand} {item.size}</p>
                               </>
                             )}
                           </div>
                           
-                          {/* Talla/Tamaño (solo para no genéricos) */}
+                          {/* DÍAS - Nueva columna editable */}
                           <div className="col-span-1">
-                            {!item.is_generic && (
-                              <>
-                                <p className="text-xs text-slate-500 font-medium uppercase">Talla</p>
-                                <Badge variant="outline" className="text-sm font-bold">
-                                  {item.size}
-                                </Badge>
-                              </>
+                            <p className="text-xs text-slate-500 font-medium uppercase">Días</p>
+                            {editingItemDays === (item.id || item.barcode) ? (
+                              <Input
+                                type="number"
+                                min="1"
+                                defaultValue={days}
+                                className="h-7 w-14 text-center text-sm font-bold"
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') updateItemDays(item.id || item.barcode, e.target.value);
+                                  if (e.key === 'Escape') setEditingItemDays(null);
+                                }}
+                                onBlur={(e) => updateItemDays(item.id || item.barcode, e.target.value)}
+                              />
+                            ) : (
+                              <Badge 
+                                variant="outline" 
+                                className="cursor-pointer hover:bg-blue-100 font-bold text-blue-700 border-blue-300"
+                                onClick={() => setEditingItemDays(item.id || item.barcode)}
+                                title="Click para editar días"
+                              >
+                                {days}d <Edit2 className="h-3 w-3 ml-1 inline" />
+                              </Badge>
                             )}
                           </div>
                           
                           {/* Precio Unitario */}
-                          <div className="col-span-2">
-                            <p className="text-xs text-slate-500 font-medium uppercase">
-                              {qty > 1 ? 'Precio Unit.' : 'Precio'}
+                          <div className="col-span-1">
+                            <p className="text-xs text-slate-500 font-medium uppercase">P.Unit</p>
+                            {itemPrice === 0 && !item.is_generic ? (
+                              <Badge variant="destructive" className="text-xs">
+                                <AlertCircle className="h-3 w-3" />
+                              </Badge>
+                            ) : (
+                              <p className="text-sm font-medium text-slate-700">€{itemPrice.toFixed(2)}</p>
+                            )}
                             </p>
                             {itemPrice === 0 && !item.is_generic ? (
                               <Badge variant="destructive" className="text-xs animate-pulse">
