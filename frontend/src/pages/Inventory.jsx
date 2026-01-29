@@ -816,34 +816,50 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
     setSelectedItems(new Set());
   };
 
-  // BULK DELETE FUNCTION
+  // BULK DELETE FUNCTION - Processes all items even if some fail
   const bulkDeleteItems = async () => {
     if (selectedItems.size === 0) return;
     
     setBulkDeleting(true);
-    const results = { success: 0, retired: 0, failed: 0 };
+    const results = { success: 0, softDeleted: 0, failed: 0, failedIds: [] };
+    const itemsToDelete = Array.from(selectedItems);
     
-    for (const itemId of selectedItems) {
+    // Process ALL items - don't stop on individual failures
+    const deletePromises = itemsToDelete.map(async (itemId) => {
       try {
-        await axios.delete(`${API}/items/${itemId}`, {
+        const response = await axios.delete(`${API}/items/${itemId}`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
-        results.success++;
-      } catch (error) {
-        // If deletion fails (has history), try to retire it
-        if (error.response?.status === 400) {
-          try {
-            await axios.put(`${API}/items/${itemId}/status`, 
-              { status: "retired" },
-              { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }}
-            );
-            results.retired++;
-          } catch {
-            results.failed++;
-          }
-        } else {
-          results.failed++;
+        
+        if (response.data?.action === "hard_delete") {
+          return { status: "success", itemId };
+        } else if (response.data?.action === "soft_delete") {
+          return { status: "soft_delete", itemId };
         }
+        return { status: "success", itemId };
+      } catch (error) {
+        // If deletion fails (item rented), don't try to retire - just record failure
+        console.error(`Failed to delete item ${itemId}:`, error.response?.data?.detail);
+        return { 
+          status: "failed", 
+          itemId, 
+          reason: error.response?.data?.detail || "Error desconocido" 
+        };
+      }
+    });
+    
+    // Wait for all delete operations to complete
+    const deleteResults = await Promise.all(deletePromises);
+    
+    // Count results
+    for (const result of deleteResults) {
+      if (result.status === "success") {
+        results.success++;
+      } else if (result.status === "soft_delete") {
+        results.softDeleted++;
+      } else {
+        results.failed++;
+        results.failedIds.push(result.itemId);
       }
     }
     
@@ -854,16 +870,32 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
     // Show summary
     const messages = [];
     if (results.success > 0) messages.push(`${results.success} eliminados`);
-    if (results.retired > 0) messages.push(`${results.retired} dados de baja`);
+    if (results.softDeleted > 0) messages.push(`${results.softDeleted} dados de baja`);
     if (results.failed > 0) messages.push(`${results.failed} con errores`);
     
-    if (results.success > 0 || results.retired > 0) {
+    if (results.success > 0 || results.softDeleted > 0) {
       toast.success(`Operación completada: ${messages.join(', ')}`);
     } else {
       toast.error(`Error: ${messages.join(', ')}`);
     }
     
-    loadItems(); // Refresh the list
+    // CRITICAL: Force complete refresh - clear state and reload
+    setItems([]);
+    await loadItems();
+    
+    // VERIFICATION: Check if any deleted items are still in the list
+    setTimeout(async () => {
+      const currentItems = await itemApi.getAll({});
+      const stillPresent = deleteResults
+        .filter(r => r.status === "success")
+        .filter(r => currentItems.data.some(item => item.id === r.itemId));
+      
+      if (stillPresent.length > 0) {
+        console.error("SYNC ERROR: Some items were not properly deleted");
+        toast.error("Error de sincronización detectado. Recargando página...");
+        window.location.reload();
+      }
+    }, 500);
   };
 
   const createNewItemType = async () => {
