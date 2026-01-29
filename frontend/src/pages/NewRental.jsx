@@ -959,10 +959,12 @@ export default function NewRental() {
     const groups = getGroupedCartItems();
     return groups.reduce((sum, group) => {
       if (group.type === 'pack') {
-        return sum + (group.price * group.days);
+        // PACK: price is already the TOTAL for the selected days (not per day)
+        return sum + group.price;
       } else {
         const item = group.item;
         const qty = item.quantity || 1;
+        // SINGLE ITEM: price is per day, multiply by days
         return sum + (group.price * qty * group.days);
       }
     }, 0);
