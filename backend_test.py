@@ -140,10 +140,39 @@ class CashSessionTester:
             
             self.log_test("Create Test Items", created_count >= 2, 
                          f"Created/verified {created_count}/2 test items for rental testing")
-            return created_count >= 2
+    def create_test_customer(self):
+        """Create a test customer for rental testing"""
+        try:
+            customer_data = {
+                "dni": "12345678T",
+                "name": "Cliente Test Caja",
+                "phone": "666777888",
+                "email": "test@caja.com",
+                "address": "Calle Test 123",
+                "city": "Madrid"
+            }
             
+            response = requests.post(f"{BACKEND_URL}/customers", json=customer_data, headers=self.headers)
+            
+            if response.status_code in [200, 201]:
+                data = response.json()
+                self.customer_id = data["id"]
+                self.log_test("Create Test Customer", True, f"Customer created with ID: {self.customer_id}")
+                return True
+            elif response.status_code == 400 and "already exists" in response.text:
+                # Customer exists, get it
+                response = requests.get(f"{BACKEND_URL}/customers/dni/12345678T", headers=self.headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    self.customer_id = data["id"]
+                    self.log_test("Create Test Customer", True, f"Using existing customer ID: {self.customer_id}")
+                    return True
+            
+            self.log_test("Create Test Customer", False, f"Status: {response.status_code}, Response: {response.text}")
+            return False
+                
         except Exception as e:
-            self.log_test("Create Test Items", False, f"Exception: {str(e)}")
+            self.log_test("Create Test Customer", False, f"Exception: {str(e)}")
             return False
         """Create a test customer for rental testing"""
         try:
