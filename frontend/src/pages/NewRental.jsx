@@ -1019,7 +1019,7 @@ export default function NewRental() {
     setEditingItemPrice(null);
   };
 
-  const getItemPrice = (item) => {
+  const printRentalTicket = () => {
     if (!completedRental) return;
     
     const printWindow = window.open('', '_blank', 'width=300,height=600');
