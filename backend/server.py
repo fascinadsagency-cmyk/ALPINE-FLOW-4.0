@@ -3448,6 +3448,212 @@ async def get_cash_summary(date: Optional[str] = None, current_user: dict = Depe
         "movements_count": len(movements)
     }
 
+@api_router.post("/cash/audit-sync")
+async def audit_and_sync_cash_movements(current_user: dict = Depends(get_current_user)):
+    """
+    AUDITORÍA Y SINCRONIZACIÓN FORZADA DE CAJA
+    Detecta alquileres/servicios pagados sin movimiento de caja y los crea automáticamente.
+    Este endpoint asegura la integridad contable total.
+    """
+    date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    # Find active session
+    active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+    if not active_session:
+        raise HTTPException(status_code=400, detail="No hay sesión de caja activa. Abre la caja primero.")
+    
+    session_id = active_session["id"]
+    session_opened_at = active_session.get("opened_at", date)
+    
+    # Get all existing movement reference_ids for this session
+    existing_movements = await db.cash_movements.find(
+        {"session_id": session_id},
+        {"reference_id": 1}
+    ).to_list(1000)
+    existing_refs = set(m.get("reference_id") for m in existing_movements if m.get("reference_id"))
+    
+    created_movements = []
+    
+    # 1. AUDIT RENTALS - Find paid rentals created after session opened without corresponding movement
+    rentals_query = {
+        "paid_amount": {"$gt": 0},
+        "created_at": {"$gte": session_opened_at}
+    }
+    rentals = await db.rentals.find(rentals_query, {"_id": 0}).to_list(500)
+    
+    for rental in rentals:
+        if rental["id"] not in existing_refs:
+            # Missing movement! Create it
+            cash_movement_id = str(uuid.uuid4())
+            cash_doc = {
+                "id": cash_movement_id,
+                "session_id": session_id,
+                "movement_type": "income",
+                "amount": rental["paid_amount"],
+                "payment_method": rental.get("payment_method", "cash"),
+                "category": "rental",
+                "concept": f"[SYNC] Alquiler #{rental['id'][:8]} - {rental.get('customer_name', 'Cliente')}",
+                "reference_id": rental["id"],
+                "customer_name": rental.get("customer_name", ""),
+                "notes": f"Movimiento sincronizado automáticamente. Alquiler del {rental.get('start_date', date)}",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "created_by": current_user["username"]
+            }
+            await db.cash_movements.insert_one(cash_doc)
+            created_movements.append({
+                "type": "rental",
+                "rental_id": rental["id"][:8],
+                "amount": rental["paid_amount"],
+                "payment_method": rental.get("payment_method", "cash")
+            })
+    
+    # 2. AUDIT WORKSHOP REPAIRS - Find paid repairs without movement
+    repairs_query = {
+        "status": "delivered",
+        "price": {"$gt": 0},
+        "delivery_date": {"$gte": session_opened_at}
+    }
+    repairs = await db.external_repairs.find(repairs_query, {"_id": 0}).to_list(500)
+    
+    for repair in repairs:
+        if repair["id"] not in existing_refs:
+            cash_movement_id = str(uuid.uuid4())
+            cash_doc = {
+                "id": cash_movement_id,
+                "session_id": session_id,
+                "movement_type": "income",
+                "amount": repair.get("price", 0),
+                "payment_method": repair.get("payment_method", "cash"),
+                "category": "workshop",
+                "concept": f"[SYNC] Taller: {repair.get('customer_name', 'Cliente')}",
+                "reference_id": repair["id"],
+                "customer_name": repair.get("customer_name", ""),
+                "notes": f"Movimiento sincronizado automáticamente. Reparación: {repair.get('description', '')[:50]}",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "created_by": current_user["username"]
+            }
+            await db.cash_movements.insert_one(cash_doc)
+            created_movements.append({
+                "type": "workshop",
+                "repair_id": repair["id"][:8],
+                "amount": repair.get("price", 0),
+                "payment_method": repair.get("payment_method", "cash")
+            })
+    
+    # Get updated summary
+    summary = await get_cash_summary(date, current_user)
+    
+    return {
+        "message": "Auditoría completada",
+        "movements_created": len(created_movements),
+        "details": created_movements,
+        "updated_summary": {
+            "total_income": summary["total_income"],
+            "total_expense": summary["total_expense"],
+            "total_refunds": summary["total_refunds"],
+            "balance": summary["balance"],
+            "movements_count": summary["movements_count"]
+        }
+    }
+
+@api_router.get("/cash/summary/realtime")
+async def get_cash_summary_realtime(date: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """
+    RESUMEN DE CAJA EN TIEMPO REAL usando agregación MongoDB.
+    Calcula SUM(montos) directamente en la base de datos para máxima precisión.
+    Fórmula: Saldo_Total = Fondo_Apertura + SUM(Ingresos) - SUM(Gastos) - SUM(Devoluciones)
+    """
+    if not date:
+        date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    # Find active session
+    active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+    
+    if not active_session:
+        return {
+            "date": date,
+            "session_id": None,
+            "session_active": False,
+            "opening_balance": 0,
+            "total_income": 0,
+            "total_expense": 0,
+            "total_refunds": 0,
+            "balance": 0,
+            "by_payment_method": {"cash": {"income": 0, "expense": 0, "refund": 0}, "card": {"income": 0, "expense": 0, "refund": 0}},
+            "movements_count": 0
+        }
+    
+    session_id = active_session["id"]
+    
+    # Use MongoDB aggregation for REAL-TIME SUM calculation
+    pipeline = [
+        {"$match": {"session_id": session_id}},
+        {"$group": {
+            "_id": {
+                "movement_type": "$movement_type",
+                "payment_method": "$payment_method"
+            },
+            "total": {"$sum": "$amount"},
+            "count": {"$sum": 1}
+        }}
+    ]
+    
+    results = await db.cash_movements.aggregate(pipeline).to_list(100)
+    
+    # Process aggregation results
+    total_income = 0
+    total_expense = 0
+    total_refunds = 0
+    movements_count = 0
+    by_method = {}
+    
+    for r in results:
+        movement_type = r["_id"]["movement_type"]
+        payment_method = r["_id"]["payment_method"]
+        amount = r["total"]
+        count = r["count"]
+        movements_count += count
+        
+        # Initialize payment method if not exists
+        if payment_method not in by_method:
+            by_method[payment_method] = {"income": 0, "expense": 0, "refund": 0}
+        
+        # Accumulate totals
+        if movement_type == "income":
+            total_income += amount
+            by_method[payment_method]["income"] += amount
+        elif movement_type == "expense":
+            total_expense += amount
+            by_method[payment_method]["expense"] += amount
+        elif movement_type == "refund":
+            total_refunds += amount
+            by_method[payment_method]["refund"] += amount
+    
+    # Calculate balance using EXACT formula
+    opening_balance = active_session.get("opening_balance", 0)
+    balance = opening_balance + total_income - total_expense - total_refunds
+    
+    # Ensure both cash and card are in by_method for UI consistency
+    if "cash" not in by_method:
+        by_method["cash"] = {"income": 0, "expense": 0, "refund": 0}
+    if "card" not in by_method:
+        by_method["card"] = {"income": 0, "expense": 0, "refund": 0}
+    
+    return {
+        "date": date,
+        "session_id": session_id,
+        "session_active": True,
+        "session_number": active_session.get("session_number", 1),
+        "opening_balance": opening_balance,
+        "total_income": total_income,
+        "total_expense": total_expense,
+        "total_refunds": total_refunds,
+        "balance": balance,
+        "by_payment_method": by_method,
+        "movements_count": movements_count,
+        "calculation_method": "realtime_aggregation"
+    }
+
 async def get_next_closure_number(date: str) -> int:
     """Get the next closure number for a given date (supports multiple closures per day) - atomic operation"""
     # Use aggregation to get max closure_number atomically
