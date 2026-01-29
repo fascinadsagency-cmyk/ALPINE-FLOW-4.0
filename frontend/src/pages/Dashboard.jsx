@@ -312,7 +312,7 @@ export default function Dashboard() {
                 <Button 
                   size="sm" 
                   className="bg-red-600 hover:bg-red-700"
-                  onClick={() => navigate("/returns")}
+                  onClick={() => navigate("/devoluciones")}
                 >
                   Gestionar ahora
                 </Button>
@@ -678,7 +678,7 @@ export default function Dashboard() {
                       variant="ghost" 
                       size="sm" 
                       className="mt-2 w-full justify-between text-red-700"
-                      onClick={() => navigate("/returns")}
+                      onClick={() => navigate("/devoluciones")}
                     >
                       Ver devoluciones
                       <ChevronRight className="h-4 w-4" />
