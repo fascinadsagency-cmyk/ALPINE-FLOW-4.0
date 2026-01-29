@@ -39,6 +39,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [analytics, setAnalytics] = useState(null);
+  const [returnsControl, setReturnsControl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [analyticsPeriod, setAnalyticsPeriod] = useState("week");
   const [selectedDay, setSelectedDay] = useState(null);
@@ -48,6 +49,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadDashboard();
+    loadReturnsControl();
   }, []);
 
   useEffect(() => {
@@ -62,6 +64,17 @@ export default function Dashboard() {
       toast.error("Error al cargar el dashboard");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadReturnsControl = async () => {
+    try {
+      const response = await axios.get(`${API}/dashboard/returns-control`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      setReturnsControl(response.data);
+    } catch (error) {
+      console.error("Error loading returns control:", error);
     }
   };
 
