@@ -11,38 +11,49 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 
 ## Funcionalidades Implementadas
 
-### 1. Modificar Duración de Alquileres (CORREGIDO 2026-01-29)
-**Flujo de 3 pasos obligatorio:**
-- Paso 1: Seleccionar días (0 = devolución total mismo día)
-- Paso 2: Confirmar pago/devolución con método (Efectivo/Tarjeta)
-- Paso 3: Imprimir Comprobante
+### 1. Acceso a Ficha de Cliente desde Devoluciones (NUEVO 2026-01-29)
+- ✅ **Nombre clicable**: El nombre del cliente es un enlace interactivo
+- ✅ **Modal de Ficha Completa**:
+  - Teléfono con botones: **Llamar** y **WhatsApp**
+  - Email con botón de envío
+  - Hotel/Alojamiento
+  - DNI/Pasaporte
+- ✅ **Material Pendiente**: Lista de artículos pendientes con código, tipo y talla
+- ✅ **WhatsApp con mensaje predefinido**: "Hola [Nombre], te contactamos de la tienda de esquí por la devolución del material..."
 
-**Correcciones implementadas:**
-- ✅ **Lógica de Reembolso**: Sistema reconoce automáticamente cuando el ajuste es negativo y lo trata como "Devolución"
-- ✅ **Salida de Caja habilitada**: El selector acepta valores negativos y resta del efectivo/tarjeta
-- ✅ **Ticket de Abono**: Genera comprobante de devolución con importe devuelto
-- ✅ **Ajuste de Stock**: Items se liberan al inventario con 0 días
-- ✅ **Concepto en Caja**: "Devolución ajuste Alquiler ID: XXX (De X a Y días)"
+### 2. Modificar Duración de Alquileres
+- Flujo de 3 pasos obligatorio (días → pago → ticket)
+- Soporte para reembolsos (devoluciones)
+- Ajuste financiero automático en Caja
+- Ticket de modificación/abono
 
-### 2. Sistema de Caja
-- Impresión de tickets desde cada movimiento
+### 3. Sistema de Caja
+- Impresión de tickets desde movimientos
 - Historial de cierres con reversión
-- Vinculación automática con Alquileres y Taller
-- Tarjeta separada para Devoluciones (naranja)
+- Vinculación automática con alquileres
 
-### 3. Dashboard, Clientes, Inventario, Tarifas
-- Todas las funcionalidades base operativas
+### 4. Funcionalidades Base
+- Dashboard estratégico con KPIs
+- Gestión de Clientes con historial
+- Proceso de Alquiler con Auto-Combo
+- Devolución Rápida con un clic
+- Inventario con código interno
+- Tarifas y Packs
+- Taller/Mantenimiento
 
 ## Próximas Tareas (Backlog)
 
 ### P1 - Alta Prioridad
-- [ ] Acceso directo a ficha de cliente desde lista de alquileres
 - [ ] Pestaña de Soporte y Mejoras
 
 ### P2 - Media Prioridad
-- [ ] Integración WhatsApp
+- [ ] Integración WhatsApp API (envío automático)
 - [ ] Integración TPV bancario
 - [ ] Integración VeriFactu
+
+### P3 - Baja Prioridad
+- [ ] Sistema de Reservas Online
+- [ ] Modo Oscuro
 
 ## Credenciales de Prueba
 - Usuario: test_combo
@@ -50,13 +61,13 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 
 ## Última Actualización
 Fecha: 2026-01-29
-Versión: 2.0.1
+Versión: 2.1.0
 
 ## Changelog
-- **v2.0.1** (2026-01-29): Corrección crítica flujo de reembolsos
-  - Corregido KeyError en items sin campo 'id'
-  - Habilitada salida de caja para devoluciones
-  - Ticket de abono funcional
-  - Concepto diferenciado: "Devolución ajuste" vs "Ampliación"
+- **v2.1.0** (2026-01-29): Acceso Rápido a Ficha de Cliente
+  - Modal de ficha con info de contacto completa
+  - Botones de acción directa (Llamar, WhatsApp, Email)
+  - Lista de material pendiente en la ficha
+  - Mensaje WhatsApp predefinido para recordatorios
+- **v2.0.1** (2026-01-29): Corrección flujo de reembolsos
 - **v2.0.0** (2026-01-28): Modificar Duración como Transacción Financiera
-- **v1.9.0** (2026-01-28): Sistema de Tickets y Gestión de Cierres
