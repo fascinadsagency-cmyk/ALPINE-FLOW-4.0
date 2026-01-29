@@ -782,9 +782,9 @@ export default function NewRental() {
     }
   };
 
-  const updateItemPrice = (barcode, newPrice) => {
+  const updateItemPrice = (itemId, newPrice) => {
     setItems(items.map(item => 
-      item.barcode === barcode 
+      (item.id || item.barcode) === itemId 
         ? { ...item, customPrice: parseFloat(newPrice) || null }
         : item
     ));
