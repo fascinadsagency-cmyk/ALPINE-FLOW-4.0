@@ -766,6 +766,81 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
     }
   };
 
+  // MULTI-SELECT FUNCTIONS
+  const toggleSelectItem = (itemId) => {
+    setSelectedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedItems.size === filteredItems.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(filteredItems.map(item => item.id)));
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedItems(new Set());
+  };
+
+  // BULK DELETE FUNCTION
+  const bulkDeleteItems = async () => {
+    if (selectedItems.size === 0) return;
+    
+    setBulkDeleting(true);
+    const results = { success: 0, retired: 0, failed: 0 };
+    
+    for (const itemId of selectedItems) {
+      try {
+        await axios.delete(`${API}/items/${itemId}`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        results.success++;
+      } catch (error) {
+        // If deletion fails (has history), try to retire it
+        if (error.response?.status === 400) {
+          try {
+            await axios.put(`${API}/items/${itemId}/status`, 
+              { status: "retired" },
+              { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }}
+            );
+            results.retired++;
+          } catch {
+            results.failed++;
+          }
+        } else {
+          results.failed++;
+        }
+      }
+    }
+    
+    setBulkDeleting(false);
+    setShowBulkDeleteDialog(false);
+    setSelectedItems(new Set());
+    
+    // Show summary
+    const messages = [];
+    if (results.success > 0) messages.push(`${results.success} eliminados`);
+    if (results.retired > 0) messages.push(`${results.retired} dados de baja`);
+    if (results.failed > 0) messages.push(`${results.failed} con errores`);
+    
+    if (results.success > 0 || results.retired > 0) {
+      toast.success(`Operación completada: ${messages.join(', ')}`);
+    } else {
+      toast.error(`Error: ${messages.join(', ')}`);
+    }
+    
+    loadItems(); // Refresh the list
+  };
+
   const createNewItemType = async () => {
     if (!newTypeName.trim()) {
       toast.error("Ingresa un nombre para el nuevo tipo");
