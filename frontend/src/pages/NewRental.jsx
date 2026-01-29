@@ -1341,24 +1341,20 @@ export default function NewRental() {
               background: #e5e5e5; 
               padding: 4px 2px; 
               text-align: left;
-              font-size: 8px;
+              font-size: 9px;
               border-bottom: 1px solid #333;
             }
-            .items-table th.col-days { width: 12%; text-align: center; }
-            .items-table th.col-unit { width: 15%; text-align: right; }
-            .items-table th.col-total { width: 18%; text-align: right; }
+            .items-table th.col-days { width: 15%; text-align: center; }
+            .items-table th.col-total { width: 25%; text-align: right; }
             
-            .item-row td { padding: 4px 2px; border-bottom: 1px dotted #ccc; vertical-align: top; }
-            .item-desc { max-width: 55%; word-wrap: break-word; font-weight: 500; font-size: 9px; }
-            .item-code { font-size: 7px; color: #666; font-family: monospace; }
-            .item-days { text-align: center; font-weight: bold; }
-            .item-unit { text-align: right; color: #666; font-size: 9px; }
+            .item-row td { padding: 4px 2px; border-bottom: 1px dotted #ccc; }
+            .item-desc { max-width: 60%; word-wrap: break-word; font-weight: 500; font-size: 10px; }
+            .item-days { text-align: center; }
             .item-total { text-align: right; font-weight: bold; }
             
             /* Pack Row - highlighted */
             .pack-row { background: #fffbeb; }
-            .pack-row .pack-name { color: #92400e; font-weight: bold; font-size: 10px; }
-            .pack-row .item-code { color: #b45309; }
+            .pack-row .item-desc { color: #92400e; font-weight: bold; }
             
             /* Totals */
             .totals-table { width: 100%; margin-top: 8px; }
