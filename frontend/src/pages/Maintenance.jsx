@@ -1004,6 +1004,88 @@ export default function Maintenance() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ========== NEW CUSTOMER DIALOG ========== */}
+      <Dialog open={showNewCustomerDialog} onOpenChange={setShowNewCustomerDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="h-5 w-5 text-orange-600" />
+              Nuevo Cliente
+            </DialogTitle>
+            <DialogDescription>
+              Crea un nuevo cliente para el taller
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>DNI *</Label>
+                <Input
+                  value={newCustomer.dni}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, dni: e.target.value.toUpperCase() })}
+                  placeholder="12345678A"
+                  className="h-11 mt-1 font-mono"
+                  data-testid="new-customer-dni-external"
+                />
+              </div>
+              <div>
+                <Label>Teléfono</Label>
+                <Input
+                  value={newCustomer.phone}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
+                  placeholder="600 123 456"
+                  className="h-11 mt-1"
+                  data-testid="new-customer-phone-external"
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Nombre Completo *</Label>
+              <Input
+                value={newCustomer.name}
+                onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+                placeholder="Juan García López"
+                className="h-11 mt-1"
+                data-testid="new-customer-name-external"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Dirección</Label>
+                <Input
+                  value={newCustomer.address}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
+                  placeholder="Calle Mayor, 1"
+                  className="h-11 mt-1"
+                />
+              </div>
+              <div>
+                <Label>Ciudad</Label>
+                <Input
+                  value={newCustomer.city}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, city: e.target.value })}
+                  placeholder="Madrid"
+                  className="h-11 mt-1"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewCustomerDialog(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={createNewCustomerFromRepair}
+              className="bg-orange-600 hover:bg-orange-700"
+              data-testid="save-new-customer-external"
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Crear Cliente
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
