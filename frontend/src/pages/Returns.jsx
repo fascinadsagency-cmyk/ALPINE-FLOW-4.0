@@ -639,7 +639,13 @@ export default function Returns() {
                             className="flex items-center justify-between p-4 rounded-lg bg-blue-50 border border-blue-200"
                           >
                             <div className="flex-1">
-                              <p className="font-medium text-slate-900">{rental.customer_name}</p>
+                              <button
+                                onClick={() => openCustomerModal(rental)}
+                                className="font-medium text-slate-900 hover:text-primary hover:underline text-left cursor-pointer"
+                                data-testid={`customer-link-${rental.id}`}
+                              >
+                                {rental.customer_name}
+                              </button>
                               <p className="text-sm text-slate-600 mt-1">
                                 {rental.pending_items.map(i => `${i.brand} ${i.model}`).join(', ')}
                               </p>
@@ -662,11 +668,11 @@ export default function Returns() {
                               <Button 
                                 variant="outline" 
                                 size="sm"
-                                onClick={() => contactCustomer(rental.customer_phone)}
+                                onClick={() => openCustomerModal(rental)}
                                 className="gap-1"
                               >
-                                <Phone className="h-3 w-3" />
-                                Contactar
+                                <User className="h-3 w-3" />
+                                Ficha
                               </Button>
                               <Button 
                                 variant="outline" 
