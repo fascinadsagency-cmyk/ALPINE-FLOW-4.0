@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { itemApi } from "@/lib/api";
-import { Package, Plus, Search, Loader2, Upload, Download, Barcode, Copy, Check, AlertCircle, Edit2, Trash2, Printer, Tag, Zap, TrendingUp, TrendingDown, DollarSign, ArrowUpDown, BarChart3, FileSpreadsheet, CheckCircle, XCircle, ArrowRight, Settings2, GripVertical, Eye, EyeOff, RotateCcw } from "lucide-react";
+import { Package, Plus, Search, Loader2, Upload, Download, Barcode, Copy, Check, AlertCircle, AlertTriangle, Edit2, Trash2, Printer, Tag, Zap, TrendingUp, TrendingDown, DollarSign, ArrowUpDown, BarChart3, FileSpreadsheet, CheckCircle, XCircle, ArrowRight, Settings2, GripVertical, Eye, EyeOff, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import JsBarcode from 'jsbarcode';
