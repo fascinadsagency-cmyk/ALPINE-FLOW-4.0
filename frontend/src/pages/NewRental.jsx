@@ -1009,35 +1009,8 @@ export default function NewRental() {
     toast.info("Por favor, abra la caja desde el módulo de CAJA.");
     setShowAutoOpenCashDialog(false);
   };
-      
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        toast.warning("⚠️ Tiempo de espera agotado. Caja posiblemente abierta. Pulse Cobrar de nuevo.");
-        setShowAutoOpenCashDialog(false);
-      } else {
-        toast.error(error.message || "Error al abrir caja");
-      }
-    } finally {
-      setProcessingPayment(false);
-    }
-  };
 
-  // === COBRO: Función simplificada sin lógica de apertura ===
-  const completePendingRental = async (total, cashGivenAmount, sessionId) => {
-    const API = process.env.REACT_APP_BACKEND_URL;
-    
-    try {
-      // Clean all numeric values
-      const cleanTotal = Number(total.toFixed(2));
-      const cleanDeposit = Number(parseFloat(deposit) || 0);
-      const paid = paymentMethodSelected !== 'pending' ? cleanTotal : 0;
-      
-      // Prepare items - clean all fields
-      const itemsToSend = items.map(i => {
-        if (i.is_generic) {
-          return {
-            barcode: String(i.barcode || i.id || ''),
-            person_name: "",
+  const updateItemPrice = (itemId, newPrice) => {
             is_generic: true,
             quantity: Number(i.quantity || 1),
             unit_price: Number(i.rental_price || 0)
