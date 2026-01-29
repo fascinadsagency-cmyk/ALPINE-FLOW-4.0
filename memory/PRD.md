@@ -106,7 +106,17 @@ POST /api/cash/close            - Cerrar caja con arqueo
 
 ## Funcionalidades Implementadas en Esta Sesión
 
-### 1. Corrección del Bug Crítico de Contabilidad
+### 1. Bug Crítico de Persistencia de Inventario - RESUELTO
+- **Problema:** Al eliminar artículos, el sistema mostraba "Artículo eliminado" pero seguía apareciendo
+- **Solución:**
+  - **Borrado físico real:** Artículos sin historial se eliminan permanentemente de la BD
+  - **Soft delete inteligente:** Artículos con historial de alquileres se marcan como `status: "deleted"`
+  - **Filtrado automático:** GET /items excluye por defecto artículos con `status: "deleted"`
+  - **Invalidación de caché:** Frontend limpia estado local y fuerza recarga tras eliminar
+  - **Verificación post-borrado:** Si el artículo persiste, se fuerza recarga completa
+  - **Borrado masivo mejorado:** Procesa TODOS los artículos seleccionados sin detenerse por fallos individuales
+
+### 2. Corrección del Bug Crítico de Contabilidad
 - **Problema:** Los cobros de alquileres no se registraban en la caja
 - **Solución:**
   - Todos los endpoints financieros ahora requieren `session_id`
