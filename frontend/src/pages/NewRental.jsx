@@ -1629,6 +1629,63 @@ export default function NewRental() {
                 </div>
               )}
 
+              {/* Quick Add Accessories Buttons */}
+              <div className="flex flex-wrap gap-2 mt-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <span className="text-xs text-slate-500 w-full mb-1">Añadir rápido:</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setItemSearchType('helmet');
+                    setItemSearchCategory('all');
+                    setShowItemSearch(true);
+                  }}
+                  className="flex items-center gap-1.5 h-8"
+                  data-testid="quick-add-helmet"
+                >
+                  <span>🪖</span> Casco
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setItemSearchType('goggles');
+                    setItemSearchCategory('all');
+                    setShowItemSearch(true);
+                  }}
+                  className="flex items-center gap-1.5 h-8"
+                  data-testid="quick-add-goggles"
+                >
+                  <span>🥽</span> Máscara
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setItemSearchType('poles');
+                    setItemSearchCategory('all');
+                    setShowItemSearch(true);
+                  }}
+                  className="flex items-center gap-1.5 h-8"
+                  data-testid="quick-add-poles"
+                >
+                  <span>🎿</span> Bastones
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setItemSearchType('boots');
+                    setItemSearchCategory('all');
+                    setShowItemSearch(true);
+                  }}
+                  className="flex items-center gap-1.5 h-8"
+                  data-testid="quick-add-boots"
+                >
+                  <span>🥾</span> Botas
+                </Button>
+              </div>
+
               <div className="flex items-center justify-between p-4 rounded-xl bg-primary/5 mt-4">
                 <div className="flex-1">
                   {(hasDiscount || getProviderDiscount() > 0) && (
