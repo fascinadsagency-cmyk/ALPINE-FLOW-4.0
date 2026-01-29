@@ -432,8 +432,9 @@ export default function NewRental() {
     // Check if this item is part of a detected pack
     for (const detectedPack of detectedPacks) {
       if (detectedPack.items.includes(item.barcode)) {
-        // This item is part of a pack
-        const packPrice = getPackPrice(detectedPack.pack);
+        // This item is part of a pack - use pack's specific days
+        const packDays = detectedPack.items[0]?.itemDays || numDays;
+        const packPrice = getPackPrice(detectedPack.pack, packDays);
         // Divide pack price equally among components
         return packPrice / detectedPack.pack.items.length;
       }
