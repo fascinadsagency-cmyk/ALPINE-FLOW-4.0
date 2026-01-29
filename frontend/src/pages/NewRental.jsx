@@ -136,6 +136,12 @@ export default function NewRental() {
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [completedRental, setCompletedRental] = useState(null);
   
+  // Payment modal (NEW)
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [paymentMethodSelected, setPaymentMethodSelected] = useState("cash");
+  const [cashGiven, setCashGiven] = useState("");
+  const [processingPayment, setProcessingPayment] = useState(false);
+  
   // Price editing
   const [discountType, setDiscountType] = useState('none');
   const [discountValue, setDiscountValue] = useState("");
