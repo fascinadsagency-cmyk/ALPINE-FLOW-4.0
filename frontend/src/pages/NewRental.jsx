@@ -1655,41 +1655,6 @@ export default function NewRental() {
                 </div>
               )}
 
-              {/* Quick Add Bar - Compact toolbar for last-second accessories */}
-              <div className="flex items-center justify-center gap-2 py-2 px-3 bg-slate-100/80 rounded-lg border border-slate-200/60 mt-2">
-                <span className="text-xs text-slate-500 font-medium">Añadir:</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => quickAddItem('helmet')}
-                  className="h-7 px-2.5 text-xs font-medium hover:bg-white hover:shadow-sm transition-all"
-                  data-testid="quick-add-helmet"
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  Casco
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => quickAddItem('goggles')}
-                  className="h-7 px-2.5 text-xs font-medium hover:bg-white hover:shadow-sm transition-all"
-                  data-testid="quick-add-goggles"
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  Máscara
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => quickAddItem('poles')}
-                  className="h-7 px-2.5 text-xs font-medium hover:bg-white hover:shadow-sm transition-all"
-                  data-testid="quick-add-poles"
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  Bastones
-                </Button>
-              </div>
-
               <div className="flex items-center justify-between p-4 rounded-xl bg-primary/5 mt-4">
                 <div className="flex-1">
                   {(hasDiscount || getProviderDiscount() > 0) && (
