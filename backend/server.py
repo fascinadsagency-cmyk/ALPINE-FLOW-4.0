@@ -1278,7 +1278,7 @@ class ModifyDurationRequest(BaseModel):
 async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, current_user: dict = Depends(get_current_user)):
     """
     Modify rental duration with mandatory cash register entry.
-    Creates a cash movement for any price difference.
+    Creates a cash movement for any price difference (income for extensions, refund for reductions).
     """
     rental = await db.rentals.find_one({"id": rental_id})
     if not rental:
@@ -1295,14 +1295,19 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
     start_date = datetime.fromisoformat(rental["start_date"].replace('Z', '+00:00'))
     
     if data.new_days == 0:
-        # Same day return
+        # Same day return - close the rental
         new_end_date = start_date
-        new_status = "returned"  # Close the rental if 0 days
+        new_status = "returned"
     else:
         new_end_date = start_date + timedelta(days=data.new_days - 1)
         new_status = rental["status"]
     
-    # Update rental
+    # Calculate financial adjustment
+    # If reducing days: difference is negative (refund to customer)
+    # If extending days: difference is positive (charge customer)
+    is_refund = data.difference_amount < 0
+    
+    # Update rental fields
     new_pending = data.new_total - rental["paid_amount"]
     update_fields = {
         "days": data.new_days,
@@ -1311,21 +1316,25 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
         "pending_amount": max(0, new_pending)
     }
     
-    # If 0 days, mark all items as returned
+    # If 0 days (same day return), mark all items as returned and update inventory
     if data.new_days == 0:
         update_fields["status"] = "returned"
         update_fields["actual_return_date"] = datetime.now(timezone.utc).isoformat()
+        
         # Mark all items as returned
         returned_items = []
         for item in rental.get("items", []):
             item["returned"] = True
             item["return_date"] = datetime.now(timezone.utc).isoformat()
             returned_items.append(item)
-            # Update item status in inventory
-            await db.items.update_one(
-                {"id": item["id"]},
-                {"$set": {"status": "available"}}
-            )
+            
+            # Update item status in inventory - handle both 'id' and 'item_id' fields
+            item_id = item.get("id") or item.get("item_id")
+            if item_id:
+                await db.items.update_one(
+                    {"id": item_id},
+                    {"$set": {"status": "available"}}
+                )
         update_fields["items"] = returned_items
     
     await db.rentals.update_one(
@@ -1333,13 +1342,19 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
         {"$set": update_fields}
     )
     
-    # Create cash movement (MANDATORY)
+    # Create cash movement (MANDATORY for any price change)
     cash_movement_id = None
     if data.difference_amount != 0:
         customer_name = rental.get("customer_name", "Cliente")
-        movement_type = "income" if data.difference_amount > 0 else "refund"
         
-        concept = f"Ajuste días Alquiler ID: {rental_id[:8].upper()} (De {old_days} días a {data.new_days} días)"
+        # Determine movement type: 'income' for charges, 'refund' for returns
+        movement_type = "refund" if is_refund else "income"
+        
+        # Create appropriate concept
+        if is_refund:
+            concept = f"Devolución ajuste Alquiler ID: {rental_id[:8].upper()} (De {old_days} a {data.new_days} días)"
+        else:
+            concept = f"Ampliación Alquiler ID: {rental_id[:8].upper()} (De {old_days} a {data.new_days} días)"
         
         cash_movement_id = str(uuid.uuid4())
         cash_doc = {
@@ -1365,7 +1380,8 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
         "new_days": data.new_days,
         "old_total": old_total,
         "new_total": data.new_total,
-        "difference": data.difference_amount
+        "difference": data.difference_amount,
+        "is_refund": is_refund
     }
 
 @api_router.patch("/rentals/{rental_id}/days")
