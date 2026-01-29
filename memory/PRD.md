@@ -1,110 +1,83 @@
 # AlpineFlow - Sistema de Gestión de Alquiler de Equipos de Esquí
 
-## Problema Original
-Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowboard con énfasis en VELOCIDAD y PRECISIÓN.
-
 ## Stack Tecnológico
-- **Frontend**: React + Tailwind CSS + Shadcn UI + XLSX (para importación)
+- **Frontend**: React + Tailwind CSS + Shadcn UI + XLSX
 - **Backend**: FastAPI + Python
 - **Base de datos**: MongoDB
 - **Autenticación**: JWT
 
 ## Funcionalidades Implementadas
 
-### 1. Importador Universal de Clientes (2026-01-29)
-**Sistema completo de importación masiva:**
+### 1. Panel de Control de Devoluciones en Dashboard (2026-01-29) ✨ NUEVO
+**"Torre de control" para el cierre del día:**
 
-**Formatos soportados:** CSV, XLS, XLSX
+- **Métricas dinámicas** por categoría de artículo (Botas, Esquís, Snowboards, Cascos, etc.)
+- **Conteo en tiempo real** de artículos pendientes de devolver HOY
+- **Detección automática** de todas las categorías de inventario
+- **Alerta visual** en ROJO si la hora actual supera la hora de cierre (20:00)
+- **Enlace directo**: Al hacer clic en una categoría, navega a Devoluciones filtrada
 
-**Flujo de 4 pasos:**
-1. **Subir archivo**: Área de drag & drop con validación
-2. **Mapeo de campos**: Auto-mapeo inteligente + mapeo manual
-3. **Previsualización**: Muestra las primeras 5 filas
-4. **Resultados**: Importados, duplicados (omitidos), errores
+**Endpoint**: `GET /api/dashboard/returns-control`
 
-**Campos:**
-- Obligatorios: DNI*, Nombre*, Teléfono*
-- Opcionales: Email, Dirección, Ciudad, Proveedor, Notas
+### 2. Filtro por Categoría en Devoluciones
+- Aceptación de parámetro `?filter=<item_type>` en la URL
+- Badge visual "Filtrando: [Categoría]" con botón para quitar filtro
+- Filtrado dinámico de la lista de devoluciones pendientes
 
-### 2. Importador Universal de Inventario (2026-01-29) ✨ NUEVO
-**Misma estructura que el importador de clientes:**
+### 3. Nuevos Campos en Inventario (2026-01-29) ✨ NUEVO
+- **Número de Serie**: Identificador único del fabricante
+- **Fijación**: Modelo/tipo de fijación instalada (para esquís)
 
-**Formatos soportados:** CSV, XLS, XLSX
+### 4. Reorganización de Columnas en Inventario
+Orden correlativo de códigos de identificación:
+1. Código Interno (Tu identificador corto)
+2. Código de Barras (EAN/UPC)
+3. Número de Serie (Fabricante)
+4. Tipo | Marca/Modelo | Talla | Fijación | Estado
 
-**Flujo de 4 pasos:** Subir → Mapear → Previsualizar → Resultados
+### 5. Búsqueda Mejorada en Inventario
+El buscador localiza artículos por:
+- Código Interno
+- Código de Barras
+- Número de Serie
+- Marca, Modelo, Talla
 
-**Campos:**
-- Obligatorios: Código Interno*, Tipo de Artículo*, Marca*, Talla*
-- Opcionales: Código de Barras, Modelo, Gama, Precio de Compra, Fecha, Ubicación
+### 6. Importador Universal (Clientes e Inventario)
+- Soporte para CSV, XLS, XLSX
+- Mapeo de campos inteligente
+- Detección de duplicados
+- Previsualización antes de importar
 
-**Detección de duplicados:** Por código interno
-
-### 3. Ajuste de Campos en Ficha de Cliente
-**Campos obligatorios (con asterisco rojo):** DNI*, Nombre*, Teléfono*
-**Campos opcionales (sin asterisco):** Email, Dirección, Ciudad, etc.
-
-### 4. Módulo de Packs con Tipos Personalizados
-- Carga dinámica de tipos de artículo desde `/api/item-types`
-
-### 5. Buscador de Clientes en Taller Externo
-- Autocompletado con debounce (300ms)
-- Búsqueda por nombre, teléfono o DNI
-
-### 6. Módulo de Caja (Rediseñado)
+### 7. Módulo de Caja (Rediseñado)
 - 3 Pestañas: Caja del Día, Cierres Pasados, Histórico
 - Arqueo manual con efectivo y tarjeta
-- Revertir cierres
 
-### 7. Rentabilidad en Inventario
-- Coste, Ingresos, Amortización, Beneficio por artículo
+### 8. Rentabilidad en Inventario
+- Coste, Ingresos, Amortización, Beneficio
 
-### 8. Filtro de Estado en Clientes
-- Todos / Activos Hoy / Inactivos
+## API Endpoints Nuevos
 
-### 9. Modificar Duración de Alquileres
-- Flujo de 3 pasos con ajuste financiero
-
-## API Endpoints
-
-### Importación
 ```
-POST /api/customers/import
-Body: { customers: [{ dni, name, phone, email?, ... }] }
-Response: { imported, duplicates, errors, duplicate_dnis }
+GET /api/dashboard/returns-control
+Response: { total_pending, pending_by_category, is_past_closing, closing_hour }
 
-POST /api/items/import
-Body: { items: [{ internal_code, item_type, brand, size, ... }] }
-Response: { imported, duplicates, errors, duplicate_codes }
+GET /api/devoluciones?filter=<item_type>  (filtro en frontend)
 ```
 
-## Próximas Tareas (Backlog)
+## Próximas Tareas
 
 ### P1 - Alta Prioridad
 - [ ] Pestaña de Soporte y Mejoras
-- [ ] Finalizar Sistema de Impresión (interruptor auto-impresión)
+- [ ] Finalizar Sistema de Impresión
 
 ### P2 - Media Prioridad
-- [ ] Integración WhatsApp API
-- [ ] Integración TPV bancario
-- [ ] Integración VeriFactu
-- [ ] Integración Email
-- [ ] Integración Google Calendar
-
-### P3 - Baja Prioridad
-- [ ] Sistema de Reservas Online
-- [ ] Modo Oscuro
-
-## Refactorización Pendiente
-- **CRÍTICO**: `/app/backend/server.py` es un monolito de +3000 líneas
-- **ALTO**: Páginas grandes de React
+- [ ] Integraciones (WhatsApp, TPV, VeriFactu, Email)
 
 ## Credenciales de Prueba
 - Usuario: test_packs_user
 - Contraseña: test123456
 
 ## Changelog
-- **v2.9.0** (2026-01-29): 
-  - Importador universal de inventario (CSV/XLS/XLSX) con mapeo y detección de duplicados
-- **v2.8.0** (2026-01-29): Importador de clientes, Email opcional
-- **v2.7.0** (2026-01-29): Packs con tipos personalizados, buscador en taller
-- **v2.6.0** (2026-01-29): Rediseño del Módulo de Caja
+- **v3.0.0** (2026-01-29): Panel de Control de Devoluciones en Dashboard, nuevos campos en inventario (Nº Serie, Fijación), búsqueda mejorada, filtros en devoluciones
+- **v2.9.0**: Importador de inventario
+- **v2.8.0**: Importador de clientes, Email opcional
