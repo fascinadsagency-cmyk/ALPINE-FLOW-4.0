@@ -185,6 +185,9 @@ class TariffResponse(BaseModel):
 class RentalItemInput(BaseModel):
     barcode: str
     person_name: Optional[str] = ""
+    is_generic: Optional[bool] = False  # Flag for generic items
+    quantity: Optional[int] = 1  # Quantity for generic items
+    unit_price: Optional[float] = 0  # Unit price for this item
 
 class RentalCreate(BaseModel):
     customer_id: str
