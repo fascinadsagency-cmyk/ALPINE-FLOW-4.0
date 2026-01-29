@@ -2967,6 +2967,7 @@ class CashClosingResponse(BaseModel):
     date: str
     total_income: float
     total_expense: float
+    total_refunds: Optional[float] = 0
     expected_balance: float
     physical_cash: float
     card_total: Optional[float] = 0
@@ -2979,6 +2980,8 @@ class CashClosingResponse(BaseModel):
     notes: str
     closed_by: str
     closed_at: str
+    movements_count: Optional[int] = 0
+    by_payment_method: Optional[dict] = {}
 
 @api_router.post("/cash/movements")
 async def create_cash_movement(movement: CashMovementCreate, current_user: dict = Depends(get_current_user)):
