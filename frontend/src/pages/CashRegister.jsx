@@ -432,13 +432,13 @@ export default function CashRegister() {
     };
   };
 
-  const revertClosure = async (closingDate) => {
-    if (!window.confirm(`¿Seguro que quieres reabrir la caja del ${closingDate}? Esto permitirá modificar los movimientos de ese día.`)) {
+  const revertClosure = async (closingId) => {
+    if (!window.confirm(`¿Seguro que quieres reabrir este cierre de caja? Esto permitirá realizar un nuevo cierre.`)) {
       return;
     }
     try {
-      await axios.delete(`${API}/cash/closings/${closingDate}`);
-      toast.success(`Caja del ${closingDate} reabierta correctamente`);
+      await axios.delete(`${API}/cash/closings/${closingId}`);
+      toast.success(`Cierre reabierto correctamente`);
       loadClosureHistory();
       loadData();
     } catch (error) {
