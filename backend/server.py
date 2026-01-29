@@ -1094,6 +1094,89 @@ async def import_items_csv(file: UploadFile = File(...), current_user: dict = De
     
     return {"created": len(created), "errors": errors, "total_rows": len(created) + len(errors)}
 
+# Universal import endpoint for inventory (with field mapping)
+class ItemImportItem(BaseModel):
+    internal_code: str
+    barcode: Optional[str] = ""
+    item_type: str
+    brand: str
+    model: Optional[str] = ""
+    size: str
+    category: Optional[str] = "MEDIA"
+    purchase_price: Optional[float] = 0
+    purchase_date: Optional[str] = ""
+    location: Optional[str] = ""
+
+class ItemImportRequest(BaseModel):
+    items: List[ItemImportItem]
+
+@api_router.post("/items/import")
+async def import_items(request: ItemImportRequest, current_user: dict = Depends(get_current_user)):
+    """Import items with field mapping support"""
+    imported = 0
+    duplicates = 0
+    errors = 0
+    duplicate_codes = []
+    
+    for item in request.items:
+        try:
+            internal_code = item.internal_code.strip().upper()
+            if not internal_code or not item.item_type or not item.brand or not item.size:
+                errors += 1
+                continue
+            
+            # Check for duplicate by internal_code
+            existing = await db.items.find_one({"internal_code": internal_code})
+            if existing:
+                duplicates += 1
+                duplicate_codes.append(internal_code)
+                continue
+            
+            # Check for duplicate barcode if provided
+            if item.barcode and item.barcode.strip():
+                existing_barcode = await db.items.find_one({"barcode": item.barcode.strip()})
+                if existing_barcode:
+                    duplicates += 1
+                    duplicate_codes.append(f"{internal_code} (barcode)")
+                    continue
+            
+            # Generate barcode if not provided
+            barcode = item.barcode.strip() if item.barcode else internal_code
+            
+            item_id = str(uuid.uuid4())
+            doc = {
+                "id": item_id,
+                "internal_code": internal_code,
+                "barcode": barcode,
+                "item_type": item.item_type.strip().lower(),
+                "brand": item.brand.strip(),
+                "model": item.model.strip() if item.model else "",
+                "size": str(item.size).strip(),
+                "category": item.category if item.category in ["SUPERIOR", "ALTA", "MEDIA"] else "MEDIA",
+                "status": "available",
+                "purchase_price": float(item.purchase_price) if item.purchase_price else 0,
+                "purchase_date": item.purchase_date.strip() if item.purchase_date else datetime.now().strftime('%Y-%m-%d'),
+                "location": item.location.strip() if item.location else "",
+                "maintenance_interval": 30,
+                "days_used": 0,
+                "amortization": 0,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            
+            await db.items.insert_one(doc)
+            imported += 1
+            
+        except Exception as e:
+            errors += 1
+            print(f"Error importing item {item.internal_code}: {str(e)}")
+    
+    return {
+        "imported": imported,
+        "duplicates": duplicates,
+        "errors": errors,
+        "duplicate_codes": duplicate_codes[:50]
+    }
+
 @api_router.post("/items/generate-barcodes")
 async def generate_barcodes(data: GenerateBarcodeRequest, current_user: dict = Depends(get_current_user)):
     """Generate unique barcodes"""
