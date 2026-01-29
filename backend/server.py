@@ -218,6 +218,7 @@ class RentalResponse(BaseModel):
     status: str  # active, returned, partial
     notes: str
     created_at: str
+    operation_number: Optional[str] = None  # Ticket number for printing
 
 class ReturnInput(BaseModel):
     barcodes: List[str]
