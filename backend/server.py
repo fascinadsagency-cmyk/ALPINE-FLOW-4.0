@@ -703,15 +703,63 @@ async def import_customers(request: CustomerImportRequest, current_user: dict = 
 
 @api_router.post("/items", response_model=ItemResponse)
 async def create_item(item: ItemCreate, current_user: dict = Depends(get_current_user)):
+    # For generic items, generate auto ID and skip duplicate checks for barcode/internal_code
+    if item.is_generic:
+        # Validate required fields for generic items
+        if not item.name:
+            raise HTTPException(status_code=400, detail="El nombre es obligatorio para artículos genéricos")
+        if not item.item_type:
+            raise HTTPException(status_code=400, detail="El tipo es obligatorio")
+        if item.stock_total < 1:
+            raise HTTPException(status_code=400, detail="El stock debe ser al menos 1")
+        
+        item_id = str(uuid.uuid4())
+        auto_code = f"GEN-{item_id[:8].upper()}"
+        
+        doc = {
+            "id": item_id,
+            "barcode": auto_code,  # Auto-generated for generic
+            "internal_code": auto_code,
+            "serial_number": "",
+            "item_type": item.item_type,
+            "brand": item.brand or "",
+            "model": item.model or "",
+            "size": item.size or "",
+            "binding": "",
+            "status": "available",
+            "purchase_price": item.purchase_price or 0,
+            "purchase_date": item.purchase_date or datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+            "location": item.location or "",
+            "category": item.category or "MEDIA",
+            "maintenance_interval": 0,
+            "days_used": 0,
+            "amortization": 0,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            # Generic item specific fields
+            "is_generic": True,
+            "name": item.name,
+            "stock_total": item.stock_total,
+            "stock_available": item.stock_total,  # Initially all available
+            "rental_price": item.rental_price or item.purchase_price or 0
+        }
+        await db.items.insert_one(doc)
+        return ItemResponse(**doc)
+    
+    # Regular item logic (with traceability)
+    if not item.internal_code:
+        raise HTTPException(status_code=400, detail="El código interno es obligatorio para artículos con trazabilidad")
+    if not item.barcode:
+        raise HTTPException(status_code=400, detail="El código de barras es obligatorio para artículos con trazabilidad")
+    
     # Check for duplicate internal_code (primary identifier)
     existing_internal = await db.items.find_one({"internal_code": item.internal_code})
     if existing_internal:
-        raise HTTPException(status_code=400, detail=f"Item with internal code '{item.internal_code}' already exists")
+        raise HTTPException(status_code=400, detail=f"Ya existe un artículo con código interno '{item.internal_code}'")
     
     # Check for duplicate barcode
     existing_barcode = await db.items.find_one({"barcode": item.barcode})
     if existing_barcode:
-        raise HTTPException(status_code=400, detail=f"Item with barcode '{item.barcode}' already exists")
+        raise HTTPException(status_code=400, detail=f"Ya existe un artículo con código '{item.barcode}'")
     
     item_id = str(uuid.uuid4())
     doc = {
@@ -720,19 +768,24 @@ async def create_item(item: ItemCreate, current_user: dict = Depends(get_current
         "internal_code": item.internal_code,
         "serial_number": item.serial_number or "",
         "item_type": item.item_type,
-        "brand": item.brand,
-        "model": item.model,
-        "size": item.size,
+        "brand": item.brand or "",
+        "model": item.model or "",
+        "size": item.size or "",
         "binding": item.binding or "",
         "status": "available",
-        "purchase_price": item.purchase_price,
-        "purchase_date": item.purchase_date,
+        "purchase_price": item.purchase_price or 0,
+        "purchase_date": item.purchase_date or "",
         "location": item.location or "",
         "category": item.category or "MEDIA",
         "maintenance_interval": item.maintenance_interval or 30,
         "days_used": 0,
         "amortization": 0,
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "is_generic": False,
+        "name": "",
+        "stock_total": 0,
+        "stock_available": 0,
+        "rental_price": None
     }
     await db.items.insert_one(doc)
     return ItemResponse(**doc)
