@@ -1080,201 +1080,321 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
             <DialogTitle>Añadir Artículo</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            {/* Códigos de identificación - Agrupados */}
-            <div className="p-3 bg-slate-50 rounded-lg border">
-              <p className="text-xs font-semibold text-slate-500 uppercase mb-3">Identificación</p>
-              <div className="grid grid-cols-3 gap-3">
+            {/* Toggle: Generic vs Traceable */}
+            <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="is_generic"
+                  checked={newItem.is_generic}
+                  onCheckedChange={(checked) => setNewItem({ 
+                    ...newItem, 
+                    is_generic: checked,
+                    // Clear traceability fields when switching to generic
+                    internal_code: checked ? "" : newItem.internal_code,
+                    barcode: checked ? "" : newItem.barcode,
+                    serial_number: checked ? "" : newItem.serial_number,
+                    brand: checked ? "" : newItem.brand,
+                    model: checked ? "" : newItem.model
+                  })}
+                  className="h-5 w-5"
+                  data-testid="generic-item-checkbox"
+                />
                 <div>
-                  <Label className="text-sm font-semibold">Código Interno *</Label>
-                  <Input
-                    value={newItem.internal_code}
-                    onChange={(e) => setNewItem({ ...newItem, internal_code: e.target.value.toUpperCase() })}
-                    placeholder="SKI-001"
-                    className="h-10 mt-1 font-mono font-semibold text-sm border-2 border-primary/50 focus:border-primary"
-                    data-testid="new-item-internal-code"
-                    autoFocus
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm">Cód. Barras</Label>
-                  <Input
-                    value={newItem.barcode}
-                    onChange={(e) => setNewItem({ ...newItem, barcode: e.target.value })}
-                    placeholder="Auto-genera"
-                    className="h-10 mt-1 font-mono text-sm"
-                    data-testid="new-item-barcode"
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm">Nº Serie</Label>
-                  <Input
-                    value={newItem.serial_number}
-                    onChange={(e) => setNewItem({ ...newItem, serial_number: e.target.value })}
-                    placeholder="Fabricante"
-                    className="h-10 mt-1 font-mono text-sm"
-                    data-testid="new-item-serial"
-                  />
+                  <Label htmlFor="is_generic" className="text-sm font-semibold cursor-pointer">
+                    Artículo Genérico (Sin numeración)
+                  </Label>
+                  <p className="text-xs text-amber-700">
+                    Gestión por cantidad/stock. Sin códigos individuales.
+                  </p>
                 </div>
               </div>
             </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Tipo *</Label>
-                <div className="flex gap-2 mt-1">
-                  <Select 
-                    value={newItem.item_type} 
-                    onValueChange={(v) => setNewItem({ ...newItem, item_type: v })}
-                  >
-                    <SelectTrigger className="h-11 flex-1" data-testid="new-item-type">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {itemTypes.map(type => (
-                        <div 
-                          key={type.value}
-                          className="flex items-center justify-between hover:bg-slate-100 rounded"
+
+            {/* Generic Item Fields */}
+            {newItem.is_generic ? (
+              <>
+                <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                  <p className="text-xs font-semibold text-emerald-700 uppercase mb-3">Datos del Artículo Genérico</p>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-sm font-semibold">Nombre del Artículo *</Label>
+                      <Input
+                        value={newItem.name}
+                        onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                        placeholder="Ej: Casco Adulto, Bastones Aluminio..."
+                        className="h-11 mt-1 border-2 border-emerald-300 focus:border-emerald-500"
+                        data-testid="generic-item-name"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-sm font-semibold">Tipo *</Label>
+                        <Select 
+                          value={newItem.item_type} 
+                          onValueChange={(v) => setNewItem({ ...newItem, item_type: v })}
                         >
-                          <SelectItem 
-                            value={type.value}
-                            className="flex-1 cursor-pointer"
-                          >
-                            <div className="flex items-center gap-2">
-                              {type.label}
+                          <SelectTrigger className="h-11 mt-1" data-testid="generic-item-type">
+                            <SelectValue placeholder="Seleccionar tipo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {itemTypes.map(type => (
+                              <SelectItem key={type.value} value={type.value}>
+                                {type.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-semibold">Stock Total *</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={newItem.stock_total}
+                          onChange={(e) => setNewItem({ ...newItem, stock_total: e.target.value })}
+                          placeholder="Ej: 50"
+                          className="h-11 mt-1 text-lg font-bold border-2 border-emerald-300"
+                          data-testid="generic-item-stock"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-sm font-semibold">Precio Alquiler (€/día) *</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={newItem.rental_price}
+                          onChange={(e) => setNewItem({ ...newItem, rental_price: e.target.value })}
+                          placeholder="Ej: 5.00"
+                          className="h-11 mt-1"
+                          data-testid="generic-item-rental-price"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Precio Coste (€) opcional</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={newItem.purchase_price}
+                          onChange={(e) => setNewItem({ ...newItem, purchase_price: e.target.value })}
+                          placeholder="Coste unitario"
+                          className="h-11 mt-1"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-sm">Ubicación</Label>
+                      <Input
+                        value={newItem.location}
+                        onChange={(e) => setNewItem({ ...newItem, location: e.target.value })}
+                        placeholder="Ej: Estante cascos"
+                        className="h-11 mt-1"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Regular Item Fields (with traceability) */}
+                <div className="p-3 bg-slate-50 rounded-lg border">
+                  <p className="text-xs font-semibold text-slate-500 uppercase mb-3">Identificación</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <Label className="text-sm font-semibold">Código Interno *</Label>
+                      <Input
+                        value={newItem.internal_code}
+                        onChange={(e) => setNewItem({ ...newItem, internal_code: e.target.value.toUpperCase() })}
+                        placeholder="SKI-001"
+                        className="h-10 mt-1 font-mono font-semibold text-sm border-2 border-primary/50 focus:border-primary"
+                        data-testid="new-item-internal-code"
+                        autoFocus
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm">Cód. Barras</Label>
+                      <Input
+                        value={newItem.barcode}
+                        onChange={(e) => setNewItem({ ...newItem, barcode: e.target.value })}
+                        placeholder="Auto-genera"
+                        className="h-10 mt-1 font-mono text-sm"
+                        data-testid="new-item-barcode"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm">Nº Serie</Label>
+                      <Input
+                        value={newItem.serial_number}
+                        onChange={(e) => setNewItem({ ...newItem, serial_number: e.target.value })}
+                        placeholder="Fabricante"
+                        className="h-10 mt-1 font-mono text-sm"
+                        data-testid="new-item-serial"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Tipo *</Label>
+                    <div className="flex gap-2 mt-1">
+                      <Select 
+                        value={newItem.item_type} 
+                        onValueChange={(v) => setNewItem({ ...newItem, item_type: v })}
+                      >
+                        <SelectTrigger className="h-11 flex-1" data-testid="new-item-type">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {itemTypes.map(type => (
+                            <div 
+                              key={type.value}
+                              className="flex items-center justify-between hover:bg-slate-100 rounded"
+                            >
+                              <SelectItem 
+                                value={type.value}
+                                className="flex-1 cursor-pointer"
+                              >
+                                <div className="flex items-center gap-2">
+                                  {type.label}
+                                  {!type.is_default && (
+                                    <Badge variant="secondary" className="text-xs">Personalizado</Badge>
+                                  )}
+                                </div>
+                              </SelectItem>
                               {!type.is_default && (
-                                <Badge variant="secondary" className="text-xs">Personalizado</Badge>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    deleteItemType(type.id, type.label);
+                                  }}
+                                  title="Eliminar tipo personalizado"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
                               )}
                             </div>
-                          </SelectItem>
-                          {!type.is_default && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                deleteItemType(type.id, type.label);
-                              }}
-                              title="Eliminar tipo personalizado"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                      <div className="border-t my-1"></div>
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setShowAddTypeDialog(true);
-                        }}
-                        className="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-slate-100 rounded text-primary font-medium"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Añadir nuevo tipo
-                      </button>
-                    </SelectContent>
-                  </Select>
+                          ))}
+                          <div className="border-t my-1"></div>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setShowAddTypeDialog(true);
+                            }}
+                            className="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-slate-100 rounded text-primary font-medium"
+                          >
+                            <Plus className="h-4 w-4" />
+                            Añadir nuevo tipo
+                          </button>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Categoría</Label>
+                    <Select 
+                      value={newItem.category} 
+                      onValueChange={(v) => setNewItem({ ...newItem, category: v })}
+                    >
+                      <SelectTrigger className="h-11 mt-1" data-testid="new-item-category">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="SUPERIOR">Gama Superior</SelectItem>
+                        <SelectItem value="ALTA">Gama Alta</SelectItem>
+                        <SelectItem value="MEDIA">Gama Media</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <Label>Categoría</Label>
-                <Select 
-                  value={newItem.category} 
-                  onValueChange={(v) => setNewItem({ ...newItem, category: v })}
-                >
-                  <SelectTrigger className="h-11 mt-1" data-testid="new-item-category">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="SUPERIOR">Gama Superior</SelectItem>
-                    <SelectItem value="ALTA">Gama Alta</SelectItem>
-                    <SelectItem value="MEDIA">Gama Media</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Marca *</Label>
-                <Input
-                  value={newItem.brand}
-                  onChange={(e) => setNewItem({ ...newItem, brand: e.target.value })}
-                  className="h-11 mt-1"
-                  data-testid="new-item-brand"
-                />
-              </div>
-              <div>
-                <Label>Modelo</Label>
-                <Input
-                  value={newItem.model}
-                  onChange={(e) => setNewItem({ ...newItem, model: e.target.value })}
-                  className="h-11 mt-1"
-                  data-testid="new-item-model"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Talla *</Label>
-                <Input
-                  value={newItem.size}
-                  onChange={(e) => setNewItem({ ...newItem, size: e.target.value })}
-                  className="h-11 mt-1"
-                  data-testid="new-item-size"
-                />
-              </div>
-              <div>
-                <Label>Fijación</Label>
-                <Input
-                  value={newItem.binding}
-                  onChange={(e) => setNewItem({ ...newItem, binding: e.target.value })}
-                  placeholder="Ej: Marker Griffon 13"
-                  className="h-11 mt-1"
-                  data-testid="new-item-binding"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Precio Coste (€)</Label>
-                <Input
-                  type="number"
-                  value={newItem.purchase_price}
-                  onChange={(e) => setNewItem({ ...newItem, purchase_price: e.target.value })}
-                  className="h-11 mt-1"
-                  data-testid="new-item-price"
-                />
-              </div>
-              <div>
-                <Label>Mantenimiento cada (días)</Label>
-                <Input
-                  type="number"
-                  value={newItem.maintenance_interval}
-                  onChange={(e) => setNewItem({ ...newItem, maintenance_interval: e.target.value })}
-                  className="h-11 mt-1"
-                  data-testid="new-item-maintenance"
-                />
-              </div>
-            </div>
-            <div>
-              <Label>Ubicación</Label>
-              <Input
-                value={newItem.location}
-                onChange={(e) => setNewItem({ ...newItem, location: e.target.value })}
-                className="h-11 mt-1"
-                placeholder="Ej: Estante A1"
-                data-testid="new-item-location"
-              />
-            </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Marca *</Label>
+                    <Input
+                      value={newItem.brand}
+                      onChange={(e) => setNewItem({ ...newItem, brand: e.target.value })}
+                      className="h-11 mt-1"
+                      data-testid="new-item-brand"
+                    />
+                  </div>
+                  <div>
+                    <Label>Modelo</Label>
+                    <Input
+                      value={newItem.model}
+                      onChange={(e) => setNewItem({ ...newItem, model: e.target.value })}
+                      className="h-11 mt-1"
+                      data-testid="new-item-model"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Talla *</Label>
+                    <Input
+                      value={newItem.size}
+                      onChange={(e) => setNewItem({ ...newItem, size: e.target.value })}
+                      className="h-11 mt-1"
+                      data-testid="new-item-size"
+                    />
+                  </div>
+                  <div>
+                    <Label>Fijación</Label>
+                    <Input
+                      value={newItem.binding}
+                      onChange={(e) => setNewItem({ ...newItem, binding: e.target.value })}
+                      placeholder="Ej: Marker Griffon 13"
+                      className="h-11 mt-1"
+                      data-testid="new-item-binding"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Precio Coste (€)</Label>
+                    <Input
+                      type="number"
+                      value={newItem.purchase_price}
+                      onChange={(e) => setNewItem({ ...newItem, purchase_price: e.target.value })}
+                      className="h-11 mt-1"
+                      data-testid="new-item-price"
+                    />
+                  </div>
+                  <div>
+                    <Label>Mantenimiento cada (días)</Label>
+                    <Input
+                      type="number"
+                      value={newItem.maintenance_interval}
+                      onChange={(e) => setNewItem({ ...newItem, maintenance_interval: e.target.value })}
+                      className="h-11 mt-1"
+                      data-testid="new-item-maintenance"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label>Ubicación</Label>
+                  <Input
+                    value={newItem.location}
+                    onChange={(e) => setNewItem({ ...newItem, location: e.target.value })}
+                    className="h-11 mt-1"
+                    placeholder="Ej: Estante A1"
+                    data-testid="new-item-location"
+                  />
+                </div>
+              </>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>
               Cancelar
             </Button>
             <Button onClick={createItem} data-testid="save-item-btn">
-              Guardar Artículo
+              {newItem.is_generic ? "Guardar Artículo Genérico" : "Guardar Artículo"}
             </Button>
           </DialogFooter>
         </DialogContent>
