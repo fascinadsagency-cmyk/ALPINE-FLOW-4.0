@@ -1059,7 +1059,7 @@ export default function Customers() {
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>Nombre Completo *</Label>
+                <Label>Nombre Completo <span className="text-red-500">*</span></Label>
                 <Input
                   value={newCustomer.name}
                   onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
@@ -1069,7 +1069,7 @@ export default function Customers() {
                 />
               </div>
               <div>
-                <Label>DNI/Pasaporte *</Label>
+                <Label>DNI/Pasaporte <span className="text-red-500">*</span></Label>
                 <Input
                   value={newCustomer.dni}
                   onChange={(e) => setNewCustomer({ ...newCustomer, dni: e.target.value.toUpperCase() })}
@@ -1082,7 +1082,7 @@ export default function Customers() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>Teléfono</Label>
+                <Label>Teléfono <span className="text-red-500">*</span></Label>
                 <Input
                   value={newCustomer.phone}
                   onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
@@ -1092,6 +1092,20 @@ export default function Customers() {
                 />
               </div>
               <div>
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  value={newCustomer.email || ""}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
+                  placeholder="cliente@email.com"
+                  className="h-11 mt-1"
+                  data-testid="customer-email"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
                 <Label>Población</Label>
                 <Input
                   value={newCustomer.city}
@@ -1100,16 +1114,15 @@ export default function Customers() {
                   className="h-11 mt-1"
                 />
               </div>
-            </div>
-
-            <div>
-              <Label>Dirección</Label>
-              <Input
-                value={newCustomer.address}
-                onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
-                placeholder="Calle, número, piso..."
-                className="h-11 mt-1"
-              />
+              <div>
+                <Label>Dirección</Label>
+                <Input
+                  value={newCustomer.address}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
+                  placeholder="Calle, número, piso..."
+                  className="h-11 mt-1"
+                />
+              </div>
             </div>
 
             <div>
