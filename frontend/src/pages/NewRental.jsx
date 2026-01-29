@@ -899,8 +899,8 @@ export default function NewRental() {
       return;
     }
 
-    const total = calculateTotal();
-    const cashGivenAmount = parseFloat(cashGiven) || 0;
+    const total = Number(calculateTotal().toFixed(2));
+    const cashGivenAmount = Number(parseFloat(cashGiven) || 0);
 
     if (paymentMethodSelected === "cash" && cashGivenAmount < total) {
       toast.error(`El efectivo entregado (€${cashGivenAmount.toFixed(2)}) es menor que el total (€${total.toFixed(2)})`);
@@ -911,8 +911,8 @@ export default function NewRental() {
     
     try {
       // 1. Check if there's an active cash session
-      const API = import.meta.env.VITE_API_URL;
-      const sessionCheck = await fetch(`${API}/cash/sessions/active`, {
+      const API = process.env.REACT_APP_BACKEND_URL;
+      const sessionCheck = await fetch(`${API}/api/cash/sessions/active`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -941,11 +941,12 @@ export default function NewRental() {
       }
       
       // 3. Continue with rental creation (session exists)
-      await completePendingRental(total, cashGivenAmount);
+      await completePendingRental(total, cashGivenAmount, activeSession.id);
       
     } catch (error) {
       console.error("Error creating rental:", error);
-      toast.error(error.message || error.response?.data?.detail || "Error al crear alquiler");
+      const errorMsg = error.response?.data?.detail;
+      toast.error(typeof errorMsg === 'string' ? errorMsg : "Error al crear alquiler");
       setProcessingPayment(false);
     }
   };
@@ -957,36 +958,37 @@ export default function NewRental() {
     }
 
     try {
-      const API = import.meta.env.VITE_API_URL;
+      const API = process.env.REACT_APP_BACKEND_URL;
       
       // Open new cash session
-      const openSessionRes = await fetch(`${API}/cash/sessions/open`, {
+      const openSessionRes = await fetch(`${API}/api/cash/sessions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({
-          opening_balance: parseFloat(openingCashBalance),
-          notes: `Apertura automática - Primera venta del día`
+          opening_balance: Number(parseFloat(openingCashBalance) || 0)
         })
       });
       
       if (!openSessionRes.ok) {
         const errorData = await openSessionRes.json();
-        throw new Error(errorData.detail || "No se pudo abrir la caja");
+        const errMsg = errorData.detail;
+        throw new Error(typeof errMsg === 'string' ? errMsg : "No se pudo abrir la caja");
       }
       
+      const newSession = await openSessionRes.json();
       toast.success("✅ Nueva jornada iniciada correctamente");
       
       // Close auto-open dialog
       setShowAutoOpenCashDialog(false);
       setOpeningCashBalance("");
       
-      // Resume payment process
+      // Resume payment process with new session ID
       if (pendingPaymentData) {
         setProcessingPayment(true);
-        await completePendingRental(pendingPaymentData.total, pendingPaymentData.cashGiven);
+        await completePendingRental(pendingPaymentData.total, pendingPaymentData.cashGiven, newSession.id);
         setPendingPaymentData(null);
       }
       
@@ -995,7 +997,7 @@ export default function NewRental() {
     }
   };
 
-  const completePendingRental = async (total, cashGivenAmount) => {
+  const completePendingRental = async (total, cashGivenAmount, sessionId = null) => {
     try {
       const paid = paymentMethodSelected !== 'pending' ? total : 0;
       
