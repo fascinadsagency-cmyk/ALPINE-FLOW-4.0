@@ -905,9 +905,19 @@ export default function NewRental() {
 
     // PASO 2: Create a set of item IDs that are HIJOS (components of packs)
     // These will be EXCLUDED from the visual list
+    // CRITICAL: Add BOTH barcode AND id to ensure filtering works
     const packItemIds = new Set();
     detectedPacks.forEach(dp => {
+      // Add all barcodes from the detected pack
       dp.items.forEach(itemBarcode => packItemIds.add(itemBarcode));
+      
+      // Also add the actual item IDs from the items array
+      items.forEach(item => {
+        if (dp.items.includes(item.barcode) || dp.items.includes(item.id)) {
+          packItemIds.add(item.id);
+          packItemIds.add(item.barcode);
+        }
+      });
     });
 
     const groups = [];
