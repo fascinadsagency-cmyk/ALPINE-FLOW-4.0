@@ -3062,9 +3062,17 @@ async def get_cash_summary(date: Optional[str] = None, current_user: dict = Depe
     }
 
 async def get_next_closure_number(date: str) -> int:
-    """Get the next closure number for a given date (supports multiple closures per day)"""
-    closures_count = await db.cash_closings.count_documents({"date": date})
-    return closures_count + 1
+    """Get the next closure number for a given date (supports multiple closures per day) - atomic operation"""
+    # Use aggregation to get max closure_number atomically
+    pipeline = [
+        {"$match": {"date": date}},
+        {"$group": {"_id": None, "max_number": {"$max": "$closure_number"}}}
+    ]
+    result = await db.cash_closings.aggregate(pipeline).to_list(1)
+    
+    if result and result[0].get("max_number"):
+        return result[0]["max_number"] + 1
+    return 1
 
 @api_router.post("/cash/close")
 async def close_cash_register(closing: CashClosingCreate, current_user: dict = Depends(get_current_user)):
