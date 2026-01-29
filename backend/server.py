@@ -2815,6 +2815,42 @@ async def get_cash_closings(current_user: dict = Depends(get_current_user)):
     closings = await db.cash_closings.find({}, {"_id": 0}).sort("date", -1).to_list(100)
     return [CashClosingResponse(**c) for c in closings]
 
+@api_router.get("/cash/movements/history")
+async def get_cash_movements_history(
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    movement_type: Optional[str] = None,
+    search: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all cash movements with optional filters for historic view"""
+    query = {}
+    
+    # Date range filter
+    if date_from or date_to:
+        date_query = {}
+        if date_from:
+            date_query["$gte"] = date_from + "T00:00:00"
+        if date_to:
+            date_query["$lte"] = date_to + "T23:59:59"
+        if date_query:
+            query["created_at"] = date_query
+    
+    # Movement type filter
+    if movement_type and movement_type != "all":
+        query["movement_type"] = movement_type
+    
+    # Search filter
+    if search:
+        query["$or"] = [
+            {"concept": {"$regex": search, "$options": "i"}},
+            {"customer_name": {"$regex": search, "$options": "i"}},
+            {"notes": {"$regex": search, "$options": "i"}}
+        ]
+    
+    movements = await db.cash_movements.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return movements
+
 @api_router.delete("/cash/closings/{date}")
 async def revert_cash_closing(date: str, current_user: dict = Depends(get_current_user)):
     """Revert/delete a cash closing to allow modifications"""
