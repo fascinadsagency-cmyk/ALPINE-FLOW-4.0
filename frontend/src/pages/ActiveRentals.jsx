@@ -29,7 +29,10 @@ import {
   MapPin,
   MessageCircle,
   Package,
-  IdCard
+  IdCard,
+  RefreshCw,
+  Scan,
+  ArrowLeftRight
 } from "lucide-react";
 import { toast } from "sonner";
 
