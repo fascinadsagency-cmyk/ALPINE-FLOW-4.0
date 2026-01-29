@@ -469,40 +469,63 @@ class CashSessionTester:
             return False
     
     def run_all_tests(self):
-        """Run all cash management tests"""
-        print("🎯 STARTING CASH MANAGEMENT SYSTEM TESTING")
-        print("=" * 60)
+        """Run all cash session synchronization tests"""
+        print("🎯 STARTING SISTEMA DE CAJA CON SINCRONIZACIÓN TOTAL TESTING")
+        print("=" * 70)
         
         # Step 1: Authentication
         if not self.authenticate():
             print("❌ Authentication failed. Cannot continue tests.")
             return False
         
-        # Step 2: Create test movements
-        print("\n📝 Creating test movements...")
-        if not self.create_test_movements():
-            print("⚠️  Could not create all test movements. Continuing with existing data...")
+        # Step 2: Open cash session (prerequisite)
+        print("\n💰 Opening cash session...")
+        if not self.test_open_cash_session():
+            print("❌ Could not open cash session. Cannot continue tests.")
+            return False
         
-        # Step 3: Test cash summary structure
-        print("\n🔍 Testing cash summary structure...")
-        summary_success = self.test_cash_summary_structure()
+        # Step 3: Create test customer
+        print("\n👤 Creating test customer...")
+        if not self.create_test_customer():
+            print("❌ Could not create test customer. Cannot continue tests.")
+            return False
         
-        # Step 4: Test cash closing
-        print("\n🔒 Testing cash closing...")
-        closing_success = self.test_cash_closing()
+        # Step 4: Test rental WITH active session
+        print("\n✅ Testing rental creation WITH active session...")
+        rental_with_session = self.test_rental_with_active_session()
         
-        # Step 5: Test closings history
-        print("\n📋 Testing closings history...")
-        history_success = self.test_cash_closings_history()
+        # Step 5: Test rental WITHOUT active session
+        print("\n❌ Testing rental creation WITHOUT active session...")
+        rental_without_session = self.test_rental_without_active_session()
         
-        # Step 6: Test compatibility
-        print("\n🔄 Testing compatibility with old closings...")
-        compatibility_success = self.test_compatibility_with_old_closings()
+        # Step 6: Reopen session for remaining tests
+        print("\n🔄 Reopening session for remaining tests...")
+        self.test_open_cash_session()
+        
+        # Step 7: Test movements linked to session
+        print("\n🔗 Testing movements linked to session...")
+        movements_linked = self.test_movements_linked_to_session()
+        
+        # Step 8: Test validate orphans endpoint
+        print("\n🔍 Testing validate orphans endpoint...")
+        validate_orphans = self.test_validate_orphans()
+        
+        # Step 9: Test cash summary calculations
+        print("\n📊 Testing cash summary calculations...")
+        summary_calculations = self.test_cash_summary_calculations()
+        
+        # Step 10: Test complete flow
+        print("\n🔄 Testing complete flow (income → expense → refund)...")
+        complete_flow = self.test_complete_flow()
+        
+        # Step 11: Test close session
+        print("\n🔒 Testing session closure...")
+        close_session = self.test_close_session()
         
         # Summary
-        print("\n" + "=" * 60)
+        print("\n" + "=" * 70)
         print("📊 TEST RESULTS SUMMARY:")
-        print("=" * 60)
+        print("=" * 70)
         
         for result in self.test_results:
             print(result)
@@ -513,7 +536,7 @@ class CashSessionTester:
         print(f"\n🎯 OVERALL RESULT: {passed_tests}/{total_tests} tests passed")
         
         if passed_tests == total_tests:
-            print("✅ ALL CASH MANAGEMENT TESTS PASSED!")
+            print("✅ ALL CASH SESSION SYNCHRONIZATION TESTS PASSED!")
             return True
         else:
             print("❌ SOME TESTS FAILED!")
@@ -521,14 +544,14 @@ class CashSessionTester:
 
 def main():
     """Main test execution"""
-    tester = CashManagementTester()
+    tester = CashSessionTester()
     success = tester.run_all_tests()
     
     if success:
-        print("\n🎉 Cash Management System is working correctly!")
+        print("\n🎉 Sistema de Caja con Sincronización Total is working correctly!")
         sys.exit(0)
     else:
-        print("\n💥 Cash Management System has issues that need attention!")
+        print("\n💥 Sistema de Caja con Sincronización Total has issues that need attention!")
         sys.exit(1)
 
 if __name__ == "__main__":
