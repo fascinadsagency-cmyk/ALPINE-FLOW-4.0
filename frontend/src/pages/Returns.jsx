@@ -43,12 +43,15 @@ const PAYMENT_METHODS = [
 ];
 
 export default function Returns() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [barcodeInput, setBarcodeInput] = useState("");
   const [rental, setRental] = useState(null);
   const [scannedBarcodes, setScannedBarcodes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [pendingReturns, setPendingReturns] = useState({ today: [], other_days: [] });
+  const [typeFilter, setTypeFilter] = useState(searchParams.get('filter') || "");
+  const [itemTypes, setItemTypes] = useState([]);
   
   // Refund dialog state
   const [showRefundDialog, setShowRefundDialog] = useState(false);
