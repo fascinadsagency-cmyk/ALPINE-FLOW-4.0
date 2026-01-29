@@ -1727,6 +1727,33 @@ export default function NewRental() {
                     })}
                   </div>
                 )}
+
+                {/* PACKS DETECTADOS - Mostrar cuando se detectan combos */}
+                {detectedPacks.length > 0 && (
+                  <div className="mt-3 p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Package className="h-5 w-5 text-amber-600" />
+                      <span className="font-semibold text-amber-800">¡Pack detectado!</span>
+                    </div>
+                    {detectedPacks.map((pack, idx) => (
+                      <div key={idx} className="flex items-center justify-between py-1">
+                        <div>
+                          <span className="font-medium text-amber-900">{pack.name}</span>
+                          <span className="text-sm text-amber-600 ml-2">({pack.category})</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-bold text-emerald-600">€{pack.packPrice?.toFixed(2) || '0.00'}</span>
+                          <span className="text-xs text-amber-600 ml-1 line-through">
+                            €{pack.individualPrice?.toFixed(2) || '0.00'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    <p className="text-xs text-amber-700 mt-2">
+                      ✨ Se aplica automáticamente el precio de pack
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
