@@ -113,6 +113,7 @@
 - Contraseña: test123456
 
 ## Changelog
+- **v3.5.0** (2026-01-29): **Artículos Genéricos (Sin Trazabilidad)** - Gestión por stock/cantidad para cascos, bastones, máscaras. Checkbox "Artículo Genérico" oculta campos de trazabilidad.
 - **v3.4.0** (2026-01-29): **Botones de Acceso Rápido Compactos** - Barra [+ Casco], [+ Máscara], [+ Bastones] con añadido instantáneo de artículos
 - **v3.3.0** (2026-01-29): **Botones de Acceso Rápido** - Añadidos botones Casco, Máscara, Bastones, Botas para añadir artículos rápidamente. Verificación de sintaxis y endpoints completada.
 - **v3.2.0** (2026-01-29): **Edición de Precios en Nuevo Alquiler** - Corregido bug del icono lápiz. Ahora permite editar precios de artículos en tiempo real con recálculo automático del total
