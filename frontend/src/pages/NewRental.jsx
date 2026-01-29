@@ -38,15 +38,7 @@ const PAYMENT_METHODS = [
   { value: "other", label: "Otros" },
 ];
 
-const ITEM_TYPES = [
-  { value: "all", label: "Todos" },
-  { value: "ski", label: "Esquís" },
-  { value: "snowboard", label: "Snowboard" },
-  { value: "boots", label: "Botas" },
-  { value: "helmet", label: "Casco" },
-  { value: "poles", label: "Bastones" },
-];
-
+// Item types will be loaded from API
 const CATEGORIES = [
   { value: "all", label: "Todas" },
   { value: "SUPERIOR", label: "Gama Superior" },
