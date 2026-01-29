@@ -140,6 +140,12 @@ class CashSessionTester:
             
             self.log_test("Create Test Items", created_count >= 2, 
                          f"Created/verified {created_count}/2 test items for rental testing")
+            return created_count >= 2
+            
+        except Exception as e:
+            self.log_test("Create Test Items", False, f"Exception: {str(e)}")
+            return False
+    
     def create_test_customer(self):
         """Create a test customer for rental testing"""
         try:
