@@ -11,20 +11,23 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 
 ## Funcionalidades Implementadas
 
-### 1. Acceso a Ficha de Cliente (ACTUALIZADO 2026-01-29)
-**Disponible en:**
+### 1. Acceso a Ficha de Cliente - ESTANDARIZADO (2026-01-29)
+**Comportamiento unificado en toda la aplicación:**
 - ✅ **Devoluciones Pendientes**: Nombre clicable + botón "Ficha"
 - ✅ **Alquileres Activos**: Nombre clicable + icono 👤
+- ✅ **Base de Datos de Clientes**: Nombre clicable (nuevo)
 
 **Modal de Ficha incluye:**
 - Teléfono con botones **Llamar** y **WhatsApp**
-- Email con botón de envío
-- Hotel/Alojamiento
+- Email con botón de envío (si existe)
+- Población/Dirección/Hotel
 - DNI/Pasaporte
-- Artículos alquilados con estado (Activo/Devuelto)
-- Resumen del alquiler (días, importe)
-- Observaciones
-- WhatsApp con mensaje predefinido
+- Colaborador/Proveedor con descuento
+- Total de alquileres
+- Observaciones internas
+- Tallas preferidas
+- Historial financiero (pagos/devoluciones)
+- Historial de alquileres
 
 ### 2. Modificar Duración de Alquileres
 - Flujo de 3 pasos (días → pago → ticket)
@@ -60,13 +63,13 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 
 ## Última Actualización
 Fecha: 2026-01-29
-Versión: 2.2.0
+Versión: 2.3.0
 
 ## Changelog
+- **v2.3.0** (2026-01-29): Nombre clicable en Base de Datos de Clientes
+  - Nombre del cliente abre ficha completa
+  - Botones de contacto rápido (Llamar, WhatsApp, Email)
+  - Diseño mejorado con secciones de contacto separadas
+  - Estilo visual unificado con hover en azul
 - **v2.2.0** (2026-01-29): Ficha de Cliente en Alquileres Activos
-  - Nombre del cliente clicable en tabla
-  - Icono 👤 en columna de acciones
-  - Modal con info completa + artículos alquilados
-  - Botones de contacto directo (Llamar, WhatsApp)
 - **v2.1.0** (2026-01-29): Ficha de Cliente en Devoluciones
-- **v2.0.1** (2026-01-29): Corrección flujo de reembolsos
