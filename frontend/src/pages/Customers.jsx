@@ -258,6 +258,7 @@ export default function Customers() {
       name: "",
       dni: "",
       phone: "",
+      email: "",
       address: "",
       city: "",
       source: "",
