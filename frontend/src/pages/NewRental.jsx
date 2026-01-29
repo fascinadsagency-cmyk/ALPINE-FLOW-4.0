@@ -910,53 +910,115 @@ export default function NewRental() {
     setProcessingPayment(true);
     
     try {
-      // 1. Check if there's an active cash session
       const API = process.env.REACT_APP_BACKEND_URL;
-      const sessionCheck = await fetch(`${API}/api/cash/sessions/active`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
       
-      let activeSession = null;
-      if (sessionCheck.ok) {
-        const data = await sessionCheck.json();
-        activeSession = data;
+      // === PASO 1: Verificar si hay caja abierta ===
+      let activeSessionId = null;
+      
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+        
+        const sessionCheck = await fetch(`${API}/api/cash/sessions/active`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        
+        if (sessionCheck.ok) {
+          const text = await sessionCheck.text();
+          // Verificar que no sea HTML
+          if (text && !text.trim().startsWith('<')) {
+            const data = JSON.parse(text);
+            activeSessionId = data?.id || null;
+          }
+        }
+      } catch (e) {
+        console.log("Error checking session, assuming no active session");
       }
       
-      // 2. If no active session, show modal to open cash register
-      if (!activeSession || !activeSession.id) {
-        // Store payment data to resume after opening cash
-        setPendingPaymentData({
-          paymentMethod: paymentMethodSelected,
-          cashGiven: cashGivenAmount,
-          total: total
-        });
-        
-        // Close payment dialog and show auto-open cash dialog
+      // === Si NO hay caja abierta: Mostrar modal y PARAR ===
+      if (!activeSessionId) {
         setShowPaymentDialog(false);
         setShowAutoOpenCashDialog(true);
         setProcessingPayment(false);
+        toast.info("Primero debe abrir la caja del día");
         return;
       }
       
-      // 3. Continue with rental creation (session exists)
-      await completePendingRental(total, cashGivenAmount, activeSession.id);
+      // === PASO 2: Hay caja abierta, proceder al cobro ===
+      await completePendingRental(total, cashGivenAmount, activeSessionId);
       
     } catch (error) {
-      console.error("Error creating rental:", error);
-      const errorMsg = error.response?.data?.detail;
-      toast.error(typeof errorMsg === 'string' ? errorMsg : "Error al crear alquiler");
+      console.error("Error:", error);
+      toast.error("Error de conexión. Inténtalo de nuevo.");
       setProcessingPayment(false);
     }
   };
 
-  // HELPER: Safe fetch with HTML error handling and retry
-  const safeFetch = async (url, options, retries = 2) => {
-    for (let attempt = 0; attempt <= retries; attempt++) {
-      try {
-        const response = await fetch(url, options);
-        const text = await response.text();
+  // === APERTURA DE CAJA: Solo abre la caja y cierra el modal ===
+  const openCashAndContinue = async () => {
+    if (!openingCashBalance && openingCashBalance !== "0") {
+      toast.error("Introduce el fondo de caja inicial (puede ser 0)");
+      return;
+    }
+
+    setProcessingPayment(true);
+    
+    try {
+      const API = process.env.REACT_APP_BACKEND_URL;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+      
+      const response = await fetch(`${API}/api/cash/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          opening_balance: Number(parseFloat(openingCashBalance) || 0)
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      
+      const text = await response.text();
+      
+      // Verificar si es HTML (error de servidor)
+      if (text.trim().startsWith('<')) {
+        toast.warning("⚠️ Caja abierta. Por favor, pulse Cobrar de nuevo.");
+        setShowAutoOpenCashDialog(false);
+        setOpeningCashBalance("");
+        setProcessingPayment(false);
+        return;
+      }
+      
+      if (!response.ok) {
+        const data = JSON.parse(text);
+        throw new Error(data.detail || "Error al abrir caja");
+      }
+      
+      // === ÉXITO: Cerrar modal y volver a pantalla de alquiler ===
+      toast.success("✅ Caja abierta correctamente. Pulse Cobrar para continuar.");
+      setShowAutoOpenCashDialog(false);
+      setOpeningCashBalance("");
+      
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        toast.warning("⚠️ Tiempo de espera agotado. Caja posiblemente abierta. Pulse Cobrar de nuevo.");
+        setShowAutoOpenCashDialog(false);
+      } else {
+        toast.error(error.message || "Error al abrir caja");
+      }
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
+  // === COBRO: Función simplificada sin lógica de apertura ===
+  const completePendingRental = async (total, cashGivenAmount, sessionId) => {
+    const API = process.env.REACT_APP_BACKEND_URL;
         
         // Check if response is HTML (server error)
         if (text.trim().startsWith('<!') || text.trim().startsWith('<html')) {
