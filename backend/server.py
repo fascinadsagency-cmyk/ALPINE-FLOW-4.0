@@ -88,6 +88,7 @@ class ItemCreate(BaseModel):
     location: str = ""
     maintenance_interval: int = 30  # days between maintenance
     category: str = "MEDIA"  # SUPERIOR, ALTA, MEDIA
+    acquisition_cost: Optional[float] = None  # Cost for profitability tracking
 
 class BulkItemCreate(BaseModel):
     items: List[ItemCreate]
