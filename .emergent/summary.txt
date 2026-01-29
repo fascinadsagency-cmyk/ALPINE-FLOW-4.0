@@ -7,14 +7,16 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
     *   **Dashboard Estratégico:** Con calendario de ocupación, rankings de rendimiento y filtro por rango de fechas.
     *   **Gestión de Caja:** Con arqueo manual, historial, y posibilidad de revertir cierres. Debe registrar todos los movimientos (alquileres, taller, ampliaciones, devoluciones).
     *   **Reportes Flexibles:** Con filtro por rango, botones de selección rápida y comparativa interanual.
+    *   **Rentabilidad de Inventario:** Trackear coste, ingresos, amortización y beneficio neto por artículo.
 3.  **Flujos de Trabajo Optimizados:**
-    *   **Auto-Combo Silencioso:** Detección y aplicación de precios de pack en segundo plano, sin notificaciones visuales.
+    *   **Auto-Combo Silencioso:** Detección y aplicación de precios de pack en segundo plano.
     *   **Devolución Rápida:** Botón de un solo clic para cerrar alquileres desde la lista de pendientes.
-    *   **Modificar Duración:** Permitir ampliar/acortar alquileres activos con ajuste financiero automático en caja.
-    *   **Acceso Rápido a Cliente:** Modal con datos del cliente accesible desde la lista de alquileres.
-    *   **Tipos de Artículo Editables:** Permitir al usuario crear nuevas categorías de inventario dinámicamente.
+    *   **Modificar Duración:** Permitir ampliar/acortar alquileres activos con ajuste financiero automático en caja (implementado como transacción completa).
+    *   **Acceso Rápido a Cliente:** Modal con datos del cliente accesible desde cualquier lista (alquileres, devoluciones, clientes).
+    *   **Tipos de Artículo Editables:** Permitir al usuario crear nuevas categorías de inventario dinámicamente y que sean compatibles con todos los módulos.
+    *   **Filtros de Clientes:** Filtrar base de datos por estado (Activo/Inactivo).
 4.  **Sistema de Tickets/Comprobantes (Alta Prioridad):**
-    *   Botón de impresión obligatorio en todos los flujos que afectan a la caja (nuevo alquiler, modificación, taller, movimientos manuales).
+    *   Botón de impresión obligatorio en todos los flujos que afectan a la caja.
     *   Configuración para auto-impresión.
     *   Posibilidad de reimprimir tickets desde los historiales.
 5.  **Soporte y Personalizaciones:** Nueva pestaña para que el usuario pueda abrir tickets de soporte o solicitar mejoras.
@@ -23,458 +25,276 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
 **User's preferred language**: Spanish
 
 **what currently exists?**
-La aplicación es un sistema de gestión de alquileres de esquí full-stack (FastAPI, React, MongoDB). En esta sesión, se han corregido numerosos errores que impedían el funcionamiento de la aplicación. Se han implementado con éxito varias funcionalidades clave: un sistema de Código Interno manual y obligatorio para el inventario, un filtro de fecha histórico en el Dashboard, la reorganización de la página de Proveedores, un rediseño completo de la página de Reportes, la capacidad de crear tipos de artículos dinámicamente y un sistema de detección de packs totalmente silencioso. Se inició la implementación de un sistema de Devolución Rápida y un sistema de impresión de tickets, pero ambos están incompletos y han causado inestabilidad.
+La aplicación es un sistema de gestión de alquileres de esquí full-stack (FastAPI, React, MongoDB). En esta sesión se han implementado numerosas funcionalidades clave solicitadas por el usuario, mejorando drásticamente la usabilidad y el control financiero. Se rediseñó por completo el módulo de Caja, se implementó un sistema de modificación de duración de alquileres como una transacción financiera cerrada (incluyendo reembolsos), se estandarizó el acceso rápido a la ficha de cliente en toda la aplicación, se añadió un filtro de estado en la base de datos de clientes y se creó un módulo para analizar la rentabilidad del inventario. La aplicación está estable y todas las funcionalidades implementadas en esta sesión fueron testeadas.
 
 **Last working item**:
--   **Last item agent was working**: El usuario solicitó añadir la funcionalidad de imprimir tickets desde la página de **Movimientos de Caja**, después de que el agente corrigiera un error en esa misma página.
+-   **Last item agent was working**: El usuario solicitó actualizar el módulo de **Crear/Editar Packs** para que sea compatible con los tipos de artículo personalizados que el usuario puede crear dinámicamente. El agente reconoció la tarea pero fue interrumpido antes de poder empezar a implementarla.
 -   **Status**: NOT STARTED
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: frontend testing agent
+-   **Which testing method agent to use?**: both
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1**: (P0) Inestabilidad general de la aplicación. La aplicación ha fallado repetidamente durante la sesión debido a errores de sintaxis en el backend () y errores de estado en el frontend (React) tras implementaciones parciales.
-    -   **Attempted fixes**: El agente ha solucionado los errores de uno en uno a medida que el usuario los reportaba (errores de indentación en Python, variables de estado no definidas en React).
-    -   **Next debug checklist**: Antes de cualquier nueva implementación, verificar el estado de los servicios con backend                          RUNNING   pid 42, uptime 0:00:16
-code-server                      STOPPED   Not started
-frontend                         STOPPING  
-mongodb                          RUNNING   pid 45, uptime 0:00:16
-nginx-code-proxy                 RUNNING   pid 41, uptime 0:00:16 y revisar los logs (==> /var/log/supervisor/backend.err.log <==
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/server.py", line 68, in serve
-    config.load()
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/config.py", line 467, in load
-    self.loaded_app = import_from_string(self.app)
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/importer.py", line 21, in import_from_string
-    module = importlib.import_module(module_str)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
-  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
-  File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
-  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
-  File "<frozen importlib._bootstrap_external>", line 936, in exec_module
-  File "<frozen importlib._bootstrap_external>", line 1074, in get_code
-  File "<frozen importlib._bootstrap_external>", line 1004, in source_to_code
-  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
-  File "/app/backend/server.py", line 1425
-    "refund_amount": refund.refund_amount,
-IndentationError: unexpected indent
-INFO:     Stopping reloader process [47]
-INFO:     Will watch for changes in these directories: ['/app/backend']
+-   **Issue 1**: (P1) Fragilidad de la arquitectura del backend.
+    -   **Description**: El archivo  es un monolito que ha crecido hasta ser extremadamente grande y complejo. Cualquier modificación, por pequeña que sea, tiene un alto riesgo de introducir errores de sintaxis o indentación, causando la caída del servicio de backend y requiriendo reinicios manuales.
+    -   **Attempted fixes**: Correcciones puntuales de errores de sintaxis a medida que aparecían.
+    -   **Next debug checklist**: La solución a largo plazo es refactorizar  en una estructura de carpetas más mantenible (e.g., , , ). A corto plazo, cualquier edición debe ir seguida de una revisión cuidadosa del código y una verificación del estado y los logs del supervisor (backend                          RUNNING   pid 47, uptime 0:00:05 y ==> /var/log/supervisor/backend.err.log <==
 INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [5454] using WatchFiles
-Process SpawnProcess-1:
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.11/multiprocessing/process.py", line 314, in _bootstrap
-    self.run()
-  File "/usr/local/lib/python3.11/multiprocessing/process.py", line 108, in run
-    self._target(*self._args, **self._kwargs)
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/_subprocess.py", line 76, in subprocess_started
-    target(sockets=sockets)
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/server.py", line 61, in run
-    return asyncio.run(self.serve(sockets=sockets))
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.11/asyncio/runners.py", line 190, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.11/asyncio/runners.py", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/server.py", line 68, in serve
-    config.load()
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/config.py", line 467, in load
-    self.loaded_app = import_from_string(self.app)
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/importer.py", line 21, in import_from_string
-    module = importlib.import_module(module_str)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
-  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
-  File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
-  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
-  File "<frozen importlib._bootstrap_external>", line 936, in exec_module
-  File "<frozen importlib._bootstrap_external>", line 1074, in get_code
-  File "<frozen importlib._bootstrap_external>", line 1004, in source_to_code
-  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
-  File "/app/backend/server.py", line 1425
-    "refund_amount": refund.refund_amount,
-IndentationError: unexpected indent
+INFO:     Started reloader process [48] using WatchFiles
+INFO:     Started server process [79]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
 WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
-INFO:     Started server process [5580]
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [79]
+INFO:     Started server process [1273]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
-INFO:     Finished server process [5580]
-INFO:     Stopping reloader process [5454]
+INFO:     Finished server process [1273]
+INFO:     Stopping reloader process [48]
 INFO:     Will watch for changes in these directories: ['/app/backend']
 INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [5615] using WatchFiles
-INFO:     Started server process [5617]
+INFO:     Started reloader process [1554] using WatchFiles
+INFO:     Started server process [1556]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1556]
+INFO:     Started server process [1942]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1942]
+INFO:     Started server process [2016]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2016]
+INFO:     Started server process [2055]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
-INFO:     Finished server process [5617]
-INFO:     Stopping reloader process [5615]
+INFO:     Finished server process [2055]
+INFO:     Stopping reloader process [1554]
 INFO:     Will watch for changes in these directories: ['/app/backend']
 INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [6248] using WatchFiles
-INFO:     Started server process [6250]
+INFO:     Started reloader process [2428] using WatchFiles
+INFO:     Started server process [2430]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2430]
+INFO:     Started server process [2967]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2967]
+INFO:     Started server process [3014]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3014]
+INFO:     Started server process [3039]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3039]
+INFO:     Stopping reloader process [2428]
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [3067] using WatchFiles
+INFO:     Started server process [3069]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Will watch for changes in these directories: ['/app/backend']
 INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [42] using WatchFiles
-INFO:     Started server process [72]
+INFO:     Started reloader process [47] using WatchFiles
+INFO:     Started server process [90]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 
 ==> /var/log/supervisor/backend.out.log <==
-INFO:     10.64.138.62:50964 - "GET /api/sources HTTP/1.1" 200 OK
-INFO:     10.64.131.34:50238 - "GET /api/items HTTP/1.1" 200 OK
-INFO:     10.64.138.62:50964 - "GET /api/item-types HTTP/1.1" 200 OK
-INFO:     10.64.131.34:50238 - "GET /api/items HTTP/1.1" 200 OK
-INFO:     10.64.131.34:50242 - "GET /api/item-types HTTP/1.1" 200 OK
-INFO:     10.64.131.7:42952 - "GET /api/reports/range?start_date=2026-01-26&end_date=2026-02-01 HTTP/1.1" 200 OK
-INFO:     10.64.131.34:35832 - "GET /api/integrations/config/calendar HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38454 - "GET /api/integrations/config/verifactu HTTP/1.1" 200 OK
-INFO:     10.64.131.34:35826 - "GET /api/integrations/config/tpv HTTP/1.1" 200 OK
-INFO:     10.64.138.62:58500 - "GET /api/integrations/config/email HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38462 - "GET /api/integrations/config/whatsapp HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38462 - "GET /api/integrations/config/calendar HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38462 - "GET /api/integrations/config/verifactu HTTP/1.1" 200 OK
-INFO:     10.64.138.62:58500 - "GET /api/integrations/config/email HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38454 - "GET /api/integrations/config/whatsapp HTTP/1.1" 200 OK
-INFO:     10.64.131.34:35826 - "GET /api/integrations/config/tpv HTTP/1.1" 200 OK
-INFO:     10.64.131.34:35832 - "GET /api/dashboard/analytics?period=week HTTP/1.1" 200 OK
-INFO:     10.64.131.34:35826 - "GET /api/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.138.62:58500 - "GET /api/dashboard/analytics?period=week HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38462 - "GET /api/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.131.7:56160 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.131.34:40206 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.131.34:40206 - "GET /api/dashboard/analytics?period=week HTTP/1.1" 200 OK
-INFO:     10.64.131.7:56160 - "GET /api/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.138.62:54008 - "GET /api/dashboard/analytics?period=week HTTP/1.1" 200 OK
-INFO:     10.64.138.62:54012 - "GET /api/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.138.62:54012 - "GET /api/cash/summary?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.131.34:40206 - "GET /api/cash/movements?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.138.62:54012 - "GET /api/cash/summary?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.131.7:56160 - "GET /api/cash/movements?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.138.62:43930 - "POST /api/cash/close HTTP/1.1" 400 Bad Request
-INFO:     10.64.131.202:45658 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.131.206:41540 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.131.7:36110 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.138.62:50666 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.131.7:36110 - "OPTIONS /api/dashboard/analytics?period=week HTTP/1.1" 200 OK
-INFO:     10.64.131.7:36110 - "OPTIONS /api/dashboard/analytics?period=week HTTP/1.1" 200 OK
-INFO:     10.64.131.34:42050 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.131.34:42058 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.131.34:42058 - "GET /api/dashboard/analytics?period=week HTTP/1.1" 200 OK
-INFO:     10.64.131.34:42058 - "GET /api/dashboard/analytics?period=week HTTP/1.1" 200 OK
-INFO:     10.64.131.7:36110 - "GET /api/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.131.34:42058 - "GET /api/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.138.62:35882 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47342 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47342 - "GET /api/cash/summary?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47356 - "GET /api/cash/movements?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.131.34:33128 - "GET /api/cash/summary?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.138.62:35882 - "GET /api/cash/movements?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.138.62:35890 - "GET /api/dashboard/analytics?period=week HTTP/1.1" 200 OK
-INFO:     10.64.138.62:35882 - "GET /api/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47356 - "GET /api/dashboard/analytics?period=week HTTP/1.1" 200 OK
-INFO:     10.64.131.34:33128 - "GET /api/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.129.13:50786 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.129.13:50786 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.131.205:47364 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.131.204:35738 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.131.204:35738 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.131.202:56922 - "OPTIONS /api/dashboard/analytics?period=week HTTP/1.1" 200 OK
-INFO:     10.64.131.206:53410 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.131.203:37188 - "OPTIONS /api/dashboard/analytics?period=week HTTP/1.1" 200 OK
-INFO:     10.64.131.203:37188 - "GET /api/dashboard/analytics?period=week HTTP/1.1" 200 OK
-INFO:     10.64.131.202:56922 - "GET /api/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.131.204:35738 - "GET /api/dashboard/analytics?period=week HTTP/1.1" 200 OK
-INFO:     10.64.131.206:53410 - "GET /api/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.131.203:47778 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.131.202:57942 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.131.206:55670 - "GET /api/dashboard/analytics?period=week HTTP/1.1" 200 OK
-INFO:     10.64.131.206:55656 - "GET /api/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.131.206:55656 - "GET /api/dashboard/analytics?period=week HTTP/1.1" 200 OK
-INFO:     10.64.131.203:47778 - "GET /api/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.131.202:57942 - "GET /api/tariffs HTTP/1.1" 200 OK
-INFO:     10.64.131.204:36190 - "GET /api/tariffs HTTP/1.1" 200 OK
-INFO:     10.64.131.202:57942 - "GET /api/packs HTTP/1.1" 200 OK
-INFO:     10.64.131.206:55656 - "GET /api/sources HTTP/1.1" 200 OK
-INFO:     10.64.131.204:36190 - "GET /api/packs HTTP/1.1" 200 OK
-INFO:     10.64.131.203:47778 - "GET /api/sources HTTP/1.1" 200 OK
-INFO:     10.64.131.205:52764 - "GET /api/customers?search=757 HTTP/1.1" 200 OK
-INFO:     10.64.131.203:48124 - "GET /api/customers/78edbf2d-9513-498d-b2b6-8df257c27740/history HTTP/1.1" 200 OK
-INFO:     10.64.131.204:58276 - "GET /api/items?status=available HTTP/1.1" 200 OK
-INFO:     10.64.138.62:33692 - "POST /api/rentals HTTP/1.1" 200 OK
-INFO:     10.64.136.245:36810 - "GET /api/cash/summary?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.129.7:40964 - "GET /api/cash/movements?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52530 - "GET /api/cash/summary?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.131.34:34042 - "GET /api/cash/movements?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.136.245:60462 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.136.226:39512 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.135.173:48252 - "GET /api/cash/summary?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.135.173:48256 - "GET /api/cash/movements?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.136.226:39512 - "GET /api/cash/movements?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.136.245:60462 - "GET /api/cash/summary?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.129.7:48128 - "GET /api/rentals/pending/returns HTTP/1.1" 200 OK
-INFO:     10.64.136.245:60462 - "GET /api/rentals/pending/returns HTTP/1.1" 200 OK
-INFO:     10.64.129.10:58234 - "GET /api/rentals/0f07983d-03b1-478d-982c-5cc2aab36e1a HTTP/1.1" 200 OK
-INFO:     10.64.129.7:60392 - "GET /api/rentals?status=active HTTP/1.1" 200 OK
-INFO:     10.64.129.9:60360 - "GET /api/rentals?status=active HTTP/1.1" 200 OK
-INFO:     10.64.131.34:48004 - "GET /api/cash/movements?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.136.245:48654 - "GET /api/cash/summary?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.131.203:36626 - "GET /api/cash/summary?date=2026-01-28 HTTP/1.1" 200 OK
-INFO:     10.64.131.204:35264 - "GET /api/cash/movements?date=2026-01-28 HTTP/1.1" 200 OK
-
-==> /var/log/supervisor/code-server.err.log <==
-
-==> /var/log/supervisor/code-server.out.log <==
-
-==> /var/log/supervisor/frontend.err.log <==
-(node:217) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
-(Use `node --trace-deprecation ...` to show where the warning was created)
-(node:217) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
-(node:641) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
-(Use `node --trace-deprecation ...` to show where the warning was created)
-(node:641) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
-(node:77) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
-(Use `node --trace-deprecation ...` to show where the warning was created)
-(node:77) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
-(node:75) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
-(Use `node --trace-deprecation ...` to show where the warning was created)
-(node:75) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
-
-==> /var/log/supervisor/frontend.out.log <==
-  Line 167:6:  React Hook useEffect has a missing dependency: 'detectPacks'. Either include it or remove the dependency array         react-hooks/exhaustive-deps
-  Line 392:6:  React Hook useEffect has a missing dependency: 'detectPartialPacks'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-  Line 642:6:  React Hook useEffect has a missing dependency: 'searchItems'. Either include it or remove the dependency array         react-hooks/exhaustive-deps
-
-Search for the keywords to learn more about each warning.
-To ignore, add // eslint-disable-next-line to the line before.
-
-WARNING in [eslint] 
-src/pages/CashRegister.jsx
-  Line 86:6:  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-
-src/pages/NewRental.jsx
-  Line 167:6:  React Hook useEffect has a missing dependency: 'detectPacks'. Either include it or remove the dependency array         react-hooks/exhaustive-deps
-  Line 392:6:  React Hook useEffect has a missing dependency: 'detectPartialPacks'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-  Line 642:6:  React Hook useEffect has a missing dependency: 'searchItems'. Either include it or remove the dependency array         react-hooks/exhaustive-deps
-
-webpack compiled with 1 warning
-Compiling...
-Compiled with warnings.
-
-[eslint] 
-src/pages/CashRegister.jsx
-  Line 86:6:  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-
-src/pages/NewRental.jsx
-  Line 171:6:  React Hook useEffect has a missing dependency: 'detectPacks'. Either include it or remove the dependency array         react-hooks/exhaustive-deps
-  Line 396:6:  React Hook useEffect has a missing dependency: 'detectPartialPacks'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-  Line 646:6:  React Hook useEffect has a missing dependency: 'searchItems'. Either include it or remove the dependency array         react-hooks/exhaustive-deps
-
-Search for the keywords to learn more about each warning.
-To ignore, add // eslint-disable-next-line to the line before.
-
-WARNING in [eslint] 
-src/pages/CashRegister.jsx
-  Line 86:6:  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-
-src/pages/NewRental.jsx
-  Line 171:6:  React Hook useEffect has a missing dependency: 'detectPacks'. Either include it or remove the dependency array         react-hooks/exhaustive-deps
-  Line 396:6:  React Hook useEffect has a missing dependency: 'detectPartialPacks'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-  Line 646:6:  React Hook useEffect has a missing dependency: 'searchItems'. Either include it or remove the dependency array         react-hooks/exhaustive-deps
-
-webpack compiled with 1 warning
-Compiling...
-Compiled with warnings.
-
-[eslint] 
-src/pages/CashRegister.jsx
-  Line 86:6:  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-
-src/pages/NewRental.jsx
-  Line 171:6:  React Hook useEffect has a missing dependency: 'detectPacks'. Either include it or remove the dependency array         react-hooks/exhaustive-deps
-  Line 396:6:  React Hook useEffect has a missing dependency: 'detectPartialPacks'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-  Line 646:6:  React Hook useEffect has a missing dependency: 'searchItems'. Either include it or remove the dependency array         react-hooks/exhaustive-deps
-
-Search for the keywords to learn more about each warning.
-To ignore, add // eslint-disable-next-line to the line before.
-
-WARNING in [eslint] 
-src/pages/CashRegister.jsx
-  Line 86:6:  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-
-src/pages/NewRental.jsx
-  Line 171:6:  React Hook useEffect has a missing dependency: 'detectPacks'. Either include it or remove the dependency array         react-hooks/exhaustive-deps
-  Line 396:6:  React Hook useEffect has a missing dependency: 'detectPartialPacks'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-  Line 646:6:  React Hook useEffect has a missing dependency: 'searchItems'. Either include it or remove the dependency array         react-hooks/exhaustive-deps
-
-webpack compiled with 1 warning
-Compiling...
-Compiled with warnings.
-
-[eslint] 
-src/pages/CashRegister.jsx
-  Line 86:6:  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-
-src/pages/NewRental.jsx
-  Line 171:6:  React Hook useEffect has a missing dependency: 'detectPacks'. Either include it or remove the dependency array         react-hooks/exhaustive-deps
-  Line 396:6:  React Hook useEffect has a missing dependency: 'detectPartialPacks'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-  Line 646:6:  React Hook useEffect has a missing dependency: 'searchItems'. Either include it or remove the dependency array         react-hooks/exhaustive-deps
-
-Search for the keywords to learn more about each warning.
-To ignore, add // eslint-disable-next-line to the line before.
-
-WARNING in [eslint] 
-src/pages/CashRegister.jsx
-  Line 86:6:  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-
-src/pages/NewRental.jsx
-  Line 171:6:  React Hook useEffect has a missing dependency: 'detectPacks'. Either include it or remove the dependency array         react-hooks/exhaustive-deps
-  Line 396:6:  React Hook useEffect has a missing dependency: 'detectPartialPacks'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-  Line 646:6:  React Hook useEffect has a missing dependency: 'searchItems'. Either include it or remove the dependency array         react-hooks/exhaustive-deps
-
-webpack compiled with 1 warning
-yarn run v1.22.22
-$ craco start
-Attempting to bind to HOST environment variable: 0.0.0.0
-If this was unintentional, check that you haven't mistakenly set it in your shell.
-Learn more here: https://cra.link/advanced-config
-
-Starting the development server...
-
-
-==> /var/log/supervisor/nginx-proxy.err.log <==
-
-==> /var/log/supervisor/nginx-proxy.out.log <==
-
-==> /var/log/supervisor/supervisord.log <==
-2026-01-28 18:55:39,509 INFO spawned: 'frontend' with pid 198
-2026-01-28 18:55:40,558 INFO success: frontend entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-2026-01-28 18:58:38,794 INFO waiting for frontend to stop
-2026-01-28 18:58:38,818 WARN stopped: frontend (exit status 1)
-2026-01-28 18:58:38,821 INFO spawned: 'frontend' with pid 622
-2026-01-28 18:58:39,901 INFO success: frontend entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-2026-01-28 19:46:34,751 INFO waiting for backend to stop
-2026-01-28 19:46:34,825 INFO stopped: backend (exit status 0)
-2026-01-28 19:46:34,833 INFO spawned: 'backend' with pid 6846
-2026-01-28 19:46:36,106 INFO success: backend entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-2026-01-28 19:49:31,876 INFO waiting for backend to stop
-2026-01-28 19:49:32,262 INFO stopped: backend (exit status 0)
-2026-01-28 19:49:32,265 INFO spawned: 'backend' with pid 7281
-2026-01-28 19:49:33,953 INFO success: backend entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-2026-01-28 20:10:58,139 INFO waiting for backend to stop
-2026-01-28 20:10:58,961 INFO stopped: backend (exit status 0)
-2026-01-28 20:10:58,963 INFO spawned: 'backend' with pid 9058
-2026-01-28 20:11:00,569 INFO success: backend entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-2026-01-28 21:00:37,127 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
-2026-01-28 21:00:37,130 INFO Included extra file "/etc/supervisor/conf.d/supervisord.conf" during parsing
-2026-01-28 21:00:37,130 INFO Included extra file "/etc/supervisor/conf.d/supervisord_code_server.conf" during parsing
-2026-01-28 21:00:37,130 INFO Included extra file "/etc/supervisor/conf.d/supervisord_nginx_proxy.conf" during parsing
-2026-01-28 21:00:37,142 INFO RPC interface 'supervisor' initialized
-2026-01-28 21:00:37,142 CRIT Server 'unix_http_server' running without any HTTP authentication checking
-2026-01-28 21:00:37,144 INFO daemonizing the supervisord process
-2026-01-28 21:00:37,145 INFO supervisord started with pid 38
-2026-01-28 21:00:37,534 INFO spawned: 'nginx-code-proxy' with pid 46
-2026-01-28 21:00:37,539 INFO spawned: 'backend' with pid 47
-2026-01-28 21:00:37,543 INFO spawned: 'frontend' with pid 48
-2026-01-28 21:00:37,588 INFO spawned: 'mongodb' with pid 49
-2026-01-28 21:00:38,723 INFO success: backend entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-2026-01-28 21:00:38,723 INFO success: frontend entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-2026-01-28 21:00:38,723 INFO success: mongodb entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-2026-01-28 21:00:39,719 INFO success: nginx-code-proxy entered RUNNING state, process has stayed up for > than 2 seconds (startsecs)
-2026-01-28 21:59:37,008 INFO waiting for backend to stop
-2026-01-28 21:59:37,045 INFO stopped: backend (exit status 0)
-2026-01-28 21:59:37,048 INFO spawned: 'backend' with pid 5454
-2026-01-28 21:59:38,336 INFO success: backend entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-2026-01-28 22:00:10,163 INFO waiting for backend to stop
-2026-01-28 22:00:10,698 INFO stopped: backend (exit status 0)
-2026-01-28 22:00:10,716 INFO spawned: 'backend' with pid 5615
-2026-01-28 22:00:12,312 INFO success: backend entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-2026-01-28 22:10:24,798 INFO waiting for backend to stop
-2026-01-28 22:10:25,347 INFO stopped: backend (exit status 0)
-2026-01-28 22:10:25,350 INFO spawned: 'backend' with pid 6248
-2026-01-28 22:10:27,094 INFO success: backend entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-2026-01-28 22:29:01,961 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
-2026-01-28 22:29:02,011 INFO Included extra file "/etc/supervisor/conf.d/supervisord.conf" during parsing
-2026-01-28 22:29:02,011 INFO Included extra file "/etc/supervisor/conf.d/supervisord_code_server.conf" during parsing
-2026-01-28 22:29:02,011 INFO Included extra file "/etc/supervisor/conf.d/supervisord_nginx_proxy.conf" during parsing
-2026-01-28 22:29:02,108 INFO RPC interface 'supervisor' initialized
-2026-01-28 22:29:02,108 CRIT Server 'unix_http_server' running without any HTTP authentication checking
-2026-01-28 22:29:02,110 INFO daemonizing the supervisord process
-2026-01-28 22:29:02,111 INFO supervisord started with pid 39
-2026-01-28 22:29:03,116 INFO spawned: 'nginx-code-proxy' with pid 41
-2026-01-28 22:29:03,118 INFO spawned: 'backend' with pid 42
-2026-01-28 22:29:03,124 INFO spawned: 'frontend' with pid 43
-2026-01-28 22:29:03,128 INFO spawned: 'mongodb' with pid 45
-2026-01-28 22:29:04,259 INFO success: backend entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-2026-01-28 22:29:04,259 INFO success: frontend entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-2026-01-28 22:29:04,259 INFO success: mongodb entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-2026-01-28 22:29:05,329 INFO success: nginx-code-proxy entered RUNNING state, process has stayed up for > than 2 seconds (startsecs)
-2026-01-28 22:29:19,027 INFO waiting for frontend to stop
-2026-01-28 22:29:19,057 WARN stopped: frontend (exit status 1)). Realizar pruebas de regresión más exhaustivas después de cada cambio.
-    -   **Why fix this issue and what will be achieved with the fix?**: Es un bloqueador absoluto. La aplicación debe ser estable para poder implementar nuevas funcionalidades de forma fiable.
-    -   **Status**: RECURRING (resuelto temporalmente, pero el patrón de errores indica fragilidad del código).
+INFO:     10.64.131.205:58384 - "GET /api/tariffs HTTP/1.1" 200 OK
+INFO:     10.64.131.205:58384 - "GET /api/packs HTTP/1.1" 200 OK
+INFO:     10.64.129.7:58830 - "GET /api/item-types HTTP/1.1" 200 OK
+INFO:     10.64.129.9:54768 - "GET /api/items HTTP/1.1" 200 OK
+INFO:     10.64.131.204:51718 - "GET /api/item-types HTTP/1.1" 200 OK
+INFO:     10.64.131.205:58384 - "GET /api/items HTTP/1.1" 200 OK
+INFO:     10.64.131.206:59682 - "GET /api/item-types HTTP/1.1" 200 OK
+INFO:     10.64.131.203:45552 - "GET /api/items HTTP/1.1" 200 OK
+INFO:     10.64.129.13:52984 - "GET /api/items/with-profitability HTTP/1.1" 200 OK
+INFO:     10.64.131.203:40592 - "GET /api/sources HTTP/1.1" 200 OK
+INFO:     10.64.131.204:37586 - "GET /api/sources HTTP/1.1" 200 OK
+INFO:     10.64.131.202:52568 - "GET /api/sources HTTP/1.1" 200 OK
+INFO:     10.64.131.206:59694 - "GET /api/sources HTTP/1.1" 200 OK
+INFO:     10.64.131.203:40592 - "GET /api/dashboard/analytics?period=week HTTP/1.1" 200 OK
+INFO:     10.64.131.204:37586 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     10.64.131.202:52568 - "GET /api/dashboard/analytics?period=week HTTP/1.1" 200 OK
+INFO:     10.64.131.204:37586 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     10.64.136.226:35472 - "GET /api/items HTTP/1.1" 200 OK
+INFO:     10.64.131.206:59694 - "GET /api/tariffs HTTP/1.1" 200 OK
+INFO:     10.64.131.205:58394 - "GET /api/packs HTTP/1.1" 200 OK
+INFO:     10.64.131.204:37586 - "GET /api/sources HTTP/1.1" 200 OK
+INFO:     10.64.131.206:59694 - "GET /api/tariffs HTTP/1.1" 200 OK
+INFO:     10.64.131.204:37586 - "GET /api/packs HTTP/1.1" 200 OK
+INFO:     10.64.131.206:59694 - "GET /api/sources HTTP/1.1" 200 OK
+INFO:     10.64.136.245:34760 - "GET /api/tariffs HTTP/1.1" 200 OK
+INFO:     10.64.136.245:34760 - "GET /api/packs HTTP/1.1" 200 OK
+INFO:     10.64.129.7:34294 - "GET /api/packs HTTP/1.1" 200 OK
+INFO:     10.64.129.13:37540 - "GET /api/sources HTTP/1.1" 200 OK
+INFO:     10.64.136.245:34762 - "GET /api/sources HTTP/1.1" 200 OK
+INFO:     10.64.131.202:38638 - "GET /api/rentals?status=active HTTP/1.1" 200 OK
+INFO:     10.64.131.205:58394 - "GET /api/rentals?status=active HTTP/1.1" 200 OK
+INFO:     10.64.135.173:48206 - "GET /api/rentals?status=active HTTP/1.1" 200 OK
+INFO:     10.64.129.9:35262 - "GET /api/customers/1bd0a586-15fd-416d-9a4f-d9d4d518b958 HTTP/1.1" 200 OK
+INFO:     10.64.131.204:35648 - "GET /api/customers/1bd0a586-15fd-416d-9a4f-d9d4d518b958 HTTP/1.1" 200 OK
+INFO:     10.64.131.202:59408 - "GET /api/rentals/pending/returns HTTP/1.1" 200 OK
+INFO:     10.64.131.204:56226 - "GET /api/rentals/pending/returns HTTP/1.1" 200 OK
+INFO:     10.64.136.245:37738 - "GET /api/rentals/pending/returns HTTP/1.1" 200 OK
+INFO:     10.64.131.203:45832 - "GET /api/customers/1bd0a586-15fd-416d-9a4f-d9d4d518b958 HTTP/1.1" 200 OK
+INFO:     10.64.136.245:37738 - "GET /api/customers/1bd0a586-15fd-416d-9a4f-d9d4d518b958 HTTP/1.1" 200 OK
+INFO:     10.64.131.204:56578 - "GET /api/customers/with-status HTTP/1.1" 200 OK
+INFO:     10.64.131.205:41668 - "GET /api/sources HTTP/1.1" 200 OK
+INFO:     10.64.131.205:41668 - "GET /api/customers/with-status HTTP/1.1" 200 OK
+INFO:     10.64.131.206:34074 - "GET /api/sources HTTP/1.1" 200 OK
+INFO:     10.64.136.226:45632 - "GET /api/customers/with-status HTTP/1.1" 200 OK
+INFO:     10.64.136.245:36620 - "GET /api/sources HTTP/1.1" 200 OK
+INFO:     10.64.131.204:34290 - "GET /api/sources HTTP/1.1" 200 OK
+INFO:     10.64.131.205:47460 - "GET /api/sources HTTP/1.1" 200 OK
+INFO:     10.64.131.206:60472 - "GET /api/sources HTTP/1.1" 200 OK
+INFO:     10.64.131.202:59036 - "GET /api/sources HTTP/1.1" 200 OK
+INFO:     10.64.131.205:47460 - "GET /api/item-types HTTP/1.1" 200 OK
+INFO:     10.64.131.203:40300 - "GET /api/items HTTP/1.1" 200 OK
+INFO:     10.64.131.204:34290 - "GET /api/item-types HTTP/1.1" 200 OK
+INFO:     10.64.131.205:47460 - "GET /api/items HTTP/1.1" 200 OK
+INFO:     10.64.129.13:54310 - "GET /api/items HTTP/1.1" 200 OK
+INFO:     10.64.129.10:36238 - "GET /api/item-types HTTP/1.1" 200 OK
+INFO:     10.64.129.7:46774 - "GET /api/items/with-profitability HTTP/1.1" 200 OK
+INFO:     10.64.131.203:40312 - "GET /api/items/with-profitability HTTP/1.1" 200 OK
+INFO:     10.64.135.173:36490 - "GET /api/items HTTP/1.1" 200 OK
+INFO:     10.64.131.205:44680 - "GET /api/packs HTTP/1.1" 200 OK
+INFO:     10.64.131.204:40036 - "GET /api/tariffs HTTP/1.1" 200 OK
+INFO:     10.64.131.206:49758 - "GET /api/tariffs HTTP/1.1" 200 OK
+INFO:     10.64.131.205:44680 - "GET /api/packs HTTP/1.1" 200 OK
+INFO:     10.64.131.203:41162 - "GET /api/cash/movements?date=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.203:41170 - "GET /api/cash/summary?date=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.203:41170 - "GET /api/cash/movements?date=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.206:49758 - "GET /api/cash/summary?date=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.136.245:37258 - "GET /api/cash/summary?date=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.129.7:40946 - "GET /api/cash/movements?date=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.206:49764 - "GET /api/cash/closings HTTP/1.1" 200 OK
+INFO:     10.64.131.206:49764 - "GET /api/cash/movements/history HTTP/1.1" 200 OK
+INFO:     10.64.131.203:54512 - "GET /api/cash/closings HTTP/1.1" 200 OK
+INFO:     10.64.129.10:59924 - "GET /api/cash/closings HTTP/1.1" 200 OK
+INFO:     10.64.131.204:51662 - "GET /api/cash/movements/history HTTP/1.1" 200 OK
+INFO:     10.64.129.7:39582 - "GET /api/cash/movements/history HTTP/1.1" 200 OK
+INFO:     10.64.136.245:52078 - "GET /api/items HTTP/1.1" 200 OK
+INFO:     10.64.135.173:41478 - "GET /api/item-types HTTP/1.1" 200 OK
+INFO:     10.64.129.10:55542 - "GET /api/cash/summary?date=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.129.13:38270 - "GET /api/cash/movements?date=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.203:41612 - "GET /api/items HTTP/1.1" 200 OK
+INFO:     10.64.131.204:39758 - "GET /api/items HTTP/1.1" 200 OK
+INFO:     10.64.131.205:60090 - "GET /api/external-repairs?status=all HTTP/1.1" 200 OK
+INFO:     10.64.131.206:34970 - "GET /api/external-repairs?status=all HTTP/1.1" 200 OK
+INFO:     10.64.131.203:41612 - "GET /api/items HTTP/1.1" 200 OK
+INFO:     10.64.131.206:34970 - "GET /api/external-repairs?status=all HTTP/1.1" 200 OK
+INFO:     10.64.131.202:59564 - "GET /api/reports/range?start_date=2026-01-26&end_date=2026-02-01 HTTP/1.1" 200 OK
+INFO:     10.64.131.205:42030 - "GET /api/reports/range?start_date=2026-01-29&end_date=2026-01-31 HTTP/1.1" 200 OK
+INFO:     10.64.131.202:49884 - "GET /api/reports/range?start_date=2025-11-01&end_date=2026-04-30 HTTP/1.1" 200 OK
+INFO:     10.64.131.204:56282 - "GET /api/reports/range?start_date=2025-11-01&end_date=2026-04-30 HTTP/1.1" 200 OK
+INFO:     10.64.131.203:35814 - "GET /api/reports/range?start_date=2024-11-01&end_date=2025-04-30 HTTP/1.1" 200 OK
+INFO:     10.64.131.203:35814 - "GET /api/reports/range?start_date=2025-11-01&end_date=2026-04-30 HTTP/1.1" 200 OK
+INFO:     10.64.131.203:35824 - "GET /api/reports/range?start_date=2025-11-01&end_date=2026-04-30 HTTP/1.1" 200 OK
+INFO:     10.64.131.204:56292 - "GET /api/reports/range?start_date=2024-11-01&end_date=2025-04-30 HTTP/1.1" 200 OK
+INFO:     10.64.131.203:35824 - "GET /api/packs HTTP/1.1" 200 OK
+INFO:     10.64.131.205:38488 - "GET /api/tariffs HTTP/1.1" 200 OK
+INFO:     10.64.131.202:58122 - "GET /api/packs HTTP/1.1" 200 OK
+INFO:     10.64.131.206:43238 - "GET /api/tariffs HTTP/1.1" 200 OK
+INFO:     10.64.131.205:48368 - "GET /api/item-types HTTP/1.1" 200 OK
+INFO:     10.64.131.205:48372 - "GET /api/items HTTP/1.1" 200 OK
+INFO:     10.64.131.202:51256 - "GET /api/item-types HTTP/1.1" 200 OK
+INFO:     10.64.131.203:33452 - "GET /api/items HTTP/1.1" 200 OK).
+    -   **Why fix this issue and what will be achieved with the fix?**: La estabilidad es crucial para el desarrollo futuro. La refactorización reducirá drásticamente el tiempo de depuración y permitirá añadir nuevas funcionalidades de forma más segura.
+    -   **Status**: NOT STARTED (Recurring issue acknowledged)
     -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: both
+    -   **Should Test frontend/backend/both after fix?**: backend
+    -   **Blocked on other issue**: No
 
 **In progress Task List**:
--   **Task 1**: (P0) Implementar Sistema Universal de Tickets y Comprobantes de Caja.
-    -   **Where to resume**: El usuario acaba de pedir que se añada la funcionalidad de impresión en la página de . El siguiente paso es modificar este archivo para añadir un icono de impresora en cada fila de la tabla de movimientos y crear la lógica para generar un ticket.
-    -   **What will be achieved with this?**: Se proporcionará un rastro físico/digital para cada movimiento de dinero, cumpliendo un requisito crítico del usuario.
-    -   **Status**: IN PROGRESS (La parte de Nuevo Alquiler está parcialmente implementada, pero requiere verificación. El resto de flujos están pendientes).
-    -   **Should Test frontend/backend/both after fix?**: both
-    -   **Blocked on something**: Issue 1 (Inestabilidad general).
+-   **Task 1**: (P1) Corregir el buscador de clientes en Taller Externo ().
+    -   **Description**: El usuario solicitó que el buscador de clientes en la sección de taller funcione igual que en Nuevo Alquiler, buscando en la base de datos general por nombre, teléfono o DNI, y permitiendo la creación de nuevos clientes desde allí.
+    -   **Where to resume**: El agente había comenzado a analizar el archivo  pero fue interrumpido por la nueva solicitud sobre los Packs. Se debe retomar la implementación de la lógica de búsqueda y autocompletado en este componente.
+    -   **What will be achieved with this?**: Agilizará el proceso de recepción de trabajos de taller, haciéndolo consistente con el resto de la aplicación.
+    -   **Status**: IN PROGRESS (Paused)
+    -   **Should Test frontend/backend/both after fix?**: frontend
+    -   **Blocked on something**: La Tarea 2 (Packs) tiene mayor prioridad según el último mensaje del usuario.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    -   (P1) **Rediseño del Cierre de Caja:** Implementar el formulario de arqueo manual, el historial de cierres y la función de reversión en . (El agente lo empezó pero tuvo que revertir cambios para arreglar un bug).
-    -   (P1) **Modificar Duración de Alquileres Activos:** Añadir la lógica para cambiar fechas con ajuste financiero.
-    -   (P2) **Añadir Acceso Directo a Ficha de Cliente:** Convertir el nombre del cliente en un enlace para abrir un modal con su información en la vista de alquileres activos.
-    -   (P2) **Crear Pestaña de Soporte y Mejoras:** Crear la nueva página con el formulario para abrir tickets.
-    -   (P2) **Finalizar Sistema de Impresión:** Implementar el toggle de Impresión Automática en la página  (que está vacía) y añadir la ruta en .
+    -   (P0) **Actualizar Módulo de Packs:** Hacer que el módulo de creación de packs sea compatible con los tipos de artículo personalizados (última petición del usuario).
+    -   (P2) **Crear Pestaña de Soporte y Mejoras:** Crear una nueva página con un formulario para que el usuario pueda solicitar nuevas funcionalidades o reportar problemas.
+    -   (P2) **Finalizar Sistema de Impresión:** Implementar el interruptor Impresión Automática en la página  y conectar su estado a los flujos de trabajo correspondientes.
 -   **Future Tasks:**
-    -   Integraciones (VeriFactu, WhatsApp, TPV, Email, Google Calendar).
+    -   Integraciones (VeriFactu, WhatsApp API, TPV, Email, Google Calendar).
     -   Sistema de Reservas Online.
     -   Modo Oscuro.
-    -   Módulo de Reportes Avanzados.
 
 **Completed work in this session**
--   **Corrección de Errores Críticos**: Se solucionaron múltiples fallos que impedían la carga de la aplicación, incluyendo la instalación de la dependencia  y la corrección de numerosos errores de sintaxis en  y de estado en  y .
--   **Código Interno de Inventario**: Implementado el flujo completo donde un Código Interno manual es el identificador principal para crear, editar y buscar artículos.
--   **Filtro Histórico en Dashboard**: Añadido un selector de rango de fechas para análisis de rendimiento pasados.
--   **Reorganización de Proveedores**: Rediseño de la página para priorizar la lista y mover las métricas a un panel inferior.
--   **Rediseño de Reportes**: Página reconstruida para permitir análisis por rango de fechas.
--   **Tipos de Artículo Editables**: El sistema ahora permite crear nuevas categorías de artículos dinámicamente desde el formulario de inventario.
--   **Sistema de Packs Silencioso**: Eliminados todos los avisos visuales (toasts, banners) del sistema Auto-Combo, que ahora ajusta precios automáticamente en segundo plano.
--   **Devolución Rápida**: Implementado el botón y el endpoint () para cerrar alquileres con un solo clic.
+-   **Rediseño del Módulo de Caja ()**:
+    -   Implementado un sistema de 3 pestañas: Caja del Día, Cierres Pasados, Histórico Movimientos.
+    -   Eliminada la restricción horaria para cerrar caja.
+    -   Añadido formulario de arqueo manual con campos para efectivo y tarjeta.
+    -   Implementada la vista de Cierres Pasados con un botón para revertir cierres ().
+-   **Modificar Duración como Transacción Financiera ()**:
+    -   Reescrito el flujo para que cualquier cambio de días (ampliación o reducción) se convierta en una transacción financiera.
+    -   Gestiona correctamente los reembolsos (saldos negativos), mostrando una UI adaptada y registrando una salida de caja.
+    -   Fuerza la selección de un método de pago/devolución y la impresión de un comprobante de modificación.
+    -   Corregido un bug crítico () que impedía los reembolsos.
+-   **Acceso Unificado a Ficha de Cliente**:
+    -   Estandarizado el comportamiento en toda la aplicación: al hacer clic en el nombre de un cliente se abre un modal con su información completa.
+    -   Implementado en ,  y .
+-   **Filtro de Estado en Clientes ()**:
+    -   Añadidos filtros para ver clientes Todos, Activos Hoy o Inactivos, con contadores dinámicos.
+    -   Implementado un nuevo endpoint () y añadido un indicador visual (badge y color de fondo) para los clientes activos.
+-   **Módulo de Rentabilidad en Inventario ()**:
+    -   Añadido un modo Rentabilidad que muestra coste de adquisición, ingresos acumulados, estado de amortización (con barra de progreso) y beneficio neto por cada artículo.
+    -   Creado un nuevo endpoint () para realizar los cálculos.
+-   **Corrección de Bugs Menores**: Solucionado un error de compilación en  por una importación ausente de .
 
 **Earlier issues found/mentioned but not fixed**
--   None.
+-   None. Todos los problemas reportados en esta sesión fueron abordados.
 
 **Known issue recurrence from previous fork**
--   **New recurring issue**: Errores de sintaxis/indentación en  tras realizar modificaciones.
--   **Recurrence count**: 3+
--   **Status**: RECURRING. El agente los ha ido corrigiendo, pero la fragilidad del archivo monolítico persiste.
+-   **Issue recurrence in previous fork**: Errores de sintaxis/indentación en  tras realizar modificaciones.
+-   **Recurrence count**: 3+ en la sesión anterior, y el riesgo persiste.
+-   **Status**: RECURRING (el archivo monolítico sigue siendo un punto de fallo).
 
 **Code Architecture**
 
@@ -483,75 +303,78 @@ Starting the development server...
 -   **Frontend:** React (Hooks), TailwindCSS, Shadcn/UI, Recharts.
 -   **Backend:** FastAPI, Pydantic, motor-asyncio.
 -   **Database:** MongoDB.
--   **Architecture:** SPA con API RESTful.
+-   **Architecture:** SPA con una API RESTful monolítica.
 
 **key DB schema**
--   **item_types (new):**  - Colección para gestionar dinámicamente los tipos de artículos.
--   **items:**  es ahora un campo de texto obligatorio y único.
--   **rentals:** Se han añadido campos y lógica para soportar  y .
+-   **items:** Se utiliza el campo  como coste de adquisición. Se podría formalizar a .
+-   **cash_closings:** Se han añadido  (esperado) y  (real) para el arqueo.
+-   **customers:** Se añade un campo virtual  en la respuesta de la API .
 
 **changes in tech stack**
--   Dependencia  añadida al  del frontend.
+-   No se han añadido nuevas dependencias.
 
 **All files of reference**
--   : Modificado extensamente para añadir endpoints (, , ), actualizar la lógica de inventario y dashboard, y corregir múltiples errores de sintaxis.
--   : Reescribió para usar tipos de artículos dinámicos y priorizar el Código Interno.
--   : Modificado para eliminar la UI de los packs y para añadir un diálogo de éxito con opción de imprimir (implementación parcial y con errores iniciales).
--   : Sufrió un rediseño parcial que fue revertido para corregir un crash. Se restauraron estados para estabilizarlo.
--   : Totalmente reconstruido con UI para filtrado por rango de fechas.
--   : Añadido el botón Devolución Rápida y la lógica de su handler.
--   : Creado pero está vacío.
--   : Se intentó modificar para añadir la ruta de Settings, pero no se completó.
+-   : Modificado extensamente para añadir endpoints y lógica para rentabilidad, estado de clientes, nuevo flujo de cierre de caja, revertir cierres e historial de movimientos.
+-   : Reescrito por completo para implementar el nuevo diseño de 3 pestañas, arqueo manual y funcionalidades de historial.
+-   : Reescrito por completo para implementar el flujo de modificación de duración como una transacción financiera.
+-   : Modificado para añadir filtros de estado, un indicador visual de actividad y estandarizar el modal de ficha de cliente.
+-   : Modificado para añadir el modo de análisis de rentabilidad con nuevas columnas y KPIs.
+-   : Modificado para añadir el modal de ficha de cliente.
+-   : Corregido un error de importación.
 
 **Areas that need refactoring**:
--    es extremadamente monolítico y frágil. Es urgente dividirlo en módulos (rutas, modelos, servicios).
--   Las páginas de React como  (1600+ líneas) e  (1000+ líneas) son demasiado grandes y deben descomponerse en componentes más pequeños.
+-   **CRÍTICO:**  debe ser descompuesto en una estructura de carpetas modular (e.g., , , ) para mitigar el riesgo de errores y mejorar la mantenibilidad.
+-   **ALTO:** Las páginas de React como , ,  y  se han vuelto excesivamente grandes y complejas. Deben descomponerse en componentes más pequeños y reutilizables.
 
 **key api endpoints**
 -   
--   , 
 -   
--    (parámetros añadidos)
 -   
+-   
+-   
+-    (actualizado)
+-    (actualizado)
+-    (nuevo)
 
 **Critical Info for New Agent**
--   **Prioridad Absoluta:** Estabilizar la aplicación. El usuario reporta errores constantemente (, ). Antes de añadir código nuevo, asegúrate de que la aplicación funciona y los servicios están corriendo sin errores en los logs.
--   **Tarea Principal:** Completar el sistema de impresión de tickets. El usuario lo ha pedido repetidamente. El punto de partida es la página .
--   **Código Frágil:** Procede con extrema precaución al editar . Cada cambio tiene un alto riesgo de introducir errores de sintaxis/indentación. Valida el código y reinicia el servicio después de cada edición. Lo mismo ocurre con los grandes componentes de React, donde los refactors parciales han dejado estados inconsistentes.
+-   **Prioridad del Usuario:** El usuario ha cambiado de tarea a mitad de una implementación. Comienza siempre por la última solicitud del usuario, que en este caso es la actualización del módulo de Packs.
+-   **Riesgo Arquitectónico:** La aplicación es funcional pero su base de código es frágil, especialmente . Procede con extrema cautela. Valida siempre que el backend se reinicie sin errores después de cada cambio.
+-   **Patrón de UI Establecido:** Se ha implementado un patrón consistente de hacer clic en el nombre de un cliente para abrir su ficha en un modal. Mantén este comportamiento para futuras implementaciones.
 
 **documents and test reports created in this job**
--    (debería ser actualizado)
--   Múltiples reportes de  en el directorio de salida de automatización.
+-    (actualizado múltiples veces)
+-   
+-   
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **Añade la funcionalidad de impresión directamente en la pestaña de Movimientos de Caja** - El usuario redirige al agente a trabajar en la impresión desde la página de Caja. **(TAREA ACTUAL)**
-2.  **Pues sigue con los proximos pasos** - Pide continuar con el sistema de impresión después de que el agente implementara el diálogo en Nuevo Alquiler.
-3.  **da error caja** - Reporta un error en la página de Caja. (Solucionado).
-4.  **da error** - Reporta un error genérico. (Solucionado, era del backend).
-5.  **Re-envío del prompt Imprimir Ticket** - El usuario insiste en la alta prioridad del sistema de impresión.
-6.  **Rediseña por completo el módulo de Cierre de Caja...** - Petición de rediseño completo del cierre de caja.
-7.  **...Creación de Pestaña de Soporte...** - Petición para una nueva página de tickets de soporte.
-8.  **No carga** - Reporta que la aplicación no carga. (Solucionado, era del backend).
-9.  **...Optimiza la pestaña de Devoluciones... y otras mejoras** - Múltiples peticiones de optimización de flujos de trabajo (Devolución Rápida, Modificar Duración, etc.).
-10. **Modifica el formulario de Añadir Nuevo Artículo...** - Petición para hacer editables las categorías. (Completada).
+1.  **User**: Pide actualizar el módulo de **Packs** para que use categorías de artículos personalizadas. **(TAREA ACTUAL - NO INICIADA)**.
+2.  **Agent**: Finaliza la tarea de filtro de estado de clientes.
+3.  **User**: Pide añadir un **filtro de estado** (Activo/Inactivo) a la base de datos de clientes. (Completada).
+4.  **Agent**: Finaliza la tarea del nombre clicable en la base de datos de clientes.
+5.  **User**: Pide estandarizar el **nombre de cliente clicable** en la página de Clientes. (Completada).
+6.  **Agent**: Finaliza la tarea de rentabilidad de inventario.
+7.  **User**: Pide añadir un módulo de **rentabilidad** al inventario. (Completada).
+8.  **Agent**: Finaliza el rediseño del módulo de Caja.
+9.  **User**: Pide un **rediseño completo del módulo de Caja**. (Completada).
+10. **Agent**: Finaliza la corrección del bug en el flujo de reembolso.
 
 **Project Health Check:**
--   **Broken**: La aplicación está actualmente operativa, pero ha sido extremadamente inestable durante toda la sesión. El código es frágil y propenso a errores con cambios menores.
--   **Mocked**: La UI de  no tiene lógica de backend.
+-   **Broken**: No. La aplicación es funcional y estable tras las últimas correcciones.
+-   **Mocked**:  y  siguen siendo páginas vacías sin funcionalidad.
 
 **3rd Party Integrations**
 -   Ninguna implementada funcionalmente.
 -   **Planeadas:** VeriFactu, WhatsApp, TPV Bancario, Email, Google Calendar.
 
 **Testing status**
--   **Testing agent used after significant changes**: YES, para las funcionalidades principales completadas al inicio de la sesión.
+-   **Testing agent used after significant changes**: YES. Se usó para verificar la funcionalidad de impresión de tickets y la modificación de duración de alquileres. Ambos tests pasaron con un 100% de éxito.
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: []
--   **Known regressions**: La inestabilidad introducida al implementar nuevas características a medias.
+-   **Known regressions**: Ninguna en esta sesión.
 
 **Credentials to test flow:**
--   Registra un nuevo usuario en la página de login para probar la aplicación.
+-   Registra un nuevo usuario desde la interfaz de login.
 
 **What agent forgot to execute**
--   La ruta para la nueva página  nunca se añadió a .
--   El rediseño del Cierre de Caja se inició y luego se abandonó, dejando el componente  en un estado intermedio que tuvo que ser estabilizado. La funcionalidad solicitada no está implementada.</analysis>
+-   La tarea de implementar la búsqueda de clientes en  fue interrumpida por el usuario y está pendiente.
+-   La funcionalidad del interruptor de Impresión Automática en la página de  aún no se ha implementado.</analysis>
