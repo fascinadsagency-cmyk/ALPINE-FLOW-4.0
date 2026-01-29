@@ -829,6 +829,14 @@ export default function CashRegister() {
                   <ArrowDownLeft className="h-4 w-4 mr-2" />
                   Nueva Salida
                 </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={forceSyncMovements}
+                  disabled={!activeSession || syncing}
+                >
+                  <RefreshCcw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+                  {syncing ? 'Sincronizando...' : 'Sincronizar'}
+                </Button>
                 <Button variant="outline" onClick={exportToCSV}>
                   <Download className="h-4 w-4 mr-2" />
                   Exportar CSV
