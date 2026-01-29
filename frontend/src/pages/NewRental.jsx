@@ -1845,7 +1845,7 @@ export default function NewRental() {
               {searchFilter ? (
                 <>
                   <Sparkles className="h-5 w-5 text-amber-500" />
-                  Completar Pack - Buscar {ITEM_TYPES.find(t => t.value === searchFilter.type)?.label || searchFilter.type}
+                  Completar Pack - Buscar {itemTypes.find(t => t.value === searchFilter.type)?.label || searchFilter.type}
                 </>
               ) : (
                 "Buscar Artículo Manualmente"
@@ -1853,7 +1853,7 @@ export default function NewRental() {
             </DialogTitle>
             {searchFilter && (
               <p className="text-sm text-amber-600">
-                Mostrando artículos de tipo <strong>{ITEM_TYPES.find(t => t.value === searchFilter.type)?.label}</strong> en categoría <strong>{searchFilter.category}</strong> para completar el pack
+                Mostrando artículos de tipo <strong>{itemTypes.find(t => t.value === searchFilter.type)?.label}</strong> en categoría <strong>{searchFilter.category}</strong> para completar el pack
               </p>
             )}
           </DialogHeader>
@@ -1872,7 +1872,7 @@ export default function NewRental() {
                 <SelectValue placeholder="Tipo" />
               </SelectTrigger>
               <SelectContent>
-                {ITEM_TYPES.map(t => (
+                {itemTypes.map(t => (
                   <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
                 ))}
               </SelectContent>
