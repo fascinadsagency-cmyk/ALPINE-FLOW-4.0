@@ -56,6 +56,11 @@ export default function Returns() {
   const [refundReason, setRefundReason] = useState("");
   const [processingRefund, setProcessingRefund] = useState(false);
   
+  // Customer modal state
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [customerLoading, setCustomerLoading] = useState(false);
+  
   const barcodeRef = useRef(null);
 
   const quickReturn = async (rentalId, customerName) => {
