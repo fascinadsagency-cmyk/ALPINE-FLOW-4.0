@@ -1443,6 +1443,9 @@ export default function CashRegister() {
               <div className="bg-slate-50 rounded-lg p-4 font-mono text-sm space-y-2">
                 <div className="text-center border-b border-dashed border-slate-300 pb-3 mb-3">
                   <p className="font-bold text-lg">COMPROBANTE</p>
+                  <p className="text-blue-700 font-bold text-xl mt-2">
+                    Nº Ticket: {selectedMovement.operation_number || 'PENDIENTE'}
+                  </p>
                 </div>
                 <div className="flex justify-center mb-3">
                   {getMovementTypeBadge(selectedMovement.movement_type)}
