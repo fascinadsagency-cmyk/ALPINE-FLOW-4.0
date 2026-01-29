@@ -209,8 +209,8 @@ export default function Customers() {
   };
 
   const updateCustomer = async () => {
-    if (!newCustomer.name || !newCustomer.dni) {
-      toast.error("Nombre y DNI son obligatorios");
+    if (!newCustomer.name || !newCustomer.dni || !newCustomer.phone) {
+      toast.error("Nombre, DNI y Teléfono son obligatorios");
       return;
     }
 
@@ -218,7 +218,8 @@ export default function Customers() {
       await axios.put(`${API}/customers/${editingCustomer.id}`, {
         name: newCustomer.name,
         dni: newCustomer.dni.toUpperCase(),
-        phone: newCustomer.phone || "",
+        phone: newCustomer.phone,
+        email: newCustomer.email || "",
         address: newCustomer.address || "",
         city: newCustomer.city || "",
         source: newCustomer.source || "",
@@ -230,7 +231,7 @@ export default function Customers() {
       setShowEditDialog(false);
       setEditingCustomer(null);
       resetNewCustomerForm();
-      loadCustomers();
+      loadCustomersWithStatus();
     } catch (error) {
       toast.error(error.response?.data?.detail || "Error al actualizar cliente");
     }
