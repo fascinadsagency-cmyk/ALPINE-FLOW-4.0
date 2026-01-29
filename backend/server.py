@@ -2674,6 +2674,12 @@ class CashMovementResponse(BaseModel):
 class CashClosingCreate(BaseModel):
     date: str
     physical_cash: float
+    card_total: Optional[float] = 0
+    expected_cash: Optional[float] = 0
+    expected_card: Optional[float] = 0
+    discrepancy_cash: Optional[float] = 0
+    discrepancy_card: Optional[float] = 0
+    discrepancy_total: Optional[float] = 0
     notes: Optional[str] = ""
 
 class CashClosingResponse(BaseModel):
@@ -2684,6 +2690,12 @@ class CashClosingResponse(BaseModel):
     total_expense: float
     expected_balance: float
     physical_cash: float
+    card_total: Optional[float] = 0
+    expected_cash: Optional[float] = 0
+    expected_card: Optional[float] = 0
+    discrepancy_cash: Optional[float] = 0
+    discrepancy_card: Optional[float] = 0
+    discrepancy_total: Optional[float] = 0
     difference: float
     notes: str
     closed_by: str
