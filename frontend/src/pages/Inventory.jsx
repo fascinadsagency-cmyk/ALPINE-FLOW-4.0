@@ -1047,12 +1047,6 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                 />
               </div>
             </div>
-                    <SelectItem value="ALTA">Gama Alta</SelectItem>
-                    <SelectItem value="MEDIA">Gama Media</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Precio Coste (€)</Label>
