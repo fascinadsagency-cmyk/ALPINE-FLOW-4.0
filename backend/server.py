@@ -408,6 +408,66 @@ async def get_customers(
     customers = await db.customers.find(query, {"_id": 0}).to_list(100)
     return [CustomerResponse(**c) for c in customers]
 
+@api_router.get("/customers/with-status")
+async def get_customers_with_status(
+    search: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all customers with their active rental status"""
+    query = {}
+    if search:
+        query = {
+            "$or": [
+                {"dni": {"$regex": search, "$options": "i"}},
+                {"name": {"$regex": search, "$options": "i"}},
+                {"phone": {"$regex": search, "$options": "i"}}
+            ]
+        }
+    
+    customers = await db.customers.find(query, {"_id": 0}).to_list(500)
+    
+    # Get all active rentals
+    active_rentals = await db.rentals.find(
+        {"status": {"$in": ["active", "partial"]}},
+        {"customer_id": 1, "customer_dni": 1, "end_date": 1, "_id": 0}
+    ).to_list(1000)
+    
+    # Create a set of customer IDs/DNIs with active rentals
+    active_customer_ids = set()
+    active_customer_dnis = set()
+    for rental in active_rentals:
+        if rental.get("customer_id"):
+            active_customer_ids.add(rental["customer_id"])
+        if rental.get("customer_dni"):
+            active_customer_dnis.add(rental["customer_dni"].upper())
+    
+    # Add status to each customer
+    customers_with_status = []
+    active_count = 0
+    inactive_count = 0
+    
+    for customer in customers:
+        is_active = (
+            customer.get("id") in active_customer_ids or 
+            customer.get("dni", "").upper() in active_customer_dnis
+        )
+        customer["has_active_rental"] = is_active
+        customers_with_status.append(customer)
+        
+        if is_active:
+            active_count += 1
+        else:
+            inactive_count += 1
+    
+    return {
+        "customers": customers_with_status,
+        "counts": {
+            "total": len(customers_with_status),
+            "active": active_count,
+            "inactive": inactive_count
+        }
+    }
+
 @api_router.get("/customers/{customer_id}", response_model=CustomerResponse)
 async def get_customer(customer_id: str, current_user: dict = Depends(get_current_user)):
     customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
