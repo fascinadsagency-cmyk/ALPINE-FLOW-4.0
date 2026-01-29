@@ -1511,15 +1511,37 @@ async def get_pending_returns(current_user: dict = Depends(get_current_user)):
         {"_id": 0}
     ).sort("end_date", 1).to_list(200)
     
+    # Get item details for item_type
+    all_item_ids = []
+    for rental in rentals:
+        for item in rental.get("items", []):
+            all_item_ids.append(item.get("item_id"))
+    
+    items_map = {}
+    if all_item_ids:
+        items_cursor = await db.items.find(
+            {"id": {"$in": all_item_ids}},
+            {"_id": 0, "id": 1, "item_type": 1}
+        ).to_list(500)
+        for item in items_cursor:
+            items_map[item["id"]] = item.get("item_type", "unknown")
+    
     today_returns = []
     other_returns = []
     
     for rental in rentals:
         end_date = rental["end_date"].split("T")[0]  # Get just the date part
-        pending_items = [i for i in rental["items"] if not i.get("returned", False)]
+        pending_items = []
+        for i in rental["items"]:
+            if not i.get("returned", False):
+                item_with_type = {**i, "item_type": items_map.get(i.get("item_id"), "unknown")}
+                pending_items.append(item_with_type)
         
         if not pending_items:
             continue
+        
+        # Get all item types in this rental
+        rental_item_types = list(set(p.get("item_type") for p in pending_items))
             
         rental_info = {
             "id": rental["id"],
@@ -1532,7 +1554,8 @@ async def get_pending_returns(current_user: dict = Depends(get_current_user)):
             "end_date": end_date,
             "pending_items": pending_items,
             "pending_amount": rental["pending_amount"],
-            "days_overdue": 0
+            "days_overdue": 0,
+            "items": [{"item_type": t} for t in rental_item_types]  # For filtering
         }
         
         # Calculate overdue days
