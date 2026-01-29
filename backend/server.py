@@ -3294,6 +3294,62 @@ async def get_cash_movements_history(
     movements = await db.cash_movements.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
     return movements
 
+@api_router.post("/cash/validate-orphans")
+async def validate_and_fix_orphan_movements(current_user: dict = Depends(get_current_user)):
+    """
+    Validate and fix orphan movements (movements without session_id).
+    Links them to the appropriate session or reports them.
+    """
+    # Find orphan movements from last 24 hours
+    yesterday = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+    orphans = await db.cash_movements.find({
+        "session_id": {"$exists": False},
+        "created_at": {"$gte": yesterday}
+    }, {"_id": 0}).to_list(1000)
+    
+    fixed_count = 0
+    errors = []
+    
+    for movement in orphans:
+        try:
+            # Get the date of the movement
+            movement_date = movement["created_at"][:10]  # YYYY-MM-DD
+            
+            # Find active session for that date
+            session = await db.cash_sessions.find_one({
+                "date": movement_date,
+                "status": "open"
+            })
+            
+            if session:
+                # Link movement to session
+                await db.cash_movements.update_one(
+                    {"id": movement["id"]},
+                    {"$set": {"session_id": session["id"]}}
+                )
+                fixed_count += 1
+            else:
+                # No session found - movement is truly orphan
+                errors.append({
+                    "movement_id": movement["id"],
+                    "date": movement_date,
+                    "amount": movement["amount"],
+                    "concept": movement["concept"],
+                    "reason": "No active session found for this date"
+                })
+        except Exception as e:
+            errors.append({
+                "movement_id": movement["id"],
+                "reason": str(e)
+            })
+    
+    return {
+        "total_orphans_found": len(orphans),
+        "fixed_count": fixed_count,
+        "orphans_remaining": len(errors),
+        "errors": errors
+    }
+
 @api_router.delete("/cash/closings/{closing_id}")
 async def revert_cash_closing(closing_id: str, current_user: dict = Depends(get_current_user)):
     """Revert/delete a specific cash closing to allow a new closure"""
