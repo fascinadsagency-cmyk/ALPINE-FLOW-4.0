@@ -1011,137 +1011,6 @@ export default function NewRental() {
   };
 
   const updateItemPrice = (itemId, newPrice) => {
-            is_generic: true,
-            quantity: Number(i.quantity || 1),
-            unit_price: Number(i.rental_price || 0)
-          };
-        }
-        return { 
-          barcode: String(i.barcode || ''),
-          person_name: "",
-          quantity: 1,
-          unit_price: Number(getItemPriceWithPack(i) || 0)
-        };
-      });
-      
-      // Clean notes
-      const cleanNotes = [
-        notes || '',
-        discountReason ? `Descuento: ${discountReason}` : ''
-      ].filter(Boolean).join(' | ') || '';
-      
-      // === CREAR ALQUILER (con timeout extendido de 30s) ===
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-      
-      const rentalResponse = await fetch(`${API}/api/rentals`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          customer_id: customer?.id || null,
-          start_date: startDate || new Date().toISOString().split('T')[0],
-          end_date: endDate || new Date().toISOString().split('T')[0],
-          items: itemsToSend,
-          payment_method: paymentMethodSelected || 'cash',
-          total_amount: cleanTotal,
-          paid_amount: Number(paid.toFixed(2)),
-          deposit: cleanDeposit,
-          notes: cleanNotes
-        }),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-      
-      const responseText = await rentalResponse.text();
-      
-      // Check for HTML error response
-      if (responseText.trim().startsWith('<')) {
-        throw new Error('Error del servidor. Inténtalo de nuevo.');
-      }
-      
-      if (!rentalResponse.ok) {
-        const errorData = JSON.parse(responseText);
-        throw new Error(errorData.detail || 'Error al crear alquiler');
-      }
-      
-      const rentalData = JSON.parse(responseText);
-      
-      // === REGISTRAR MOVIMIENTO DE CAJA ===
-      if (paid > 0 && sessionId) {
-        try {
-          await fetch(`${API}/api/cash/movements`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify({
-              movement_type: 'income',
-              amount: Number(paid.toFixed(2)),
-              payment_method: paymentMethodSelected || 'cash',
-              category: 'rental',
-              concept: `Alquiler #${(rentalData.id || '').substring(0, 8)} - ${customer?.name || 'Cliente'}`,
-              reference_id: rentalData.id || '',
-              notes: `Cliente: ${customer?.dni || customer?.name || ''}`,
-              session_id: sessionId
-            })
-          });
-        } catch (cashError) {
-          console.error("Error en movimiento de caja:", cashError);
-        }
-      }
-      
-      // === ACTUALIZAR STOCK DE GENÉRICOS ===
-      for (const item of items) {
-        if (item.is_generic) {
-          try {
-            await fetch(`${API}/api/items/generic/rent?item_id=${item.id}&quantity=${item.quantity || 1}`, {
-              method: 'POST',
-              headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            });
-          } catch (e) {
-            console.error("Error stock:", e);
-          }
-        }
-      }
-      
-      // === ÉXITO ===
-      setCompletedRental({
-        ...rentalData,
-        customer_name: customer?.name || 'Cliente',
-        customer_dni: customer?.dni || '',
-        items_detail: items,
-        total_amount: cleanTotal,
-        paid_amount: paid,
-        change: paymentMethodSelected === "cash" ? Number((cashGivenAmount - cleanTotal).toFixed(2)) : 0
-      });
-      
-      setShowPaymentDialog(false);
-      setCashGiven("");
-      setShowSuccessDialog(true);
-      
-      // Auto-print
-      if (localStorage.getItem('auto_print_enabled') === 'true') {
-        setTimeout(() => printRentalTicket(), 500);
-      }
-      
-      toast.success("✅ Alquiler completado");
-      
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        toast.error("Tiempo de espera agotado. Inténtalo de nuevo.");
-      } else {
-        toast.error(error.message || "Error al crear alquiler");
-      }
-    } finally {
-      setProcessingPayment(false);
-    }
-  };
-
-  const updateItemPrice = (itemId, newPrice) => {
     setItems(items.map(item => 
       (item.id || item.barcode) === itemId 
         ? { ...item, customPrice: parseFloat(newPrice) || null }
@@ -1150,7 +1019,7 @@ export default function NewRental() {
     setEditingItemPrice(null);
   };
 
-  const printRentalTicket = () => {
+  const getItemPrice = (item) => {
     if (!completedRental) return;
     
     const printWindow = window.open('', '_blank', 'width=300,height=600');
