@@ -2961,6 +2961,23 @@ class CashClosingCreate(BaseModel):
     discrepancy_total: Optional[float] = 0
     notes: Optional[str] = ""
 
+class CashSessionCreate(BaseModel):
+    opening_balance: float  # Fondo de caja inicial
+    notes: Optional[str] = ""
+
+class CashSessionResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    date: str
+    session_number: int
+    opened_at: str
+    opened_by: str
+    opening_balance: float
+    status: str  # "open" or "closed"
+    closed_at: Optional[str] = None
+    closure_id: Optional[str] = None
+    notes: str
+
 class CashClosingResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
