@@ -175,9 +175,14 @@ export default function Dashboard() {
           <p className="text-slate-500 mt-1">Vista general de tu negocio</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => navigate("/nuevo-alquiler")}>
-            <ShoppingCart className="h-4 w-4 mr-2" />
-            Nuevo Alquiler
+          {/* BOTÓN GRANDE - NUEVO ALQUILER */}
+          <Button 
+            size="lg"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 text-base cursor-pointer shadow-lg hover:shadow-xl transition-all"
+            onClick={() => navigate("/nuevo-alquiler")}
+          >
+            <ShoppingCart className="h-5 w-5 mr-2" />
+            NUEVO ALQUILER
           </Button>
         </div>
       </div>
