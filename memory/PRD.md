@@ -11,57 +11,27 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 
 ## Funcionalidades Implementadas
 
-### 1. Autenticación
-- Login/Registro con JWT
-- Roles: admin, employee
+### 1. Modificar Duración de Alquileres (CORREGIDO 2026-01-29)
+**Flujo de 3 pasos obligatorio:**
+- Paso 1: Seleccionar días (0 = devolución total mismo día)
+- Paso 2: Confirmar pago/devolución con método (Efectivo/Tarjeta)
+- Paso 3: Imprimir Comprobante
 
-### 2. Dashboard Estratégico
-- KPIs en tiempo real
-- Vista Semanal de Ocupación
-- Panel de Rendimiento de Inventario
-- Alertas Urgentes
+**Correcciones implementadas:**
+- ✅ **Lógica de Reembolso**: Sistema reconoce automáticamente cuando el ajuste es negativo y lo trata como "Devolución"
+- ✅ **Salida de Caja habilitada**: El selector acepta valores negativos y resta del efectivo/tarjeta
+- ✅ **Ticket de Abono**: Genera comprobante de devolución con importe devuelto
+- ✅ **Ajuste de Stock**: Items se liberan al inventario con 0 días
+- ✅ **Concepto en Caja**: "Devolución ajuste Alquiler ID: XXX (De X a Y días)"
 
-### 3. Gestión de Clientes
-- Búsqueda rápida por DNI/nombre/teléfono
-- Historial de alquileres y transacciones
-- Alertas de seguridad
-
-### 4. Proceso de Alquiler
-- Sistema de fechas inteligente
-- Escaneo de artículos por código de barras
-- Sistema de descuentos
-- AUTO-COMBO: Detección automática de packs (silenciosa)
-- Vinculación automática con Caja
-
-### 5. Devoluciones
-- Devolución rápida con un clic
-- Reembolso parcial por días no disfrutados
-
-### 6. Inventario
-- Código Interno manual obligatorio
-- Tipos de artículos dinámicos
-- Importación/Exportación CSV
-
-### 7. Caja
-- ✅ Impresión de tickets desde cada movimiento
-- ✅ Historial de cierres con reversión
+### 2. Sistema de Caja
+- Impresión de tickets desde cada movimiento
+- Historial de cierres con reversión
 - Vinculación automática con Alquileres y Taller
+- Tarjeta separada para Devoluciones (naranja)
 
-### 8. Modificación de Alquileres (ACTUALIZADO 2026-01-28)
-- ✅ **Flujo de 3 pasos obligatorio:**
-  - Paso 1: Seleccionar días (0 = devolución mismo día)
-  - Paso 2: Confirmar pago/devolución con método (Efectivo/Tarjeta)
-  - Paso 3: Imprimir Comprobante de Modificación
-- ✅ **Transacción financiera instantánea:** No se puede guardar sin registrar el pago
-- ✅ **Registro automático en Caja:** Concepto "Ajuste días Alquiler ID: XXX (De X días a Y días)"
-- ✅ **Ticket de modificación:** Factura Rectificativa con fechas antiguas/nuevas e importe
-
-### 9. Configuración
-- Toggle de Impresión Automática
-
-### 10. Tarifas y Mantenimiento/Taller
-- Sistema de Packs/Combos
-- Modo "MI FLOTA" y "TALLER EXTERNO"
+### 3. Dashboard, Clientes, Inventario, Tarifas
+- Todas las funcionalidades base operativas
 
 ## Próximas Tareas (Backlog)
 
@@ -74,24 +44,19 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 - [ ] Integración TPV bancario
 - [ ] Integración VeriFactu
 
-### P3 - Baja Prioridad
-- [ ] Sistema de Reservas Online
-- [ ] Modo Oscuro
-
 ## Credenciales de Prueba
 - Usuario: test_combo
 - Contraseña: test123456
 
 ## Última Actualización
-Fecha: 2026-01-28
-Versión: 2.0.0
+Fecha: 2026-01-29
+Versión: 2.0.1
 
 ## Changelog
-- **v2.0.0** (2026-01-28): Modificar Duración como Transacción Financiera Completa
-  - Flujo de 3 pasos obligatorio (días → pago → ticket)
-  - Soporte para 0 días (devolución total)
-  - Selector de método de pago obligatorio
-  - Registro automático en Movimientos de Caja
-  - Ticket de Factura Rectificativa
+- **v2.0.1** (2026-01-29): Corrección crítica flujo de reembolsos
+  - Corregido KeyError en items sin campo 'id'
+  - Habilitada salida de caja para devoluciones
+  - Ticket de abono funcional
+  - Concepto diferenciado: "Devolución ajuste" vs "Ampliación"
+- **v2.0.0** (2026-01-28): Modificar Duración como Transacción Financiera
 - **v1.9.0** (2026-01-28): Sistema de Tickets y Gestión de Cierres
-- **v1.8.0**: Dashboard Analítico Completo
