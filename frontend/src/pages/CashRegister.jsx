@@ -134,16 +134,42 @@ export default function CashRegister() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [summaryRes, movementsRes] = await Promise.all([
+      const [summaryRes, movementsRes, sessionRes] = await Promise.all([
         axios.get(`${API}/cash/summary`, { params: { date } }),
-        axios.get(`${API}/cash/movements`, { params: { date } })
+        axios.get(`${API}/cash/movements`, { params: { date } }),
+        axios.get(`${API}/cash/sessions/active`)
       ]);
       setSummary(summaryRes.data);
       setMovements(movementsRes.data);
+      setActiveSession(sessionRes.data);
     } catch (error) {
       toast.error("Error al cargar datos de caja");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openCashSession = async () => {
+    if (!openingBalance || parseFloat(openingBalance) < 0) {
+      toast.error("Introduce un fondo de caja válido (puede ser 0)");
+      return;
+    }
+
+    try {
+      await axios.post(`${API}/cash/sessions/open`, {
+        opening_balance: parseFloat(openingBalance),
+        notes: sessionNotes
+      });
+      
+      toast.success("Caja abierta correctamente");
+      setShowOpenSessionDialog(false);
+      setOpeningBalance("");
+      setSessionNotes("");
+      
+      // Reload data to get new session
+      await loadData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al abrir caja");
     }
   };
 
