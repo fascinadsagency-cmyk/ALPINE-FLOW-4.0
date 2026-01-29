@@ -1022,35 +1022,57 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                     const renderCell = (colId) => {
                       switch(colId) {
                         case 'internal_code':
-                          return <span className="font-mono text-sm font-bold text-primary">{item.internal_code || '-'}</span>;
+                          return item.is_generic ? (
+                            <div>
+                              <span className="font-semibold text-emerald-700">{item.name}</span>
+                              <Badge variant="outline" className="ml-2 text-xs bg-amber-50 text-amber-700">Genérico</Badge>
+                            </div>
+                          ) : (
+                            <span className="font-mono text-sm font-bold text-primary">{item.internal_code || '-'}</span>
+                          );
                         case 'barcode':
-                          return <span className="font-mono text-xs text-slate-500">{item.barcode || '-'}</span>;
+                          return item.is_generic ? <span className="text-xs text-slate-400">N/A</span> : <span className="font-mono text-xs text-slate-500">{item.barcode || '-'}</span>;
                         case 'serial_number':
-                          return <span className="font-mono text-xs text-slate-500">{item.serial_number || '-'}</span>;
+                          return item.is_generic ? <span className="text-xs text-slate-400">N/A</span> : <span className="font-mono text-xs text-slate-500">{item.serial_number || '-'}</span>;
                         case 'item_type':
                           return <Badge variant="outline">{itemTypes.find(t => t.value === item.item_type)?.label || item.item_type}</Badge>;
                         case 'brand_model':
-                          return <span className="font-medium">{item.brand} {item.model}</span>;
+                          return item.is_generic ? <span className="text-slate-400">-</span> : <span className="font-medium">{item.brand} {item.model}</span>;
                         case 'size':
-                          return item.size;
+                          return item.is_generic ? '-' : item.size;
                         case 'binding':
-                          return <span className="text-sm text-slate-600">{item.binding || '-'}</span>;
+                          return item.is_generic ? '-' : <span className="text-sm text-slate-600">{item.binding || '-'}</span>;
                         case 'category':
                           return <Badge className={getCategoryBadge(item.category)}>{item.category}</Badge>;
                         case 'status':
-                          return getStatusBadge(item.status);
+                          return item.is_generic ? (
+                            <Badge className={item.stock_available > 0 ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}>
+                              {item.stock_available > 0 ? 'Disponible' : 'Agotado'}
+                            </Badge>
+                          ) : getStatusBadge(item.status);
+                        case 'stock':
+                          return item.is_generic ? (
+                            <div className="text-center">
+                              <span className="font-bold text-lg text-emerald-600">{item.stock_available}</span>
+                              <span className="text-slate-400 text-xs">/{item.stock_total}</span>
+                            </div>
+                          ) : <span className="text-slate-400">-</span>;
                         case 'location':
                           return <span className="text-sm">{item.location || '-'}</span>;
                         case 'days_used':
-                          return <span className="text-center">{item.days_used || 0}</span>;
+                          return item.is_generic ? '-' : <span className="text-center">{item.days_used || 0}</span>;
                         case 'maintenance':
-                          return needsMaintenance ? (
+                          return item.is_generic ? <span className="text-slate-400">N/A</span> : needsMaintenance ? (
                             <Badge variant="destructive" className="animate-pulse"><AlertCircle className="h-3 w-3 mr-1" />¡MANT!</Badge>
                           ) : (
                             <Badge variant="outline" className="bg-emerald-50 text-emerald-700">{usesRemaining} usos</Badge>
                           );
                         case 'purchase_price':
                           return <span className="font-mono">€{(item.purchase_price || 0).toFixed(0)}</span>;
+                        case 'rental_price':
+                          return item.is_generic && item.rental_price ? (
+                            <span className="font-mono text-emerald-600">€{item.rental_price.toFixed(2)}/d</span>
+                          ) : '-';
                         case 'purchase_date':
                           return <span className="text-xs">{item.purchase_date || '-'}</span>;
                         default:
