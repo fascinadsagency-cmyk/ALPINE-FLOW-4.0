@@ -1457,9 +1457,20 @@ async def create_rental(rental: RentalCreate, current_user: dict = Depends(get_c
     
     # AUTO-REGISTER in CAJA: Create cash movement for the paid amount
     if rental.paid_amount > 0:
+        # CRITICAL: Check for active session
+        date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+        
+        if not active_session:
+            raise HTTPException(
+                status_code=400,
+                detail="No hay sesión de caja activa. No se puede registrar el cobro. Abre la caja primero desde 'Gestión de Caja'."
+            )
+        
         cash_movement_id = str(uuid.uuid4())
         cash_doc = {
             "id": cash_movement_id,
+            "session_id": active_session["id"],  # LINK TO SESSION
             "movement_type": "income",
             "amount": rental.paid_amount,
             "payment_method": rental.payment_method,
