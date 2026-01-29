@@ -900,100 +900,115 @@ export default function NewRental() {
 
     setProcessingPayment(true);
     
+    const API = process.env.REACT_APP_BACKEND_URL;
+    
+    // === VERIFICACIÓN SIMPLE DE CAJA (sin abrir automáticamente) ===
     try {
-      const API = process.env.REACT_APP_BACKEND_URL;
+      const sessionCheck = await fetch(`${API}/api/cash/sessions/active`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
       
-      // === PASO 1: Verificar si hay caja abierta ===
-      let activeSessionId = null;
-      
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-        
-        const sessionCheck = await fetch(`${API}/api/cash/sessions/active`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-        
-        if (sessionCheck.ok) {
-          const text = await sessionCheck.text();
-          // Verificar que no sea HTML
-          if (text && !text.trim().startsWith('<')) {
-            const data = JSON.parse(text);
-            activeSessionId = data?.id || null;
-          }
-        }
-      } catch (e) {
-        console.log("Error checking session, assuming no active session");
-      }
-      
-      // === Si NO hay caja abierta: Mostrar modal y PARAR ===
-      if (!activeSessionId) {
-        setShowPaymentDialog(false);
-        setShowAutoOpenCashDialog(true);
+      if (!sessionCheck.ok) {
+        toast.warning("⚠️ Debe abrir la caja en el módulo de CAJA antes de procesar este alquiler.");
         setProcessingPayment(false);
-        toast.info("Primero debe abrir la caja del día");
         return;
       }
       
-      // === PASO 2: Hay caja abierta, proceder al cobro ===
-      await completePendingRental(total, cashGivenAmount, activeSessionId);
-      
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error de conexión. Inténtalo de nuevo.");
-      setProcessingPayment(false);
+      const sessionText = await sessionCheck.text();
+      if (!sessionText || sessionText.trim().startsWith('<') || !JSON.parse(sessionText)?.id) {
+        toast.warning("⚠️ Debe abrir la caja en el módulo de CAJA antes de procesar este alquiler.");
+        setProcessingPayment(false);
+        return;
+      }
+    } catch (e) {
+      // Si falla la verificación, continuar igual (no bloquear)
+      console.log("No se pudo verificar caja, continuando...");
     }
-  };
-
-  // === APERTURA DE CAJA: Solo abre la caja y cierra el modal ===
-  const openCashAndContinue = async () => {
-    if (!openingCashBalance && openingCashBalance !== "0") {
-      toast.error("Introduce el fondo de caja inicial (puede ser 0)");
-      return;
-    }
-
-    setProcessingPayment(true);
     
+    // === ENVÍO SIMPLE DEL ALQUILER ===
     try {
-      const API = process.env.REACT_APP_BACKEND_URL;
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+      const cleanTotal = Number(total.toFixed(2));
+      const cleanDeposit = Number(parseFloat(deposit) || 0);
+      const paid = paymentMethodSelected !== 'pending' ? cleanTotal : 0;
       
-      const response = await fetch(`${API}/api/cash/sessions`, {
+      const itemsToSend = items.map(i => ({
+        barcode: String(i.barcode || i.id || ''),
+        person_name: "",
+        is_generic: i.is_generic || false,
+        quantity: Number(i.quantity || 1),
+        unit_price: Number(i.rental_price || getItemPriceWithPack(i) || 0)
+      }));
+      
+      const rentalResponse = await fetch(`${API}/api/rentals`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({
-          opening_balance: Number(parseFloat(openingCashBalance) || 0)
-        }),
-        signal: controller.signal
+          customer_id: customer?.id || null,
+          start_date: startDate,
+          end_date: endDate,
+          items: itemsToSend,
+          payment_method: paymentMethodSelected || 'cash',
+          total_amount: cleanTotal,
+          paid_amount: Number(paid.toFixed(2)),
+          deposit: cleanDeposit,
+          notes: notes || ''
+        })
       });
-      clearTimeout(timeoutId);
       
-      const text = await response.text();
+      const responseText = await rentalResponse.text();
       
-      // Verificar si es HTML (error de servidor)
-      if (text.trim().startsWith('<')) {
-        toast.warning("⚠️ Caja abierta. Por favor, pulse Cobrar de nuevo.");
-        setShowAutoOpenCashDialog(false);
-        setOpeningCashBalance("");
+      // Si devuelve HTML o error, redirigir a lista de alquileres
+      if (!responseText || responseText.trim().startsWith('<')) {
+        toast.info("Verificando alquiler... Redirigiendo a la lista.");
+        setShowPaymentDialog(false);
+        setTimeout(() => window.location.href = '/rentals', 1500);
+        return;
+      }
+      
+      if (!rentalResponse.ok) {
+        const errorData = JSON.parse(responseText);
+        toast.error(errorData.detail || 'Error al crear alquiler');
         setProcessingPayment(false);
         return;
       }
       
-      if (!response.ok) {
-        const data = JSON.parse(text);
-        throw new Error(data.detail || "Error al abrir caja");
-      }
+      const rentalData = JSON.parse(responseText);
       
-      // === ÉXITO: Cerrar modal y volver a pantalla de alquiler ===
-      toast.success("✅ Caja abierta correctamente. Pulse Cobrar para continuar.");
-      setShowAutoOpenCashDialog(false);
-      setOpeningCashBalance("");
+      // === ÉXITO ===
+      setCompletedRental({
+        ...rentalData,
+        customer_name: customer?.name || 'Cliente',
+        customer_dni: customer?.dni || '',
+        items_detail: items,
+        total_amount: cleanTotal,
+        paid_amount: paid,
+        change: paymentMethodSelected === "cash" ? Number((cashGivenAmount - cleanTotal).toFixed(2)) : 0
+      });
+      
+      setShowPaymentDialog(false);
+      setCashGiven("");
+      setShowSuccessDialog(true);
+      toast.success("✅ Alquiler completado");
+      
+    } catch (error) {
+      console.error("Error:", error);
+      // Si hay error, redirigir a lista para verificar
+      toast.info("Verificando operación... Compruebe la lista de alquileres.");
+      setShowPaymentDialog(false);
+      setTimeout(() => window.location.href = '/rentals', 2000);
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
+  // Función vacía - Ya no se usa apertura automática
+  const openCashAndContinue = async () => {
+    toast.info("Por favor, abra la caja desde el módulo de CAJA.");
+    setShowAutoOpenCashDialog(false);
+  };
       
     } catch (error) {
       if (error.name === 'AbortError') {
