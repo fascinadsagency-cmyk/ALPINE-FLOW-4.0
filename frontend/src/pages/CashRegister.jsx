@@ -123,6 +123,17 @@ export default function CashRegister() {
     loadData();
   }, [date]);
 
+  // Auto-refresh every 10 seconds for real-time updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (activeTab === "today") {
+        loadData();
+      }
+    }, 10000); // 10 seconds
+    
+    return () => clearInterval(interval);
+  }, [activeTab, date]);
+
   useEffect(() => {
     if (activeTab === "closures") {
       loadClosureHistory();
