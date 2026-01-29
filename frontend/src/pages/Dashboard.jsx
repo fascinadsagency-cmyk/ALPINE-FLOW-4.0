@@ -701,7 +701,7 @@ export default function Dashboard() {
                       variant="ghost" 
                       size="sm" 
                       className="mt-2 w-full justify-between text-amber-700"
-                      onClick={() => navigate("/maintenance")}
+                      onClick={() => navigate("/mantenimiento?view=fleet")}
                     >
                       Ver equipos
                       <ChevronRight className="h-4 w-4" />
