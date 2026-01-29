@@ -116,7 +116,17 @@ POST /api/cash/close            - Cerrar caja con arqueo
   - **Verificación post-borrado:** Si el artículo persiste, se fuerza recarga completa
   - **Borrado masivo mejorado:** Procesa TODOS los artículos seleccionados sin detenerse por fallos individuales
 
-### 2. Corrección del Bug Crítico de Contabilidad
+### 2. Rediseño Completo del Ticket de Alquiler - RESUELTO
+- **Problema:** El ticket omitía información crítica como tipo de producto, días y desglose de precios
+- **Solución:**
+  - **Nº Ticket:** Formato `AXXXXXX` visible en cabecera
+  - **Descripción completa:** Tipo de producto + Modelo + Talla para cada artículo
+  - **Columna de días:** Días contratados por cada artículo individual
+  - **Desglose de precios:** [Descripción] | [Días] | [P.Unitario] | [Subtotal]
+  - **Formato de packs:** Packs agrupados con componentes listados y precio único
+  - **Diseño profesional:** Ticket para impresora térmica 80mm con estilos CSS optimizados
+
+### 3. Corrección del Bug Crítico de Contabilidad
 - **Problema:** Los cobros de alquileres no se registraban en la caja
 - **Solución:**
   - Todos los endpoints financieros ahora requieren `session_id`
