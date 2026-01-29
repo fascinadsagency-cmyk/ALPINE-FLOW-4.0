@@ -124,6 +124,11 @@ export default function Inventory() {
   const fileInputRef = useRef(null);
   const importFileRef = useRef(null);
   
+  // MULTI-SELECT for bulk delete
+  const [selectedItems, setSelectedItems] = useState(new Set());
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  
   // Column customization states
   const [columnOrder, setColumnOrder] = useState(() => {
     const saved = localStorage.getItem('inventory_column_order');
