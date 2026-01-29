@@ -523,17 +523,17 @@ export default function CashRegister() {
     };
   };
 
-  const revertClosure = async (closingId) => {
-    if (!window.confirm(`¿Seguro que quieres reabrir este cierre de caja? Esto permitirá realizar un nuevo cierre.`)) {
-      return;
-    }
+  const confirmRevertClosure = async () => {
+    if (!revertClosureId) return;
     try {
-      await axios.delete(`${API}/cash/closings/${closingId}`);
-      toast.success(`Cierre reabierto correctamente`);
+      await axios.delete(`${API}/cash/closings/${revertClosureId}`);
+      toast.success(`✅ Cierre reabierto correctamente`);
       loadClosureHistory();
       loadData();
     } catch (error) {
       toast.error(error.response?.data?.detail || "Error al reabrir caja");
+    } finally {
+      setRevertClosureId(null);
     }
   };
 
