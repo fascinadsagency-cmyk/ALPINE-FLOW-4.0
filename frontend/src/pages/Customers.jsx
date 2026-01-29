@@ -198,6 +198,7 @@ export default function Customers() {
       name: customer.name,
       dni: customer.dni,
       phone: customer.phone || "",
+      email: customer.email || "",
       address: customer.address || "",
       city: customer.city || "",
       source: customer.source || "",
