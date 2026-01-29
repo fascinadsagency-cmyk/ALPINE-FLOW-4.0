@@ -1204,24 +1204,23 @@ export default function NewRental() {
       `;
     }).join('');
     
-    // Generate HTML for pack items - SINGLE LINE PER PACK with embedded reference codes
+    // Generate HTML for pack items - SINGLE LINE PER PACK with FUSED name format
     const packsHtml = Object.values(packItems).map(packData => {
       const packDays = packData.days;
       // CRITICAL: Pack price is TOTAL for the selected days, NOT per day
       const packTotal = getPackPrice(packData.pack, packDays);
-      const packName = packData.pack.name;
       
-      // Build reference codes string: "SKI-001 / BOT-002"
+      // Build reference codes: "SKI-001 / BOT-002"
       const refCodes = packData.items.map(item => 
         item.internal_code || item.barcode?.substring(0, 10) || 'N/A'
       ).join(' / ');
       
+      // FUSED NAME FORMAT: "Pack Esquí Plata [SKI-001 / BOT-204]"
+      const fusedPackName = `${packData.pack.name} [${refCodes}]`;
+      
       return `
         <tr class="item-row pack-row">
-          <td class="item-desc">
-            <div class="pack-name">${packName}</div>
-            <div class="pack-refs">Ref: ${refCodes}</div>
-          </td>
+          <td class="item-desc">${fusedPackName}</td>
           <td class="item-days">${packDays}</td>
           <td class="item-unit">-</td>
           <td class="item-subtotal">€${packTotal.toFixed(2)}</td>
