@@ -2328,6 +2328,36 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Confirmación para Eliminar Tipo */}
+      <Dialog open={!!deleteTypeData} onOpenChange={() => setDeleteTypeData(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <Trash2 className="h-5 w-5" />
+              Eliminar Tipo de Artículo
+            </DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que deseas eliminar el tipo "{deleteTypeData?.typeName}"?
+              <br /><br />
+              <span className="text-amber-600">
+                Si hay artículos usando este tipo, no se podrá eliminar.
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setDeleteTypeData(null)}>
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={confirmDeleteItemType}
+            >
+              Sí, Eliminar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
