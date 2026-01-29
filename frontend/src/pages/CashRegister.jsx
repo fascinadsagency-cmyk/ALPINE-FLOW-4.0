@@ -597,13 +597,21 @@ export default function CashRegister() {
                 <Card className="border-blue-200 bg-blue-50">
                   <CardContent className="pt-6">
                     <p className="text-sm text-blue-700">Efectivo</p>
-                    <p className="text-2xl font-bold text-blue-700">€{(summary?.by_method?.cash || 0).toFixed(2)}</p>
+                    <p className="text-2xl font-bold text-blue-700">
+                      €{(((summary?.by_payment_method?.cash?.income || 0) - 
+                         (summary?.by_payment_method?.cash?.expense || 0) - 
+                         (summary?.by_payment_method?.cash?.refund || 0)) || 0).toFixed(2)}
+                    </p>
                   </CardContent>
                 </Card>
                 <Card className="border-purple-200 bg-purple-50">
                   <CardContent className="pt-6">
                     <p className="text-sm text-purple-700">Tarjeta</p>
-                    <p className="text-2xl font-bold text-purple-700">€{(summary?.by_method?.card || 0).toFixed(2)}</p>
+                    <p className="text-2xl font-bold text-purple-700">
+                      €{(((summary?.by_payment_method?.card?.income || 0) - 
+                         (summary?.by_payment_method?.card?.expense || 0) - 
+                         (summary?.by_payment_method?.card?.refund || 0)) || 0).toFixed(2)}
+                    </p>
                   </CardContent>
                 </Card>
               </div>
@@ -619,7 +627,7 @@ export default function CashRegister() {
                       </p>
                     </div>
                     <div className="text-right text-sm text-slate-500">
-                      <p>{summary?.total_transactions || 0} operaciones</p>
+                      <p className="font-semibold text-lg">{summary?.movements_count || 0} operaciones</p>
                     </div>
                   </div>
                 </CardContent>
