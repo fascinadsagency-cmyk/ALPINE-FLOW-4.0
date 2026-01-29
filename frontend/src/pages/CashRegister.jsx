@@ -704,28 +704,55 @@ export default function CashRegister() {
                 <CardContent className="py-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-slate-600">Saldo Neto del Día</p>
+                      <p className="text-sm font-medium text-slate-600">Saldo Neto del Turno</p>
                       <p className={`text-4xl font-bold ${(summary?.balance || 0) >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
                         €{(summary?.balance || 0).toFixed(2)}
                       </p>
+                      {activeSession && (
+                        <p className="text-xs text-slate-500 mt-1">
+                          Fondo inicial: €{(activeSession.opening_balance || 0).toFixed(2)}
+                        </p>
+                      )}
                     </div>
                     <div className="text-right text-sm text-slate-500">
                       <p className="font-semibold text-lg">{summary?.movements_count || 0} operaciones</p>
+                      {activeSession && (
+                        <p className="text-xs mt-1">Turno #{activeSession.session_number}</p>
+                      )}
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Info banner - Multiple closures allowed */}
-              <div className="mb-4 p-3 rounded-lg bg-blue-50 border border-blue-200 flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-blue-800">
-                  <p className="font-semibold">Sistema de caja sin restricciones horarias</p>
-                  <p className="text-blue-700 mt-0.5">
-                    Puedes cerrar caja en cualquier momento del día. El sistema permite múltiples turnos/cierres por fecha.
-                  </p>
+              {/* Session Status Banner */}
+              {!activeSession ? (
+                <div className="mb-4 p-4 rounded-lg bg-amber-50 border-2 border-amber-300 flex items-start gap-3">
+                  <AlertTriangle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-bold text-amber-900">⚠️ No hay caja abierta</p>
+                    <p className="text-sm text-amber-800 mt-1">
+                      Debes abrir la caja para registrar movimientos y ventas. Cualquier cobro realizado sin caja abierta no se registrará.
+                    </p>
+                    <Button 
+                      onClick={() => setShowOpenSessionDialog(true)}
+                      className="mt-3 bg-amber-600 hover:bg-amber-700"
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Abrir Caja Ahora
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="mb-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-emerald-800">
+                    <p className="font-semibold">✅ Caja abierta - Turno #{activeSession.session_number}</p>
+                    <p className="text-emerald-700 mt-0.5">
+                      Abierta por {activeSession.opened_by} el {new Date(activeSession.opened_at).toLocaleString('es-ES')}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Actions */}
               <div className="flex flex-wrap gap-2 mb-6">
