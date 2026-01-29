@@ -332,7 +332,7 @@ export default function CashRegister() {
       <body>
         <div class="header">
           <div class="title">ARQUEO DE CAJA</div>
-          <div>Fecha: ${closingData.date}</div>
+          <div>Fecha: ${closingData.date}${closingData.closure_number ? ` - Turno #${closingData.closure_number}` : ''}</div>
           <div>Cerrado: ${formatDate(closingData.closed_at)}</div>
           <div>Por: ${closingData.closed_by || '-'}</div>
         </div>
