@@ -969,7 +969,6 @@ async def get_items_with_profitability(
             query = {"$and": [existing_query, {"$or": search_conditions}]}
         else:
             query["$or"] = search_conditions
-        ]
     
     items = await db.items.find(query, {"_id": 0}).to_list(500)
     
