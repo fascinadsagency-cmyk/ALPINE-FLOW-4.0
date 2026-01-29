@@ -301,9 +301,10 @@ export default function CashRegister() {
       });
     };
     
-    // Extract payment method breakdown
+    // Extract payment method breakdown (with fallback for old closures)
     const cashData = closingData.by_payment_method?.cash || { income: 0, expense: 0, refund: 0 };
     const cardData = closingData.by_payment_method?.card || { income: 0, expense: 0, refund: 0 };
+    const hasDetailedBreakdown = closingData.by_payment_method && Object.keys(closingData.by_payment_method).length > 0;
     
     printWindow.document.write(`
       <html>
@@ -351,6 +352,7 @@ export default function CashRegister() {
         
         <div class="divider"></div>
         
+        ${hasDetailedBreakdown ? `
         <div class="section">
           <div style="font-weight: bold; margin-bottom: 8px;">DESGLOSE POR MÉTODO DE PAGO</div>
           
@@ -390,6 +392,21 @@ export default function CashRegister() {
             </span>
           </div>
         </div>
+        ` : `
+        <div class="section">
+          <div style="font-weight: bold; margin-bottom: 5px;">EFECTIVO</div>
+          <div class="row"><span>Esperado:</span><span>€${formatCurrency(closingData.expected_cash)}</span></div>
+          <div class="row"><span>Contado:</span><span class="value">€${formatCurrency(closingData.physical_cash)}</span></div>
+          <div class="row"><span>Descuadre:</span><span class="value" style="color: ${closingData.discrepancy_cash === 0 ? 'green' : 'red'}">€${formatCurrency(closingData.discrepancy_cash)}</span></div>
+        </div>
+        
+        <div class="section">
+          <div style="font-weight: bold; margin-bottom: 5px;">TARJETA</div>
+          <div class="row"><span>Esperado:</span><span>€${formatCurrency(closingData.expected_card)}</span></div>
+          <div class="row"><span>Datáfono:</span><span class="value">€${formatCurrency(closingData.card_total)}</span></div>
+          <div class="row"><span>Descuadre:</span><span class="value" style="color: ${closingData.discrepancy_card === 0 ? 'green' : 'red'}">€${formatCurrency(closingData.discrepancy_card)}</span></div>
+        </div>
+        `}
         
         <div class="divider"></div>
         
