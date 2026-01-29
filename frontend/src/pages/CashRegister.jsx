@@ -684,6 +684,17 @@ export default function CashRegister() {
                 </CardContent>
               </Card>
 
+              {/* Info banner - Multiple closures allowed */}
+              <div className="mb-4 p-3 rounded-lg bg-blue-50 border border-blue-200 flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-blue-800">
+                  <p className="font-semibold">Sistema de caja sin restricciones horarias</p>
+                  <p className="text-blue-700 mt-0.5">
+                    Puedes cerrar caja en cualquier momento del día. El sistema permite múltiples turnos/cierres por fecha.
+                  </p>
+                </div>
+              </div>
+
               {/* Actions */}
               <div className="flex flex-wrap gap-2 mb-6">
                 <Button onClick={() => { setMovementType("income"); setShowAddDialog(true); }}>
