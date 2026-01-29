@@ -60,6 +60,16 @@ export default function ActiveRentals() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerLoading, setCustomerLoading] = useState(false);
 
+  // SWAP/CANJE modal state
+  const [swapModal, setSwapModal] = useState(null); // { rental, item }
+  const [swapNewBarcode, setSwapNewBarcode] = useState("");
+  const [swapNewItem, setSwapNewItem] = useState(null);
+  const [swapNewDays, setSwapNewDays] = useState("");
+  const [swapStep, setSwapStep] = useState(1); // 1: Scan, 2: Confirm, 3: Payment
+  const [swapLoading, setSwapLoading] = useState(false);
+  const [swapDelta, setSwapDelta] = useState(null);
+  const [swapPaymentMethod, setSwapPaymentMethod] = useState("cash");
+
   useEffect(() => {
     loadActiveRentals();
   }, []);
