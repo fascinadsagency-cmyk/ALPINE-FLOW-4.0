@@ -3060,6 +3060,11 @@ async def get_cash_summary(date: Optional[str] = None, current_user: dict = Depe
         "movements_count": len(movements)
     }
 
+async def get_next_closure_number(date: str) -> int:
+    """Get the next closure number for a given date (supports multiple closures per day)"""
+    closures_count = await db.cash_closings.count_documents({"date": date})
+    return closures_count + 1
+
 @api_router.post("/cash/close")
 async def close_cash_register(closing: CashClosingCreate, current_user: dict = Depends(get_current_user)):
     # NO RESTRICTIONS: Allow closing cash register at any time, multiple times per day
