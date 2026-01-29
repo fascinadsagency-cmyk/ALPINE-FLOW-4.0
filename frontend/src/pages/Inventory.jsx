@@ -115,15 +115,31 @@ export default function Inventory() {
       if (filterType && filterType !== "all") params.item_type = filterType;
       if (filterCategory && filterCategory !== "all") params.category = filterCategory;
       if (searchTerm) params.search = searchTerm;
+      if (sortBy) params.sort_by = sortBy;
       
-      const response = await itemApi.getAll(params);
-      setItems(response.data);
+      // Use profitability endpoint if enabled
+      if (showProfitability) {
+        const response = await axios.get(`${API}/items/with-profitability`, {
+          params,
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        setItems(response.data.items);
+        setProfitabilitySummary(response.data.summary);
+      } else {
+        const response = await itemApi.getAll(params);
+        setItems(response.data);
+        setProfitabilitySummary(null);
+      }
     } catch (error) {
       toast.error("Error al cargar inventario");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadItems();
+  }, [filterStatus, filterType, filterCategory, showProfitability, sortBy]);
 
   const handleSearch = (e) => {
     e.preventDefault();
