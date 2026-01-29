@@ -782,15 +782,6 @@ export default function NewRental() {
     }
   };
 
-  const updateItemPrice = (itemId, newPrice) => {
-    setItems(items.map(item => 
-      (item.id || item.barcode) === itemId 
-        ? { ...item, customPrice: parseFloat(newPrice) || null }
-        : item
-    ));
-    setEditingItemPrice(null);
-  };
-
   const getItemPrice = (item) => {
     // Para artículos genéricos, usar rental_price
     if (item.is_generic && item.rental_price) {
