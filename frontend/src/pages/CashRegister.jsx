@@ -990,7 +990,7 @@ export default function CashRegister() {
                                 variant="outline"
                                 size="sm"
                                 className="gap-1 text-orange-600 border-orange-300 hover:bg-orange-50"
-                                onClick={() => revertClosure(closure.id)}
+                                onClick={() => setRevertClosureId(closure.id)}
                                 data-testid={`revert-closure-${closure.date}`}
                               >
                                 <Undo2 className="h-3 w-3" />
