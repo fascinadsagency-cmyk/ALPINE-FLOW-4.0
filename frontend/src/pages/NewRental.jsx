@@ -251,6 +251,9 @@ export default function NewRental() {
 
     const detected = [];
     
+    // Create a copy of items to track which ones are used
+    const availableItems = [...currentItems];
+    
     // Group items by category
     const itemsByCategory = currentItems.reduce((acc, item) => {
       const cat = item.category || 'MEDIA';
@@ -259,56 +262,80 @@ export default function NewRental() {
       return acc;
     }, {});
 
-    // For each category, check if items form a pack
+    // For each category, detect ALL possible pack instances
     Object.entries(itemsByCategory).forEach(([category, categoryItems]) => {
-      // Count item types in this category
-      const itemTypeCounts = categoryItems.reduce((acc, item) => {
-        acc[item.item_type] = (acc[item.item_type] || 0) + 1;
-        return acc;
-      }, {});
-
-      // Check each pack of this category
+      // Get packs for this category
       const categoryPacks = packs.filter(p => p.category === category);
       
-      categoryPacks.forEach(pack => {
-        // Count required components
-        const requiredComponents = pack.items.reduce((acc, itemType) => {
-          acc[itemType] = (acc[itemType] || 0) + 1;
-          return acc;
-        }, {});
-
-        // Check if we have all components
-        let canFormPack = true;
-        for (const [type, count] of Object.entries(requiredComponents)) {
-          if ((itemTypeCounts[type] || 0) < count) {
-            canFormPack = false;
-            break;
-          }
-        }
-
-        if (canFormPack) {
-          // Find the specific items that form this pack
-          const usedItems = [];
-          const tempCounts = { ...itemTypeCounts };
+      // Track which items have been assigned to packs
+      const usedBarcodes = new Set();
+      
+      // Keep trying to form packs until no more can be formed
+      let foundPack = true;
+      while (foundPack) {
+        foundPack = false;
+        
+        // Try each pack definition
+        for (const pack of categoryPacks) {
+          // Get available items (not yet used in a pack)
+          const availableCategoryItems = categoryItems.filter(
+            item => !usedBarcodes.has(item.barcode)
+          );
           
-          for (const requiredType of pack.items) {
-            const item = categoryItems.find(i => 
-              i.item_type === requiredType && !usedItems.includes(i.barcode)
-            );
-            if (item) {
-              usedItems.push(item.barcode);
+          // Count available item types
+          const availableTypeCounts = availableCategoryItems.reduce((acc, item) => {
+            acc[item.item_type] = (acc[item.item_type] || 0) + 1;
+            return acc;
+          }, {});
+          
+          // Count required components for this pack
+          const requiredComponents = pack.items.reduce((acc, itemType) => {
+            acc[itemType] = (acc[itemType] || 0) + 1;
+            return acc;
+          }, {});
+
+          // Check if we have all components available
+          let canFormPack = true;
+          for (const [type, count] of Object.entries(requiredComponents)) {
+            if ((availableTypeCounts[type] || 0) < count) {
+              canFormPack = false;
+              break;
             }
           }
 
-          if (usedItems.length === pack.items.length) {
-            detected.push({
-              pack: pack,
-              items: usedItems,
-              category: category
-            });
+          if (canFormPack) {
+            // Find the specific items that will form THIS instance of the pack
+            const packInstanceItems = [];
+            
+            for (const requiredType of pack.items) {
+              const item = availableCategoryItems.find(i => 
+                i.item_type === requiredType && 
+                !packInstanceItems.includes(i.barcode) &&
+                !usedBarcodes.has(i.barcode)
+              );
+              if (item) {
+                packInstanceItems.push(item.barcode);
+                usedBarcodes.add(item.barcode);
+              }
+            }
+
+            if (packInstanceItems.length === pack.items.length) {
+              // Generate unique instance ID for this pack
+              const instanceId = `pack-instance-${Date.now()}-${detected.length}`;
+              
+              detected.push({
+                pack: pack,
+                items: packInstanceItems,
+                category: category,
+                instanceId: instanceId  // Unique ID for this specific pack instance
+              });
+              
+              foundPack = true;
+              break; // Start over to check for more packs
+            }
           }
         }
-      });
+      }
     });
 
     return detected;
