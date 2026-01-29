@@ -1441,7 +1441,7 @@ export default function NewRental() {
           <table class="totals-table">
             <tr><td class="label">Subtotal:</td><td class="amount">€${subtotal_val.toFixed(2)}</td></tr>
             ${total_val < subtotal_val ? `<tr><td class="label">Descuento:</td><td class="amount" style="color:#dc2626;">-€${(subtotal_val - total_val).toFixed(2)}</td></tr>` : ''}
-            <tr class="total-row"><td class="label bold">TOTAL A PAGAR:</td><td class="amount">€${total_val.toFixed(2)}</td></tr>
+            <tr class="total-row"><td class="label bold">TOTAL (IVA inc.):</td><td class="amount">€${total_val.toFixed(2)}</td></tr>
             <tr class="paid-row"><td class="label">Pagado (${PAYMENT_METHODS.find(p => p.value === completedRental.payment_method)?.label || completedRental.payment_method}):</td><td class="amount">€${completedRental.paid_amount.toFixed(2)}</td></tr>
             ${completedRental.change > 0 ? `<tr class="change-row"><td class="label bold">CAMBIO:</td><td class="amount">€${completedRental.change.toFixed(2)}</td></tr>` : ''}
           </table>
