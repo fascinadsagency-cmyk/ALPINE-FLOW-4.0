@@ -218,6 +218,39 @@ export default function Customers() {
     return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
+  // Contact functions
+  const sendWhatsAppMessage = (phone, customerName) => {
+    if (!phone) {
+      toast.error("No hay teléfono registrado para este cliente");
+      return;
+    }
+    const cleanPhone = phone.replace(/\D/g, '');
+    const message = encodeURIComponent(
+      `Hola ${customerName}, te contactamos de la tienda de esquí. ¿En qué podemos ayudarte?`
+    );
+    window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
+  };
+
+  const callPhone = (phone) => {
+    if (!phone) {
+      toast.error("No hay teléfono registrado");
+      return;
+    }
+    window.open(`tel:${phone}`, '_self');
+  };
+
+  const sendEmail = (email, customerName) => {
+    if (!email) {
+      toast.error("No hay email registrado");
+      return;
+    }
+    const subject = encodeURIComponent("Información sobre tu alquiler - Tienda de Esquí");
+    const body = encodeURIComponent(
+      `Hola ${customerName},\n\nTe contactamos desde la tienda de esquí.\n\nGracias.`
+    );
+    window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+  };
+
   return (
     <div className="p-6 lg:p-8" data-testid="customers-page">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
