@@ -91,6 +91,14 @@
 - **Persistencia**: El precio personalizado se envía al cobro y se registra en caja
 - **Sin restricciones**: Administradores y dependientes pueden ajustar precios
 
+### 7. Botones de Acceso Rápido en Nuevo Alquiler ✨ NUEVO
+- **Ubicación**: Barra compacta debajo de la lista de artículos, encima del total
+- **Botones**: [+ Casco], [+ Máscara], [+ Bastones]
+- **Comportamiento**: Click instantáneo añade el primer artículo disponible del tipo
+- **Feedback**: Toast de éxito con nombre del artículo añadido
+- **Error handling**: Muestra mensaje si no hay artículos del tipo disponibles
+- **Diseño**: Minimalista, integrado como parte del carrito
+
 ## Próximas Tareas
 
 ### P1 - Alta Prioridad
