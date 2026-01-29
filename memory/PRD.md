@@ -4,65 +4,79 @@
 Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowboard con énfasis en VELOCIDAD y PRECISIÓN.
 
 ## Stack Tecnológico
-- **Frontend**: React + Tailwind CSS + Shadcn UI
+- **Frontend**: React + Tailwind CSS + Shadcn UI + XLSX (para importación)
 - **Backend**: FastAPI + Python
 - **Base de datos**: MongoDB
 - **Autenticación**: JWT
 
 ## Funcionalidades Implementadas
 
-### 1. Módulo de Caja - REDISEÑADO (2026-01-29)
-**3 Pestañas principales:**
+### 1. Importador Universal de Clientes (2026-01-29) ✨ NUEVO
+**Sistema completo de importación masiva:**
 
-**A) Caja del Día:**
-- Sin límite horario para cerrar caja (siempre disponible)
-- Navegación por fechas (anterior/siguiente)
-- Tarjetas: Entradas, Salidas, Devoluciones, Efectivo, Tarjeta
-- Saldo Neto del Día
-- Tabla de movimientos con reimprimir ticket
+**Formatos soportados:**
+- CSV (separador por comas o punto y coma)
+- XLS (Excel 97-2003)
+- XLSX (Excel moderno)
 
-**B) Cierres Pasados:**
-- Histórico completo de cierres
-- Columnas: Fecha, Empleado, Esperado/Real Efectivo, Esperado/Real Tarjeta, Descuadre Total
-- Botón **Reabrir** para revertir cierres
+**Flujo de 4 pasos:**
+1. **Subir archivo**: Área de drag & drop con validación de formato
+2. **Mapeo de campos**: Asociar columnas del archivo con campos del sistema
+   - Auto-mapeo inteligente (detecta nombres similares)
+   - Campos obligatorios: DNI*, Nombre*, Teléfono*
+   - Campos opcionales: Email, Dirección, Ciudad, Proveedor, Notas
+3. **Previsualización**: Muestra las primeras 5 filas antes de importar
+4. **Resultados**: Resumen de importados, duplicados (omitidos), errores
 
-**C) Histórico Movimientos:**
-- Buscador con filtros: Fecha desde/hasta, Tipo de operación, Búsqueda por concepto
-- Lista cronológica infinita de movimientos
-- Botón **Reimprimir Ticket** en cada movimiento
+**Detección de duplicados:**
+- Por DNI (principal)
+- Por Email (secundario)
 
-**Formulario de Cierre (Arqueo Manual):**
-- Campo obligatorio: Efectivo Real Contado
-- Campo obligatorio: Total Datáfono/Tarjeta
-- Cálculo automático de descuadre (Efectivo + Tarjeta)
-- Indicador visual: Verde (cuadra), Amarillo (pequeña diferencia), Rojo (descuadre grande)
-- Observaciones del cierre
+### 2. Ajuste de Campos en Ficha de Cliente (2026-01-29) ✨ NUEVO
+**Campos obligatorios (con asterisco rojo):**
+- DNI/Pasaporte *
+- Nombre Completo *
+- Teléfono *
 
-### 2. Rentabilidad en Inventario
-- Columnas: Coste, Ingresos, Amortización (barra), Beneficio
-- Ordenación por rentabilidad
+**Campos opcionales (sin asterisco):**
+- Email
+- Dirección
+- Población/Ciudad
+- Colaborador/Proveedor
+- Observaciones Internas
 
-### 3. Filtro de Estado en Clientes
+### 3. Módulo de Packs con Tipos Personalizados (2026-01-29)
+- Carga dinámica de tipos de artículo desde `/api/item-types`
+- Compatible con tipos por defecto y personalizados
+
+### 4. Buscador de Clientes en Taller Externo (2026-01-29)
+- Autocompletado con debounce (300ms)
+- Búsqueda por nombre, teléfono o DNI
+- Opción de crear nuevo cliente desde el diálogo
+
+### 5. Módulo de Caja - REDISEÑADO
+**3 Pestañas:** Caja del Día, Cierres Pasados, Histórico Movimientos
+- Arqueo manual con efectivo y tarjeta
+- Revertir cierres
+- Sin límite horario para cerrar
+
+### 6. Rentabilidad en Inventario
+- Coste, Ingresos, Amortización, Beneficio por artículo
+
+### 7. Filtro de Estado en Clientes
 - Todos / Activos Hoy / Inactivos
 
-### 4. Acceso a Ficha de Cliente
-- Nombre clicable en: Devoluciones, Alquileres Activos, Base de Datos
-
-### 5. Modificar Duración de Alquileres
+### 8. Modificar Duración de Alquileres
 - Flujo de 3 pasos con ajuste financiero
 
-### 6. Módulo de Packs con Tipos Personalizados (2026-01-29)
-- Carga dinámica de tipos de artículo desde `/api/item-types`
-- Compatible con tipos por defecto (ski, snowboard, boots, helmet, poles)
-- Compatible con tipos personalizados creados por el usuario
-- Los packs existentes muestran correctamente los nombres de tipos personalizados
+## API Endpoints Nuevos
 
-### 7. Buscador de Clientes en Taller Externo (2026-01-29)
-- Autocompletado en tiempo real con debounce (300ms)
-- Búsqueda por nombre, teléfono o DNI
-- Navegación por teclado (↑↓ Enter Escape)
-- Muestra: nombre, DNI, ciudad, teléfono
-- Opción de crear nuevo cliente desde el mismo diálogo
+### Importación de Clientes
+```
+POST /api/customers/import
+Body: { customers: [{ dni, name, phone, email?, address?, city?, source?, notes? }] }
+Response: { imported: number, duplicates: number, errors: number, duplicate_dnis: string[] }
+```
 
 ## Próximas Tareas (Backlog)
 
@@ -82,21 +96,18 @@ Sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowb
 - [ ] Modo Oscuro
 
 ## Refactorización Pendiente
-- **CRÍTICO**: `/app/backend/server.py` es un monolito de +3000 líneas. Debe descomponerse en módulos (routers, models, services)
-- **ALTO**: Páginas grandes de React (CashRegister.jsx, ActiveRentals.jsx, Inventory.jsx, Customers.jsx) deben dividirse en componentes
+- **CRÍTICO**: `/app/backend/server.py` es un monolito de +3000 líneas
+- **ALTO**: Páginas grandes de React (CashRegister.jsx, ActiveRentals.jsx, Inventory.jsx, Customers.jsx)
 
 ## Credenciales de Prueba
 - Usuario: test_packs_user
 - Contraseña: test123456
 
-## Última Actualización
-Fecha: 2026-01-29
-Versión: 2.7.0
-
 ## Changelog
-- **v2.7.0** (2026-01-29): 
-  - Módulo de Packs compatible con tipos de artículo personalizados
-  - Buscador de clientes mejorado en Taller Externo (autocompletado, crear cliente)
-- **v2.6.0** (2026-01-29): Rediseño completo del Módulo de Caja
+- **v2.8.0** (2026-01-29): 
+  - Importador universal de clientes (CSV/XLS/XLSX) con mapeo y detección de duplicados
+  - Email ahora es opcional, Teléfono es obligatorio
+  - Asteriscos rojos en campos obligatorios del formulario
+- **v2.7.0** (2026-01-29): Packs con tipos personalizados, buscador en taller
+- **v2.6.0** (2026-01-29): Rediseño del Módulo de Caja
 - **v2.5.0** (2026-01-29): Rentabilidad en Inventario
-- **v2.4.0** (2026-01-29): Filtro de Estado en Clientes
