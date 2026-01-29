@@ -671,6 +671,117 @@ async def get_items(
     items = await db.items.find(query, {"_id": 0}).to_list(500)
     return [ItemResponse(**i) for i in items]
 
+@api_router.get("/items/with-profitability")
+async def get_items_with_profitability(
+    status: Optional[str] = None,
+    item_type: Optional[str] = None,
+    category: Optional[str] = None,
+    search: Optional[str] = None,
+    sort_by: Optional[str] = None,  # "profit", "revenue", "amortization"
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all items with profitability metrics calculated from closed rentals"""
+    query = {}
+    if status:
+        query["status"] = status
+    if item_type:
+        query["item_type"] = item_type
+    if category:
+        query["category"] = category
+    if search:
+        query["$or"] = [
+            {"internal_code": {"$regex": search, "$options": "i"}},
+            {"barcode": {"$regex": search, "$options": "i"}},
+            {"brand": {"$regex": search, "$options": "i"}},
+            {"model": {"$regex": search, "$options": "i"}},
+            {"size": {"$regex": search, "$options": "i"}}
+        ]
+    
+    items = await db.items.find(query, {"_id": 0}).to_list(500)
+    
+    # Get all closed rentals to calculate revenue per item
+    closed_rentals = await db.rentals.find(
+        {"status": "returned"},
+        {"items": 1, "total_amount": 1, "days": 1, "_id": 0}
+    ).to_list(10000)
+    
+    # Calculate revenue per item (by barcode or id)
+    item_revenue = {}
+    for rental in closed_rentals:
+        rental_items = rental.get("items", [])
+        if not rental_items:
+            continue
+        # Distribute revenue equally among items in the rental
+        revenue_per_item = rental.get("total_amount", 0) / len(rental_items)
+        for item in rental_items:
+            item_id = item.get("id") or item.get("item_id")
+            barcode = item.get("barcode")
+            # Use barcode as key for matching
+            if barcode:
+                if barcode not in item_revenue:
+                    item_revenue[barcode] = 0
+                item_revenue[barcode] += revenue_per_item
+            if item_id:
+                if item_id not in item_revenue:
+                    item_revenue[item_id] = 0
+                item_revenue[item_id] += revenue_per_item
+    
+    # Add profitability data to each item
+    items_with_profit = []
+    total_revenue_all = 0
+    total_profit_all = 0
+    total_cost_all = 0
+    amortized_count = 0
+    
+    for item in items:
+        # Get revenue from either barcode or id match
+        revenue = item_revenue.get(item.get("barcode"), 0)
+        if item.get("id") in item_revenue:
+            revenue = max(revenue, item_revenue.get(item.get("id"), 0))
+        
+        # Use acquisition_cost if set, otherwise fall back to purchase_price
+        acquisition_cost = item.get("acquisition_cost") or item.get("purchase_price", 0)
+        
+        # Calculate metrics
+        net_profit = revenue - acquisition_cost if acquisition_cost > 0 else revenue
+        amortization_percent = (revenue / acquisition_cost * 100) if acquisition_cost > 0 else (100 if revenue > 0 else 0)
+        
+        item["total_revenue"] = round(revenue, 2)
+        item["acquisition_cost"] = acquisition_cost
+        item["net_profit"] = round(net_profit, 2)
+        item["amortization_percent"] = round(amortization_percent, 1)
+        
+        items_with_profit.append(item)
+        
+        # Aggregate stats
+        total_revenue_all += revenue
+        total_cost_all += acquisition_cost
+        total_profit_all += net_profit
+        if amortization_percent >= 100:
+            amortized_count += 1
+    
+    # Sort if requested
+    if sort_by == "profit":
+        items_with_profit.sort(key=lambda x: x.get("net_profit", 0), reverse=True)
+    elif sort_by == "revenue":
+        items_with_profit.sort(key=lambda x: x.get("total_revenue", 0), reverse=True)
+    elif sort_by == "amortization":
+        items_with_profit.sort(key=lambda x: x.get("amortization_percent", 0), reverse=True)
+    elif sort_by == "profit_asc":
+        items_with_profit.sort(key=lambda x: x.get("net_profit", 0))
+    
+    return {
+        "items": items_with_profit,
+        "summary": {
+            "total_items": len(items_with_profit),
+            "total_revenue": round(total_revenue_all, 2),
+            "total_cost": round(total_cost_all, 2),
+            "total_profit": round(total_profit_all, 2),
+            "amortized_count": amortized_count,
+            "amortized_percent": round(amortized_count / len(items_with_profit) * 100, 1) if items_with_profit else 0
+        }
+    }
+
 @api_router.get("/items/barcode/{barcode}", response_model=ItemResponse)
 async def get_item_by_barcode(barcode: str, current_user: dict = Depends(get_current_user)):
     # Try internal_code first, then barcode
