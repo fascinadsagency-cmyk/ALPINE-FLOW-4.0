@@ -127,8 +127,16 @@ POST /api/cash/close            - Cerrar caja con arqueo
   - **Descripción completa:** Tipo de producto + Modelo + Talla para cada artículo
   - **Columna de días:** Días contratados por cada artículo individual
   - **Desglose de precios:** [Descripción] | [Días] | [P.Unitario] | [Subtotal]
-  - **Formato de packs:** Packs agrupados con componentes listados y precio único
+  - **Formato de packs:** UNA SOLA línea por pack (sin componentes desglosados)
   - **Diseño profesional:** Ticket para impresora térmica 80mm con estilos CSS optimizados
+
+### 2b. Corrección de Visualización y Cálculo de Packs - RESUELTO
+- **Problema:** Los packs mostraban componentes individuales y el cálculo multiplicaba incorrectamente (27€ x 3 = 81€)
+- **Solución:**
+  - **Precio del pack es TOTAL:** `day_3 = 27€` significa 27€ total para 3 días, NO 27€/día
+  - **Sin multiplicación por días:** El subtotal de un pack ES su precio de tarifa
+  - **Una sola línea por pack:** Sin desglose de componentes en el carrito ni ticket
+  - **Etiqueta clara:** "Tarifa 3d" en vez de "€27/día"
 
 ### 3. Corrección del Bug Crítico de Contabilidad
 - **Problema:** Los cobros de alquileres no se registraban en la caja
