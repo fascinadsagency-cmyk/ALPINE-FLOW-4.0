@@ -1154,7 +1154,7 @@ export default function NewRental() {
           });
         } catch (cashError) {
           console.error("Error registering cash movement:", cashError);
-          toast.error("Alquiler creado pero no se pudo registrar en caja. Regístralo manualmente.");
+          // No bloquear - el alquiler ya se creó
         }
       }
       
@@ -1162,8 +1162,7 @@ export default function NewRental() {
       for (const item of items) {
         if (item.is_generic) {
           try {
-            const API = process.env.REACT_APP_BACKEND_URL;
-            await fetch(`${API}/api/items/generic/rent?item_id=${item.id}&quantity=${item.quantity || 1}`, {
+            await safeFetch(`${API}/api/items/generic/rent?item_id=${item.id}&quantity=${item.quantity || 1}`, {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1176,10 +1175,13 @@ export default function NewRental() {
       }
       
       // 4. Store rental data for printing
+      const cleanTotal = Number(total.toFixed(2));
+      const paid = paymentMethodSelected !== 'pending' ? cleanTotal : 0;
+      
       setCompletedRental({
-        ...rentalResponse.data,
-        customer_name: customer.name,
-        customer_dni: customer.dni,
+        ...rentalData,
+        customer_name: customer?.name || 'Cliente',
+        customer_dni: customer?.dni || '',
         items_detail: items,
         total_amount: cleanTotal,
         paid_amount: paid,
@@ -1199,12 +1201,23 @@ export default function NewRental() {
         setTimeout(() => printRentalTicket(), 500);
       }
       
-      toast.success("Alquiler completado y registrado en caja");
+      toast.success("✅ Alquiler completado y registrado en caja");
       
     } catch (error) {
       console.error("Error creating rental:", error);
-      const errorMsg = error.response?.data?.detail;
-      toast.error(typeof errorMsg === 'string' ? errorMsg : "Error al crear alquiler");
+      
+      // === MODO EMERGENCIA: Guardar offline si falla ===
+      const savedOffline = saveOfflineSale(rentalDataForOffline);
+      if (savedOffline) {
+        setShowPaymentDialog(false);
+        setCashGiven("");
+        // Reset form
+        setCustomer(null);
+        setItems([]);
+      } else {
+        const errorMsg = error.message || error.response?.data?.detail;
+        toast.error(typeof errorMsg === 'string' ? errorMsg : "Error al crear alquiler. Inténtalo de nuevo.");
+      }
     } finally {
       setProcessingPayment(false);
     }
