@@ -1115,10 +1115,40 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
             </div>
           ) : (
             <div className="overflow-x-auto">
+              {/* BULK DELETE BUTTON */}
+              {selectedItems.size > 0 && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Badge className="bg-red-600 text-white px-3 py-1">
+                      {selectedItems.size} seleccionado{selectedItems.size !== 1 ? 's' : ''}
+                    </Badge>
+                    <Button variant="ghost" size="sm" onClick={clearSelection}>
+                      Cancelar selección
+                    </Button>
+                  </div>
+                  <Button 
+                    variant="destructive"
+                    onClick={() => setShowBulkDeleteDialog(true)}
+                    className="font-bold"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    ELIMINAR SELECCIONADOS
+                  </Button>
+                </div>
+              )}
+              
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      {/* CHECKBOX COLUMN */}
+                      <TableHead className="w-12 text-center">
+                        <Checkbox 
+                          checked={filteredItems.length > 0 && selectedItems.size === filteredItems.length}
+                          onCheckedChange={toggleSelectAll}
+                          aria-label="Seleccionar todos"
+                        />
+                      </TableHead>
                       <SortableContext items={orderedVisibleColumns.map(c => c.id)} strategy={horizontalListSortingStrategy}>
                         {orderedVisibleColumns.map((col) => (
                           <SortableHeader key={col.id} id={col.id} width={col.width}>
@@ -1130,9 +1160,10 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                     </TableRow>
                   </TableHeader>
                 <TableBody>
-                  {items.map((item) => {
+                  {filteredItems.map((item) => {
                     const usesRemaining = (item.maintenance_interval || 30) - (item.days_used || 0);
                     const needsMaintenance = usesRemaining <= 0;
+                    const isSelected = selectedItems.has(item.id);
                     
                     // Cell render function
                     const renderCell = (colId) => {
