@@ -2982,6 +2982,7 @@ class CashClosingResponse(BaseModel):
     closed_at: str
     movements_count: Optional[int] = 0
     by_payment_method: Optional[dict] = {}
+    closure_number: Optional[int] = 1
 
 @api_router.post("/cash/movements")
 async def create_cash_movement(movement: CashMovementCreate, current_user: dict = Depends(get_current_user)):
