@@ -1019,64 +1019,6 @@ export default function NewRental() {
   // === COBRO: Función simplificada sin lógica de apertura ===
   const completePendingRental = async (total, cashGivenAmount, sessionId) => {
     const API = process.env.REACT_APP_BACKEND_URL;
-      
-      toast.success("✅ Caja abierta correctamente");
-      
-      // === ACCIÓN 2: Obtener ID de sesión activa (nueva consulta) ===
-      await new Promise(r => setTimeout(r, 500)); // Pequeña pausa para sincronización
-      const activeSessionId = await getActiveSessionId();
-      
-      if (!activeSessionId) {
-        throw new Error("No se pudo obtener el ID de la caja activa");
-      }
-      
-      // Close dialog
-      setShowAutoOpenCashDialog(false);
-      setOpeningCashBalance("");
-      
-      // === ACCIÓN 3: Procesar el cobro con el nuevo ID ===
-      if (pendingPaymentData) {
-        toast.info("Procesando cobro...");
-        await completePendingRental(pendingPaymentData.total, pendingPaymentData.cashGiven, activeSessionId);
-        setPendingPaymentData(null);
-      }
-      
-    } catch (error) {
-      console.error("Error en apertura/cobro:", error);
-      toast.error(error.message || "Error al procesar");
-      setProcessingPayment(false);
-    }
-  };
-
-  // MODO EMERGENCIA: Guardar venta offline si todo falla
-  const saveOfflineSale = (rentalData) => {
-    try {
-      const offlineSales = JSON.parse(localStorage.getItem('offline_sales') || '[]');
-      offlineSales.push({
-        ...rentalData,
-        offline_id: `OFF-${Date.now()}`,
-        created_at: new Date().toISOString()
-      });
-      localStorage.setItem('offline_sales', JSON.stringify(offlineSales));
-      toast.warning("⚠️ Venta guardada en modo offline. Se sincronizará después.");
-      return true;
-    } catch (e) {
-      return false;
-    }
-  };
-
-  const completePendingRental = async (total, cashGivenAmount, sessionId = null) => {
-    const API = process.env.REACT_APP_BACKEND_URL;
-    
-    // Prepare clean rental data for offline fallback
-    const rentalDataForOffline = {
-      customer_id: customer?.id || null,
-      customer_name: customer?.name || 'Sin nombre',
-      total: Number(total.toFixed(2)),
-      paid: paymentMethodSelected !== 'pending' ? Number(total.toFixed(2)) : 0,
-      payment_method: paymentMethodSelected || 'cash',
-      items: items.map(i => ({ id: i.id, name: i.name || i.brand, barcode: i.barcode }))
-    };
     
     try {
       // Clean all numeric values
@@ -1084,7 +1026,7 @@ export default function NewRental() {
       const cleanDeposit = Number(parseFloat(deposit) || 0);
       const paid = paymentMethodSelected !== 'pending' ? cleanTotal : 0;
       
-      // Prepare items - handle both regular and generic items (clean all fields)
+      // Prepare items - clean all fields
       const itemsToSend = items.map(i => {
         if (i.is_generic) {
           return {
@@ -1098,6 +1040,129 @@ export default function NewRental() {
         return { 
           barcode: String(i.barcode || ''),
           person_name: "",
+          quantity: 1,
+          unit_price: Number(getItemPriceWithPack(i) || 0)
+        };
+      });
+      
+      // Clean notes
+      const cleanNotes = [
+        notes || '',
+        discountReason ? `Descuento: ${discountReason}` : ''
+      ].filter(Boolean).join(' | ') || '';
+      
+      // === CREAR ALQUILER (con timeout extendido de 30s) ===
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      
+      const rentalResponse = await fetch(`${API}/api/rentals`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          customer_id: customer?.id || null,
+          start_date: startDate || new Date().toISOString().split('T')[0],
+          end_date: endDate || new Date().toISOString().split('T')[0],
+          items: itemsToSend,
+          payment_method: paymentMethodSelected || 'cash',
+          total_amount: cleanTotal,
+          paid_amount: Number(paid.toFixed(2)),
+          deposit: cleanDeposit,
+          notes: cleanNotes
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      
+      const responseText = await rentalResponse.text();
+      
+      // Check for HTML error response
+      if (responseText.trim().startsWith('<')) {
+        throw new Error('Error del servidor. Inténtalo de nuevo.');
+      }
+      
+      if (!rentalResponse.ok) {
+        const errorData = JSON.parse(responseText);
+        throw new Error(errorData.detail || 'Error al crear alquiler');
+      }
+      
+      const rentalData = JSON.parse(responseText);
+      
+      // === REGISTRAR MOVIMIENTO DE CAJA ===
+      if (paid > 0 && sessionId) {
+        try {
+          await fetch(`${API}/api/cash/movements`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              movement_type: 'income',
+              amount: Number(paid.toFixed(2)),
+              payment_method: paymentMethodSelected || 'cash',
+              category: 'rental',
+              concept: `Alquiler #${(rentalData.id || '').substring(0, 8)} - ${customer?.name || 'Cliente'}`,
+              reference_id: rentalData.id || '',
+              notes: `Cliente: ${customer?.dni || customer?.name || ''}`,
+              session_id: sessionId
+            })
+          });
+        } catch (cashError) {
+          console.error("Error en movimiento de caja:", cashError);
+        }
+      }
+      
+      // === ACTUALIZAR STOCK DE GENÉRICOS ===
+      for (const item of items) {
+        if (item.is_generic) {
+          try {
+            await fetch(`${API}/api/items/generic/rent?item_id=${item.id}&quantity=${item.quantity || 1}`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+          } catch (e) {
+            console.error("Error stock:", e);
+          }
+        }
+      }
+      
+      // === ÉXITO ===
+      setCompletedRental({
+        ...rentalData,
+        customer_name: customer?.name || 'Cliente',
+        customer_dni: customer?.dni || '',
+        items_detail: items,
+        total_amount: cleanTotal,
+        paid_amount: paid,
+        change: paymentMethodSelected === "cash" ? Number((cashGivenAmount - cleanTotal).toFixed(2)) : 0
+      });
+      
+      setShowPaymentDialog(false);
+      setCashGiven("");
+      setShowSuccessDialog(true);
+      
+      // Auto-print
+      if (localStorage.getItem('auto_print_enabled') === 'true') {
+        setTimeout(() => printRentalTicket(), 500);
+      }
+      
+      toast.success("✅ Alquiler completado");
+      
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        toast.error("Tiempo de espera agotado. Inténtalo de nuevo.");
+      } else {
+        toast.error(error.message || "Error al crear alquiler");
+      }
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
+  const updateItemPrice = (itemId, newPrice) => {
           quantity: 1,
           unit_price: Number(getItemPriceWithPack(i) || 0)
         };
