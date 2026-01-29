@@ -1019,64 +1019,6 @@ export default function NewRental() {
   // === COBRO: Función simplificada sin lógica de apertura ===
   const completePendingRental = async (total, cashGivenAmount, sessionId) => {
     const API = process.env.REACT_APP_BACKEND_URL;
-        
-        // Check if response is HTML (server error)
-        if (text.trim().startsWith('<!') || text.trim().startsWith('<html')) {
-          console.warn(`Attempt ${attempt + 1}: Server returned HTML, retrying...`);
-          if (attempt < retries) {
-            await new Promise(r => setTimeout(r, 1000)); // Wait 1 second
-            continue;
-          }
-          throw new Error('El servidor está ocupado. Inténtalo de nuevo.');
-        }
-        
-        // Parse JSON
-        const data = text ? JSON.parse(text) : {};
-        return { ok: response.ok, status: response.status, data };
-      } catch (e) {
-        if (attempt === retries) throw e;
-        await new Promise(r => setTimeout(r, 1000));
-      }
-    }
-  };
-
-  // HELPER: Get active session ID with retry
-  const getActiveSessionId = async () => {
-    const API = process.env.REACT_APP_BACKEND_URL;
-    const result = await safeFetch(`${API}/api/cash/sessions/active`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    });
-    return result.ok && result.data?.id ? result.data.id : null;
-  };
-
-  const openCashAndContinue = async () => {
-    if (!openingCashBalance && openingCashBalance !== "0") {
-      toast.error("Introduce el fondo de caja inicial (puede ser 0)");
-      return;
-    }
-
-    setProcessingPayment(true);
-    
-    try {
-      const API = process.env.REACT_APP_BACKEND_URL;
-      
-      // === ACCIÓN 1: Abrir caja y esperar respuesta ===
-      toast.info("Abriendo caja...");
-      const openResult = await safeFetch(`${API}/api/cash/sessions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          opening_balance: Number(parseFloat(openingCashBalance) || 0)
-        })
-      });
-      
-      if (!openResult.ok) {
-        const errMsg = openResult.data?.detail;
-        throw new Error(typeof errMsg === 'string' ? errMsg : "No se pudo abrir la caja");
-      }
       
       toast.success("✅ Caja abierta correctamente");
       
