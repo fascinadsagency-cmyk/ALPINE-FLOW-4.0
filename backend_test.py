@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend Test for Cash Management System (Módulo de Gestión de Caja)
-Testing detailed breakdown by payment method as specified in review request.
+Comprehensive Backend Test for Cash Management System - Sistema de Caja con Sincronización Total
+Testing session validation, orphaned operations, and mandatory session linking as specified in review request.
 """
 
 import requests
