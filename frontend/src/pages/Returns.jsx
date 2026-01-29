@@ -706,7 +706,13 @@ export default function Returns() {
                           >
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
-                                <p className="font-medium text-slate-900">{rental.customer_name}</p>
+                                <button
+                                  onClick={() => openCustomerModal(rental)}
+                                  className="font-medium text-slate-900 hover:text-primary hover:underline text-left cursor-pointer"
+                                  data-testid={`customer-link-${rental.id}`}
+                                >
+                                  {rental.customer_name}
+                                </button>
                                 {rental.days_overdue > 0 && (
                                   <Badge className="bg-red-100 text-red-700 border-red-200">
                                     ⚠️ Retrasado {rental.days_overdue} {rental.days_overdue === 1 ? 'día' : 'días'}
@@ -731,11 +737,11 @@ export default function Returns() {
                               <Button 
                                 variant="outline" 
                                 size="sm"
-                                onClick={() => contactCustomer(rental.customer_phone)}
+                                onClick={() => openCustomerModal(rental)}
                                 className="gap-1"
                               >
-                                <Phone className="h-3 w-3" />
-                                Contactar
+                                <User className="h-3 w-3" />
+                                Ficha
                               </Button>
                               <Button 
                                 variant="outline" 
