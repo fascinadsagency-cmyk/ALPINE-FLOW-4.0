@@ -928,17 +928,16 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
     }
   };
 
-  const deleteItemType = async (typeId, typeName) => {
-    if (!window.confirm(`¿Estás seguro de que deseas eliminar el tipo "${typeName}"?\n\nSi hay artículos usando este tipo, no se podrá eliminar.`)) {
-      return;
-    }
+  const confirmDeleteItemType = async () => {
+    if (!deleteTypeData) return;
+    const { typeId, typeName } = deleteTypeData;
 
     try {
       await axios.delete(`${API}/item-types/${typeId}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
 
-      toast.success(`Tipo "${typeName}" eliminado correctamente`);
+      toast.success(`✅ Tipo "${typeName}" eliminado correctamente`);
       
       // Reload types to update all dropdowns
       await loadItemTypes();
@@ -956,6 +955,8 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
       } else {
         toast.error(errorMessage);
       }
+    } finally {
+      setDeleteTypeData(null);
     }
   };
 
