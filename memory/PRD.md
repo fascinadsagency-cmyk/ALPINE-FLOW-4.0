@@ -83,6 +83,14 @@
 - Campos obligatorios: DNI*, Nombre*, Teléfono*
 - Asteriscos rojos visuales
 
+### 6. Edición de Precios en Nuevo Alquiler ✨ NUEVO
+- **Click en precio/lápiz**: Transforma el campo en input editable
+- **Teclas de acceso rápido**: Enter para guardar, Escape para cancelar
+- **Recálculo automático**: El total se actualiza instantáneamente al editar
+- **Indicador visual**: Precios editados se muestran en verde con "(editado)"
+- **Persistencia**: El precio personalizado se envía al cobro y se registra en caja
+- **Sin restricciones**: Administradores y dependientes pueden ajustar precios
+
 ## Próximas Tareas
 
 ### P1 - Alta Prioridad
