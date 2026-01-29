@@ -292,24 +292,39 @@ export default function Inventory() {
   };
 
   const createItem = async () => {
-    if (!newItem.internal_code || !newItem.brand || !newItem.size) {
-      toast.error("Completa todos los campos obligatorios (Código Interno, Marca, Talla)");
-      return;
+    // Validation depends on item type
+    if (newItem.is_generic) {
+      // Generic item validation
+      if (!newItem.name || !newItem.item_type || !newItem.stock_total) {
+        toast.error("Completa todos los campos obligatorios (Nombre, Tipo, Stock)");
+        return;
+      }
+      if (parseInt(newItem.stock_total) < 1) {
+        toast.error("El stock debe ser al menos 1 unidad");
+        return;
+      }
+    } else {
+      // Regular item validation
+      if (!newItem.internal_code || !newItem.item_type) {
+        toast.error("Completa los campos obligatorios (Código Interno, Tipo)");
+        return;
+      }
     }
     
     try {
-      // Si no hay barcode, generar uno automáticamente basado en internal_code
       const itemToCreate = {
         ...newItem,
-        barcode: newItem.barcode || `BC-${newItem.internal_code}`,
+        barcode: newItem.is_generic ? "" : (newItem.barcode || `BC-${newItem.internal_code}`),
         serial_number: newItem.serial_number || "",
         binding: newItem.binding || "",
         purchase_price: parseFloat(newItem.purchase_price) || 0,
-        maintenance_interval: parseInt(newItem.maintenance_interval) || 30
+        maintenance_interval: parseInt(newItem.maintenance_interval) || 30,
+        stock_total: parseInt(newItem.stock_total) || 0,
+        rental_price: parseFloat(newItem.rental_price) || 0
       };
       
       await itemApi.create(itemToCreate);
-      toast.success("Artículo creado correctamente");
+      toast.success(newItem.is_generic ? "Artículo genérico creado correctamente" : "Artículo creado correctamente");
       setShowAddDialog(false);
       resetNewItem();
       loadItems();
@@ -323,7 +338,7 @@ export default function Inventory() {
       internal_code: "",
       barcode: "",
       serial_number: "",
-      item_type: "ski",
+      item_type: "",
       brand: "",
       model: "",
       size: "",
@@ -332,7 +347,11 @@ export default function Inventory() {
       purchase_date: new Date().toISOString().split('T')[0],
       location: "",
       maintenance_interval: "30",
-      category: "MEDIA"
+      category: "MEDIA",
+      is_generic: false,
+      name: "",
+      stock_total: "",
+      rental_price: ""
     });
   };
 
