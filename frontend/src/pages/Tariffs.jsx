@@ -107,10 +107,10 @@ export default function Tariffs() {
   const saveTariffs = async () => {
     setSaving(true);
     try {
-      for (const itemType of ITEM_TYPES.map(t => t.value)) {
+      for (const type of itemTypes) {
         await tariffApi.create({
-          item_type: itemType,
-          ...tariffs[itemType]
+          item_type: type.value,
+          ...tariffs[type.value]
         });
       }
       toast.success("Tarifas guardadas correctamente");
