@@ -68,6 +68,28 @@ export default function Inventory() {
   const [profitabilitySummary, setProfitabilitySummary] = useState(null);
   const [sortBy, setSortBy] = useState("");
   const fileInputRef = useRef(null);
+  const importFileRef = useRef(null);
+  
+  // Import states for new universal importer
+  const [importStep, setImportStep] = useState(1);
+  const [importFile, setImportFile] = useState(null);
+  const [importData, setImportData] = useState([]);
+  const [fileColumns, setFileColumns] = useState([]);
+  const [columnMapping, setColumnMapping] = useState({});
+
+  // System fields for inventory mapping
+  const inventoryFields = [
+    { value: "internal_code", label: "Código Interno *", required: true },
+    { value: "barcode", label: "Código de Barras", required: false },
+    { value: "item_type", label: "Tipo de Artículo *", required: true },
+    { value: "brand", label: "Marca *", required: true },
+    { value: "model", label: "Modelo", required: false },
+    { value: "size", label: "Talla *", required: true },
+    { value: "category", label: "Gama (MEDIA/ALTA/SUPERIOR)", required: false },
+    { value: "purchase_price", label: "Precio de Compra", required: false },
+    { value: "purchase_date", label: "Fecha de Compra", required: false },
+    { value: "location", label: "Ubicación", required: false }
+  ];
   
   const [newItem, setNewItem] = useState({
     internal_code: "",
