@@ -122,6 +122,74 @@ export default function Inventory() {
   const fileInputRef = useRef(null);
   const importFileRef = useRef(null);
   
+  // Column customization states
+  const [columnOrder, setColumnOrder] = useState(() => {
+    const saved = localStorage.getItem('inventory_column_order');
+    return saved ? JSON.parse(saved) : DEFAULT_COLUMN_ORDER;
+  });
+  const [visibleColumns, setVisibleColumns] = useState(() => {
+    const saved = localStorage.getItem('inventory_visible_columns');
+    return saved ? JSON.parse(saved) : DEFAULT_VISIBLE_COLUMNS;
+  });
+  const [showColumnConfig, setShowColumnConfig] = useState(false);
+  
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+  
+  // Save column preferences to localStorage
+  useEffect(() => {
+    localStorage.setItem('inventory_column_order', JSON.stringify(columnOrder));
+  }, [columnOrder]);
+  
+  useEffect(() => {
+    localStorage.setItem('inventory_visible_columns', JSON.stringify(visibleColumns));
+  }, [visibleColumns]);
+
+  // Get ordered and visible columns
+  const orderedVisibleColumns = useMemo(() => {
+    return columnOrder
+      .filter(id => visibleColumns.includes(id))
+      .map(id => ALL_COLUMNS.find(c => c.id === id))
+      .filter(Boolean);
+  }, [columnOrder, visibleColumns]);
+
+  // Handle drag end
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+      setColumnOrder((items) => {
+        const oldIndex = items.indexOf(active.id);
+        const newIndex = items.indexOf(over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+      toast.success("Orden de columnas guardado");
+    }
+  };
+
+  // Toggle column visibility
+  const toggleColumnVisibility = (columnId) => {
+    const column = ALL_COLUMNS.find(c => c.id === columnId);
+    if (column?.required) return; // Can't hide required columns
+    
+    setVisibleColumns(prev => {
+      if (prev.includes(columnId)) {
+        return prev.filter(id => id !== columnId);
+      } else {
+        return [...prev, columnId];
+      }
+    });
+  };
+
+  // Reset column configuration
+  const resetColumnConfig = () => {
+    setColumnOrder(DEFAULT_COLUMN_ORDER);
+    setVisibleColumns(DEFAULT_VISIBLE_COLUMNS);
+    toast.success("Configuración de columnas restaurada");
+  };
+  
   // Import states for new universal importer
   const [importStep, setImportStep] = useState(1);
   const [importFile, setImportFile] = useState(null);
