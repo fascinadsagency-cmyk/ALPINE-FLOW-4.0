@@ -573,19 +573,21 @@ export default function CashRegister() {
     const typeLabel = m.movement_type === 'income' ? 'ENTRADA' : m.movement_type === 'refund' ? 'DEVOLUCIÓN' : 'SALIDA';
     const categoryLabel = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES].find(c => c.value === m.category)?.label || m.category;
     const paymentLabel = PAYMENT_METHODS.find(p => p.value === m.payment_method)?.label || m.payment_method;
+    const ticketNumber = m.operation_number || 'PENDIENTE';
     
     const ticketWindow = window.open('', '_blank', 'width=400,height=600');
     ticketWindow.document.write(`
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Ticket - ${m.id}</title>
+        <title>Ticket ${ticketNumber}</title>
         <style>
           @media print { @page { margin: 0; size: 80mm auto; } body { margin: 0; } }
           body { font-family: 'Courier New', monospace; width: 80mm; padding: 5mm; margin: 0 auto; font-size: 12px; line-height: 1.4; }
           .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
           .header h1 { margin: 0; font-size: 18px; }
           .header p { margin: 5px 0 0 0; font-size: 10px; }
+          .ticket-number { text-align: center; font-size: 20px; font-weight: bold; color: #1e40af; margin: 8px 0; padding: 8px; background: #eff6ff; border-radius: 4px; }
           .type-badge { display: inline-block; padding: 4px 12px; border-radius: 4px; font-weight: bold; margin: 10px 0; }
           .income { background: #dcfce7; color: #166534; }
           .expense { background: #fee2e2; color: #991b1b; }
@@ -607,6 +609,7 @@ export default function CashRegister() {
           <h1>COMPROBANTE</h1>
           <p>Movimiento de Caja</p>
         </div>
+        <div class="ticket-number">Nº Ticket: ${ticketNumber}</div>
         <div style="text-align: center;">
           <span class="type-badge ${m.movement_type}">${typeLabel}</span>
         </div>
@@ -621,7 +624,6 @@ export default function CashRegister() {
           ${m.movement_type === 'income' ? '+' : '-'}€${m.amount.toFixed(2)}
         </div>
         <div class="footer">
-          <p>Ref: ${m.id ? m.id.substring(0, 8).toUpperCase() : 'N/A'}</p>
           <p>Gracias por su confianza</p>
         </div>
         <button class="print-btn" onclick="window.print(); setTimeout(() => window.close(), 500);">IMPRIMIR</button>
