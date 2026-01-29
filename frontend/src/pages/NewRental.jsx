@@ -1577,15 +1577,6 @@ export default function NewRental() {
                             ) : (
                               <p className="text-sm font-medium text-slate-700">€{itemPrice.toFixed(2)}</p>
                             )}
-                            </p>
-                            {itemPrice === 0 && !item.is_generic ? (
-                              <Badge variant="destructive" className="text-xs animate-pulse">
-                                <AlertCircle className="h-3 w-3 mr-1" />
-                                Sin tarifa
-                              </Badge>
-                            ) : (
-                              <p className="text-sm font-medium text-slate-700">€{itemPrice.toFixed(2)}</p>
-                            )}
                           </div>
                           
                           {/* Precio Total y Acciones */}
@@ -1600,7 +1591,7 @@ export default function NewRental() {
                                     step="0.01"
                                     min="0"
                                     defaultValue={itemPrice.toFixed(2)}
-                                    className="h-9 w-24 pl-6 pr-2 text-sm font-semibold text-right"
+                                    className="h-9 w-20 pl-5 pr-1 text-sm font-semibold text-right"
                                     autoFocus
                                     data-testid={`price-input-${item.id || item.barcode}`}
                                     onKeyDown={(e) => {
@@ -1635,7 +1626,7 @@ export default function NewRental() {
                               >
                                 <div className="text-right">
                                   <p className={`text-sm font-bold ${
-                                    qty > 1 ? 'text-emerald-600' : 
+                                    days !== numDays || qty > 1 ? 'text-emerald-600' : 
                                     item.customPrice !== null ? 'text-emerald-600' : 'text-slate-900'
                                   }`}>
                                     €{totalItemPrice.toFixed(2)}
