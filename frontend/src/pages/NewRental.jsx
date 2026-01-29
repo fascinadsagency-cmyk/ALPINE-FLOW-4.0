@@ -1868,14 +1868,14 @@ export default function NewRental() {
                               </div>
                             </div>
                             
-                            {/* Días del Pack */}
-                            <div className="col-span-2 text-center">
+                            {/* Días del Pack - Editable */}
+                            <div className="col-span-3 text-center">
                               {editingItemDays === group.packId ? (
                                 <Input
                                   type="number"
                                   min="1"
                                   defaultValue={group.days}
-                                  className="h-8 w-16 text-center text-sm font-bold mx-auto"
+                                  className="h-8 w-20 text-center text-sm font-bold mx-auto"
                                   autoFocus
                                   onKeyDown={(e) => {
                                     if (e.key === 'Enter') updatePackDays(group.items, e.target.value);
@@ -1885,7 +1885,7 @@ export default function NewRental() {
                                 />
                               ) : (
                                 <Badge 
-                                  className="cursor-pointer bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm px-3 py-1"
+                                  className="cursor-pointer bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm px-4 py-1"
                                   onClick={() => setEditingItemDays(group.packId)}
                                 >
                                   {group.days} días <Edit2 className="h-3 w-3 ml-1 inline" />
@@ -1893,15 +1893,9 @@ export default function NewRental() {
                               )}
                             </div>
                             
-                            {/* Tarifa */}
-                            <div className="col-span-2 text-center">
-                              <p className="text-xs text-amber-700 uppercase">Tarifa {group.days}d</p>
-                              <p className="font-bold text-amber-800">€{group.price.toFixed(2)}</p>
-                            </div>
-                            
-                            {/* Total Pack */}
-                            <div className="col-span-2 text-right">
-                              <p className="text-xs text-amber-700 uppercase">Total</p>
+                            {/* Precio Total Pack - Tarifa escalonada */}
+                            <div className="col-span-3 text-right">
+                              <p className="text-xs text-amber-700 uppercase">Precio ({group.days}d)</p>
                               <p className="text-xl font-bold text-amber-700">€{packTotal.toFixed(2)}</p>
                             </div>
                             
