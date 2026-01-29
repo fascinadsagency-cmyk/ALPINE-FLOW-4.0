@@ -527,6 +527,8 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
   const openEditDialog = (item) => {
     setEditingItem({
       ...item,
+      serial_number: item.serial_number || "",
+      binding: item.binding || "",
       purchase_price: item.purchase_price.toString(),
       maintenance_interval: item.maintenance_interval.toString()
     });
@@ -534,8 +536,8 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
   };
 
   const updateItem = async () => {
-    if (!editingItem.internal_code || !editingItem.brand || !editingItem.model || !editingItem.size) {
-      toast.error("Completa todos los campos obligatorios (Código Interno, Marca, Modelo, Talla)");
+    if (!editingItem.internal_code || !editingItem.brand || !editingItem.size) {
+      toast.error("Completa todos los campos obligatorios (Código Interno, Marca, Talla)");
       return;
     }
     
@@ -543,10 +545,12 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
       await axios.put(`${API}/items/${editingItem.id}`, {
         barcode: editingItem.barcode,
         internal_code: editingItem.internal_code,
+        serial_number: editingItem.serial_number || "",
         item_type: editingItem.item_type,
         brand: editingItem.brand,
         model: editingItem.model,
         size: editingItem.size,
+        binding: editingItem.binding || "",
         purchase_price: parseFloat(editingItem.purchase_price) || 0,
         purchase_date: editingItem.purchase_date,
         location: editingItem.location || "",
