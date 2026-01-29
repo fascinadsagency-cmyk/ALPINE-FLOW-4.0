@@ -15,7 +15,8 @@ import axios from "axios";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const ITEM_TYPES = [
+// Default item types (fallback if API fails)
+const DEFAULT_ITEM_TYPES = [
   { value: "ski", label: "Esquís" },
   { value: "snowboard", label: "Snowboard" },
   { value: "boots", label: "Botas" },
