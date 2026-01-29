@@ -799,25 +799,41 @@ async def get_items(
     item_type: Optional[str] = None,
     category: Optional[str] = None,
     search: Optional[str] = None,
+    include_deleted: bool = Query(False),
     current_user: dict = Depends(get_current_user)
 ):
     query = {}
-    if status:
+    
+    # CRITICAL: Always exclude deleted items unless explicitly requested
+    if not include_deleted:
+        query["status"] = {"$nin": ["deleted"]}
+    
+    # Apply status filter (only if not "all")
+    if status and status != "all":
+        # Override the $nin query with specific status
         query["status"] = status
+    
     if item_type:
         query["item_type"] = item_type
     if category:
         query["category"] = category
     if search:
-        # Search by internal_code, barcode, serial_number, brand, model, size
-        query["$or"] = [
+        # Search by internal_code, barcode, serial_number, brand, model, size, name (for generic)
+        search_conditions = [
             {"internal_code": {"$regex": search, "$options": "i"}},
             {"barcode": {"$regex": search, "$options": "i"}},
             {"serial_number": {"$regex": search, "$options": "i"}},
             {"brand": {"$regex": search, "$options": "i"}},
             {"model": {"$regex": search, "$options": "i"}},
-            {"size": {"$regex": search, "$options": "i"}}
+            {"size": {"$regex": search, "$options": "i"}},
+            {"name": {"$regex": search, "$options": "i"}}
         ]
+        # If we have other conditions, we need to combine with $and
+        if query:
+            existing_query = dict(query)
+            query = {"$and": [existing_query, {"$or": search_conditions}]}
+        else:
+            query["$or"] = search_conditions
     
     items = await db.items.find(query, {"_id": 0}).to_list(500)
     return [ItemResponse(**i) for i in items]
