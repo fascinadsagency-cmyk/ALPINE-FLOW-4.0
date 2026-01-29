@@ -863,6 +863,8 @@ export default function NewRental() {
   };
 
   // Group items by detected packs for unified display
+  // PASO 1: Consolidación - Fusionar códigos de hijos en el nombre del padre
+  // PASO 2: Filtrado - Solo devolver packs (padres) y items sueltos, NUNCA hijos
   const getGroupedCartItems = () => {
     if (detectedPacks.length === 0) {
       // No packs - return items as individual entries
@@ -875,34 +877,52 @@ export default function NewRental() {
       }));
     }
 
-    // Create a set of item IDs that are part of packs
+    // PASO 2: Create a set of item IDs that are HIJOS (components of packs)
+    // These will be EXCLUDED from the visual list
     const packItemIds = new Set();
     detectedPacks.forEach(dp => {
-      dp.items.forEach(item => packItemIds.add(item.id || item.barcode));
+      dp.items.forEach(itemBarcode => packItemIds.add(itemBarcode));
     });
 
     const groups = [];
 
-    // Add detected packs as groups
+    // Add detected packs as CONSOLIDATED groups (PADRES)
     detectedPacks.forEach((dp, idx) => {
-      // Use the first item's days as the pack days (they should be synchronized)
-      const packDays = dp.items[0]?.itemDays || numDays;
-      // CRITICAL: Get pack price using the pack's specific days, not global numDays
+      // Get the actual item objects for this pack
+      const packItemObjects = items.filter(item => 
+        dp.items.includes(item.barcode) || dp.items.includes(item.id)
+      );
+      
+      // Use the first item's days as the pack days
+      const packDays = packItemObjects[0]?.itemDays || numDays;
+      
+      // CRITICAL: Get pack price - this is the TOTAL for selected days, NOT per day
       const packPrice = getPackPrice(dp.pack, packDays);
+      
+      // PASO 1: CONSOLIDACIÓN - Extraer códigos de los HIJOS y fusionarlos en el nombre
+      const childCodes = packItemObjects.map(item => 
+        item.internal_code || item.barcode?.substring(0, 10) || 'N/A'
+      ).join(' / ');
+      
+      // Crear nombre fusionado: "Pack Gama Media (SKI-001 / BOT-204)"
+      const fusedName = `${dp.pack.name} (${childCodes})`;
       
       groups.push({
         type: 'pack',
         pack: dp.pack,
-        items: dp.items,
-        price: packPrice,
+        fusedName: fusedName,  // Nombre con códigos de hijos incrustados
+        childCodes: childCodes,
+        items: packItemObjects,  // Solo para referencia interna, NO para renderizar filas
+        price: packPrice,  // Precio TOTAL del pack (no multiplicar por días)
         days: packDays,
         packId: `pack-${idx}`
       });
     });
 
-    // Add remaining items that are NOT part of any pack
+    // PASO 2: Add ONLY items that are NOT part of any pack (items sueltos)
     items.forEach(item => {
       const itemId = item.id || item.barcode;
+      // Si el item es HIJO de un pack, NO lo añadimos
       if (!packItemIds.has(itemId)) {
         groups.push({
           type: 'single',
