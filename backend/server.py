@@ -3073,6 +3073,7 @@ async def close_cash_register(closing: CashClosingCreate, current_user: dict = D
         "date": closing.date,
         "total_income": summary["total_income"],
         "total_expense": summary["total_expense"],
+        "total_refunds": summary["total_refunds"],
         "expected_balance": summary["balance"],
         "physical_cash": closing.physical_cash,
         "card_total": closing.card_total,
@@ -3084,7 +3085,9 @@ async def close_cash_register(closing: CashClosingCreate, current_user: dict = D
         "difference": closing.physical_cash - summary["balance"],
         "notes": closing.notes or "",
         "closed_by": current_user["username"],
-        "closed_at": datetime.now(timezone.utc).isoformat()
+        "closed_at": datetime.now(timezone.utc).isoformat(),
+        "movements_count": summary["movements_count"],
+        "by_payment_method": summary["by_payment_method"]
     }
     await db.cash_closings.insert_one(doc)
     return CashClosingResponse(**doc)
