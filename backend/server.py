@@ -3141,15 +3141,15 @@ async def get_cash_movements_history(
     movements = await db.cash_movements.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
     return movements
 
-@api_router.delete("/cash/closings/{date}")
-async def revert_cash_closing(date: str, current_user: dict = Depends(get_current_user)):
-    """Revert/delete a cash closing to allow modifications"""
-    existing = await db.cash_closings.find_one({"date": date})
+@api_router.delete("/cash/closings/{closing_id}")
+async def revert_cash_closing(closing_id: str, current_user: dict = Depends(get_current_user)):
+    """Revert/delete a specific cash closing to allow a new closure"""
+    existing = await db.cash_closings.find_one({"id": closing_id})
     if not existing:
         raise HTTPException(status_code=404, detail="Cash closing not found")
     
-    await db.cash_closings.delete_one({"date": date})
-    return {"message": f"Cash closing for {date} has been reverted", "date": date}
+    await db.cash_closings.delete_one({"id": closing_id})
+    return {"message": f"Cash closing has been reverted", "id": closing_id}
 
 # ==================== INTEGRATIONS CONFIG ROUTES ====================
 
