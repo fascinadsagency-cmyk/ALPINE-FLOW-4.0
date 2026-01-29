@@ -97,6 +97,7 @@
 - Contraseña: test123456
 
 ## Changelog
+- **v3.2.0** (2026-01-29): **Edición de Precios en Nuevo Alquiler** - Corregido bug del icono lápiz. Ahora permite editar precios de artículos en tiempo real con recálculo automático del total
 - **v3.1.0** (2026-01-29): Corrección de sincronización de caja, impresión automática de arqueos, botón reimprimir en histórico
 - **v3.0.0** (2026-01-29): Panel de Control de Devoluciones, nuevos campos en inventario
 - **v2.9.0**: Importador de inventario
