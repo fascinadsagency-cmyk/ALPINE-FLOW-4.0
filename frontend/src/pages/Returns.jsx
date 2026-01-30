@@ -73,6 +73,21 @@ export default function Returns() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerLoading, setCustomerLoading] = useState(false);
   
+  // ============ CHANGE/EXTENSION MODAL STATE ============
+  const [changeModal, setChangeModal] = useState(false);
+  const [changeRental, setChangeRental] = useState(null);
+  const [changeOldItem, setChangeOldItem] = useState(null);
+  const [changeNewBarcode, setChangeNewBarcode] = useState("");
+  const [changeNewItem, setChangeNewItem] = useState(null);
+  const [changeDelta, setChangeDelta] = useState(null);
+  const [changeNewDays, setChangeNewDays] = useState("");
+  const [changeDaysRemaining, setChangeDaysRemaining] = useState(0);
+  const [changePaymentMethod, setChangePaymentMethod] = useState("cash");
+  const [changeLoading, setChangeLoading] = useState(false);
+  const [changeComplete, setChangeComplete] = useState(false);
+  const [changeAction, setChangeAction] = useState("swap"); // "swap" or "extend"
+  const changeInputRef = useRef(null);
+  
   const barcodeRef = useRef(null);
 
   const quickReturn = async (rentalId, customerName) => {
