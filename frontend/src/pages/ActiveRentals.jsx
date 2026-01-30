@@ -695,14 +695,18 @@ export default function ActiveRentals() {
         phone: rental.customer_phone,
         email: rental.customer_email,
         hotel: rental.customer_hotel || rental.hotel,
+        address: rental.customer_address || '',
+        city: rental.customer_city || '',
         notes: rental.customer_notes,
         items: rental.items || [],
         rental_id: rental.id,
+        customer_id: rental.customer_id,
         start_date: rental.start_date,
         end_date: rental.end_date,
         days: rental.days,
         total_amount: rental.total_amount,
-        rental_history: [] // Will be loaded
+        rental_history: [],
+        customerHistory: null // Full history with financials
       };
       
       if (rental.customer_id) {
@@ -711,16 +715,32 @@ export default function ActiveRentals() {
           const response = await axios.get(`${API}/customers/${rental.customer_id}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
           });
-          customerData = { ...customerData, ...response.data, items: rental.items || [], rental_id: rental.id };
+          customerData = { 
+            ...customerData, 
+            ...response.data, 
+            items: rental.items || [], 
+            rental_id: rental.id,
+            customer_id: rental.customer_id
+          };
           
-          // Load rental history for this customer
-          const historyResponse = await axios.get(`${API}/rentals?customer_id=${rental.customer_id}`, {
+          // Load full customer history (includes financials and detailed rentals)
+          const historyResponse = await axios.get(`${API}/customers/${rental.customer_id}/history`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
           });
-          customerData.rental_history = historyResponse.data || [];
+          customerData.customerHistory = historyResponse.data || null;
+          customerData.rental_history = historyResponse.data?.rentals || [];
         } catch (e) {
           // Customer might not exist in database, use rental data
           console.log("Customer lookup failed, using rental data");
+          // Fallback: try to load just rental history
+          try {
+            const rentalsRes = await axios.get(`${API}/rentals?customer_id=${rental.customer_id}`, {
+              headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            customerData.rental_history = rentalsRes.data || [];
+          } catch (e2) {
+            console.log("Rental history fallback also failed");
+          }
         }
       }
       
