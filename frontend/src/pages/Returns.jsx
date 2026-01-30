@@ -90,6 +90,12 @@ export default function Returns() {
   const [newDays, setNewDays] = useState(0);
   const [adjustDays, setAdjustDays] = useState(false);
   
+  // Additional change modal state
+  const [changeExtendDays, setChangeExtendDays] = useState(false);
+  const [changeNewDays, setChangeNewDays] = useState("");
+  const [changeDaysRemaining, setChangeDaysRemaining] = useState(0);
+  const [changeTotalDelta, setChangeTotalDelta] = useState(0);
+  
   const [changePaymentMethod, setChangePaymentMethod] = useState("cash");
   const [changeLoading, setChangeLoading] = useState(false);
   const [changeComplete, setChangeComplete] = useState(false);
