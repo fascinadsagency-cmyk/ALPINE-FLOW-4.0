@@ -800,6 +800,66 @@ export default function ActiveRentals() {
     window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
   };
 
+  // ============ TECHNICAL DATA FUNCTIONS ============
+  const startEditingTechnicalData = () => {
+    setTechnicalDataForm({
+      boot_size: selectedCustomer?.boot_size || "",
+      height: selectedCustomer?.height || "",
+      weight: selectedCustomer?.weight || "",
+      ski_level: selectedCustomer?.ski_level || ""
+    });
+    setEditingTechnicalData(true);
+  };
+
+  const cancelEditingTechnicalData = () => {
+    setEditingTechnicalData(false);
+    setTechnicalDataForm({
+      boot_size: "",
+      height: "",
+      weight: "",
+      ski_level: ""
+    });
+  };
+
+  const saveTechnicalData = async () => {
+    if (!selectedCustomer?.customer_id && !selectedCustomer?.id) {
+      toast.error("No se puede guardar: cliente no identificado");
+      return;
+    }
+
+    setSavingTechnicalData(true);
+    try {
+      const customerId = selectedCustomer.customer_id || selectedCustomer.id;
+      await axios.patch(`${API}/customers/${customerId}/technical-data`, technicalDataForm, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      // Update local state
+      setSelectedCustomer(prev => ({
+        ...prev,
+        boot_size: technicalDataForm.boot_size,
+        height: technicalDataForm.height,
+        weight: technicalDataForm.weight,
+        ski_level: technicalDataForm.ski_level
+      }));
+
+      toast.success("Datos técnicos guardados correctamente");
+      setEditingTechnicalData(false);
+    } catch (error) {
+      toast.error("Error al guardar datos técnicos");
+    } finally {
+      setSavingTechnicalData(false);
+    }
+  };
+
+  const SKI_LEVELS = [
+    { value: "", label: "Sin especificar" },
+    { value: "principiante", label: "Principiante" },
+    { value: "intermedio", label: "Intermedio" },
+    { value: "avanzado", label: "Avanzado" },
+    { value: "experto", label: "Experto" }
+  ];
+
   return (
     <div className="p-6 lg:p-8" data-testid="active-rentals-page">
       {/* ============ STICKY HEADER WITH SEARCH & CAMBIOS BUTTON ============ */}
