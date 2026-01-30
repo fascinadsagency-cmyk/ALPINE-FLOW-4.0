@@ -215,6 +215,222 @@ export default function CashRegister() {
     };
   };
 
+  // ============ IMPRIMIR TICKET DE MOVIMIENTO (con plantilla de Configuración) ============
+  const printMovementTicket = (movement) => {
+    const win = window.open('', '_blank', 'width=320,height=600');
+    if (!win) {
+      toast.error("No se pudo abrir ventana de impresión");
+      return;
+    }
+    
+    // Get stored settings for branding
+    const companyLogo = localStorage.getItem('companyLogo');
+    const ticketHeader = localStorage.getItem('ticketHeader') || 'TIENDA DE ALQUILER DE ESQUÍ';
+    const ticketFooter = localStorage.getItem('ticketFooter') || '¡Gracias por su visita!';
+    const ticketTerms = localStorage.getItem('ticketTerms') || '';
+    
+    // Format helpers
+    const fmt = (v) => (v || 0).toFixed(2);
+    const formatDate = (dateStr) => {
+      if (!dateStr) return '-';
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    };
+    const formatTime = (dateStr) => {
+      if (!dateStr) return '-';
+      return dateStr.split('T')[1]?.substring(0, 5) || '-';
+    };
+    
+    // Determine ticket type
+    const isRefund = movement.movement_type === 'refund';
+    const isExpense = movement.movement_type === 'expense';
+    const isIncome = movement.movement_type === 'income';
+    
+    const ticketTitle = isRefund ? 'TICKET DE DEVOLUCIÓN' : isExpense ? 'TICKET DE SALIDA' : 'TICKET DE VENTA';
+    const ticketColor = isRefund ? '#f97316' : isExpense ? '#dc2626' : '#16a34a';
+    const amountPrefix = isIncome ? '+' : '-';
+    
+    // Get category label
+    const allCategories = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
+    const categoryLabel = allCategories.find(c => c.value === movement.category)?.label || movement.category || '-';
+    const paymentLabel = PAYMENT_METHODS.find(p => p.value === movement.payment_method)?.label || movement.payment_method;
+    
+    win.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>${ticketTitle} - ${movement.operation_number || 'N/A'}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { 
+            font-family: 'Consolas', 'Courier New', monospace; 
+            font-size: 11px; 
+            padding: 8px; 
+            width: 80mm; 
+            line-height: 1.4;
+            color: #000;
+          }
+          .logo { text-align: center; margin-bottom: 8px; }
+          .logo img { max-width: 50mm; max-height: 20mm; }
+          .header { text-align: center; margin-bottom: 10px; }
+          .header-business { font-size: 12px; font-weight: bold; margin-bottom: 8px; }
+          .header-title { 
+            font-size: 14px; 
+            font-weight: bold; 
+            letter-spacing: 1px; 
+            padding: 6px 0;
+            background: ${ticketColor};
+            color: white;
+            margin: 8px 0;
+          }
+          .ticket-number { 
+            font-size: 16px; 
+            font-weight: bold; 
+            text-align: center;
+            padding: 8px;
+            background: #f0f0f0;
+            border: 1px solid #000;
+            margin: 8px 0;
+          }
+          .separator { border: none; border-top: 1px dashed #000; margin: 10px 0; }
+          .separator-double { border: none; border-top: 2px solid #000; margin: 10px 0; }
+          .block { margin: 10px 0; }
+          .block-title { font-weight: bold; font-size: 11px; text-transform: uppercase; margin-bottom: 6px; }
+          .row { display: flex; justify-content: space-between; margin: 4px 0; }
+          .row-value { font-weight: bold; }
+          .amount-box {
+            text-align: center;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid ${ticketColor};
+            background: ${isIncome ? '#dcfce7' : isRefund ? '#ffedd5' : '#fee2e2'};
+          }
+          .amount-label { font-size: 10px; color: #666; margin-bottom: 4px; }
+          .amount-value { font-size: 20px; font-weight: bold; color: ${ticketColor}; }
+          .footer { text-align: center; margin-top: 15px; font-size: 9px; color: #333; }
+          .terms { font-size: 8px; color: #666; margin-top: 10px; padding: 8px; background: #f9f9f9; border: 1px dashed #ccc; }
+          @media print { @page { margin: 0; size: 80mm auto; } }
+        </style>
+      </head>
+      <body>
+        <!-- CABECERA -->
+        ${companyLogo ? `
+        <div class="logo">
+          <img src="${companyLogo}" alt="Logo" />
+        </div>
+        ` : `
+        <div class="header">
+          <div class="header-business">${ticketHeader}</div>
+        </div>
+        `}
+        
+        <div class="header-title">${ticketTitle}</div>
+        
+        <div class="ticket-number">Nº ${movement.operation_number || 'PENDIENTE'}</div>
+        
+        <hr class="separator" />
+        
+        <!-- BLOQUE A: DATOS DE LA OPERACIÓN -->
+        <div class="block">
+          <div class="block-title">A. Datos de la Operación</div>
+          <div class="row">
+            <span>Fecha:</span>
+            <span class="row-value">${formatDate(movement.created_at)}</span>
+          </div>
+          <div class="row">
+            <span>Hora:</span>
+            <span class="row-value">${formatTime(movement.created_at)}</span>
+          </div>
+          <div class="row">
+            <span>Categoría:</span>
+            <span class="row-value">${categoryLabel}</span>
+          </div>
+          <div class="row">
+            <span>Método de pago:</span>
+            <span class="row-value">${paymentLabel}</span>
+          </div>
+          ${movement.customer_name ? `
+          <div class="row">
+            <span>Cliente:</span>
+            <span class="row-value">${movement.customer_name}</span>
+          </div>
+          ` : ''}
+        </div>
+        
+        <hr class="separator" />
+        
+        <!-- BLOQUE B: CONCEPTO -->
+        <div class="block">
+          <div class="block-title">B. Concepto</div>
+          <div style="padding: 8px; background: #f5f5f5; border-radius: 4px;">
+            ${movement.concept || '-'}
+          </div>
+          ${movement.notes ? `
+          <div style="margin-top: 6px; font-size: 10px; color: #666;">
+            Notas: ${movement.notes}
+          </div>
+          ` : ''}
+        </div>
+        
+        <hr class="separator" />
+        
+        <!-- IMPORTE -->
+        <div class="amount-box">
+          <div class="amount-label">${isRefund ? 'IMPORTE ABONADO' : isExpense ? 'IMPORTE DE SALIDA' : 'IMPORTE COBRADO'}</div>
+          <div class="amount-value">${amountPrefix}€${fmt(movement.amount)}</div>
+        </div>
+        
+        <hr class="separator-double" />
+        
+        <div class="footer">
+          ${ticketFooter}
+        </div>
+        
+        ${ticketTerms ? `
+        <div class="terms">
+          ${ticketTerms}
+        </div>
+        ` : ''}
+        
+        <div style="text-align: center; margin-top: 10px; font-size: 8px; color: #999;">
+          ─────────────────────────<br/>
+          Copia del comprobante<br/>
+          ─────────────────────────
+        </div>
+        
+        <script>
+          window.onload = function() { window.print(); };
+        </script>
+      </body>
+      </html>
+    `);
+    win.document.close();
+  };
+
+  // ============ EDITAR MÉTODO DE PAGO ============
+  const openEditPaymentDialog = (movement) => {
+    setEditingMovement(movement);
+    setNewPaymentMethod(movement.payment_method);
+    setShowEditPaymentDialog(true);
+  };
+
+  const updatePaymentMethod = async () => {
+    if (!editingMovement || !newPaymentMethod) return;
+    
+    try {
+      await axios.patch(`${API}/cash/movements/${editingMovement.id}`, {
+        payment_method: newPaymentMethod
+      });
+      
+      toast.success("Método de pago actualizado");
+      setShowEditPaymentDialog(false);
+      setEditingMovement(null);
+      loadData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al actualizar");
+    }
+  };
+
   const closeCashRegister = async () => {
     if (arqueoForm.physical_cash === "" && arqueoForm.physical_cash !== 0) {
       toast.error("Debes introducir el efectivo contado (puede ser 0)");
