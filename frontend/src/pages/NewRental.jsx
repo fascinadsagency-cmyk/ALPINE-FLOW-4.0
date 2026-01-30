@@ -2460,7 +2460,10 @@ export default function NewRental() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowItemSearch(false)}>
+            <Button variant="outline" onClick={() => {
+              setShowItemSearch(false);
+              refocusBarcodeInput(); // Auto-focus barcode after closing search
+            }}>
               Cerrar
             </Button>
           </DialogFooter>
