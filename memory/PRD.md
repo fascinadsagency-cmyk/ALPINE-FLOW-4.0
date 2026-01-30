@@ -164,6 +164,12 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - CashRegister.jsx y Returns.jsx refactorizados para usar el generador maestro
   - Eliminadas >500 líneas de HTML/CSS duplicado
   - Bundle reducido en 3.54 kB
+- ✅ **TABLA DE ARTÍCULOS COMPLETA EN TICKETS (2026-01-30):**
+  - Backend guarda rental_items con cada movimiento de caja
+  - 3 columnas obligatorias: CONCEPTO (con talla), DÍAS, IMPORTE
+  - Fallback: Si movimiento antiguo no tiene items, se recuperan del alquiler original
+  - Tickets de historial ahora idénticos a tickets nuevos
+  - Campos: name, size, internal_code, days, subtotal
 
 ### 5. Gestión de Datos
 - ✅ **Importador Universal (CSV/Excel):** Para clientes e inventario
