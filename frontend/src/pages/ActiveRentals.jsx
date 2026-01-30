@@ -61,13 +61,9 @@ export default function ActiveRentals() {
   const [searchLoading, setSearchLoading] = useState(false);
   const searchInputRef = useRef(null);
   
-  // Step-based modification flow
-  const [editingRental, setEditingRental] = useState(null);
-  const [newDays, setNewDays] = useState("");
-  const [step, setStep] = useState(1);
+  // Payment method for operations
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [updating, setUpdating] = useState(false);
-  const [modificationResult, setModificationResult] = useState(null);
 
   // Customer modal state
   const [showCustomerModal, setShowCustomerModal] = useState(false);
