@@ -696,92 +696,158 @@ export default function ActiveRentals() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Cliente</TableHead>
-                    <TableHead>Artículos</TableHead>
+                    <TableHead className="text-center">Artículos</TableHead>
                     <TableHead>Período</TableHead>
-                    <TableHead>Días</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead>Pendiente</TableHead>
+                    <TableHead className="text-center">Días</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead className="text-right">Pendiente</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rentals.map((rental) => (
-                    <TableRow key={rental.id} className="hover:bg-slate-50">
-                      <TableCell>
-                        <div>
-                          <button
-                            onClick={() => openCustomerModal(rental)}
-                            className="font-medium text-slate-900 hover:text-primary hover:underline text-left cursor-pointer"
-                            data-testid={`customer-link-${rental.id}`}
-                          >
-                            {rental.customer_name}
-                          </button>
-                          <p className="text-sm text-slate-500 font-mono">{rental.customer_dni}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <Badge variant="outline" className="mb-1">{rental.items.length} artículos</Badge>
-                          <div className="space-y-1 text-xs text-slate-600 max-h-20 overflow-y-auto">
-                            {rental.items.filter(i => !i.returned).map((item, idx) => (
-                              <div key={idx} className="flex items-center gap-1">
-                                <span className="font-mono">{item.internal_code || item.barcode?.substring(0, 8)}</span>
-                                <span className="text-slate-400">•</span>
-                                <span>{item.item_type}</span>
-                              </div>
-                            ))}
+                  {rentals.map((rental) => {
+                    const activeItems = rental.items.filter(i => !i.returned);
+                    const itemCount = activeItems.length;
+                    
+                    return (
+                      <TableRow key={rental.id} className="hover:bg-slate-50">
+                        <TableCell>
+                          <div>
+                            <button
+                              onClick={() => openCustomerModal(rental)}
+                              className="font-medium text-slate-900 hover:text-primary hover:underline text-left cursor-pointer"
+                              data-testid={`customer-link-${rental.id}`}
+                            >
+                              {rental.customer_name}
+                            </button>
+                            <p className="text-sm text-slate-500 font-mono">{rental.customer_dni}</p>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1 text-sm">
-                          <span>{formatDate(rental.start_date)}</span>
-                          <ArrowRight className="h-3 w-3 text-slate-400" />
-                          <span>{formatDate(rental.end_date)}</span>
-                        </div>
-                        {isOverdue(rental.end_date) && (
-                          <Badge className="bg-red-100 text-red-700 border-red-200 text-xs mt-1">
-                            Retrasado {Math.abs(getDaysRemaining(rental.end_date))} días
+                        </TableCell>
+                        
+                        {/* COMPACT: Badge with item count + Popover for details */}
+                        <TableCell className="text-center">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-auto py-1 px-2 gap-1 hover:bg-slate-100"
+                                data-testid={`items-badge-${rental.id}`}
+                              >
+                                <Badge variant="secondary" className="bg-slate-100 text-slate-700 hover:bg-slate-200">
+                                  <Package className="h-3 w-3 mr-1" />
+                                  {itemCount} art.
+                                </Badge>
+                                <Eye className="h-3 w-3 text-slate-400" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-72 p-0" align="start">
+                              <div className="bg-slate-50 px-3 py-2 border-b">
+                                <p className="text-sm font-semibold text-slate-700">
+                                  Artículos en Alquiler ({itemCount})
+                                </p>
+                              </div>
+                              <div className="p-2 max-h-48 overflow-y-auto">
+                                {activeItems.length === 0 ? (
+                                  <p className="text-sm text-slate-500 p-2">Sin artículos activos</p>
+                                ) : (
+                                  <div className="space-y-1">
+                                    {activeItems.map((item, idx) => (
+                                      <div 
+                                        key={idx} 
+                                        className="flex items-center justify-between p-2 rounded-md bg-white border border-slate-100 hover:border-slate-200"
+                                      >
+                                        <div className="flex items-center gap-2 min-w-0">
+                                          <span className="font-mono text-xs font-medium text-blue-600 shrink-0">
+                                            {item.internal_code || item.barcode?.substring(0, 10)}
+                                          </span>
+                                          <span className="text-xs text-slate-500 truncate">
+                                            {item.item_type}
+                                          </span>
+                                        </div>
+                                        {item.size && (
+                                          <Badge variant="outline" className="text-xs shrink-0 ml-1">
+                                            {item.size}
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        </TableCell>
+                        
+                        <TableCell>
+                          <div className="flex items-center gap-1 text-sm whitespace-nowrap">
+                            <span>{formatDate(rental.start_date)}</span>
+                            <ArrowRight className="h-3 w-3 text-slate-400" />
+                            <span>{formatDate(rental.end_date)}</span>
+                          </div>
+                          {isOverdue(rental.end_date) && (
+                            <Badge className="bg-red-100 text-red-700 border-red-200 text-xs mt-1">
+                              Retrasado {Math.abs(getDaysRemaining(rental.end_date))}d
+                            </Badge>
+                          )}
+                        </TableCell>
+                        
+                        <TableCell className="text-center">
+                          <Badge className="bg-blue-100 text-blue-700">
+                            {rental.days}d
                           </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className="bg-blue-100 text-blue-700">
-                          {rental.days} días
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        €{rental.total_amount.toFixed(2)}
-                      </TableCell>
-                      <TableCell>
-                        <span className={`font-medium ${rental.pending_amount > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-                          €{rental.pending_amount.toFixed(2)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          {/* NEW: CENTRALIZED SWAP BUTTON */}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openSwapModal(rental)}
-                            className="gap-1 text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-400"
-                            data-testid={`swap-btn-${rental.id}`}
-                            title="Cambiar material"
-                          >
-                            <ArrowLeftRight className="h-4 w-4" />
-                            CAMBIOS
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openCustomerModal(rental)}
-                            className="h-8 w-8"
-                            title="Ver ficha del cliente"
-                          >
-                            <User className="h-4 w-4" />
-                          </Button>
-                          <Button
+                        </TableCell>
+                        
+                        <TableCell className="text-right font-medium">
+                          €{rental.total_amount.toFixed(2)}
+                        </TableCell>
+                        
+                        <TableCell className="text-right">
+                          <span className={`font-medium ${rental.pending_amount > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                            €{rental.pending_amount.toFixed(2)}
+                          </span>
+                        </TableCell>
+                        
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openSwapModal(rental)}
+                              className="gap-1 text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-400 h-8"
+                              data-testid={`swap-btn-${rental.id}`}
+                              title="Cambiar material"
+                            >
+                              <ArrowLeftRight className="h-3.5 w-3.5" />
+                              <span className="hidden sm:inline">CAMBIOS</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openCustomerModal(rental)}
+                              className="h-8 w-8"
+                              title="Ver ficha del cliente"
+                            >
+                              <User className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openEditDialog(rental)}
+                              className="h-8 w-8"
+                              data-testid={`edit-rental-${rental.id}`}
+                              title="Modificar duración"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
                             variant="ghost"
                             size="icon"
                             onClick={() => openEditDialog(rental)}
