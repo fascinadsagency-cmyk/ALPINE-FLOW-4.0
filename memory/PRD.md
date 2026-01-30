@@ -87,6 +87,12 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
     - Permite cambios solo de fecha (sin cambio de material)
     - Selector de método de cobro/abono (Efectivo/Tarjeta)
   - Ficha de Cliente accesible desde modal con botón "Ver Ficha Completa"
+- ✅ **Botón de Cobro Desbloqueado (FIX 2026-01-30):**
+  - Botón "Cobrar €XX y Confirmar" se habilita automáticamente cuando hay delta > 0
+  - Condición corregida: permite cambio de material O ajuste de fecha
+  - Al confirmar: Toast de éxito → Modal de éxito → Actualización instantánea de Dashboard y Caja
+  - El ticket de impresión incluye sección "📅 AJUSTE DE CALENDARIO" si aplica
+  - Vinculación completa con pasarela de pago y contabilidad
 - ✅ **Sincronización de Ingresos (Single Source of Truth - 2026-01-30):**
   - **Dashboard "Ingresos Netos Hoy"** ahora lee de `cash_movements` (misma fuente que Caja)
   - Fórmula: **Ingresos Netos = Total Income - Total Refunds** (sin fondo inicial)
