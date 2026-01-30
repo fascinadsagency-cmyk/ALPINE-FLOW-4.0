@@ -168,8 +168,15 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
 - ✅ **Configuración de Impresión:**
   - Toggle de Impresión Automática de Tickets
   - Nota de recomendación para impresoras térmicas
+- ✅ **Sección Hardware (NUEVO 2026-01-30):**
+  - **Escáner / Pistola de Códigos:**
+    - Toggle "Modo Escaneo Rápido": Añade producto automáticamente vs. esperar confirmación
+  - **Impresora:**
+    - Selector "Ancho de Papel": 80mm (Estándar) / 58mm (Estrecho)
+    - Toggle "Auto-Imprimir": Abre diálogo de impresión al confirmar pago
+    - Toggle "Imprimir Doble Copia": Dos tickets seguidos (Tienda y Cliente)
 - ✅ **Persistencia de Preferencias:**
-  - localStorage guarda: darkMode, language, auto_print_enabled
+  - localStorage guarda: darkMode, language, auto_print_enabled, quick_scan_mode, paper_width, auto_print_on_payment, print_double_copy
   - Configuración se mantiene al cerrar/reabrir el navegador
 - ✅ **Placeholders para futuras secciones:**
   - Personalización de Ticket (próximamente)
