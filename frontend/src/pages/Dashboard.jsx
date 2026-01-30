@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { dashboardApi } from "@/lib/api";
+import { useSettings } from "@/contexts/SettingsContext";
 import axios from "axios";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
