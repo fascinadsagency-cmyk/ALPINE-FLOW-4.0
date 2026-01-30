@@ -4162,6 +4162,39 @@ async def get_cash_movements(
     movements = await db.cash_movements.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
     return [CashMovementResponse(**m) for m in movements]
 
+@api_router.patch("/cash/movements/{movement_id}")
+async def update_cash_movement(
+    movement_id: str, 
+    update_data: dict, 
+    current_user: dict = Depends(get_current_user)
+):
+    """Update a cash movement (e.g., change payment method)"""
+    # Find the movement
+    movement = await db.cash_movements.find_one({"id": movement_id})
+    
+    if not movement:
+        raise HTTPException(status_code=404, detail="Movement not found")
+    
+    # Only allow updating payment_method for now
+    allowed_fields = {"payment_method"}
+    filtered_update = {k: v for k, v in update_data.items() if k in allowed_fields}
+    
+    if not filtered_update:
+        raise HTTPException(status_code=400, detail="No valid fields to update")
+    
+    # Validate payment_method
+    if "payment_method" in filtered_update:
+        if filtered_update["payment_method"] not in ["cash", "card"]:
+            raise HTTPException(status_code=400, detail="Invalid payment method")
+    
+    # Update the movement
+    await db.cash_movements.update_one(
+        {"id": movement_id},
+        {"$set": filtered_update}
+    )
+    
+    return {"status": "success", "updated_fields": list(filtered_update.keys())}
+
 @api_router.get("/cash/summary")
 async def get_cash_summary(date: Optional[str] = None, current_user: dict = Depends(get_current_user)):
     """Get cash summary for ACTIVE SESSION only (not full day)"""
