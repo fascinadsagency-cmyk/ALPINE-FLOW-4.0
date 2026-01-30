@@ -80,12 +80,21 @@ export default function ActiveRentals() {
   const [swapOldItem, setSwapOldItem] = useState(null); // Old item to be replaced (auto-detected)
   const [swapDaysRemaining, setSwapDaysRemaining] = useState(0);
   const [swapNewDays, setSwapNewDays] = useState(""); // Optional new duration
-  const [swapDelta, setSwapDelta] = useState(null); // Price difference
+  const [swapDelta, setSwapDelta] = useState(null); // Price difference for material
   const [swapPaymentMethod, setSwapPaymentMethod] = useState("cash");
   const [swapLoading, setSwapLoading] = useState(false);
   const [swapComplete, setSwapComplete] = useState(false);
   const [swapAction, setSwapAction] = useState("swap"); // "swap" or "return"
   const swapInputRef = useRef(null);
+  
+  // ============ DATE ADJUSTMENT STATE (Combined with swap) ============
+  const [dateAdjustActive, setDateAdjustActive] = useState(false);
+  const [originalEndDate, setOriginalEndDate] = useState("");
+  const [newEndDate, setNewEndDate] = useState("");
+  const [originalDays, setOriginalDays] = useState(0);
+  const [newTotalDays, setNewTotalDays] = useState(0);
+  const [dateDelta, setDateDelta] = useState(0); // Price difference for date change
+  const [combinedDelta, setCombinedDelta] = useState(0); // Material + Date combined
 
   useEffect(() => {
     loadActiveRentals();
