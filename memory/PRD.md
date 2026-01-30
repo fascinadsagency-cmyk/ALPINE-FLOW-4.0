@@ -2,7 +2,7 @@
 
 ## Estado del Proyecto
 **Última actualización:** 2026-01-30
-**Estado:** Operativo - Sistema de Cambios Centralizado implementado + Vista compacta
+**Estado:** Operativo - Modal "GESTIONAR CAMBIO" en Devoluciones corregido y verificado
 
 ---
 
@@ -41,32 +41,34 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
 - ✅ **Tipos de Artículo Personalizados:** Usuario crea y gestiona categorías
 - ✅ **Artículos Genéricos:** Gestión por stock (Cascos, Bastones, etc.)
 - ✅ **Botonera de Añadido Rápido:** Cascos, Bastones, Máscara
-- ✅ **NUEVO: Sistema de Cambios Centralizado (SWAP):**
+- ✅ **Sistema de Cambios Centralizado (SWAP):**
   - Botón "CAMBIOS" a nivel de cliente (no por artículo)
   - Modal con auto-foco para escáner de códigos de barras
   - Detección automática del tipo de artículo y sustitución propuesta
   - Balance económico en tiempo real (verde=upgrade, rojo=downgrade)
   - Actualización automática de inventario
   - Ticket de regularización
-- ✅ **NUEVO: Vista Compacta de Alquileres Activos:**
+- ✅ **Vista Compacta de Alquileres Activos:**
   - Una sola fila por cliente/contrato
   - Badge "N art." con Popover para ver detalle de artículos
   - UI más limpia y profesional
-- ✅ **NUEVO: Cabecera Inteligente en Alquileres Activos:**
+- ✅ **Cabecera Inteligente en Alquileres Activos:**
   - Barra de búsqueda híbrida (código/nombre) con auto-foco para escáner
   - Botón "CAMBIOS" prominente en naranja que abre el Gestor Universal en blanco
   - Filtrado de lista en tiempo real al escribir nombre
   - Scan-to-Action: Escanear artículo alquilado → identifica cliente automáticamente → abre modal
   - Endpoint: GET /api/lookup/{code} para reverse lookup
-- ✅ **NUEVO: Botón CAMBIO/PRÓRROGA en Devoluciones:**
-  - Botón "CAMBIO" naranja junto a "DEVOLUCIÓN RÁPIDA"
-  - **Modal de Gestión de Contrato Completo**: Muestra TODOS los artículos del cliente
-  - Cada artículo tiene botón "Sustituir" para escanear reemplazo individual
-  - Opción de "Prórroga de días" con toggle activar/desactivar
-  - Cálculo automático de diferencia TOTAL (suma de todos los cambios + prórroga)
+- ✅ **Modal GESTIONAR en Devoluciones (CORREGIDO 2026-01-30):**
+  - Muestra TODOS los artículos del contrato del cliente
+  - **Entrada dual de material:** Escáner + teclado manual con Enter
+  - **Contador de días corregido:** Días Restantes = Fecha Fin - Hoy
+  - **Terminología neutra:** "Ajuste de Fecha" (no "Prórroga")
+  - **Permite extensión Y devolución anticipada:** Selector de fecha flexible
+  - **Balance en tiempo real:** Días originales → Días nuevos + delta económico
+  - **Validación de disponibilidad:** Verifica status del artículo antes de confirmar
   - Integración obligatoria con caja (no permite guardar sin pasar por cobro/abono)
   - Ticket de regularización con detalle de todos los cambios
-- ✅ **NUEVO: Buscador Global (Reverse Lookup - Scan-to-Action):**
+- ✅ **Buscador Global (Reverse Lookup - Scan-to-Action):**
   - Barra de búsqueda prominente en Dashboard con auto-foco
   - Escenario A (Escaneo artículo): Detecta cliente y abre modal de gestión automáticamente
   - Escenario B (Nombre cliente): Busca cliente y muestra su alquiler activo
