@@ -54,7 +54,8 @@ import {
   Scale,
   Mountain,
   Edit3,
-  Save
+  Save,
+  Lock
 } from "lucide-react";
 import { toast } from "sonner";
 
