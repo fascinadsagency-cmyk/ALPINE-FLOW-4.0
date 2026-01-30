@@ -1453,6 +1453,213 @@ export default function Returns() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Change/Extension Modal */}
+      <Dialog open={changeModal} onOpenChange={setChangeModal}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ArrowLeftRight className="h-5 w-5 text-orange-600" />
+              {changeAction === 'swap' ? 'Cambio de Material' : 'Prórroga de Alquiler'}
+            </DialogTitle>
+            <DialogDescription>
+              {changeAction === 'swap' 
+                ? 'Sustituir un artículo por otro disponible'
+                : 'Extender el período de alquiler'
+              }
+            </DialogDescription>
+          </DialogHeader>
+          
+          {changeRental && !changeComplete && (
+            <div className="space-y-4 py-4">
+              {/* Customer Info */}
+              <div className="p-4 rounded-xl bg-slate-50">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-semibold text-slate-900">{changeRental.customer_name}</p>
+                    <p className="text-sm text-slate-500">Días restantes: {changeDaysRemaining}</p>
+                  </div>
+                  <Badge className="bg-blue-100 text-blue-700">
+                    Alquiler #{changeRental.id}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Action Tabs */}
+              <Tabs value={changeAction} onValueChange={setChangeAction}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="swap">Cambio de Material</TabsTrigger>
+                  <TabsTrigger value="extend">Prórroga</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="swap" className="space-y-4">
+                  {/* Old Item Selection */}
+                  {changeOldItem && (
+                    <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+                      <p className="text-sm text-red-700 font-medium mb-1">❌ Devuelve:</p>
+                      <p className="font-semibold">{changeOldItem.brand} {changeOldItem.model}</p>
+                      <p className="text-sm text-slate-500">
+                        {changeOldItem.item_type} • Talla {changeOldItem.size} • {changeOldItem.internal_code || changeOldItem.barcode}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* New Item Input */}
+                  <div>
+                    <Label>Escanear nuevo artículo</Label>
+                    <div className="relative mt-1">
+                      <Scan className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                      <Input
+                        ref={changeInputRef}
+                        placeholder="Código del nuevo artículo..."
+                        value={changeNewBarcode}
+                        onChange={(e) => setChangeNewBarcode(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && changeNewBarcode.trim()) {
+                            searchChangeItem(changeNewBarcode.trim());
+                            setChangeNewBarcode("");
+                          }
+                        }}
+                        className="pl-10 h-12"
+                        disabled={changeLoading}
+                      />
+                      {changeLoading && (
+                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin text-primary" />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* New Item Display */}
+                  {changeNewItem && (
+                    <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                      <p className="text-sm text-emerald-700 font-medium mb-1">✅ Recibe:</p>
+                      <p className="font-semibold">{changeNewItem.brand} {changeNewItem.model}</p>
+                      <p className="text-sm text-slate-500">
+                        {changeNewItem.item_type} • Talla {changeNewItem.size} • {changeNewItem.internal_code || changeNewItem.barcode}
+                      </p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="extend" className="space-y-4">
+                  <div>
+                    <Label>Nuevos días de alquiler</Label>
+                    <div className="flex items-center gap-3 mt-2">
+                      <Input
+                        type="number"
+                        min={changeRental?.days || 1}
+                        value={changeNewDays}
+                        onChange={(e) => setChangeNewDays(e.target.value)}
+                        className="w-24 h-12 text-xl text-center font-bold"
+                      />
+                      <span className="text-slate-500">días (actual: {changeRental?.days})</span>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+
+              {/* Price Delta */}
+              {changeDelta && (
+                <div className={`p-4 rounded-xl border ${
+                  changeDelta.delta > 0 
+                    ? 'bg-orange-50 border-orange-200' 
+                    : changeDelta.delta < 0 
+                    ? 'bg-emerald-50 border-emerald-200'
+                    : 'bg-slate-50 border-slate-200'
+                }`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium">Diferencia de precio:</span>
+                    <span className={`text-2xl font-bold ${
+                      changeDelta.delta > 0 ? 'text-orange-600' : 
+                      changeDelta.delta < 0 ? 'text-emerald-600' : 'text-slate-600'
+                    }`}>
+                      {changeDelta.delta > 0 ? '+' : ''}€{changeDelta.delta.toFixed(2)}
+                    </span>
+                  </div>
+                  
+                  {changeDelta.materialDelta !== 0 && (
+                    <div className="text-sm text-slate-600 mb-1">
+                      Material: €{changeDelta.oldPrice.toFixed(2)} → €{changeDelta.newPrice.toFixed(2)} 
+                      ({changeDelta.materialDelta > 0 ? '+' : ''}€{changeDelta.materialDelta.toFixed(2)})
+                    </div>
+                  )}
+                  
+                  {changeDelta.extensionCost > 0 && (
+                    <div className="text-sm text-slate-600">
+                      Prórroga: {changeDelta.newDays - changeDelta.oldDays} días × €{(changeDelta.extensionCost / (changeDelta.newDays - changeDelta.oldDays)).toFixed(2)}/día = €{changeDelta.extensionCost.toFixed(2)}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Payment Method */}
+              {changeDelta && changeDelta.delta !== 0 && (
+                <div>
+                  <Label>Método de pago</Label>
+                  <Select value={changePaymentMethod} onValueChange={setChangePaymentMethod}>
+                    <SelectTrigger className="h-11 mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAYMENT_METHODS.map(m => (
+                        <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Success State */}
+          {changeComplete && (
+            <div className="py-8 text-center">
+              <CheckCircle className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-slate-900 mb-2">
+                {changeAction === 'swap' ? 'Cambio Completado' : 'Prórroga Completada'}
+              </h3>
+              <p className="text-slate-600 mb-6">
+                La operación se ha procesado correctamente
+              </p>
+              <div className="flex gap-3 justify-center">
+                <Button
+                  variant="outline"
+                  onClick={printChangeTicket}
+                  className="gap-2"
+                >
+                  <Printer className="h-4 w-4" />
+                  Imprimir Ticket
+                </Button>
+                <Button onClick={closeChangeModal}>
+                  Cerrar
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            {!changeComplete && (
+              <>
+                <Button variant="outline" onClick={closeChangeModal}>
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={executeChange}
+                  disabled={changeLoading || (!changeNewItem && parseInt(changeNewDays) === changeRental?.days)}
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
+                  {changeLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <ArrowLeftRight className="h-4 w-4 mr-2" />
+                  )}
+                  {changeAction === 'swap' ? 'Procesar Cambio' : 'Procesar Prórroga'}
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
