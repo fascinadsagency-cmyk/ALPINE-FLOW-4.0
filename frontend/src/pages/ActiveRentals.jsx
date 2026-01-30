@@ -607,84 +607,42 @@ export default function ActiveRentals() {
     
     if (!hasMaterialChange && !hasDateChange) return;
 
-    const ticketWindow = window.open('', '_blank', 'width=400,height=600');
-    ticketWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Ticket de Cambio</title>
-        <style>
-          @media print { @page { margin: 0; size: 80mm auto; } body { margin: 0; } }
-          body { font-family: 'Courier New', monospace; width: 80mm; padding: 5mm; margin: 0 auto; font-size: 11px; }
-          .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 8px; margin-bottom: 10px; }
-          .header h1 { margin: 0; font-size: 14px; }
-          .section { border-bottom: 1px dashed #ccc; padding: 8px 0; margin-bottom: 8px; }
-          .row { display: flex; justify-content: space-between; padding: 3px 0; }
-          .label { color: #666; }
-          .value { font-weight: bold; }
-          .delta-box { text-align: center; padding: 15px; margin: 10px 0; border-radius: 4px; }
-          .delta-positive { background: #fff7ed; color: #c2410c; }
-          .delta-negative { background: #dcfce7; color: #166534; }
-          .delta-zero { background: #f3f4f6; color: #374151; }
-          .delta-amount { font-size: 24px; font-weight: bold; }
-          .footer { text-align: center; margin-top: 15px; font-size: 9px; color: #666; }
-          .print-btn { display: block; width: 100%; padding: 10px; margin-top: 15px; background: #2563eb; color: white; border: none; cursor: pointer; font-size: 12px; border-radius: 4px; }
-          @media print { .print-btn { display: none; } }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>COMPROBANTE DE REGULARIZACIÓN</h1>
-          <p>${hasMaterialChange && hasDateChange ? 'Material + Fecha' : hasMaterialChange ? 'Cambio de material' : 'Ajuste de calendario'}</p>
-        </div>
-        
-        <div class="section">
-          <div class="row"><span class="label">Cliente:</span><span class="value">${swapRental.customer_name}</span></div>
-          <div class="row"><span class="label">DNI:</span><span class="value">${swapRental.customer_dni || '-'}</span></div>
-          <div class="row"><span class="label">Alquiler:</span><span class="value">#${swapRental.id.substring(0, 8).toUpperCase()}</span></div>
-        </div>
-        
-        ${hasMaterialChange ? `
-        <div class="section">
-          <p style="font-weight: bold; margin: 0 0 8px 0;">🔄 CAMBIO DE MATERIAL</p>
-          <div class="row"><span>❌ ${swapOldItem.internal_code || swapOldItem.barcode}</span><span>€${swapDelta.oldPrice.toFixed(2)}</span></div>
-          <div class="row"><span>✅ ${swapNewItem.internal_code || swapNewItem.barcode}</span><span>€${swapDelta.newPrice.toFixed(2)}</span></div>
-          <div class="row" style="border-top: 1px dashed #ccc; margin-top: 5px; padding-top: 5px;">
-            <span class="label">Diferencia material:</span>
-            <span class="value">${swapDelta.delta >= 0 ? '+' : ''}€${swapDelta.delta.toFixed(2)}</span>
-          </div>
-        </div>
-        ` : ''}
-        
-        ${hasDateChange ? `
-        <div class="section">
-          <p style="font-weight: bold; margin: 0 0 8px 0;">📅 AJUSTE DE CALENDARIO</p>
-          <div class="row"><span class="label">Días originales:</span><span class="value">${originalDays}</span></div>
-          <div class="row"><span class="label">Días nuevos:</span><span class="value">${newTotalDays}</span></div>
-          <div class="row"><span class="label">Nueva fecha fin:</span><span class="value">${new Date(newEndDate).toLocaleDateString('es-ES')}</span></div>
-          <div class="row" style="border-top: 1px dashed #ccc; margin-top: 5px; padding-top: 5px;">
-            <span class="label">${dateDelta > 0 ? 'Suplemento' : 'Abono'}:</span>
-            <span class="value">${dateDelta >= 0 ? '+' : ''}€${dateDelta.toFixed(2)}</span>
-          </div>
-        </div>
-        ` : ''}
-        
-        <div class="delta-box ${combinedDelta > 0 ? 'delta-positive' : combinedDelta < 0 ? 'delta-negative' : 'delta-zero'}">
-          <p style="margin: 0 0 5px 0; font-size: 10px;">${combinedDelta > 0 ? 'TOTAL COBRADO' : combinedDelta < 0 ? 'TOTAL ABONADO' : 'SIN DIFERENCIA'}</p>
-          <p class="delta-amount">${combinedDelta > 0 ? '+' : combinedDelta < 0 ? '-' : ''}€${Math.abs(combinedDelta).toFixed(2)}</p>
-          ${combinedDelta !== 0 ? `<p style="margin: 5px 0 0 0; font-size: 10px;">Método: ${swapPaymentMethod === 'cash' ? 'Efectivo' : 'Tarjeta'}</p>` : ''}
-        </div>
-        
-        <div class="footer">
-          <p>Fecha: ${new Date().toLocaleString('es-ES')}</p>
-          <p style="margin-top: 8px;">Gracias por su confianza</p>
-        </div>
-        
-        <button class="print-btn" onclick="window.print(); setTimeout(() => window.close(), 500);">IMPRIMIR</button>
-      </body>
-      </html>
-    `);
-    ticketWindow.document.close();
+    // Build old and new items for the ticket
+    const oldItems = hasMaterialChange ? [{
+      name: swapOldItem.internal_code || swapOldItem.barcode || 'Artículo anterior',
+      item_type: swapOldItem.item_type
+    }] : [];
+    
+    const newItems = hasMaterialChange ? [{
+      name: swapNewItem.internal_code || swapNewItem.barcode || 'Artículo nuevo',
+      item_type: swapNewItem.item_type
+    }] : [];
+
+    // Use centralized ticket generator
+    printTicket({
+      settings: {
+        companyLogo: settings?.companyLogo,
+        ticketHeader: settings?.ticketHeader,
+        ticketFooter: settings?.ticketFooter,
+        ticketTerms: settings?.ticketTerms,
+        showDniOnTicket: settings?.showDniOnTicket ?? true,
+        showVatOnTicket: settings?.showVatOnTicket ?? false,
+        defaultVat: settings?.defaultVat ?? 21,
+        vatIncludedInPrices: settings?.vatIncludedInPrices ?? true,
+        language: settings?.language ?? 'es'
+      },
+      ticketType: 'swap',
+      data: {
+        operationNumber: swapRental.operation_number || `C${String(Date.now()).slice(-6)}`,
+        date: new Date().toLocaleDateString('es-ES'),
+        customer: swapRental.customer_name,
+        dni: swapRental.customer_dni || '',
+        oldItems: oldItems,
+        newItems: newItems,
+        difference: combinedDelta,
+        paymentMethod: swapPaymentMethod
+      }
+    });
   };
 
   // ============ HELPER FUNCTIONS ============
