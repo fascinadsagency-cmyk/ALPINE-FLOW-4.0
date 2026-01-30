@@ -58,6 +58,13 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - Filtrado de lista en tiempo real al escribir nombre
   - Scan-to-Action: Escanear artículo alquilado → identifica cliente automáticamente → abre modal
   - Endpoint: GET /api/lookup/{code} para reverse lookup
+- ✅ **NUEVO: Botón CAMBIO/PRÓRROGA en Devoluciones:**
+  - Botón "CAMBIO" naranja junto a "DEVOLUCIÓN RÁPIDA"
+  - Modal de gestión con tabs: "Cambio de Material" | "Prórroga"
+  - Artículo pre-cargado de la fila seleccionada
+  - Cálculo automático de diferencia de precio
+  - Integración obligatoria con caja (no permite guardar sin pasar por cobro/abono)
+  - Ticket de regularización imprimible
 - ✅ **NUEVO: Buscador Global (Reverse Lookup - Scan-to-Action):**
   - Barra de búsqueda prominente en Dashboard con auto-foco
   - Escenario A (Escaneo artículo): Detecta cliente y abre modal de gestión automáticamente
