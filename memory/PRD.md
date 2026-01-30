@@ -2,7 +2,7 @@
 
 ## Estado del Proyecto
 **Última actualización:** 2026-01-30
-**Estado:** Operativo - Lógica financiera de caja CORREGIDA + Ticket de cierre REDISEÑADO
+**Estado:** Operativo - CSS de impresión térmica OPTIMIZADO para 80mm
 
 ---
 
