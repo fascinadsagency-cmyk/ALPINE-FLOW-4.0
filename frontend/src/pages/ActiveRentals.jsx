@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { rentalApi } from "@/lib/api";
+import { useSettings } from "@/contexts/SettingsContext";
 import axios from "axios";
 import { 
   ShoppingCart, 
