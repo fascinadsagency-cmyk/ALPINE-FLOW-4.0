@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { customerApi, itemApi, tariffApi, rentalApi } from "@/lib/api";
+import { printTicket, getStoredSettings } from "@/lib/ticketGenerator";
+import { useSettings } from "@/contexts/SettingsContext";
 import { 
   Search, 
   User, 
