@@ -53,7 +53,13 @@ const PAYMENT_METHODS = [
 
 export default function ActiveRentals() {
   const [rentals, setRentals] = useState([]);
+  const [filteredRentals, setFilteredRentals] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // ============ SMART SEARCH STATE ============
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchLoading, setSearchLoading] = useState(false);
+  const searchInputRef = useRef(null);
   
   // Step-based modification flow
   const [editingRental, setEditingRental] = useState(null);
@@ -68,7 +74,8 @@ export default function ActiveRentals() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerLoading, setCustomerLoading] = useState(false);
 
-  // ============ NEW CENTRALIZED SWAP SYSTEM ============
+  // ============ UNIVERSAL SWAP MODAL STATE ============
+  const [swapModalOpen, setSwapModalOpen] = useState(false);
   const [swapRental, setSwapRental] = useState(null); // The rental being swapped
   const [swapBarcode, setSwapBarcode] = useState(""); // Scanned barcode
   const [swapNewItem, setSwapNewItem] = useState(null); // New item detected
@@ -79,6 +86,7 @@ export default function ActiveRentals() {
   const [swapPaymentMethod, setSwapPaymentMethod] = useState("cash");
   const [swapLoading, setSwapLoading] = useState(false);
   const [swapComplete, setSwapComplete] = useState(false);
+  const [swapAction, setSwapAction] = useState("swap"); // "swap" or "return"
   const swapInputRef = useRef(null);
 
   useEffect(() => {
