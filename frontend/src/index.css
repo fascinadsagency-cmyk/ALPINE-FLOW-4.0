@@ -172,6 +172,12 @@
 
 /* ========== DARK MODE GLOBAL UTILITIES ========== */
 
+/* Force dark background on main containers */
+.dark main,
+.dark [data-testid] {
+    background-color: #121212 !important;
+}
+
 /* Dark mode backgrounds */
 .dark-bg-primary {
     background-color: #121212;
@@ -185,11 +191,22 @@
     background-color: #1e1e1e;
 }
 
-/* Dark mode cards and containers */
+/* Dark mode cards and containers - More aggressive targeting */
 .dark .card-override,
-.dark [class*="bg-white"],
-.dark [class*="bg-slate-50"] {
+.dark [class*="bg-white"]:not(button):not([role="dialog"] *),
+.dark [class*="bg-slate-50"]:not(button) {
     background-color: #1a1a1a !important;
+}
+
+/* Preserve white text on primary buttons */
+.dark button[class*="bg-primary"] {
+    color: white !important;
+}
+
+/* Dark mode page containers */
+.dark .p-6,
+.dark .p-8 {
+    background-color: #121212;
 }
 
 /* Dark mode text colors - ensure legibility */
@@ -202,6 +219,10 @@
 .dark .text-slate-600,
 .dark .text-slate-500 {
     color: #a0a0a0 !important;
+}
+
+.dark .text-slate-400 {
+    color: #888888 !important;
 }
 
 /* Dark mode borders */
