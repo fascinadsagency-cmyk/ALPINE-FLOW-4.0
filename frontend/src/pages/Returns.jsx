@@ -418,7 +418,7 @@ export default function Returns() {
     if (!changeRental) return;
     
     const itemsSwapped = changeItems.filter(i => i.isSwapping && i.swapNewItem);
-    const hasDayChange = newDays !== originalDays;
+    const hasDateChange = changeAdjustDate && changeDateDelta !== 0;
     
     const ticketWindow = window.open('', '_blank', 'width=400,height=700');
     ticketWindow.document.write(`
@@ -450,12 +450,12 @@ export default function Returns() {
           <div class="row"><span>Contrato:</span><strong>#${changeRental.id?.substring(0, 8)}</strong></div>
         </div>
         
-        ${hasDayChange ? `
+        ${hasDateChange ? `
         <div class="section">
-          <div class="section-title">📅 AJUSTE DE DÍAS</div>
-          <div class="row"><span>Días originales:</span><span>${originalDays}</span></div>
-          <div class="row"><span>Días nuevos:</span><span>${newDays}</span></div>
-          <div class="row"><span>${timeDelta >= 0 ? 'Suplemento' : 'Abono'}:</span><strong>${timeDelta >= 0 ? '+' : '-'}€${Math.abs(timeDelta).toFixed(2)}</strong></div>
+          <div class="section-title">📅 AJUSTE DE FECHA</div>
+          <div class="row"><span>Días originales:</span><span>${changeOriginalDays}</span></div>
+          <div class="row"><span>Días nuevos:</span><span>${changeNewTotalDays}</span></div>
+          <div class="row"><span>${changeDateDelta >= 0 ? 'Suplemento' : 'Abono'}:</span><strong>${changeDateDelta >= 0 ? '+' : ''}€${changeDateDelta.toFixed(2)}</strong></div>
         </div>` : ''}
         
         ${itemsSwapped.length > 0 ? `
@@ -467,13 +467,13 @@ export default function Returns() {
               <div style="color:#666;">${item.item_type} | ${item.swapDelta >= 0 ? '+' : ''}€${item.swapDelta?.toFixed(2)}</div>
             </div>
           `).join('')}
-          <div class="row" style="margin-top:5px;"><span>Subtotal material:</span><strong>${materialDelta >= 0 ? '+' : '-'}€${Math.abs(materialDelta).toFixed(2)}</strong></div>
+          <div class="row" style="margin-top:5px;"><span>Subtotal material:</span><strong>${materialDelta >= 0 ? '+' : ''}€${materialDelta.toFixed(2)}</strong></div>
         </div>` : ''}
         
-        <div class="delta-box ${totalDelta > 0 ? 'delta-positive' : totalDelta < 0 ? 'delta-negative' : 'delta-zero'}">
-          <p style="margin:0 0 5px 0;font-size:10px;">${totalDelta > 0 ? 'TOTAL COBRADO' : totalDelta < 0 ? 'TOTAL ABONADO' : 'SIN DIFERENCIA'}</p>
-          <p class="delta-amount">${totalDelta > 0 ? '+' : totalDelta < 0 ? '-' : ''}€${Math.abs(totalDelta).toFixed(2)}</p>
-          ${totalDelta !== 0 ? `<p style="font-size:9px;margin-top:5px;">Método: ${changePaymentMethod === 'cash' ? 'Efectivo' : 'Tarjeta'}</p>` : ''}
+        <div class="delta-box ${changeTotalDelta > 0 ? 'delta-positive' : changeTotalDelta < 0 ? 'delta-negative' : 'delta-zero'}">
+          <p style="margin:0 0 5px 0;font-size:10px;">${changeTotalDelta > 0 ? 'TOTAL COBRADO' : changeTotalDelta < 0 ? 'TOTAL ABONADO' : 'SIN DIFERENCIA'}</p>
+          <p class="delta-amount">${changeTotalDelta > 0 ? '+' : changeTotalDelta < 0 ? '-' : ''}€${Math.abs(changeTotalDelta).toFixed(2)}</p>
+          ${changeTotalDelta !== 0 ? `<p style="font-size:9px;margin-top:5px;">Método: ${changePaymentMethod === 'cash' ? 'Efectivo' : 'Tarjeta'}</p>` : ''}
         </div>
         
         <p style="text-align:center;font-size:9px;color:#666;">Gracias por su confianza</p>
