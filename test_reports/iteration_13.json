@@ -1,0 +1,152 @@
+{
+  "summary": "Iteration 13 - Complete testing of revenue logic and cash flow fixes. All 9 requested features verified successfully via backend API tests and UI automation.",
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  
+  "passed_tests": [
+    "1. Dashboard 'Ingresos Netos Hoy' uses same source as Caja (cash_movements) - PASSED (€12.33 displayed)",
+    "2. 'Ingresos Netos Hoy' = Total Income - Total Refunds - PASSED (€99 - €86.67 = €12.33)",
+    "3. Clicking on 'Ingresos Netos Hoy' card navigates to /caja - PASSED",
+    "4. Customer modal shows 'Historial de Alquileres' with all rentals - PASSED (22 rentals shown)",
+    "5. Customer modal shows 'Total Histórico' summing all rentals - PASSED (€803.92)",
+    "6. 'Ver Ficha Completa' button navigates to /clientes - PASSED (with highlight parameter)",
+    "7. Caja shows 'Contratos Nuevos' and 'Ajustes Cambios' separately - PASSED",
+    "8. /api/reports/stats returns revenue_today from cash_movements - PASSED",
+    "9. /api/cash/summary/realtime returns by_category with rental, rental_adjustment, other - PASSED"
+  ],
+  
+  "backend_tests": {
+    "total": 17,
+    "passed": 17,
+    "failed": 0,
+    "tests": [
+      "test_auth_login - PASSED",
+      "test_reports_stats_endpoint_returns_200 - PASSED",
+      "test_reports_stats_has_revenue_today - PASSED",
+      "test_reports_stats_revenue_is_numeric - PASSED",
+      "test_cash_summary_realtime_endpoint_returns_200 - PASSED",
+      "test_cash_summary_has_by_category - PASSED",
+      "test_cash_summary_by_category_has_required_keys - PASSED",
+      "test_cash_summary_has_total_income_and_refunds - PASSED",
+      "test_revenue_calculation_formula - PASSED",
+      "test_cash_summary_has_by_payment_method - PASSED",
+      "test_dashboard_endpoint_returns_200 - PASSED",
+      "test_dashboard_has_stats_with_revenue - PASSED",
+      "test_customer_history_endpoint - PASSED",
+      "test_rentals_endpoint_with_customer_filter - PASSED",
+      "test_cash_session_info_in_summary - PASSED",
+      "test_cash_movements_endpoint - PASSED",
+      "test_by_category_values_are_numeric - PASSED"
+    ]
+  },
+  
+  "api_verification": {
+    "reports_stats": {
+      "status": "working",
+      "revenue_today": 12.33,
+      "calculation": "total_income (€99) - total_refunds (€86.67) = €12.33"
+    },
+    "cash_summary_realtime": {
+      "status": "working",
+      "by_category": {
+        "rental": 27,
+        "rental_adjustment": -86.67,
+        "other": 72
+      },
+      "by_payment_method": {
+        "cash": {"income": 99, "expense": 0, "refund": 43.33},
+        "card": {"income": 0, "expense": 0, "refund": 43.33}
+      },
+      "total_income": 99,
+      "total_refunds": 86.67,
+      "balance": 112.33,
+      "opening_balance": 100
+    }
+  },
+  
+  "ui_verification": {
+    "dashboard_revenue_card": {
+      "label": "Ingresos Netos Hoy",
+      "value": "€12.33",
+      "subtitle": "Facturado - Devoluciones",
+      "clickable": true,
+      "navigates_to": "/caja"
+    },
+    "caja_page_columns": {
+      "contratos_nuevos": "€27.00",
+      "ajustes_cambios": "€-86.67",
+      "salidas": "€0.00",
+      "devoluciones": "€86.67",
+      "efectivo": "€55.67",
+      "tarjeta": "€-43.33",
+      "saldo_neto_turno": "€112.33",
+      "fondo_inicial": "€100.00"
+    },
+    "customer_modal": {
+      "historial_alquileres": "22 rentals",
+      "total_historico": "€803.92",
+      "ver_ficha_completa_button": true,
+      "navigates_to": "/clientes?highlight=<customer_id>"
+    }
+  },
+  
+  "test_report_links": [
+    "/app/backend/tests/test_iteration13.py",
+    "/app/test_reports/pytest/pytest_results_iter13.xml"
+  ],
+  
+  "action_items": [],
+  
+  "critical_code_review_comments": [],
+  
+  "updated_files": [
+    "/app/backend/tests/test_iteration13.py"
+  ],
+  
+  "success_rate": {
+    "backend": "100% (17/17 tests passed)",
+    "frontend": "100% (9/9 features verified)"
+  },
+  
+  "test_credentials": {
+    "username": "demo",
+    "password": "demo1234"
+  },
+  
+  "seed_data_creation": "None - used existing test data",
+  
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  
+  "context_for_next_testing_agent": "All revenue logic and cash flow features verified. Key findings: 1) Dashboard 'Ingresos Netos Hoy' = €12.33 (Income €99 - Refunds €86.67), 2) Clicking revenue card navigates to /caja, 3) Caja shows 4 columns: Contratos Nuevos (€27), Ajustes Cambios (€-86.67), Salidas (€0), Devoluciones (€86.67), 4) Saldo Neto del Turno = €112.33 (includes Fondo inicial €100), 5) Customer modal shows rental history (22 rentals) and Total Histórico (€803.92), 6) 'Ver Ficha Completa' navigates to /clientes with highlight parameter, 7) by_category in cash summary includes rental, rental_adjustment, other.",
+  
+  "feature_verification": {
+    "dashboard_revenue_from_cash_movements": true,
+    "revenue_formula_income_minus_refunds": true,
+    "revenue_card_navigates_to_caja": true,
+    "customer_modal_rental_history": true,
+    "customer_modal_total_historico": true,
+    "ver_ficha_completa_navigates_to_clientes": true,
+    "caja_contratos_nuevos_column": true,
+    "caja_ajustes_cambios_column": true,
+    "api_stats_revenue_from_cash_movements": true,
+    "api_cash_summary_by_category": true
+  },
+  
+  "screenshots": [
+    ".screenshots/dashboard_revenue.png - Dashboard with Ingresos Netos Hoy €12.33",
+    ".screenshots/caja_page_from_dashboard.png - Caja page after clicking revenue card",
+    ".screenshots/customer_modal_history.png - Customer modal with rental history",
+    ".screenshots/clientes_page_from_modal.png - Clientes page after Ver Ficha Completa",
+    ".screenshots/caja_page_full.png - Full Caja page with all columns"
+  ]
+}
