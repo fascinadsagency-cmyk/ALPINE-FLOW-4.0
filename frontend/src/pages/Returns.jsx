@@ -2023,28 +2023,58 @@ export default function Returns() {
 
               {/* Payment Method - Only if there's a delta */}
               {changeTotalDelta !== 0 && (
-                <div className="flex items-center gap-4">
+                <div className="space-y-2">
                   <Label className="shrink-0">Método de {changeTotalDelta > 0 ? 'cobro' : 'abono'}:</Label>
-                  <div className="flex gap-2">
-                    <Button
-                      variant={changePaymentMethod === "cash" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setChangePaymentMethod("cash")}
-                      className="gap-1"
-                    >
-                      <Banknote className="h-4 w-4" />
-                      Efectivo
-                    </Button>
-                    <Button
-                      variant={changePaymentMethod === "card" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setChangePaymentMethod("card")}
-                      className="gap-1"
-                    >
-                      <CreditCard className="h-4 w-4" />
-                      Tarjeta
-                    </Button>
-                  </div>
+                  
+                  {/* If positive (cobro), allow choice. If negative (abono), lock to original */}
+                  {changeTotalDelta > 0 ? (
+                    <div className="flex gap-2">
+                      <Button
+                        variant={changePaymentMethod === "cash" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setChangePaymentMethod("cash")}
+                        className="gap-1"
+                      >
+                        <Banknote className="h-4 w-4" />
+                        Efectivo
+                      </Button>
+                      <Button
+                        variant={changePaymentMethod === "card" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setChangePaymentMethod("card")}
+                        className="gap-1"
+                      >
+                        <CreditCard className="h-4 w-4" />
+                        Tarjeta
+                      </Button>
+                    </div>
+                  ) : (
+                    /* LOCKED for refunds/abonos */
+                    <>
+                      <div className="h-10 px-3 flex items-center justify-between rounded-md border border-slate-300 bg-slate-100 cursor-not-allowed max-w-xs">
+                        <div className="flex items-center gap-2">
+                          {(changeRental?.payment_method || 'cash') === 'cash' ? (
+                            <>
+                              <Banknote className="h-4 w-4 text-emerald-600" />
+                              <span className="font-medium text-slate-700">Efectivo</span>
+                            </>
+                          ) : (
+                            <>
+                              <CreditCard className="h-4 w-4 text-blue-600" />
+                              <span className="font-medium text-slate-700">Tarjeta</span>
+                            </>
+                          )}
+                        </div>
+                        <Lock className="h-4 w-4 text-slate-400" />
+                      </div>
+                      <div className="p-2 rounded-lg bg-amber-50 border border-amber-200 max-w-md">
+                        <p className="text-xs text-amber-800 flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3 flex-shrink-0" />
+                          <span>Por seguridad, el abono se realiza al mismo método de pago original.</span>
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>
