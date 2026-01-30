@@ -1255,14 +1255,6 @@ export default function ActiveRentals() {
                       </div>
                     </div>
                   )}
-                          size="sm"
-                        >
-                          <CreditCard className="h-4 w-4 mr-1" />
-                          Tarjeta
-                        </Button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
