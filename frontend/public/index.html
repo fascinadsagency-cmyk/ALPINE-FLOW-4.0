@@ -48,6 +48,19 @@
         </script>
     </head>
     <body>
+        <!-- Dark mode initialization - must be before React renders -->
+        <script>
+            (function() {
+                try {
+                    const darkMode = localStorage.getItem('darkMode') === 'true';
+                    if (darkMode) {
+                        document.documentElement.classList.add('dark');
+                        document.body.classList.add('dark');
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                    }
+                } catch (e) {}
+            })();
+        </script>
         <noscript>You need to enable JavaScript to run this app.</noscript>
         <div id="root"></div>
         <!--
