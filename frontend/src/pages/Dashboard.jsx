@@ -60,6 +60,27 @@ export default function Dashboard() {
   const [customDateActive, setCustomDateActive] = useState(false);
   const navigate = useNavigate();
 
+  // ============ GLOBAL LOOKUP STATE ============
+  const [searchCode, setSearchCode] = useState("");
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [lookupResult, setLookupResult] = useState(null);
+  const searchInputRef = useRef(null);
+
+  // ============ QUICK MANAGEMENT MODAL STATE ============
+  const [quickModal, setQuickModal] = useState(false);
+  const [quickRental, setQuickRental] = useState(null);
+  const [quickItem, setQuickItem] = useState(null); // Item that triggered the lookup
+  const [quickNewBarcode, setQuickNewBarcode] = useState("");
+  const [quickNewItem, setQuickNewItem] = useState(null);
+  const [quickSwapOldItem, setQuickSwapOldItem] = useState(null);
+  const [quickDelta, setQuickDelta] = useState(null);
+  const [quickNewDays, setQuickNewDays] = useState("");
+  const [quickPaymentMethod, setQuickPaymentMethod] = useState("cash");
+  const [quickProcessing, setQuickProcessing] = useState(false);
+  const [quickComplete, setQuickComplete] = useState(false);
+  const [quickAction, setQuickAction] = useState("swap"); // "swap" or "return"
+  const quickSwapInputRef = useRef(null);
+
   useEffect(() => {
     loadDashboard();
     loadReturnsControl();
