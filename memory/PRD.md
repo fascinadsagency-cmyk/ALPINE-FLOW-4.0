@@ -106,6 +106,13 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
 - ✅ **Ficha de Cliente Completa (MEJORADA 2026-01-30):**
   - Al pulsar **nombre del cliente** o icono de persona en Alquileres Activos, abre modal profesional con:
     - **Datos Personales:** Nombre completo, DNI/Pasaporte
+    - **Datos Técnicos (PRIORITARIO):** Sección destacada en la parte superior con:
+      - Talla de Bota
+      - Altura (cm)
+      - Peso (kg)
+      - Nivel de Esquí (Principiante, Intermedio, Avanzado, Experto)
+      - Edición rápida inline con botón "Editar"
+      - Historial de tallas usadas anteriormente
     - **Alquiler Activo:** Referencia #ID, días y total del contrato actual
     - **Contacto con acciones:** Teléfono con botones "Llamar" y "WhatsApp", Email
     - **Ubicación:** Hotel/Ciudad/Dirección
@@ -113,11 +120,11 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
     - **Resumen Financiero:** Total Pagado, Devoluciones, Ingreso Neto
     - **Últimas Transacciones:** Lista de pagos/abonos con fecha, método y monto
     - **Historial de Alquileres:** Lista completa con fechas, días, estado, equipos (con tallas), precios y estado de pago
-    - **Tallas Preferidas:** Historial de tallas usadas por tipo de artículo
     - **Total Histórico:** Suma de todos los importes de alquileres
   - Modal de **tamaño grande** (max-w-4xl) para mostrar toda la información
   - **Navegación fluida:** Botón "Cerrar" devuelve a la lista sin refrescar la página
-  - Carga datos desde `/api/customers/{id}/history` para historial financiero completo
+  - Endpoint `/api/customers/{id}/technical-data` para actualización rápida
+  - **Misma funcionalidad disponible en página de Clientes** (`/clientes`)
 
 ### 4. Sistema de Tickets/Comprobantes
 - ✅ Impresión como comprobante de un pago ya realizado
