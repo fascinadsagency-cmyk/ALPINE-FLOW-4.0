@@ -491,6 +491,76 @@ export default function Dashboard() {
 
   return (
     <div className="p-6 lg:p-8 space-y-6" data-testid="dashboard">
+      {/* ============ GLOBAL SEARCH BAR - SCAN TO ACTION ============ */}
+      <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-slate-50 shadow-lg">
+        <CardContent className="py-4">
+          <div className="flex flex-col lg:flex-row items-center gap-4">
+            <div className="flex items-center gap-3 shrink-0">
+              <div className="h-12 w-12 rounded-xl bg-blue-600 flex items-center justify-center shadow-md">
+                <Scan className="h-6 w-6 text-white" />
+              </div>
+              <div className="hidden sm:block">
+                <p className="font-bold text-slate-800">Búsqueda Rápida</p>
+                <p className="text-xs text-slate-500">Escanea o escribe código/nombre</p>
+              </div>
+            </div>
+            
+            <div className="flex-1 w-full">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                <Input
+                  ref={searchInputRef}
+                  value={searchCode}
+                  onChange={(e) => setSearchCode(e.target.value.toUpperCase())}
+                  onKeyDown={handleSearchKeyDown}
+                  placeholder="SKI-001, BOT-002, Juan Pérez..."
+                  className="h-14 pl-12 pr-24 text-lg font-mono bg-white border-2 border-slate-200 focus:border-blue-400 rounded-xl shadow-inner"
+                  data-testid="global-search-input"
+                />
+                <Button
+                  onClick={() => handleGlobalSearch(searchCode)}
+                  disabled={searchLoading || !searchCode.trim()}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-10 px-4 bg-blue-600 hover:bg-blue-700"
+                >
+                  {searchLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
+            
+            {/* Quick status indicators */}
+            <div className="flex gap-2 shrink-0">
+              <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                <Package className="h-3 w-3 mr-1" />
+                {stats.active_rentals || 0} activos
+              </Badge>
+            </div>
+          </div>
+          
+          {/* Search Results Preview */}
+          {lookupResult?.found && lookupResult.type === "multiple_customers" && (
+            <div className="mt-4 p-3 bg-white rounded-lg border border-slate-200">
+              <p className="text-sm font-semibold text-slate-700 mb-2">Selecciona un cliente:</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {lookupResult.customers.map((c, idx) => (
+                  <Button
+                    key={idx}
+                    variant="outline"
+                    className="justify-start text-left h-auto py-2"
+                    onClick={() => openQuickModal(c.rental, null)}
+                  >
+                    <User className="h-4 w-4 mr-2 text-blue-600" />
+                    <div>
+                      <p className="font-medium">{c.customer?.name}</p>
+                      <p className="text-xs text-slate-500">{c.rental?.item_count} artículos</p>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -511,6 +581,256 @@ export default function Dashboard() {
           </Button>
         </div>
       </div>
+
+      {/* ============ QUICK MANAGEMENT MODAL ============ */}
+      <Dialog open={quickModal} onOpenChange={closeQuickModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Zap className="h-6 w-6 text-blue-600" />
+              Gestión Rápida
+            </DialogTitle>
+            {quickRental && (
+              <DialogDescription className="text-base">
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <Badge className="bg-slate-100 text-slate-700 text-base px-3 py-1">
+                    <User className="h-4 w-4 mr-1" />
+                    {quickRental.customer_name}
+                  </Badge>
+                  <Badge variant="outline">{quickRental.customer_dni}</Badge>
+                  <Badge className="bg-blue-100 text-blue-700">
+                    {quickRental.days_remaining || quickRental.days} días restantes
+                  </Badge>
+                  <Badge className="bg-purple-100 text-purple-700">
+                    {quickRental.item_count || quickRental.items?.length} artículos
+                  </Badge>
+                </div>
+              </DialogDescription>
+            )}
+          </DialogHeader>
+
+          {!quickComplete ? (
+            <div className="space-y-5 py-4">
+              {/* Action Tabs */}
+              <Tabs value={quickAction} onValueChange={setQuickAction} className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="swap" className="gap-2">
+                    <ArrowLeftRight className="h-4 w-4" />
+                    Cambiar Material
+                  </TabsTrigger>
+                  <TabsTrigger value="return" className="gap-2">
+                    <RotateCcw className="h-4 w-4" />
+                    Devolver
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="swap" className="space-y-4 mt-4">
+                  {/* Old item (being returned) */}
+                  {quickSwapOldItem && (
+                    <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+                      <p className="text-xs text-red-600 font-semibold mb-1">❌ ARTÍCULO A DEVOLVER</p>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-mono font-bold text-lg">{quickSwapOldItem.internal_code || quickSwapOldItem.barcode}</p>
+                          <p className="text-sm text-slate-600">{quickSwapOldItem.item_type}</p>
+                        </div>
+                        {quickDelta && <p className="font-semibold">€{quickDelta.oldPrice?.toFixed(2)}</p>}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* New item scanner */}
+                  <div>
+                    <Label className="text-sm font-semibold flex items-center gap-2 mb-2">
+                      <Scan className="h-4 w-4 text-blue-600" />
+                      Escanear Nuevo Artículo
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        ref={quickSwapInputRef}
+                        value={quickNewBarcode}
+                        onChange={(e) => setQuickNewBarcode(e.target.value.toUpperCase())}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleQuickSwapSearch(quickNewBarcode);
+                        }}
+                        placeholder="Escanea o escribe código..."
+                        className="h-12 text-lg font-mono flex-1"
+                      />
+                      <Button 
+                        onClick={() => handleQuickSwapSearch(quickNewBarcode)}
+                        disabled={searchLoading}
+                        className="h-12"
+                      >
+                        {searchLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* New item preview */}
+                  {quickNewItem && (
+                    <div className="p-3 rounded-lg bg-green-50 border border-green-200">
+                      <p className="text-xs text-green-600 font-semibold mb-1">✅ ARTÍCULO NUEVO</p>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-mono font-bold text-lg">{quickNewItem.internal_code || quickNewItem.barcode}</p>
+                          <p className="text-sm text-slate-600">{quickNewItem.item_type} - {quickNewItem.brand} {quickNewItem.model}</p>
+                        </div>
+                        {quickDelta && <p className="font-semibold">€{quickDelta.newPrice?.toFixed(2)}</p>}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Price Delta */}
+                  {quickDelta && quickNewItem && (
+                    <div className={`p-4 rounded-xl border-2 text-center ${
+                      quickDelta.isUpgrade ? 'bg-emerald-50 border-emerald-300' :
+                      quickDelta.isDowngrade ? 'bg-red-50 border-red-300' :
+                      'bg-slate-50 border-slate-300'
+                    }`}>
+                      <p className="text-sm font-medium mb-1">
+                        {quickDelta.isUpgrade ? '⬆️ SUPLEMENTO' : quickDelta.isDowngrade ? '⬇️ ABONO' : '↔️ SIN DIFERENCIA'}
+                      </p>
+                      <p className={`text-3xl font-bold ${
+                        quickDelta.isUpgrade ? 'text-emerald-600' :
+                        quickDelta.isDowngrade ? 'text-red-600' : 'text-slate-600'
+                      }`}>
+                        {quickDelta.delta > 0 ? '+' : quickDelta.delta < 0 ? '-' : ''}€{Math.abs(quickDelta.delta).toFixed(2)}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Days adjustment */}
+                  <div className="flex items-center gap-4">
+                    <div>
+                      <Label className="text-sm">Días restantes</Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        value={quickNewDays}
+                        onChange={(e) => setQuickNewDays(e.target.value)}
+                        className="w-20 h-10"
+                      />
+                    </div>
+                    
+                    {quickDelta && quickDelta.delta !== 0 && (
+                      <div className="flex-1">
+                        <Label className="text-sm">Método de pago</Label>
+                        <div className="flex gap-2 mt-1">
+                          <Button
+                            variant={quickPaymentMethod === "cash" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setQuickPaymentMethod("cash")}
+                            className="flex-1"
+                          >
+                            <Banknote className="h-4 w-4 mr-1" /> Efectivo
+                          </Button>
+                          <Button
+                            variant={quickPaymentMethod === "card" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setQuickPaymentMethod("card")}
+                            className="flex-1"
+                          >
+                            <CreditCard className="h-4 w-4 mr-1" /> Tarjeta
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="return" className="space-y-4 mt-4">
+                  {quickSwapOldItem ? (
+                    <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
+                      <p className="text-sm text-amber-700 font-semibold mb-2">Artículo a devolver:</p>
+                      <div className="flex items-center gap-3">
+                        <Package className="h-8 w-8 text-amber-600" />
+                        <div>
+                          <p className="font-mono font-bold text-xl">{quickSwapOldItem.internal_code || quickSwapOldItem.barcode}</p>
+                          <p className="text-slate-600">{quickSwapOldItem.item_type}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-slate-500 text-center py-4">Selecciona un artículo para devolver</p>
+                  )}
+
+                  {/* Item selector if not pre-selected */}
+                  {quickRental?.items && (
+                    <div>
+                      <Label className="text-sm mb-2 block">Artículos del alquiler:</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {quickRental.items.filter(i => !i.returned).map((item, idx) => (
+                          <Button
+                            key={idx}
+                            variant={quickSwapOldItem?.barcode === item.barcode ? "default" : "outline"}
+                            className="justify-start text-left h-auto py-2"
+                            onClick={() => setQuickSwapOldItem(item)}
+                          >
+                            <span className="font-mono text-sm">{item.internal_code || item.barcode}</span>
+                            <span className="ml-2 text-xs opacity-70">{item.item_type}</span>
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </div>
+          ) : (
+            /* SUCCESS STATE */
+            <div className="text-center py-8">
+              <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="h-10 w-10 text-emerald-600" />
+              </div>
+              <h3 className="text-xl font-bold text-emerald-800 mb-2">
+                {quickAction === "swap" ? "¡Cambio Completado!" : "¡Devolución Completada!"}
+              </h3>
+              <p className="text-slate-600">Operación registrada correctamente.</p>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            {!quickComplete ? (
+              <>
+                <Button variant="outline" onClick={closeQuickModal}>Cancelar</Button>
+                {quickAction === "swap" ? (
+                  <Button
+                    onClick={executeQuickSwap}
+                    disabled={quickProcessing || !quickNewItem || !quickSwapOldItem}
+                    className={`min-w-[180px] ${
+                      quickDelta?.isUpgrade ? 'bg-emerald-600 hover:bg-emerald-700' :
+                      quickDelta?.isDowngrade ? 'bg-red-600 hover:bg-red-700' : ''
+                    }`}
+                  >
+                    {quickProcessing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Zap className="h-4 w-4 mr-2" />}
+                    {quickDelta?.isUpgrade ? `Cobrar €${quickDelta.delta.toFixed(2)}` :
+                     quickDelta?.isDowngrade ? `Abonar €${Math.abs(quickDelta.delta).toFixed(2)}` :
+                     'Confirmar Cambio'}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={executeQuickReturn}
+                    disabled={quickProcessing || !quickSwapOldItem}
+                    className="bg-amber-600 hover:bg-amber-700"
+                  >
+                    {quickProcessing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RotateCcw className="h-4 w-4 mr-2" />}
+                    Devolver Artículo
+                  </Button>
+                )}
+              </>
+            ) : (
+              <>
+                <Button variant="outline" onClick={closeQuickModal}>Cerrar</Button>
+                {quickAction === "swap" && quickDelta && (
+                  <Button onClick={printQuickTicket}>
+                    <Printer className="h-4 w-4 mr-2" /> Imprimir
+                  </Button>
+                )}
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* KPI Cards Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
