@@ -53,6 +53,7 @@ const PAYMENT_METHODS = [
 ];
 
 export default function ActiveRentals() {
+  const navigate = useNavigate();
   const [rentals, setRentals] = useState([]);
   const [filteredRentals, setFilteredRentals] = useState([]);
   const [loading, setLoading] = useState(true);
