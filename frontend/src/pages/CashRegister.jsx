@@ -1456,6 +1456,110 @@ export default function CashRegister() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Payment Method Dialog */}
+      <Dialog open={showEditPaymentDialog} onOpenChange={setShowEditPaymentDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="h-5 w-5" />
+              Cambiar Método de Pago
+            </DialogTitle>
+            <DialogDescription>
+              Modifica el método de pago de esta operación
+            </DialogDescription>
+          </DialogHeader>
+          {editingMovement && (
+            <div className="space-y-4 py-4">
+              {/* Movement Info */}
+              <div className={`p-4 rounded-xl ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-slate-500">Ticket:</span>
+                    <span className="ml-2 font-bold text-blue-600">{editingMovement.operation_number || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Importe:</span>
+                    <span className={`ml-2 font-bold ${
+                      editingMovement.movement_type === 'income' ? 'text-emerald-600' : 
+                      editingMovement.movement_type === 'refund' ? 'text-orange-600' : 'text-red-600'
+                    }`}>
+                      €{editingMovement.amount?.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-2 text-sm">
+                  <span className="text-slate-500">Concepto:</span>
+                  <span className="ml-2">{editingMovement.concept}</span>
+                </div>
+              </div>
+
+              {/* Current vs New Payment Method */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                  <Label className="text-xs text-slate-500">Método Actual</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    {editingMovement.payment_method === 'cash' ? (
+                      <Banknote className="h-4 w-4 text-emerald-600" />
+                    ) : (
+                      <CreditCard className="h-4 w-4 text-blue-600" />
+                    )}
+                    <span className="font-semibold">
+                      {PAYMENT_METHODS.find(p => p.value === editingMovement.payment_method)?.label}
+                    </span>
+                  </div>
+                </div>
+                <div className={`p-3 rounded-lg border-2 ${
+                  newPaymentMethod !== editingMovement.payment_method 
+                    ? 'border-blue-500 bg-blue-50' 
+                    : darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'
+                }`}>
+                  <Label className="text-xs text-slate-500">Nuevo Método</Label>
+                  <Select value={newPaymentMethod} onValueChange={setNewPaymentMethod}>
+                    <SelectTrigger className="mt-1 border-0 p-0 h-auto">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAYMENT_METHODS.map(m => (
+                        <SelectItem key={m.value} value={m.value}>
+                          <div className="flex items-center gap-2">
+                            {m.value === 'cash' ? (
+                              <Banknote className="h-4 w-4" />
+                            ) : (
+                              <CreditCard className="h-4 w-4" />
+                            )}
+                            {m.label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {newPaymentMethod !== editingMovement.payment_method && (
+                <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+                  <p className="text-sm text-amber-800">
+                    ⚠️ Este cambio afectará al desglose por método de pago en el arqueo de caja.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditPaymentDialog(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={updatePaymentMethod}
+              disabled={newPaymentMethod === editingMovement?.payment_method}
+              data-testid="confirm-edit-payment"
+            >
+              Guardar Cambio
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
