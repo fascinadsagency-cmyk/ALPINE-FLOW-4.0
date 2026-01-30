@@ -500,7 +500,47 @@ export default function Returns() {
           .delta-positive .delta-amount { color: #16a34a; }
           .delta-negative .delta-amount { color: #dc2626; }
           .footer { text-align: center; margin-top: 15px; font-size: 9px; color: #333; }
-          @media print { @page { margin: 0; size: 80mm auto; } }
+          /* ========== THERMAL PRINTER 80mm OPTIMIZATION ========== */
+          @page { 
+            size: 80mm auto; 
+            margin: 0; /* Elimina encabezados/pies del navegador */
+          }
+          @media print {
+            html, body {
+              width: 80mm !important;
+              max-width: 80mm !important;
+              margin: 0 !important;
+              padding: 2mm !important;
+              background: #ffffff !important;
+              color: #000000 !important;
+            }
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              color: #000000 !important;
+            }
+            .header-title {
+              background: transparent !important;
+              color: #000000 !important;
+              border: 2px solid #000000 !important;
+            }
+            .swap-item {
+              background: transparent !important;
+              border: 1px solid #000000 !important;
+              border-left: 3px solid #000000 !important;
+            }
+            .delta-box, .delta-positive, .delta-negative, .delta-zero {
+              background: transparent !important;
+              border: 2px solid #000000 !important;
+            }
+            .delta-amount, .delta-positive .delta-amount, .delta-negative .delta-amount {
+              color: #000000 !important;
+            }
+            .block, .row, .swap-item, tr, td {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+            }
+          }
         </style>
       </head>
       <body>
