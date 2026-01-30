@@ -29,6 +29,48 @@
         --success: 142 76% 36%;
         --warning: 48 96% 53%;
         --info: 217 91% 60%;
+        
+        /* Custom app colors */
+        --app-bg: 210 40% 98%;
+        --app-sidebar: 0 0% 100%;
+        --app-card: 0 0% 100%;
+        --app-text: 222 47% 11%;
+        --app-text-muted: 215 16% 47%;
+        --app-border: 214 32% 91%;
+    }
+
+    /* ========== DARK MODE THEME ========== */
+    .dark {
+        --background: 0 0% 7%;
+        --foreground: 0 0% 95%;
+        --card: 0 0% 10%;
+        --card-foreground: 0 0% 95%;
+        --popover: 0 0% 10%;
+        --popover-foreground: 0 0% 95%;
+        --primary: 199 89% 48%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 0 0% 15%;
+        --secondary-foreground: 0 0% 95%;
+        --muted: 0 0% 15%;
+        --muted-foreground: 0 0% 65%;
+        --accent: 0 0% 15%;
+        --accent-foreground: 0 0% 95%;
+        --destructive: 0 62% 55%;
+        --destructive-foreground: 0 0% 100%;
+        --border: 0 0% 20%;
+        --input: 0 0% 20%;
+        --ring: 199 89% 48%;
+        --success: 160 84% 45%;
+        --warning: 48 100% 60%;
+        --info: 199 89% 60%;
+        
+        /* Custom app colors for dark mode */
+        --app-bg: 0 0% 7%;
+        --app-sidebar: 0 0% 10%;
+        --app-card: 0 0% 12%;
+        --app-text: 0 0% 95%;
+        --app-text-muted: 0 0% 65%;
+        --app-border: 0 0% 22%;
     }
 }
 
