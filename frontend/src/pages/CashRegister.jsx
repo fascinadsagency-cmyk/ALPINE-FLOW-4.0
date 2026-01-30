@@ -9,6 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { printTicket, getStoredSettings } from "@/lib/ticketGenerator";
+import { useSettings } from "@/contexts/SettingsContext";
 import { 
   Wallet, 
   Plus, 
