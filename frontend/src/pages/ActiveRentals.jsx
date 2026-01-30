@@ -17,6 +17,7 @@ import {
   ShoppingCart, 
   User, 
   Calendar, 
+  CalendarPlus,
   DollarSign, 
   Loader2,
   ArrowRight,
