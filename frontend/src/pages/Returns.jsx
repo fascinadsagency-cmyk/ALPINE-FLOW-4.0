@@ -33,6 +33,7 @@ import {
   Package,
   Filter,
   ArrowLeftRight,
+  ArrowRight,
   Scan,
   CreditCard,
   CheckCircle,
