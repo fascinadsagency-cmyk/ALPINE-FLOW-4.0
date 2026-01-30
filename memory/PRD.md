@@ -1,8 +1,8 @@
 # AlpineFlow - Sistema de Gestión de Alquiler de Equipos de Esquí
 
 ## Estado del Proyecto
-**Última actualización:** 2026-01-29
-**Estado:** Operativo - Bugs de contabilidad y persistencia de inventario RESUELTOS
+**Última actualización:** 2026-01-30
+**Estado:** Operativo - Sistema de Cambios Centralizado implementado + Vista compacta
 
 ---
 
@@ -27,9 +27,9 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - Arqueo manual detallado
   - Historial de cierres
   - Múltiples turnos/sesiones por día
-  - **NUEVO:** Cálculo en tiempo real con agregación MongoDB
-  - **NUEVO:** Sincronización automática de movimientos faltantes
-  - **NUEVO:** Auditoría de integridad contable
+  - Cálculo en tiempo real con agregación MongoDB
+  - Sincronización automática de movimientos faltantes
+  - Auditoría de integridad contable
 - ✅ **Reportes Flexibles:** Filtro por rango, botones de selección rápida
 - ✅ **Rentabilidad de Inventario:** Trackear coste, ingresos, amortización
 
@@ -41,6 +41,17 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
 - ✅ **Tipos de Artículo Personalizados:** Usuario crea y gestiona categorías
 - ✅ **Artículos Genéricos:** Gestión por stock (Cascos, Bastones, etc.)
 - ✅ **Botonera de Añadido Rápido:** Cascos, Bastones, Máscara
+- ✅ **NUEVO: Sistema de Cambios Centralizado (SWAP):**
+  - Botón "CAMBIOS" a nivel de cliente (no por artículo)
+  - Modal con auto-foco para escáner de códigos de barras
+  - Detección automática del tipo de artículo y sustitución propuesta
+  - Balance económico en tiempo real (verde=upgrade, rojo=downgrade)
+  - Actualización automática de inventario
+  - Ticket de regularización
+- ✅ **NUEVO: Vista Compacta de Alquileres Activos:**
+  - Una sola fila por cliente/contrato
+  - Badge "N art." con Popover para ver detalle de artículos
+  - UI más limpia y profesional
 
 ### 4. Sistema de Tickets/Comprobantes
 - ✅ Impresión de ticket de alquiler con desglose completo
