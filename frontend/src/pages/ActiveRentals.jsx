@@ -504,10 +504,18 @@ export default function ActiveRentals() {
     }
   };
 
-  // CONFIRM SWAP - Execute the change
+  // CONFIRM SWAP - Execute the change (material and/or date)
   const executeSwap = async () => {
-    if (!swapRental || !swapNewItem || !swapOldItem) {
-      toast.error("Faltan datos para realizar el cambio");
+    if (!swapRental) {
+      toast.error("No hay contrato seleccionado");
+      return;
+    }
+    
+    const hasMaterialChange = swapOldItem && swapNewItem;
+    const hasDateChange = dateAdjustActive && dateDelta !== 0;
+    
+    if (!hasMaterialChange && !hasDateChange) {
+      toast.error("No hay cambios que procesar. Selecciona artículos o ajusta la fecha.");
       return;
     }
 
