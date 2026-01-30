@@ -63,6 +63,11 @@ class CustomerCreate(BaseModel):
     city: Optional[str] = ""
     source: Optional[str] = ""  # Proveedor/Fuente
     notes: Optional[str] = ""  # Observaciones internas
+    # Technical data for quick service
+    boot_size: Optional[str] = ""  # Talla de bota
+    height: Optional[str] = ""  # Altura (cm)
+    weight: Optional[str] = ""  # Peso (kg)
+    ski_level: Optional[str] = ""  # Nivel: Principiante, Intermedio, Avanzado, Experto
 
 class CustomerResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -77,6 +82,11 @@ class CustomerResponse(BaseModel):
     notes: str = ""
     created_at: str
     total_rentals: int = 0
+    # Technical data
+    boot_size: str = ""
+    height: str = ""
+    weight: str = ""
+    ski_level: str = ""
 
 class ItemCreate(BaseModel):
     barcode: Optional[str] = ""  # Optional for generic items
