@@ -74,9 +74,18 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - Escenario B (Nombre cliente): Busca cliente y muestra su alquiler activo
   - Modal de gestión rápida permite: Cambiar material, Devolver artículo, Ajustar días
   - Endpoint: GET /api/lookup/{code}
-- ✅ **Unificación de Gestión (REINGENIERÍA 2026-01-30):**
+- ✅ **Unificación de Gestión (OPTIMIZACIÓN 2026-01-30):**
   - **ELIMINADO** el icono de edición (lápiz) en Alquileres Activos
-  - El botón **CAMBIOS** es la ÚNICA forma de modificar artículos y fechas
+  - El botón **CAMBIOS** es la ÚNICA forma de modificar contratos
+  - **Gestor Universal de Cambios** centralizado con:
+    - Escaneo/entrada manual de artículos (con placeholder "SKI-001, BOT-002...")
+    - **Ajuste de Calendario** prominente con botón "Activar"
+    - Selector de fecha para extensión o devolución anticipada
+    - Comparación visual: DÍAS ORIGINALES → DÍAS NUEVOS
+    - Cálculo automático de "Suplemento por extensión" o "Abono por reducción"
+    - **TOTAL COMBINADO**: Suma material + tiempo en un único saldo
+    - Permite cambios solo de fecha (sin cambio de material)
+    - Selector de método de cobro/abono (Efectivo/Tarjeta)
   - Ficha de Cliente accesible desde modal con botón "Ver Ficha Completa"
 - ✅ **Sincronización de Ingresos (Single Source of Truth - 2026-01-30):**
   - **Dashboard "Ingresos Netos Hoy"** ahora lee de `cash_movements` (misma fuente que Caja)
