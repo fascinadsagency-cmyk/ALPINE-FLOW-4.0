@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
@@ -16,48 +17,55 @@ import {
   X,
   Wallet,
   Settings,
-  Building2
+  Building2,
+  Cog
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/nuevo-alquiler", icon: ShoppingCart, label: "Nuevo Alquiler" },
-  { to: "/alquileres-activos", icon: ShoppingCart, label: "Alquileres Activos" },
-  { to: "/devoluciones", icon: RotateCcw, label: "Devoluciones" },
-  { to: "/clientes", icon: Users, label: "Clientes" },
-  { to: "/proveedores", icon: Building2, label: "Proveedores" },
-  { to: "/inventario", icon: Package, label: "Inventario" },
-  { to: "/tarifas", icon: DollarSign, label: "Tarifas" },
-  { to: "/caja", icon: Wallet, label: "Caja" },
-  { to: "/mantenimiento", icon: Wrench, label: "Mantenimiento" },
-  { to: "/reportes", icon: BarChart3, label: "Reportes" },
-  { to: "/integraciones", icon: Settings, label: "Integraciones" },
-];
-
 export default function Layout() {
   const { user, logout } = useAuth();
+  const { darkMode, t } = useSettings();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const navItems = [
+    { to: "/", icon: LayoutDashboard, label: t('nav.dashboard') },
+    { to: "/nuevo-alquiler", icon: ShoppingCart, label: t('nav.newRental') },
+    { to: "/alquileres-activos", icon: ShoppingCart, label: t('nav.activeRentals') },
+    { to: "/devoluciones", icon: RotateCcw, label: t('nav.returns') },
+    { to: "/clientes", icon: Users, label: t('nav.customers') },
+    { to: "/proveedores", icon: Building2, label: t('nav.providers') },
+    { to: "/inventario", icon: Package, label: t('nav.inventory') },
+    { to: "/tarifas", icon: DollarSign, label: t('nav.tariffs') },
+    { to: "/caja", icon: Wallet, label: t('nav.cashRegister') },
+    { to: "/mantenimiento", icon: Wrench, label: t('nav.maintenance') },
+    { to: "/reportes", icon: BarChart3, label: t('nav.reports') },
+    { to: "/integraciones", icon: Settings, label: t('nav.integrations') },
+    { to: "/configuracion", icon: Cog, label: t('nav.settings') },
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
       {/* Sidebar - Desktop */}
-      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 border-r border-slate-200 bg-white lg:block">
+      <aside className={`fixed left-0 top-0 z-40 hidden h-screen w-64 border-r transition-colors duration-300 lg:block ${
+        darkMode 
+          ? 'border-slate-700 bg-slate-800' 
+          : 'border-slate-200 bg-white'
+      }`}>
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="flex h-16 items-center gap-3 border-b border-slate-200 px-6">
+          <div className={`flex h-16 items-center gap-3 border-b px-6 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white">
               <Mountain className="h-5 w-5" />
             </div>
-            <span className="font-semibold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+            <span className={`font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`} style={{ fontFamily: 'Plus Jakarta Sans' }}>
               AlpineFlow
             </span>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-1 p-4">
+          <nav className="flex-1 space-y-1 p-4 overflow-y-auto">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
@@ -68,7 +76,9 @@ export default function Layout() {
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                     isActive
                       ? "bg-primary/10 text-primary"
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                      : darkMode 
+                        ? "text-slate-300 hover:bg-slate-700 hover:text-white"
+                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                   )
                 }
               >
@@ -79,17 +89,17 @@ export default function Layout() {
           </nav>
 
           {/* User */}
-          <div className="border-t border-slate-200 p-4">
+          <div className={`border-t p-4 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-900">{user?.username}</p>
-                <p className="text-xs text-slate-500 capitalize">{user?.role}</p>
+                <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-slate-900'}`}>{user?.username}</p>
+                <p className={`text-xs capitalize ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{user?.role}</p>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={logout}
-                className="text-slate-500 hover:text-slate-900"
+                className={darkMode ? 'text-slate-400 hover:text-white hover:bg-slate-700' : 'text-slate-500 hover:text-slate-900'}
                 data-testid="logout-btn"
               >
                 <LogOut className="h-4 w-4" />
@@ -100,17 +110,22 @@ export default function Layout() {
       </aside>
 
       {/* Mobile Header */}
-      <header className="fixed left-0 right-0 top-0 z-50 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 lg:hidden">
+      <header className={`fixed left-0 right-0 top-0 z-50 flex h-14 items-center justify-between border-b px-4 lg:hidden transition-colors duration-300 ${
+        darkMode 
+          ? 'border-slate-700 bg-slate-800' 
+          : 'border-slate-200 bg-white'
+      }`}>
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
             <Mountain className="h-4 w-4" />
           </div>
-          <span className="font-semibold text-slate-900">AlpineFlow</span>
+          <span className={`font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>AlpineFlow</span>
         </div>
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className={darkMode ? 'text-slate-300' : ''}
         >
           {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
@@ -118,8 +133,10 @@ export default function Layout() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-white pt-14 lg:hidden">
-          <nav className="space-y-1 p-4">
+        <div className={`fixed inset-0 z-40 pt-14 lg:hidden transition-colors duration-300 ${
+          darkMode ? 'bg-slate-800' : 'bg-white'
+        }`}>
+          <nav className="space-y-1 p-4 max-h-[calc(100vh-8rem)] overflow-y-auto">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
@@ -131,7 +148,9 @@ export default function Layout() {
                     "flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium transition-colors",
                     isActive
                       ? "bg-primary/10 text-primary"
-                      : "text-slate-600 hover:bg-slate-100"
+                      : darkMode
+                        ? "text-slate-300 hover:bg-slate-700"
+                        : "text-slate-600 hover:bg-slate-100"
                   )
                 }
               >
@@ -140,10 +159,10 @@ export default function Layout() {
               </NavLink>
             ))}
           </nav>
-          <div className="border-t border-slate-200 p-4">
+          <div className={`border-t p-4 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
             <Button
               variant="outline"
-              className="w-full justify-start gap-2"
+              className={`w-full justify-start gap-2 ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : ''}`}
               onClick={logout}
             >
               <LogOut className="h-4 w-4" />
@@ -155,7 +174,7 @@ export default function Layout() {
 
       {/* Main Content */}
       <main className="lg:pl-64">
-        <div className="min-h-screen pt-14 lg:pt-0">
+        <div className={`min-h-screen pt-14 lg:pt-0 transition-colors duration-300 ${darkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
           <Outlet />
         </div>
       </main>
