@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Select,
   SelectContent,
@@ -13,30 +15,57 @@ import {
 import { 
   Settings as SettingsIcon, 
   Printer, 
-  Palette, 
   Save,
-  Moon,
-  Sun,
   Globe,
   Receipt,
   Percent,
   Building2,
   Loader2,
-  Check
+  Check,
+  Upload,
+  X,
+  Eye,
+  Image as ImageIcon
 } from "lucide-react";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
 
 export default function Settings() {
-  const { darkMode, setDarkMode, language, setLanguage, autoPrint, setAutoPrint, t } = useSettings();
+  const { 
+    darkMode, 
+    language, setLanguage, 
+    autoPrint, setAutoPrint, 
+    t,
+    companyLogo, setCompanyLogo,
+    ticketHeader, setTicketHeader,
+    ticketFooter, setTicketFooter,
+    ticketTerms, setTicketTerms,
+    showDniOnTicket, setShowDniOnTicket,
+    showVatOnTicket, setShowVatOnTicket,
+    defaultVat, setDefaultVat,
+    vatIncludedInPrices, setVatIncludedInPrices,
+    calculateVat
+  } = useSettings();
+  
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const fileInputRef = useRef(null);
 
-  const handleDarkModeChange = (enabled) => {
-    setDarkMode(enabled);
-    setHasChanges(true);
-    toast.success(enabled ? t('settings.darkMode.enabled') : t('settings.darkMode.disabled'));
+  // Sample data for ticket preview
+  const sampleTicket = {
+    date: new Date().toLocaleDateString('es-ES'),
+    customer: "Juan García López",
+    dni: "12345678A",
+    items: [
+      { name: "Esquís Gama Alta", price: 35.00 },
+      { name: "Botas Esquí 42", price: 15.00 },
+      { name: "Casco Adulto", price: 8.00 }
+    ],
+    paymentMethod: "cash",
+    total: 58.00
   };
+
+  const vatCalc = calculateVat(sampleTicket.total);
 
   const handleLanguageChange = (lang) => {
     setLanguage(lang);
@@ -47,7 +76,46 @@ export default function Settings() {
   const handleAutoPrintChange = (enabled) => {
     setAutoPrint(enabled);
     setHasChanges(true);
-    toast.success(enabled ? t('settings.autoPrint.enabled') : t('settings.autoPrint.disabled'));
+  };
+
+  const handleLogoUpload = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("El archivo es demasiado grande. Máximo 2MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setCompanyLogo(e.target?.result);
+      setHasChanges(true);
+      toast.success("Logo actualizado");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveLogo = () => {
+    setCompanyLogo(null);
+    setHasChanges(true);
+    toast.success("Logo eliminado");
+  };
+
+  const handleTicketFieldChange = (setter) => (e) => {
+    setter(e.target.value);
+    setHasChanges(true);
+  };
+
+  const handleToggleChange = (setter) => (value) => {
+    setter(value);
+    setHasChanges(true);
+  };
+
+  const handleVatChange = (e) => {
+    const value = parseFloat(e.target.value) || 0;
+    setDefaultVat(Math.max(0, Math.min(100, value)));
+    setHasChanges(true);
   };
 
   const saveAllSettings = () => {
@@ -89,218 +157,425 @@ export default function Settings() {
         </Button>
       </div>
 
-      <div className="grid gap-6 max-w-4xl">
-        
-        {/* ============ AJUSTES DE INTERFAZ ============ */}
-        <Card className={`border-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-          <CardHeader className={`border-b ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-gradient-to-r from-indigo-50 to-purple-50 border-slate-200'}`}>
-            <CardTitle className={`text-lg flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-              <Palette className="h-5 w-5 text-indigo-500" />
-              {t('settings.interface')}
-            </CardTitle>
-            <CardDescription className={darkMode ? 'text-slate-400' : 'text-slate-500'}>
-              {t('settings.interface.desc')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6 space-y-6">
-            
-            {/* Dark Mode Toggle */}
-            <div className={`flex items-start justify-between p-4 rounded-xl border-2 transition-all ${
-              darkMode 
-                ? 'border-indigo-500/50 bg-indigo-500/10' 
-                : 'border-slate-200 hover:border-indigo-300'
-            }`}>
-              <div className="flex items-start gap-4">
-                <div className={`p-3 rounded-xl ${darkMode ? 'bg-indigo-500/20' : 'bg-indigo-100'}`}>
-                  {darkMode ? (
-                    <Moon className="h-6 w-6 text-indigo-400" />
-                  ) : (
-                    <Sun className="h-6 w-6 text-amber-500" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <Label htmlFor="dark-mode" className={`text-base font-semibold cursor-pointer ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                    {t('settings.darkMode')}
-                  </Label>
-                  <p className={`text-sm mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                    {t('settings.darkMode.desc')}
-                  </p>
-                  <div className={`mt-3 p-2 rounded-lg inline-flex items-center gap-2 ${
-                    darkMode ? 'bg-indigo-500/20' : 'bg-slate-100'
-                  }`}>
-                    <div className={`h-2 w-2 rounded-full ${darkMode ? 'bg-indigo-400' : 'bg-amber-500'}`}></div>
-                    <span className={`text-xs font-medium ${darkMode ? 'text-indigo-300' : 'text-slate-600'}`}>
-                      {darkMode ? t('settings.darkMode.enabled') : t('settings.darkMode.disabled')}
-                    </span>
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Left Column - Settings */}
+        <div className="space-y-6">
+          
+          {/* ============ IDENTIDAD DE MARCA ============ */}
+          <Card className={`border-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+            <CardHeader className={`border-b ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-gradient-to-r from-purple-50 to-indigo-50 border-slate-200'}`}>
+              <CardTitle className={`text-lg flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                <Building2 className="h-5 w-5 text-purple-500" />
+                {t('settings.brandIdentity')}
+              </CardTitle>
+              <CardDescription className={darkMode ? 'text-slate-400' : 'text-slate-500'}>
+                {t('settings.brandIdentity.desc')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-6">
+              
+              {/* Logo Upload */}
+              <div className={`p-4 rounded-xl border-2 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+                <div className="flex items-start gap-4">
+                  <div className={`p-3 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-purple-100'}`}>
+                    <ImageIcon className={`h-6 w-6 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
+                  </div>
+                  <div className="flex-1">
+                    <Label className={`text-base font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                      {t('settings.logo')}
+                    </Label>
+                    <p className={`text-sm mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                      {t('settings.logo.desc')}
+                    </p>
+                    
+                    {companyLogo ? (
+                      <div className="mt-4 flex items-center gap-4">
+                        <div className={`w-24 h-24 rounded-lg overflow-hidden border-2 ${darkMode ? 'border-slate-600 bg-slate-700' : 'border-slate-200 bg-white'}`}>
+                          <img src={companyLogo} alt="Logo" className="w-full h-full object-contain" />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                            {t('settings.logo.change')}
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={handleRemoveLogo} className="text-red-500 hover:text-red-600 hover:bg-red-50">
+                            <X className="h-4 w-4 mr-1" />
+                            {t('settings.logo.remove')}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div 
+                        className={`mt-4 p-6 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${
+                          darkMode 
+                            ? 'border-slate-600 hover:border-purple-500 hover:bg-slate-700/50' 
+                            : 'border-slate-300 hover:border-purple-400 hover:bg-purple-50'
+                        }`}
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <div className="text-center">
+                          <Upload className={`h-8 w-8 mx-auto mb-2 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                          <p className={`text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                            {t('settings.logo.upload')}
+                          </p>
+                          <p className={`text-xs mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                            {t('settings.logo.formats')}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/svg+xml"
+                      className="hidden"
+                      onChange={handleLogoUpload}
+                    />
                   </div>
                 </div>
               </div>
-              <Switch 
-                id="dark-mode"
-                checked={darkMode} 
-                onCheckedChange={handleDarkModeChange}
-                className="data-[state=checked]:bg-indigo-500"
-              />
-            </div>
 
-            {/* Language Selector */}
-            <div className={`flex items-start justify-between p-4 rounded-xl border-2 transition-all ${
-              darkMode ? 'border-slate-700 hover:border-slate-600' : 'border-slate-200 hover:border-indigo-300'
-            }`}>
-              <div className="flex items-start gap-4">
-                <div className={`p-3 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-blue-100'}`}>
-                  <Globe className={`h-6 w-6 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                </div>
-                <div className="flex-1">
-                  <Label className={`text-base font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                    {t('settings.language')}
-                  </Label>
-                  <p className={`text-sm mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                    {t('settings.language.desc')}
-                  </p>
-                </div>
-              </div>
-              <Select value={language} onValueChange={handleLanguageChange}>
-                <SelectTrigger className={`w-[180px] ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : ''}`}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className={darkMode ? 'bg-slate-800 border-slate-700' : ''}>
-                  <SelectItem value="es" className={darkMode ? 'text-white hover:bg-slate-700' : ''}>
-                    🇪🇸 {t('settings.language.es')}
-                  </SelectItem>
-                  <SelectItem value="en" className={darkMode ? 'text-white hover:bg-slate-700' : ''}>
-                    🇬🇧 {t('settings.language.en')}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* ============ IMPRESIÓN ============ */}
-        <Card className={`border-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-          <CardHeader className={`border-b ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-gradient-to-r from-emerald-50 to-teal-50 border-slate-200'}`}>
-            <CardTitle className={`text-lg flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-              <Printer className="h-5 w-5 text-emerald-500" />
-              {t('settings.print')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className={`flex items-start justify-between p-4 rounded-xl border-2 transition-all ${
-              autoPrint 
-                ? (darkMode ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-emerald-300 bg-emerald-50')
-                : (darkMode ? 'border-slate-700' : 'border-slate-200')
-            }`}>
-              <div className="flex items-start gap-4">
-                <div className={`p-3 rounded-xl ${autoPrint ? 'bg-emerald-500/20' : (darkMode ? 'bg-slate-700' : 'bg-slate-100')}`}>
-                  <Printer className={`h-6 w-6 ${autoPrint ? 'text-emerald-500' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`} />
-                </div>
-                <div className="flex-1 pr-4">
-                  <Label htmlFor="auto-print" className={`text-base font-semibold cursor-pointer ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                    {t('settings.autoPrint')}
-                  </Label>
-                  <p className={`text-sm mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                    {t('settings.autoPrint.desc')}
-                  </p>
-                  <div className={`mt-3 p-3 rounded-lg ${darkMode ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-blue-50 border border-blue-200'}`}>
-                    <p className={`text-xs ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
-                      <strong>💡 {t('common.recommended')}:</strong> {t('settings.autoPrint.tip')}
+              {/* Language Selector */}
+              <div className={`flex items-start justify-between p-4 rounded-xl border-2 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+                <div className="flex items-start gap-4">
+                  <div className={`p-3 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-blue-100'}`}>
+                    <Globe className={`h-6 w-6 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                  </div>
+                  <div className="flex-1">
+                    <Label className={`text-base font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                      {t('settings.language')}
+                    </Label>
+                    <p className={`text-sm mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                      {t('settings.language.desc')}
                     </p>
                   </div>
-                  <div className={`mt-3 p-2 rounded-lg inline-flex items-center gap-2 ${
-                    autoPrint ? 'bg-emerald-500/20' : (darkMode ? 'bg-slate-700' : 'bg-slate-100')
-                  }`}>
-                    <div className={`h-2 w-2 rounded-full ${autoPrint ? 'bg-emerald-500' : 'bg-slate-400'}`}></div>
-                    <span className={`text-xs font-medium ${autoPrint ? 'text-emerald-500' : (darkMode ? 'text-slate-400' : 'text-slate-600')}`}>
-                      {autoPrint ? t('settings.autoPrint.enabled') : t('settings.autoPrint.disabled')}
-                    </span>
+                </div>
+                <Select value={language} onValueChange={handleLanguageChange}>
+                  <SelectTrigger className={`w-[160px] ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : ''}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className={darkMode ? 'bg-slate-800 border-slate-700' : ''}>
+                    <SelectItem value="es" className={darkMode ? 'text-white hover:bg-slate-700' : ''}>
+                      🇪🇸 {t('settings.language.es')}
+                    </SelectItem>
+                    <SelectItem value="en" className={darkMode ? 'text-white hover:bg-slate-700' : ''}>
+                      🇬🇧 {t('settings.language.en')}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* ============ DISEÑO DE TICKET ============ */}
+          <Card className={`border-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+            <CardHeader className={`border-b ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-gradient-to-r from-amber-50 to-orange-50 border-slate-200'}`}>
+              <CardTitle className={`text-lg flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                <Receipt className="h-5 w-5 text-amber-500" />
+                {t('settings.ticketDesign')}
+              </CardTitle>
+              <CardDescription className={darkMode ? 'text-slate-400' : 'text-slate-500'}>
+                {t('settings.ticketDesign.desc')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-5">
+              
+              {/* Ticket Header */}
+              <div>
+                <Label className={`text-sm font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+                  {t('settings.ticket.header')}
+                </Label>
+                <Textarea
+                  value={ticketHeader}
+                  onChange={handleTicketFieldChange(setTicketHeader)}
+                  placeholder={t('settings.ticket.header.placeholder')}
+                  className={`mt-2 min-h-[80px] ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : ''}`}
+                />
+              </div>
+
+              {/* Ticket Footer */}
+              <div>
+                <Label className={`text-sm font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+                  {t('settings.ticket.footer')}
+                </Label>
+                <Textarea
+                  value={ticketFooter}
+                  onChange={handleTicketFieldChange(setTicketFooter)}
+                  placeholder={t('settings.ticket.footer.placeholder')}
+                  className={`mt-2 min-h-[60px] ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : ''}`}
+                />
+              </div>
+
+              {/* Legal Terms */}
+              <div>
+                <Label className={`text-sm font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+                  {t('settings.ticket.terms')}
+                </Label>
+                <Textarea
+                  value={ticketTerms}
+                  onChange={handleTicketFieldChange(setTicketTerms)}
+                  placeholder={t('settings.ticket.terms.placeholder')}
+                  className={`mt-2 min-h-[80px] ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : ''}`}
+                />
+              </div>
+
+              {/* Toggles */}
+              <div className="grid gap-4 pt-2">
+                <div className={`flex items-center justify-between p-3 rounded-lg ${darkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
+                  <div>
+                    <Label className={`font-medium ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                      {t('settings.ticket.showDni')}
+                    </Label>
+                    <p className={`text-xs mt-0.5 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {t('settings.ticket.showDni.desc')}
+                    </p>
                   </div>
+                  <Switch 
+                    checked={showDniOnTicket} 
+                    onCheckedChange={handleToggleChange(setShowDniOnTicket)}
+                  />
+                </div>
+
+                <div className={`flex items-center justify-between p-3 rounded-lg ${darkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
+                  <div>
+                    <Label className={`font-medium ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                      {t('settings.ticket.showVat')}
+                    </Label>
+                    <p className={`text-xs mt-0.5 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {t('settings.ticket.showVat.desc')}
+                    </p>
+                  </div>
+                  <Switch 
+                    checked={showVatOnTicket} 
+                    onCheckedChange={handleToggleChange(setShowVatOnTicket)}
+                  />
                 </div>
               </div>
-              <Switch 
-                id="auto-print"
-                checked={autoPrint} 
-                onCheckedChange={handleAutoPrintChange}
-                className="data-[state=checked]:bg-emerald-500"
-              />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* ============ PLACEHOLDERS PARA FUTURAS SECCIONES ============ */}
-        
-        {/* Personalización de Ticket */}
-        <Card className={`border-2 opacity-60 ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-200'}`}>
-          <CardHeader className={`border-b ${darkMode ? 'bg-slate-800/30 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-            <CardTitle className={`text-lg flex items-center gap-2 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-              <Receipt className={`h-5 w-5 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`} />
-              {t('settings.ticketCustomization')}
-              <span className={`text-xs font-normal px-2 py-0.5 rounded-full ${darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-200 text-slate-500'}`}>
-                {t('settings.comingSoon')}
-              </span>
-            </CardTitle>
-            <CardDescription className={darkMode ? 'text-slate-500' : 'text-slate-500'}>
-              {t('settings.ticketCustomization.desc')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className={`p-8 rounded-xl border-2 border-dashed text-center ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
-              <Receipt className={`h-12 w-12 mx-auto mb-3 ${darkMode ? 'text-slate-600' : 'text-slate-300'}`} />
-              <p className={`text-sm ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                Aquí podrás personalizar el diseño de tus tickets: logo, texto del pie de página, formato de fecha, etc.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+          {/* ============ CONFIGURACIÓN DE IVA ============ */}
+          <Card className={`border-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+            <CardHeader className={`border-b ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-gradient-to-r from-emerald-50 to-teal-50 border-slate-200'}`}>
+              <CardTitle className={`text-lg flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                <Percent className="h-5 w-5 text-emerald-500" />
+                {t('settings.vat')}
+              </CardTitle>
+              <CardDescription className={darkMode ? 'text-slate-400' : 'text-slate-500'}>
+                {t('settings.vat.desc')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-5">
+              
+              {/* Default VAT */}
+              <div className={`p-4 rounded-xl border-2 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className={`text-base font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                      {t('settings.vat.default')}
+                    </Label>
+                    <p className={`text-sm mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                      {t('settings.vat.default.desc')}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      value={defaultVat}
+                      onChange={handleVatChange}
+                      min="0"
+                      max="100"
+                      step="0.5"
+                      className={`w-24 text-center text-lg font-bold ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : ''}`}
+                    />
+                    <span className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-slate-700'}`}>%</span>
+                  </div>
+                </div>
+                
+                {/* Quick VAT buttons */}
+                <div className="flex gap-2 mt-4">
+                  {[4, 10, 21].map((rate) => (
+                    <Button
+                      key={rate}
+                      variant={defaultVat === rate ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => { setDefaultVat(rate); setHasChanges(true); }}
+                      className={defaultVat === rate ? '' : (darkMode ? 'border-slate-600 text-slate-300' : '')}
+                    >
+                      {rate}%
+                    </Button>
+                  ))}
+                </div>
+              </div>
 
-        {/* Gestión de IVA */}
-        <Card className={`border-2 opacity-60 ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-200'}`}>
-          <CardHeader className={`border-b ${darkMode ? 'bg-slate-800/30 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-            <CardTitle className={`text-lg flex items-center gap-2 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-              <Percent className={`h-5 w-5 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`} />
-              {t('settings.taxManagement')}
-              <span className={`text-xs font-normal px-2 py-0.5 rounded-full ${darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-200 text-slate-500'}`}>
-                {t('settings.comingSoon')}
-              </span>
-            </CardTitle>
-            <CardDescription className={darkMode ? 'text-slate-500' : 'text-slate-500'}>
-              {t('settings.taxManagement.desc')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className={`p-8 rounded-xl border-2 border-dashed text-center ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
-              <Percent className={`h-12 w-12 mx-auto mb-3 ${darkMode ? 'text-slate-600' : 'text-slate-300'}`} />
-              <p className={`text-sm ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                Configura los tipos de IVA (21%, 10%, 4%) y cómo se aplican a cada tipo de servicio o producto.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+              {/* VAT Included Toggle */}
+              <div className={`flex items-center justify-between p-4 rounded-xl border-2 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+                <div>
+                  <Label className={`text-base font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                    {t('settings.vat.included')}
+                  </Label>
+                  <p className={`text-sm mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                    {t('settings.vat.included.desc')}
+                  </p>
+                </div>
+                <Switch 
+                  checked={vatIncludedInPrices} 
+                  onCheckedChange={handleToggleChange(setVatIncludedInPrices)}
+                />
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Identidad Visual */}
-        <Card className={`border-2 opacity-60 ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-200'}`}>
-          <CardHeader className={`border-b ${darkMode ? 'bg-slate-800/30 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-            <CardTitle className={`text-lg flex items-center gap-2 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-              <Building2 className={`h-5 w-5 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`} />
-              {t('settings.visualIdentity')}
-              <span className={`text-xs font-normal px-2 py-0.5 rounded-full ${darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-200 text-slate-500'}`}>
-                {t('settings.comingSoon')}
-              </span>
-            </CardTitle>
-            <CardDescription className={darkMode ? 'text-slate-500' : 'text-slate-500'}>
-              {t('settings.visualIdentity.desc')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className={`p-8 rounded-xl border-2 border-dashed text-center ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
-              <Building2 className={`h-12 w-12 mx-auto mb-3 ${darkMode ? 'text-slate-600' : 'text-slate-300'}`} />
-              <p className={`text-sm ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                Sube el logo de tu empresa, personaliza los colores corporativos y configura los datos fiscales.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+          {/* ============ IMPRESIÓN ============ */}
+          <Card className={`border-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+            <CardHeader className={`border-b ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-gradient-to-r from-cyan-50 to-sky-50 border-slate-200'}`}>
+              <CardTitle className={`text-lg flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                <Printer className="h-5 w-5 text-cyan-500" />
+                {t('settings.print')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className={`flex items-center justify-between p-4 rounded-xl border-2 ${
+                autoPrint 
+                  ? (darkMode ? 'border-cyan-500/50 bg-cyan-500/10' : 'border-cyan-300 bg-cyan-50')
+                  : (darkMode ? 'border-slate-700' : 'border-slate-200')
+              }`}>
+                <div className="flex items-start gap-4">
+                  <div className={`p-3 rounded-xl ${autoPrint ? 'bg-cyan-500/20' : (darkMode ? 'bg-slate-700' : 'bg-slate-100')}`}>
+                    <Printer className={`h-6 w-6 ${autoPrint ? 'text-cyan-500' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`} />
+                  </div>
+                  <div className="flex-1 pr-4">
+                    <Label className={`text-base font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                      {t('settings.autoPrint')}
+                    </Label>
+                    <p className={`text-sm mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                      {t('settings.autoPrint.desc')}
+                    </p>
+                  </div>
+                </div>
+                <Switch 
+                  checked={autoPrint} 
+                  onCheckedChange={handleAutoPrintChange}
+                  className="data-[state=checked]:bg-cyan-500"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
+        {/* Right Column - Ticket Preview */}
+        <div className="lg:sticky lg:top-24 h-fit">
+          <Card className={`border-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+            <CardHeader className={`border-b ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-gradient-to-r from-slate-100 to-slate-50 border-slate-200'}`}>
+              <CardTitle className={`text-lg flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                <Eye className="h-5 w-5 text-slate-500" />
+                {t('settings.ticket.preview')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {/* Ticket Preview */}
+              <div className="bg-white text-black rounded-lg shadow-lg p-4 mx-auto max-w-[300px] font-mono text-xs leading-relaxed border border-slate-300">
+                
+                {/* Logo */}
+                {companyLogo && (
+                  <div className="flex justify-center mb-3 pb-3 border-b border-dashed border-slate-300">
+                    <img src={companyLogo} alt="Logo" className="h-12 object-contain" />
+                  </div>
+                )}
+                
+                {/* Header */}
+                <div className="text-center whitespace-pre-wrap mb-3 pb-3 border-b border-dashed border-slate-300">
+                  {ticketHeader || 'NOMBRE DE TU NEGOCIO'}
+                </div>
+                
+                {/* Ticket Title */}
+                <div className="text-center font-bold text-sm mb-3">
+                  {t('ticket.rental')}
+                </div>
+                
+                {/* Date */}
+                <div className="flex justify-between mb-1">
+                  <span>{t('ticket.date')}:</span>
+                  <span>{sampleTicket.date}</span>
+                </div>
+                
+                {/* Customer */}
+                <div className="flex justify-between mb-1">
+                  <span>{t('ticket.customer')}:</span>
+                  <span className="text-right max-w-[150px] truncate">{sampleTicket.customer}</span>
+                </div>
+                
+                {/* DNI - Conditional */}
+                {showDniOnTicket && (
+                  <div className="flex justify-between mb-1">
+                    <span>{t('ticket.dni')}:</span>
+                    <span>{sampleTicket.dni}</span>
+                  </div>
+                )}
+                
+                {/* Items */}
+                <div className="my-3 py-3 border-t border-b border-dashed border-slate-300">
+                  <div className="font-bold mb-2">{t('ticket.items')}:</div>
+                  {sampleTicket.items.map((item, idx) => (
+                    <div key={idx} className="flex justify-between">
+                      <span className="max-w-[180px] truncate">{item.name}</span>
+                      <span>€{item.price.toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* VAT Breakdown - Conditional */}
+                {showVatOnTicket ? (
+                  <div className="mb-3 space-y-1">
+                    <div className="flex justify-between">
+                      <span>{t('ticket.subtotal')}:</span>
+                      <span>€{vatCalc.base.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>{t('ticket.vat')} ({defaultVat}%):</span>
+                      <span>€{vatCalc.vat.toFixed(2)}</span>
+                    </div>
+                  </div>
+                ) : null}
+                
+                {/* Total */}
+                <div className="flex justify-between font-bold text-base border-t border-double border-slate-400 pt-2 mt-2">
+                  <span>{t('ticket.total')}:</span>
+                  <span>€{showVatOnTicket ? vatCalc.total.toFixed(2) : sampleTicket.total.toFixed(2)}</span>
+                </div>
+                
+                {/* VAT Included Note */}
+                {!showVatOnTicket && vatIncludedInPrices && (
+                  <div className="text-center text-[10px] text-slate-500 mt-1">
+                    ({t('ticket.vatIncluded')})
+                  </div>
+                )}
+                
+                {/* Payment Method */}
+                <div className="flex justify-between mt-3 pt-2 border-t border-dashed border-slate-300">
+                  <span>{t('ticket.paymentMethod')}:</span>
+                  <span>{t('ticket.cash')}</span>
+                </div>
+                
+                {/* Footer */}
+                <div className="text-center whitespace-pre-wrap mt-4 pt-3 border-t border-dashed border-slate-300">
+                  {ticketFooter || t('ticket.thankYou')}
+                </div>
+                
+                {/* Legal Terms */}
+                {ticketTerms && (
+                  <div className="mt-3 pt-3 border-t border-dashed border-slate-300 text-[9px] text-slate-500 text-center">
+                    {ticketTerms}
+                  </div>
+                )}
+              </div>
+              
+              {/* Preview Legend */}
+              <div className={`mt-4 text-center text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                Los cambios se reflejan automáticamente
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
