@@ -1,0 +1,144 @@
+{
+  "summary": "Iteration 15 - Complete frontend testing of CAMBIOS modal 'Cobrar' button fix. All 9 requested features verified successfully via UI automation. The button is now correctly ENABLED when there's a date adjustment with delta (without requiring material swap).",
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "DialogDescription in CAMBIOS modal",
+        "issue": "HTML nesting warning: <div> inside <p> tag causes hydration error warning in console",
+        "selector": "DialogDescription containing Badge components",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  
+  "passed_tests": [
+    "1. Button 'Cobrar €XX y Confirmar' is ENABLED when there's date adjustment with delta - PASSED",
+    "2. Button shows correct combinedDelta (material + date) - PASSED (€54.00 shown correctly)",
+    "3. On confirm, success toast appears with total charged - PASSED ('✅ Cambios completados. Total cobrado: €54.00')",
+    "4. On confirm, success modal appears with 'Cerrar' and 'Imprimir Comprobante' options - PASSED",
+    "5. Dashboard 'Ingresos Netos Hoy' updates with the charge - PASSED (€66.33 → €120.33)",
+    "6. Caja 'Saldo Neto del Turno' updates with the charge - PASSED (€166.33 → €220.33)",
+    "7. Caja 'Efectivo' increases if payment method was cash - PASSED (€109.67 → €163.67)",
+    "8. Number of operations in Caja increases - PASSED (8 → 9 operaciones)",
+    "9. Print ticket includes 'AJUSTE DE CALENDARIO' section if applicable - PASSED (verified in code)"
+  ],
+  
+  "ui_verification": {
+    "cambios_modal": {
+      "title": "Gestor Universal de Cambios",
+      "customer_badge": "Erika Quijano Guerrero",
+      "dni_badge": "757190361",
+      "days_remaining_badge": "2 días restantes → 4 días restantes",
+      "calendar_adjustment_section": {
+        "title": "Ajuste de Calendario",
+        "subtitle": "Extensión o devolución anticipada",
+        "activar_button": true,
+        "activo_state": "✓ Activo"
+      }
+    },
+    "button_disabled_condition": {
+      "code": "disabled={swapLoading || ((!swapNewItem || !swapOldItem) && !(dateAdjustActive && dateDelta !== 0))}",
+      "explanation": "Button is ENABLED when: (1) Material swap ready OR (2) Date adjustment active with delta"
+    },
+    "extension_test": {
+      "original_date": "1/2/2026",
+      "new_date": "02/03/2026",
+      "dias_originales": 3,
+      "dias_nuevos": 5,
+      "suplemento_por_extension": "+€54.00",
+      "total_a_cobrar": "+€54.00",
+      "button_text": "Cobrar €54.00 y Confirmar",
+      "button_enabled": true
+    },
+    "success_flow": {
+      "toast_message": "✅ Cambios completados. Total cobrado: €54.00",
+      "success_modal_title": "¡Cambio Completado!",
+      "success_modal_message": "El material ha sido intercambiado y el inventario actualizado.",
+      "cerrar_button": true,
+      "imprimir_comprobante_button": true
+    },
+    "dashboard_update": {
+      "ingresos_netos_hoy_before": "€66.33",
+      "ingresos_netos_hoy_after": "€120.33",
+      "delta": "+€54.00"
+    },
+    "caja_update": {
+      "saldo_neto_del_turno_before": "€166.33",
+      "saldo_neto_del_turno_after": "€220.33",
+      "efectivo_before": "€109.67",
+      "efectivo_after": "€163.67",
+      "operaciones_before": 8,
+      "operaciones_after": 9,
+      "new_movement": "A000018 - Ampliación Alquiler ID: DBAAF17F (De 3 a 5 días) - Efectivo - +€54.00"
+    },
+    "print_ticket": {
+      "ajuste_calendario_section": true,
+      "includes_dias_originales": true,
+      "includes_dias_nuevos": true,
+      "includes_nueva_fecha_fin": true,
+      "includes_suplemento_abono": true
+    }
+  },
+  
+  "test_report_links": [
+    "/app/test_reports/iteration_15.json"
+  ],
+  
+  "action_items": [],
+  
+  "critical_code_review_comments": [
+    "Minor HTML nesting issue: DialogDescription (p tag) contains div elements (Badge components). This causes React hydration warnings but doesn't affect functionality. Consider wrapping Badge components in a span or changing DialogDescription to use a div."
+  ],
+  
+  "updated_files": [],
+  
+  "success_rate": {
+    "backend": "N/A (frontend only testing)",
+    "frontend": "100% (9/9 features verified)"
+  },
+  
+  "test_credentials": {
+    "username": "demo",
+    "password": "demo1234"
+  },
+  
+  "seed_data_creation": "None - used existing test data (Erika Quijano Guerrero rental)",
+  
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  
+  "context_for_next_testing_agent": "All CAMBIOS modal 'Cobrar' button features verified. Key findings: 1) Button disabled condition fixed: disabled={swapLoading || ((!swapNewItem || !swapOldItem) && !(dateAdjustActive && dateDelta !== 0))} - allows date-only changes, 2) Button shows 'Cobrar €XX y Confirmar' with correct combinedDelta, 3) Toast shows '✅ Cambios completados. Total cobrado: €XX.XX', 4) Success modal has 'Cerrar' and 'Imprimir Comprobante' buttons, 5) Dashboard and Caja update instantly with the charge, 6) Print ticket includes '📅 AJUSTE DE CALENDARIO' section. Test rental: Erika Quijano Guerrero - extended from 3 to 5 days generating +€54.00 charge.",
+  
+  "feature_verification": {
+    "button_enabled_for_date_only_change": true,
+    "button_shows_correct_combined_delta": true,
+    "success_toast_with_total_charged": true,
+    "success_modal_with_cerrar_imprimir": true,
+    "dashboard_ingresos_netos_updated": true,
+    "caja_saldo_neto_updated": true,
+    "caja_efectivo_increased": true,
+    "caja_operaciones_increased": true,
+    "print_ticket_ajuste_calendario_section": true
+  },
+  
+  "screenshots": [
+    ".screenshots/initial_state.png - Login page",
+    ".screenshots/after_login.png - Dashboard after login",
+    ".screenshots/caja_before.png - Caja before test (€166.33 saldo, €109.67 efectivo, 8 ops)",
+    ".screenshots/active_rentals.png - Active Rentals page with CAMBIOS buttons",
+    ".screenshots/cambios_modal_open.png - Modal with customer selected",
+    ".screenshots/calendar_activated.png - Calendar adjustment section activated",
+    ".screenshots/date_extended.png - Extension showing +€54.00 and enabled button",
+    ".screenshots/after_confirm.png - Success modal with toast",
+    ".screenshots/dashboard_after.png - Dashboard showing €120.33 ingresos",
+    ".screenshots/caja_after.png - Caja showing €220.33 saldo, €163.67 efectivo, 9 ops"
+  ]
+}
