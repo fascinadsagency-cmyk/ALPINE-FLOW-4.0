@@ -238,12 +238,18 @@ export default function ActiveRentals() {
   };
 
   const closeSwapModal = () => {
+    setSwapModalOpen(false);
     setSwapRental(null);
     setSwapBarcode("");
     setSwapNewItem(null);
     setSwapOldItem(null);
     setSwapDelta(null);
     setSwapComplete(false);
+    
+    // Re-focus search input
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 100);
   };
 
   // Handle barcode scan/input
