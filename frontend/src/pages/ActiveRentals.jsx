@@ -236,9 +236,12 @@ export default function ActiveRentals() {
     setSwapNewDays("");
     setSwapModalOpen(true);
     
-    // Auto-focus input
+    // Auto-focus input with select
     setTimeout(() => {
-      swapInputRef.current?.focus();
+      if (swapInputRef.current) {
+        swapInputRef.current.focus();
+        swapInputRef.current.select();
+      }
     }, 150);
   };
 
