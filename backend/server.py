@@ -613,12 +613,50 @@ async def update_customer(
         "address": customer.address or "",
         "city": customer.city or "",
         "source": customer.source or "",
-        "notes": customer.notes or ""
+        "notes": customer.notes or "",
+        "boot_size": customer.boot_size or "",
+        "height": customer.height or "",
+        "weight": customer.weight or "",
+        "ski_level": customer.ski_level or ""
     }
     
     await db.customers.update_one({"id": customer_id}, {"$set": update_doc})
     updated_customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
     return CustomerResponse(**updated_customer)
+
+# Quick update endpoint for technical data only
+class TechnicalDataUpdate(BaseModel):
+    boot_size: Optional[str] = None
+    height: Optional[str] = None
+    weight: Optional[str] = None
+    ski_level: Optional[str] = None
+
+@api_router.patch("/customers/{customer_id}/technical-data")
+async def update_customer_technical_data(
+    customer_id: str,
+    data: TechnicalDataUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Quick update endpoint for technical data (boot size, height, weight, level)"""
+    existing = await db.customers.find_one({"id": customer_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    update_doc = {}
+    if data.boot_size is not None:
+        update_doc["boot_size"] = data.boot_size
+    if data.height is not None:
+        update_doc["height"] = data.height
+    if data.weight is not None:
+        update_doc["weight"] = data.weight
+    if data.ski_level is not None:
+        update_doc["ski_level"] = data.ski_level
+    
+    if update_doc:
+        await db.customers.update_one({"id": customer_id}, {"$set": update_doc})
+    
+    updated_customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+    return updated_customer
 
 @api_router.delete("/customers/{customer_id}")
 async def delete_customer(customer_id: str, current_user: dict = Depends(get_current_user)):
