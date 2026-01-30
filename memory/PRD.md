@@ -43,6 +43,12 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
     - Bloque B: Desglose Arqueo (Efectivo y Tarjeta con desglose detallado)
     - Bloque C: Estadísticas Operativas
     - Resultado Final: Descuadre Total con indicador visual
+  - **Impresión de Tickets de Movimientos (RESTAURADA 30/01/2026):**
+    - Columna "Acciones" en tabla de movimientos con:
+      - Botón Editar (lápiz): Cambiar método de pago
+      - Botón Imprimir (impresora): Reimprimir ticket con plantilla de Configuración
+    - Tickets diferenciados: Venta (verde), Devolución (naranja), Salida (rojo)
+    - Usa logo, cabecera y pie de la configuración del negocio
   - Historial de cierres con reabrir
   - Múltiples turnos/sesiones por día
 - ✅ **Reportes Flexibles:** Filtro por rango, botones de selección rápida
