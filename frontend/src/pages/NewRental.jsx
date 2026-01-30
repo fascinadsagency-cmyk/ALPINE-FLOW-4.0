@@ -750,22 +750,36 @@ export default function NewRental() {
       if (item.status !== 'available') {
         toast.error(`Artículo no disponible (${item.status})`);
         setBarcodeInput("");
+        refocusBarcodeInput();
         return;
       }
       
       if (items.find(i => i.barcode === item.barcode)) {
         toast.error("Artículo ya añadido");
         setBarcodeInput("");
+        refocusBarcodeInput();
         return;
       }
       
       setItems([...items, { ...item, customPrice: null, itemDays: numDays }]);
       toast.success(`${item.brand} ${item.model} añadido`);
       setBarcodeInput("");
+      refocusBarcodeInput();
     } catch (error) {
       toast.error("Artículo no encontrado");
       setBarcodeInput("");
+      refocusBarcodeInput();
     }
+  };
+
+  // HELPER: Re-focus barcode input with text selection (for barcode scanner optimization)
+  const refocusBarcodeInput = () => {
+    setTimeout(() => {
+      if (barcodeRef.current) {
+        barcodeRef.current.focus();
+        barcodeRef.current.select(); // Select all text so next scan overwrites
+      }
+    }, 50);
   };
 
   // BORRADO EN CASCADA: Eliminar un pack completo con todos sus componentes
