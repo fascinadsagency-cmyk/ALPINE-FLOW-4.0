@@ -276,11 +276,44 @@ export default function ActiveRentals() {
   };
 
   const searchSwapItem = async (code) => {
-    if (!code.trim() || !swapRental) return;
+    if (!code.trim()) return;
     
     setSwapLoading(true);
     try {
-      // Search for the new item by barcode or internal_code
+      // CASE 1: Modal opened blank - need to identify rental first
+      if (!swapRental) {
+        // Use lookup to find if item is rented
+        const lookupRes = await axios.get(`${API}/lookup/${encodeURIComponent(code.trim())}`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        
+        const result = lookupRes.data;
+        
+        if (result.found && result.type === "rented_item") {
+          // Found rented item - set rental and old item
+          setSwapRental(result.rental);
+          setSwapOldItem(result.item?.rental_item_data || result.item);
+          
+          const endDate = new Date(result.rental.end_date);
+          const today = new Date();
+          const daysLeft = Math.max(1, Math.ceil((endDate - today) / (1000 * 60 * 60 * 24)) + 1);
+          setSwapDaysRemaining(daysLeft);
+          setSwapNewDays(daysLeft.toString());
+          
+          toast.success(`✓ Cliente identificado: ${result.rental.customer_name} - Artículo: ${result.item?.internal_code || result.item?.barcode}`);
+          
+          // Clear barcode for new item scan
+          setSwapBarcode("");
+          setTimeout(() => swapInputRef.current?.focus(), 100);
+        } else if (result.found && result.type === "available_item") {
+          toast.warning(`Artículo "${code}" está disponible, no alquilado. Escanea un artículo que el cliente quiera devolver.`);
+        } else {
+          toast.error(`No se encontró artículo "${code}" en ningún alquiler activo`);
+        }
+        return;
+      }
+      
+      // CASE 2: Rental already identified - search for new item
       const response = await axios.get(`${API}/items?search=${code}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
@@ -296,7 +329,6 @@ export default function ActiveRentals() {
       if (!foundItem) {
         toast.error(`No se encontró ningún artículo con código "${code}"`);
         setSwapNewItem(null);
-        setSwapOldItem(null);
         return;
       }
 
@@ -313,22 +345,25 @@ export default function ActiveRentals() {
       setSwapNewItem(foundItem);
 
       // INTELLIGENT AUTO-DETECTION: Find matching item in rental to replace
-      const rentalItems = swapRental.items.filter(i => !i.returned);
-      const matchingOldItem = rentalItems.find(i => 
-        i.item_type?.toLowerCase() === foundItem.item_type?.toLowerCase()
-      );
+      if (!swapOldItem) {
+        const rentalItems = swapRental.items.filter(i => !i.returned);
+        const matchingOldItem = rentalItems.find(i => 
+          i.item_type?.toLowerCase() === foundItem.item_type?.toLowerCase()
+        );
 
-      if (matchingOldItem) {
-        setSwapOldItem(matchingOldItem);
-        toast.success(`✓ Sustitución detectada: ${matchingOldItem.internal_code || matchingOldItem.barcode} → ${foundItem.internal_code || foundItem.barcode}`);
-        
-        // Calculate price delta
-        await calculateSwapPriceDelta(matchingOldItem, foundItem);
+        if (matchingOldItem) {
+          setSwapOldItem(matchingOldItem);
+          toast.success(`✓ Sustitución detectada: ${matchingOldItem.internal_code || matchingOldItem.barcode} → ${foundItem.internal_code || foundItem.barcode}`);
+        } else {
+          toast.warning(`No se encontró un artículo del mismo tipo (${foundItem.item_type}) en el alquiler`);
+        }
       } else {
-        // No matching type found - let user select manually
-        toast.warning(`No se encontró un artículo del mismo tipo (${foundItem.item_type}) en el alquiler`);
-        setSwapOldItem(null);
-        setSwapDelta(null);
+        toast.success(`✓ Nuevo artículo: ${foundItem.internal_code || foundItem.barcode}`);
+      }
+      
+      // Calculate price delta
+      if (swapOldItem) {
+        await calculateSwapPriceDelta(swapOldItem, foundItem);
       }
 
     } catch (error) {
