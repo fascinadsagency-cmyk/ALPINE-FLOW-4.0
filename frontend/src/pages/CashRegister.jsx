@@ -217,14 +217,44 @@ export default function CashRegister() {
   };
 
   // ============ IMPRIMIR TICKET DE MOVIMIENTO (USA GENERADOR MAESTRO) ============
-  const printMovementTicket = (movement) => {
+  const printMovementTicket = async (movement) => {
     // Obtener etiqueta de categoría
     const allCategories = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
     const categoryLabel = allCategories.find(c => c.value === movement.category)?.label || movement.category || '-';
     
     // Determinar el tipo de ticket según la categoría y tipo de movimiento
     const isRentalCategory = movement.category === 'rental';
-    const hasRentalItems = movement.rental_items && movement.rental_items.length > 0;
+    let rentalItems = movement.rental_items || [];
+    let rentalDays = movement.rental_days;
+    let startDate = movement.rental_start_date;
+    let endDate = movement.rental_end_date;
+    
+    // FALLBACK: Si es un alquiler pero no tiene items guardados, intentar recuperarlos del alquiler original
+    if (isRentalCategory && rentalItems.length === 0 && movement.reference_id) {
+      try {
+        const response = await axios.get(`${API}/rentals/${movement.reference_id}`);
+        if (response.data) {
+          const rental = response.data;
+          // Mapear items del alquiler
+          rentalItems = (rental.items || []).map(item => ({
+            name: `${item.item_type || 'Artículo'} ${item.brand || ''}`.trim(),
+            size: item.size || '',
+            internal_code: item.internal_code || item.barcode || '',
+            days: rental.days || 1,
+            subtotal: item.subtotal || 0,
+            item_type: item.item_type
+          }));
+          rentalDays = rental.days;
+          startDate = rental.start_date;
+          endDate = rental.end_date;
+        }
+      } catch (error) {
+        console.log('No se pudo recuperar items del alquiler original:', error);
+        // Continuar con ticket de movimiento simple
+      }
+    }
+    
+    const hasRentalItems = rentalItems.length > 0;
     
     // Preparar datos para el generador maestro
     const ticketData = {
@@ -241,10 +271,10 @@ export default function CashRegister() {
       customerName: movement.customer_name,
       customer: movement.customer_name,
       // Datos de alquiler (si existen)
-      items: hasRentalItems ? movement.rental_items : [],
-      days: movement.rental_days || null,
-      startDate: movement.rental_start_date || null,
-      endDate: movement.rental_end_date || null,
+      items: rentalItems,
+      days: rentalDays || null,
+      startDate: startDate || null,
+      endDate: endDate || null,
       total: movement.amount
     };
     
