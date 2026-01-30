@@ -1128,24 +1128,6 @@ export default function Customers() {
                 </CardContent>
               </Card>
 
-              {/* Preferred Sizes */}
-              {customerHistory?.preferred_sizes && Object.keys(customerHistory.preferred_sizes).length > 0 && (
-                <Card className="border-slate-200">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Tallas Preferidas</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {Object.entries(customerHistory.preferred_sizes).map(([type, sizes]) => (
-                        <Badge key={type} variant="outline" className="text-sm">
-                          {type}: {sizes.join(", ")}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
               {/* Financial Summary & Transaction History */}
               <Card className="border-slate-200">
                 <CardHeader className="pb-3">
