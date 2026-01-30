@@ -33,7 +33,8 @@ import {
   ChevronRight,
   TrendingUp,
   TrendingDown,
-  Scale
+  Scale,
+  Pencil
 } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
