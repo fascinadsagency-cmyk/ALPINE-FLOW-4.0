@@ -467,6 +467,9 @@ export default function ActiveRentals() {
         isDowngrade: delta < 0,
         isEqual: delta === 0
       });
+      
+      // Update combined delta (material + date)
+      setCombinedDelta(delta + dateDelta);
 
     } catch (error) {
       console.error("Error calculating swap price:", error);
@@ -478,6 +481,7 @@ export default function ActiveRentals() {
         days: swapDaysRemaining,
         isEqual: true
       });
+      setCombinedDelta(dateDelta); // Only date delta if material fails
     }
   };
 
