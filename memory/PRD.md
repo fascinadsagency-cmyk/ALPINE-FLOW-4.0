@@ -60,11 +60,12 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - Endpoint: GET /api/lookup/{code} para reverse lookup
 - ✅ **NUEVO: Botón CAMBIO/PRÓRROGA en Devoluciones:**
   - Botón "CAMBIO" naranja junto a "DEVOLUCIÓN RÁPIDA"
-  - Modal de gestión con tabs: "Cambio de Material" | "Prórroga"
-  - Artículo pre-cargado de la fila seleccionada
-  - Cálculo automático de diferencia de precio
+  - **Modal de Gestión de Contrato Completo**: Muestra TODOS los artículos del cliente
+  - Cada artículo tiene botón "Sustituir" para escanear reemplazo individual
+  - Opción de "Prórroga de días" con toggle activar/desactivar
+  - Cálculo automático de diferencia TOTAL (suma de todos los cambios + prórroga)
   - Integración obligatoria con caja (no permite guardar sin pasar por cobro/abono)
-  - Ticket de regularización imprimible
+  - Ticket de regularización con detalle de todos los cambios
 - ✅ **NUEVO: Buscador Global (Reverse Lookup - Scan-to-Action):**
   - Barra de búsqueda prominente en Dashboard con auto-foco
   - Escenario A (Escaneo artículo): Detecta cliente y abre modal de gestión automáticamente
