@@ -1510,157 +1510,233 @@ export default function Returns() {
       </Dialog>
 
       {/* Change/Extension Modal */}
-      <Dialog open={changeModal} onOpenChange={setChangeModal}>
-        <DialogContent className="sm:max-w-2xl">
+      {/* ============ MULTI-ITEM CHANGE/EXTENSION MODAL ============ */}
+      <Dialog open={changeModal} onOpenChange={closeChangeModal}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ArrowLeftRight className="h-5 w-5 text-orange-600" />
-              {changeAction === 'swap' ? 'Cambio de Material' : 'Prórroga de Alquiler'}
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <ArrowLeftRight className="h-6 w-6 text-orange-500" />
+              Gestión de Contrato Completo
             </DialogTitle>
             <DialogDescription>
-              {changeAction === 'swap' 
-                ? 'Sustituir un artículo por otro disponible'
-                : 'Extender el período de alquiler'
-              }
+              Gestiona todos los artículos del cliente - Cambios masivos y prórroga
             </DialogDescription>
           </DialogHeader>
           
           {changeRental && !changeComplete && (
             <div className="space-y-4 py-4">
-              {/* Customer Info */}
-              <div className="p-4 rounded-xl bg-slate-50">
-                <div className="flex justify-between items-center">
+              {/* Customer Info Header */}
+              <div className="p-4 rounded-xl bg-gradient-to-r from-slate-50 to-blue-50 border border-slate-200">
+                <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-semibold text-slate-900">{changeRental.customer_name}</p>
-                    <p className="text-sm text-slate-500">Días restantes: {changeDaysRemaining}</p>
+                    <p className="text-lg font-bold text-slate-900">{changeRental.customer_name}</p>
+                    <p className="text-sm text-slate-500">{changeRental.customer_dni}</p>
                   </div>
-                  <Badge className="bg-blue-100 text-blue-700">
-                    Alquiler #{changeRental.id}
-                  </Badge>
+                  <div className="text-right">
+                    <Badge className="bg-blue-100 text-blue-700 mb-1">
+                      {changeDaysRemaining} días restantes
+                    </Badge>
+                    <p className="text-xs text-slate-500">Total: €{changeRental.total_amount?.toFixed(2) || '0.00'}</p>
+                  </div>
                 </div>
               </div>
 
-              {/* Action Tabs */}
-              <Tabs value={changeAction} onValueChange={setChangeAction}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="swap">Cambio de Material</TabsTrigger>
-                  <TabsTrigger value="extend">Prórroga</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="swap" className="space-y-4">
-                  {/* Old Item Selection */}
-                  {changeOldItem && (
-                    <div className="p-3 rounded-lg bg-red-50 border border-red-200">
-                      <p className="text-sm text-red-700 font-medium mb-1">❌ Devuelve:</p>
-                      <p className="font-semibold">{changeOldItem.brand} {changeOldItem.model}</p>
-                      <p className="text-sm text-slate-500">
-                        {changeOldItem.item_type} • Talla {changeOldItem.size} • {changeOldItem.internal_code || changeOldItem.barcode}
-                      </p>
+              {/* ALL ITEMS FROM CONTRACT */}
+              <div className="space-y-2">
+                <Label className="text-base font-semibold flex items-center gap-2">
+                  <Package className="h-5 w-5 text-slate-500" />
+                  Artículos del Contrato ({changeItems.length})
+                </Label>
+                
+                <div className="space-y-2 max-h-64 overflow-y-auto p-2 bg-slate-50 rounded-lg">
+                  {changeItems.map((item, index) => (
+                    <div 
+                      key={index}
+                      className={`p-3 rounded-lg border-2 transition-all ${
+                        item.isSwapping 
+                          ? 'bg-orange-50 border-orange-300' 
+                          : activeSwapIndex === index
+                          ? 'bg-blue-50 border-blue-300'
+                          : 'bg-white border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-sm">
+                              {item.internal_code || item.barcode}
+                            </span>
+                            <Badge variant="outline" className="text-xs">
+                              {item.item_type}
+                            </Badge>
+                            {item.size && (
+                              <span className="text-xs text-slate-500">Talla {item.size}</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1">
+                            {item.brand} {item.model}
+                          </p>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          {item.isSwapping ? (
+                            <>
+                              <div className="text-right mr-2">
+                                <p className="text-xs text-orange-600 font-medium">→ {item.swapNewItem?.internal_code}</p>
+                                <p className="text-xs text-slate-500">
+                                  Delta: {item.swapDelta >= 0 ? '+' : ''}€{item.swapDelta?.toFixed(2)}
+                                </p>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => cancelItemSwap(index)}
+                                className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </>
+                          ) : activeSwapIndex === index ? (
+                            <div className="flex gap-2 items-center">
+                              <Input
+                                ref={changeInputRef}
+                                value={changeNewBarcode}
+                                onChange={(e) => setChangeNewBarcode(e.target.value.toUpperCase())}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && changeNewBarcode.trim()) {
+                                    searchSwapItem(changeNewBarcode);
+                                    setChangeNewBarcode("");
+                                  } else if (e.key === 'Escape') {
+                                    setActiveSwapIndex(null);
+                                  }
+                                }}
+                                placeholder="Escanea nuevo..."
+                                className="h-8 w-36 text-sm font-mono"
+                                autoFocus
+                              />
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setActiveSwapIndex(null)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => startItemSwap(index)}
+                              className="gap-1 text-orange-600 border-orange-200 hover:bg-orange-50"
+                            >
+                              <Scan className="h-3 w-3" />
+                              Sustituir
+                            </Button>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  )}
+                  ))}
+                </div>
+              </div>
 
-                  {/* New Item Input */}
-                  <div>
-                    <Label>Escanear nuevo artículo</Label>
-                    <div className="relative mt-1">
-                      <Scan className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                      <Input
-                        ref={changeInputRef}
-                        placeholder="Código del nuevo artículo..."
-                        value={changeNewBarcode}
-                        onChange={(e) => setChangeNewBarcode(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && changeNewBarcode.trim()) {
-                            searchChangeItem(changeNewBarcode.trim());
-                            setChangeNewBarcode("");
-                          }
-                        }}
-                        className="pl-10 h-12"
-                        disabled={changeLoading}
-                      />
-                      {changeLoading && (
-                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin text-primary" />
-                      )}
+              {/* DAY EXTENSION TOGGLE */}
+              <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <CalendarPlus className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <p className="font-medium text-slate-900">Prórroga de días</p>
+                      <p className="text-xs text-slate-500">Extender el período de alquiler</p>
                     </div>
                   </div>
-
-                  {/* New Item Display */}
-                  {changeNewItem && (
-                    <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
-                      <p className="text-sm text-emerald-700 font-medium mb-1">✅ Recibe:</p>
-                      <p className="font-semibold">{changeNewItem.brand} {changeNewItem.model}</p>
-                      <p className="text-sm text-slate-500">
-                        {changeNewItem.item_type} • Talla {changeNewItem.size} • {changeNewItem.internal_code || changeNewItem.barcode}
-                      </p>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant={changeExtendDays ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setChangeExtendDays(!changeExtendDays)}
+                      className={changeExtendDays ? "bg-blue-600" : ""}
+                    >
+                      {changeExtendDays ? 'Activado' : 'Activar'}
+                    </Button>
+                  </div>
+                </div>
+                
+                {changeExtendDays && (
+                  <div className="mt-4 flex items-center gap-4">
+                    <div>
+                      <Label className="text-sm">Días actuales</Label>
+                      <p className="text-2xl font-bold text-slate-400">{changeRental.days}</p>
                     </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="extend" className="space-y-4">
-                  <div>
-                    <Label>Nuevos días de alquiler</Label>
-                    <div className="flex items-center gap-3 mt-2">
+                    <ArrowRight className="h-6 w-6 text-slate-400" />
+                    <div>
+                      <Label className="text-sm">Nuevos días</Label>
                       <Input
                         type="number"
-                        min={changeRental?.days || 1}
+                        min={changeRental.days}
                         value={changeNewDays}
                         onChange={(e) => setChangeNewDays(e.target.value)}
-                        className="w-24 h-12 text-xl text-center font-bold"
+                        className="w-20 h-12 text-xl font-bold text-center"
                       />
-                      <span className="text-slate-500">días (actual: {changeRental?.days})</span>
                     </div>
                   </div>
-                </TabsContent>
-              </Tabs>
+                )}
+              </div>
 
-              {/* Price Delta */}
-              {changeDelta && (
-                <div className={`p-4 rounded-xl border ${
-                  changeDelta.delta > 0 
-                    ? 'bg-orange-50 border-orange-200' 
-                    : changeDelta.delta < 0 
-                    ? 'bg-emerald-50 border-emerald-200'
-                    : 'bg-slate-50 border-slate-200'
-                }`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium">Diferencia de precio:</span>
-                    <span className={`text-2xl font-bold ${
-                      changeDelta.delta > 0 ? 'text-orange-600' : 
-                      changeDelta.delta < 0 ? 'text-emerald-600' : 'text-slate-600'
-                    }`}>
-                      {changeDelta.delta > 0 ? '+' : ''}€{changeDelta.delta.toFixed(2)}
-                    </span>
+              {/* TOTAL DELTA SUMMARY */}
+              <div className={`p-5 rounded-xl border-2 ${
+                changeTotalDelta > 0 
+                  ? 'bg-orange-50 border-orange-300' 
+                  : changeTotalDelta < 0 
+                  ? 'bg-emerald-50 border-emerald-300'
+                  : 'bg-slate-50 border-slate-200'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-600">
+                      {changeTotalDelta > 0 ? '⬆️ TOTAL A COBRAR' : 
+                       changeTotalDelta < 0 ? '⬇️ TOTAL A ABONAR' : 
+                       '↔️ SIN DIFERENCIA'}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {changeItems.filter(i => i.isSwapping).length} cambio(s) de material
+                      {changeExtendDays && parseInt(changeNewDays) > changeRental.days && ' + prórroga'}
+                    </p>
                   </div>
-                  
-                  {changeDelta.materialDelta !== 0 && (
-                    <div className="text-sm text-slate-600 mb-1">
-                      Material: €{changeDelta.oldPrice.toFixed(2)} → €{changeDelta.newPrice.toFixed(2)} 
-                      ({changeDelta.materialDelta > 0 ? '+' : ''}€{changeDelta.materialDelta.toFixed(2)})
-                    </div>
-                  )}
-                  
-                  {changeDelta.extensionCost > 0 && (
-                    <div className="text-sm text-slate-600">
-                      Prórroga: {changeDelta.newDays - changeDelta.oldDays} días × €{(changeDelta.extensionCost / (changeDelta.newDays - changeDelta.oldDays)).toFixed(2)}/día = €{changeDelta.extensionCost.toFixed(2)}
-                    </div>
-                  )}
+                  <p className={`text-3xl font-bold ${
+                    changeTotalDelta > 0 ? 'text-orange-600' : 
+                    changeTotalDelta < 0 ? 'text-emerald-600' : 'text-slate-500'
+                  }`}>
+                    {changeTotalDelta > 0 ? '+' : changeTotalDelta < 0 ? '-' : ''}€{Math.abs(changeTotalDelta).toFixed(2)}
+                  </p>
                 </div>
-              )}
+              </div>
 
-              {/* Payment Method */}
-              {changeDelta && changeDelta.delta !== 0 && (
-                <div>
-                  <Label>Método de pago</Label>
-                  <Select value={changePaymentMethod} onValueChange={setChangePaymentMethod}>
-                    <SelectTrigger className="h-11 mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PAYMENT_METHODS.map(m => (
-                        <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              {/* Payment Method - Only if there's a delta */}
+              {changeTotalDelta !== 0 && (
+                <div className="flex items-center gap-4">
+                  <Label className="shrink-0">Método de {changeTotalDelta > 0 ? 'cobro' : 'abono'}:</Label>
+                  <div className="flex gap-2">
+                    <Button
+                      variant={changePaymentMethod === "cash" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setChangePaymentMethod("cash")}
+                      className="gap-1"
+                    >
+                      <Banknote className="h-4 w-4" />
+                      Efectivo
+                    </Button>
+                    <Button
+                      variant={changePaymentMethod === "card" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setChangePaymentMethod("card")}
+                      className="gap-1"
+                    >
+                      <CreditCard className="h-4 w-4" />
+                      Tarjeta
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
@@ -1671,15 +1747,16 @@ export default function Returns() {
             <div className="py-8 text-center">
               <CheckCircle className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                {changeAction === 'swap' ? 'Cambio Completado' : 'Prórroga Completada'}
+                ¡Cambios Procesados!
               </h3>
               <p className="text-slate-600 mb-6">
-                La operación se ha procesado correctamente
+                {changeItems.filter(i => i.isSwapping).length} artículo(s) sustituido(s)
+                {changeExtendDays && parseInt(changeNewDays) > changeRental?.days && ' + prórroga aplicada'}
               </p>
               <div className="flex gap-3 justify-center">
                 <Button
                   variant="outline"
-                  onClick={printChangeTicket}
+                  onClick={printMultiChangeTicket}
                   className="gap-2"
                 >
                   <Printer className="h-4 w-4" />
@@ -1699,16 +1776,22 @@ export default function Returns() {
                   Cancelar
                 </Button>
                 <Button 
-                  onClick={executeChange}
-                  disabled={changeLoading || (!changeNewItem && parseInt(changeNewDays) === changeRental?.days)}
-                  className="bg-orange-600 hover:bg-orange-700"
+                  onClick={executeAllChanges}
+                  disabled={changeLoading || (changeItems.filter(i => i.isSwapping).length === 0 && (!changeExtendDays || parseInt(changeNewDays) === changeRental?.days))}
+                  className={`min-w-[180px] ${
+                    changeTotalDelta > 0 ? 'bg-orange-600 hover:bg-orange-700' :
+                    changeTotalDelta < 0 ? 'bg-emerald-600 hover:bg-emerald-700' :
+                    'bg-blue-600 hover:bg-blue-700'
+                  }`}
                 >
                   {changeLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   ) : (
-                    <ArrowLeftRight className="h-4 w-4 mr-2" />
+                    <Zap className="h-4 w-4 mr-2" />
                   )}
-                  {changeAction === 'swap' ? 'Procesar Cambio' : 'Procesar Prórroga'}
+                  {changeTotalDelta > 0 ? `Cobrar €${changeTotalDelta.toFixed(2)}` :
+                   changeTotalDelta < 0 ? `Abonar €${Math.abs(changeTotalDelta).toFixed(2)}` :
+                   'Procesar Cambios'}
                 </Button>
               </>
             )}
