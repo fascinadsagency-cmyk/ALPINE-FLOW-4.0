@@ -52,6 +52,12 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - Una sola fila por cliente/contrato
   - Badge "N art." con Popover para ver detalle de artículos
   - UI más limpia y profesional
+- ✅ **NUEVO: Cabecera Inteligente en Alquileres Activos:**
+  - Barra de búsqueda híbrida (código/nombre) con auto-foco para escáner
+  - Botón "CAMBIOS" prominente en naranja que abre el Gestor Universal en blanco
+  - Filtrado de lista en tiempo real al escribir nombre
+  - Scan-to-Action: Escanear artículo alquilado → identifica cliente automáticamente → abre modal
+  - Endpoint: GET /api/lookup/{code} para reverse lookup
 - ✅ **NUEVO: Buscador Global (Reverse Lookup - Scan-to-Action):**
   - Barra de búsqueda prominente en Dashboard con auto-foco
   - Escenario A (Escaneo artículo): Detecta cliente y abre modal de gestión automáticamente
