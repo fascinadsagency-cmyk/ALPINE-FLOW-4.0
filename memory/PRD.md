@@ -112,19 +112,31 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
     - Botón "Ver Ficha Completa" para navegar a /clientes con highlight
 
 ### 4. Sistema de Tickets/Comprobantes
-- ✅ Impresión de ticket de alquiler con desglose completo
-- ✅ Formato profesional para impresora térmica 80mm
-- ✅ Nº Ticket con formato AXXXXXX
-- ✅ Desglose por artículo: [Tipo/Modelo] | [Días] | [P.Unit] | [Subtotal]
-- ✅ Agrupación visual de packs con precio único
+- ✅ Impresión como comprobante de un pago ya realizado
 
 ### 5. Gestión de Datos
-- ✅ Importador CSV/Excel para clientes e inventario
-- ✅ Ficha de Artículo con campos Fijación y Número de Serie
-- ⏳ Personalización de Tablas (Drag & Drop - pausado)
+- ✅ **Importador Universal (CSV/Excel):** Para clientes e inventario
 
-### 6. Soporte
-- ⏳ Pestaña de tickets de soporte (pendiente)
+### 6. Configuración del Sistema (NUEVO 2026-01-30)
+- ✅ **Panel de Configuración** accesible desde el menú lateral
+- ✅ **Ajustes de Interfaz:**
+  - **Modo Oscuro:** Toggle funcional que aplica tema oscuro a sidebar y páginas
+  - **Selector de Idioma:** Español/Inglés con traducción instantánea de toda la UI
+  - Toast de confirmación al cambiar configuración
+- ✅ **Configuración de Impresión:**
+  - Toggle de Impresión Automática de Tickets
+  - Nota de recomendación para impresoras térmicas
+- ✅ **Persistencia de Preferencias:**
+  - localStorage guarda: darkMode, language, auto_print_enabled
+  - Configuración se mantiene al cerrar/reabrir el navegador
+- ✅ **Placeholders para futuras secciones:**
+  - Personalización de Ticket (próximamente)
+  - Gestión de IVA (próximamente)
+  - Identidad Visual (próximamente)
+- ✅ **Botón Guardar Cambios:** Fijo en cabecera, cambia a "Guardado" sin cambios pendientes
+
+### 7. Soporte y Personalizaciones
+- 🔲 Pestaña para tickets de soporte (pendiente)
 
 ### 7. Integraciones Futuras
 - ⏳ VeriFactu, WhatsApp, TPV, Email, Google Calendar
