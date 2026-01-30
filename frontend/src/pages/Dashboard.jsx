@@ -223,12 +223,15 @@ export default function Dashboard() {
 
       {/* KPI Cards Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-slate-200 hover:shadow-md transition-shadow">
+        <Card className="border-slate-200 hover:shadow-md transition-shadow cursor-pointer" onClick={() => window.location.href = '/caja'}>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500">Ingresos Hoy</p>
-                <p className="text-2xl font-bold text-slate-900">€{(stats.revenue_today || 0).toFixed(2)}</p>
+                <p className="text-sm font-medium text-slate-500">Ingresos Netos Hoy</p>
+                <p className={`text-2xl font-bold ${(stats.revenue_today || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                  €{(stats.revenue_today || 0).toFixed(2)}
+                </p>
+                <p className="text-xs text-slate-400 mt-1">Facturado - Devoluciones</p>
               </div>
               <div className="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center">
                 <DollarSign className="h-6 w-6 text-emerald-600" />
