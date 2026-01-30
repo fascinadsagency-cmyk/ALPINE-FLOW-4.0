@@ -1175,12 +1175,12 @@ export default function Returns() {
                               <Button 
                                 variant="outline"
                                 size="sm"
-                                onClick={() => openChangeModal(rental, rental.pending_items?.[0])}
+                                onClick={() => openChangeModal(rental)}
                                 className="gap-1 border-orange-300 text-orange-700 hover:bg-orange-50 font-semibold"
                                 data-testid={`change-btn-${rental.id}`}
                               >
                                 <ArrowLeftRight className="h-4 w-4" />
-                                CAMBIO
+                                GESTIONAR
                               </Button>
                               <Button 
                                 variant="outline" 
