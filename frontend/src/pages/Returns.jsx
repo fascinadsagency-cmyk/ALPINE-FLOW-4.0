@@ -93,7 +93,13 @@ export default function Returns() {
   // ============ CHANGE/EXTENSION FUNCTIONS ============
   
   const openChangeModal = (rental, item = null) => {
-    setChangeRental(rental);
+    // Ensure we have the rental days - fallback to fetching from rental object
+    const rentalDays = rental.days || rental.duration || 1;
+    
+    setChangeRental({
+      ...rental,
+      days: rentalDays
+    });
     setChangeOldItem(item);
     setChangeNewBarcode("");
     setChangeNewItem(null);
@@ -107,7 +113,7 @@ export default function Returns() {
     const today = new Date();
     const daysLeft = Math.max(1, Math.ceil((endDate - today) / (1000 * 60 * 60 * 24)) + 1);
     setChangeDaysRemaining(daysLeft);
-    setChangeNewDays(rental.days.toString());
+    setChangeNewDays(rentalDays.toString());
     
     setChangeModal(true);
     
