@@ -733,6 +733,7 @@ export default function Returns() {
         toast.error("No se encontró alquiler activo para este artículo");
       } finally {
         setLoading(false);
+        refocusBarcodeInput(); // Re-focus for next scan
       }
       return;
     }
@@ -741,21 +742,35 @@ export default function Returns() {
     const item = rental.items.find(i => i.barcode === barcode);
     if (!item) {
       toast.error("Este artículo no pertenece a este alquiler");
+      refocusBarcodeInput();
       return;
     }
     
     if (item.returned) {
       toast.info("Este artículo ya fue devuelto");
+      refocusBarcodeInput();
       return;
     }
     
     if (scannedBarcodes.includes(barcode)) {
       toast.info("Artículo ya escaneado");
+      refocusBarcodeInput();
       return;
     }
     
     setScannedBarcodes([...scannedBarcodes, barcode]);
     toast.success(`${item.brand} ${item.model} escaneado`);
+    refocusBarcodeInput(); // Re-focus for next scan
+  };
+
+  // HELPER: Re-focus barcode input with text selection (for barcode scanner optimization)
+  const refocusBarcodeInput = () => {
+    setTimeout(() => {
+      if (barcodeRef.current) {
+        barcodeRef.current.focus();
+        barcodeRef.current.select(); // Select all text so next scan overwrites
+      }
+    }, 50);
   };
 
   const processReturn = async () => {
