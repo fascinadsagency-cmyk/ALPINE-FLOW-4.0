@@ -223,31 +223,15 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* KPI Cards Row */}
+      {/* KPI Cards Row - Solo datos operativos, sin información financiera */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className={`hover:shadow-md transition-shadow cursor-pointer ${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`} onClick={() => window.location.href = '/caja'}>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Ingresos Netos Hoy</p>
-                <p className={`text-2xl font-bold ${(stats.revenue_today || 0) >= 0 ? (darkMode ? 'text-emerald-400' : 'text-emerald-600') : 'text-red-500'}`}>
-                  €{(stats.revenue_today || 0).toFixed(2)}
-                </p>
-                <p className={`text-xs mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Facturado - Devoluciones</p>
-              </div>
-              <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${darkMode ? 'bg-emerald-900/30' : 'bg-emerald-100'}`}>
-                <DollarSign className={`h-6 w-6 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className={`hover:shadow-md transition-shadow ${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`}>
+        <Card className={`hover:shadow-md transition-shadow cursor-pointer ${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`} onClick={() => navigate('/alquileres-activos')}>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Alquileres Activos</p>
-                <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{stats.active_rentals || 0}</p>
+                <p className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>{stats.active_rentals || 0}</p>
+                <p className={`text-xs mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>En curso ahora mismo</p>
               </div>
               <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${darkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
                 <ShoppingCart className={`h-6 w-6 ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`} />
@@ -256,29 +240,46 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className={`hover:shadow-md transition-shadow ${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`}>
+        <Card className={`hover:shadow-md transition-shadow cursor-pointer ${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`} onClick={() => navigate('/devoluciones')}>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500">Ocupación Stock</p>
-                <p className="text-2xl font-bold text-slate-900">{inventory.occupancy_percent || 0}%</p>
+                <p className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Devoluciones Hoy</p>
+                <p className={`text-2xl font-bold ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>{stats.returns_today || 0}</p>
+                <p className={`text-xs mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Equipos por recoger</p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-purple-100 flex items-center justify-center">
-                <Package className="h-6 w-6 text-purple-600" />
+              <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${darkMode ? 'bg-amber-900/30' : 'bg-amber-100'}`}>
+                <RotateCcw className={`h-6 w-6 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`} />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 hover:shadow-md transition-shadow">
+        <Card className={`hover:shadow-md transition-shadow cursor-pointer ${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`} onClick={() => navigate('/inventario')}>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500">Devoluciones Hoy</p>
-                <p className="text-2xl font-bold text-slate-900">{stats.returns_today || 0}</p>
+                <p className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Ocupación Stock</p>
+                <p className={`text-2xl font-bold ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>{inventory.occupancy_percent || 0}%</p>
+                <p className={`text-xs mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Material alquilado</p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-amber-100 flex items-center justify-center">
-                <RotateCcw className="h-6 w-6 text-amber-600" />
+              <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${darkMode ? 'bg-purple-900/30' : 'bg-purple-100'}`}>
+                <Package className={`h-6 w-6 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className={`hover:shadow-md transition-shadow cursor-pointer ${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`} onClick={() => navigate('/clientes')}>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Clientes del Día</p>
+                <p className={`text-2xl font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{stats.active_rentals || 0}</p>
+                <p className={`text-xs mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Atendidos hoy</p>
+              </div>
+              <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${darkMode ? 'bg-emerald-900/30' : 'bg-emerald-100'}`}>
+                <Users className={`h-6 w-6 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
               </div>
             </div>
           </CardContent>
