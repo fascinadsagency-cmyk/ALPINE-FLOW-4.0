@@ -441,9 +441,24 @@ export default function CashRegister() {
         
         <div class="section">
           <div style="font-weight: bold; margin-bottom: 5px;">RESUMEN GLOBAL DEL DÍA</div>
-          <div class="row"><span>Entradas:</span><span class="value">€${formatCurrency(closingData.total_income)}</span></div>
-          <div class="row"><span>Salidas:</span><span class="value">€${formatCurrency(closingData.total_expense)}</span></div>
-          <div class="row"><span>Devoluciones:</span><span class="value">€${formatCurrency(closingData.total_refunds)}</span></div>
+          <div class="row"><span>Contratos Nuevos:</span><span class="value">€${formatCurrency(closingData.by_category?.rental || 0)}</span></div>
+          <div class="row"><span>Ajustes Cambios:</span><span class="value">€${formatCurrency(closingData.by_category?.rental_adjustment || 0)}</span></div>
+          <div class="row"><span>Salidas:</span><span class="value">-€${formatCurrency(closingData.total_expense)}</span></div>
+          <div class="row"><span>Devoluciones:</span><span class="value">-€${formatCurrency(closingData.total_refunds)}</span></div>
+        </div>
+        
+        <div class="divider" style="border-style: double;"></div>
+        
+        <div style="background: ${((closingData.by_category?.rental || 0) + (closingData.by_category?.rental_adjustment || 0) - (closingData.total_expense || 0) - (closingData.total_refunds || 0)) >= 0 ? '#d1fae5' : '#fee2e2'}; padding: 10px; border-radius: 4px; margin: 10px 0;">
+          <div class="row" style="font-weight: bold; font-size: 14px;">
+            <span>💰 INGRESO NETO DEL DÍA:</span>
+            <span style="color: ${((closingData.by_category?.rental || 0) + (closingData.by_category?.rental_adjustment || 0) - (closingData.total_expense || 0) - (closingData.total_refunds || 0)) >= 0 ? '#059669' : '#dc2626'};">
+              €${formatCurrency((closingData.by_category?.rental || 0) + (closingData.by_category?.rental_adjustment || 0) - (closingData.total_expense || 0) - (closingData.total_refunds || 0))}
+            </span>
+          </div>
+          <div style="text-align: center; font-size: 9px; color: #666; margin-top: 5px;">
+            (Contratos + Ajustes) - (Salidas + Devoluciones)
+          </div>
         </div>
         
         <div class="divider"></div>
