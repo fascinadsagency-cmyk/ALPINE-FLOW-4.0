@@ -261,7 +261,7 @@ export default function Settings() {
                   </div>
                 </div>
                 <Select value={language} onValueChange={handleLanguageChange}>
-                  <SelectTrigger className={`w-[160px] ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : ''}`}>
+                  <SelectTrigger className={`w-[160px] ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : ''}`} data-testid="language-selector">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className={darkMode ? 'bg-slate-800 border-slate-700' : ''}>
@@ -273,6 +273,42 @@ export default function Settings() {
                     </SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Dark Mode Toggle */}
+              <div className={`flex items-start justify-between p-4 rounded-xl border-2 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+                <div className="flex items-start gap-4">
+                  <div className={`p-3 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-indigo-100'}`}>
+                    {darkMode ? (
+                      <Moon className="h-6 w-6 text-indigo-400" />
+                    ) : (
+                      <Sun className="h-6 w-6 text-indigo-600" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <Label className={`text-base font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                      {language === 'es' ? 'Modo Oscuro' : 'Dark Mode'}
+                    </Label>
+                    <p className={`text-sm mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                      {language === 'es' 
+                        ? 'Alterna entre el tema claro y oscuro de la aplicación' 
+                        : 'Toggle between light and dark application theme'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {darkMode 
+                      ? (language === 'es' ? 'Oscuro' : 'Dark')
+                      : (language === 'es' ? 'Claro' : 'Light')
+                    }
+                  </span>
+                  <Switch
+                    checked={darkMode}
+                    onCheckedChange={handleDarkModeChange}
+                    data-testid="dark-mode-switch"
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
