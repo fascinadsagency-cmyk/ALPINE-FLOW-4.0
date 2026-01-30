@@ -1073,19 +1073,30 @@ export default function ActiveRentals() {
         </CardContent>
       </Card>
 
-      {/* ============ NEW CENTRALIZED SWAP MODAL ============ */}
-      <Dialog open={!!swapRental} onOpenChange={closeSwapModal}>
-        <DialogContent className="max-w-xl">
+      {/* ============ UNIVERSAL SWAP/CAMBIOS MODAL ============ */}
+      <Dialog open={swapModalOpen} onOpenChange={closeSwapModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
-              <ArrowLeftRight className="h-6 w-6 text-blue-600" />
-              Gestión de Cambios
+              <ArrowLeftRight className="h-6 w-6 text-orange-500" />
+              Gestor Universal de Cambios
             </DialogTitle>
-            {swapRental && (
+            {swapRental ? (
               <DialogDescription className="text-base">
-                Cliente: <strong>{swapRental.customer_name}</strong> | 
-                DNI: <strong>{swapRental.customer_dni}</strong> | 
-                Días restantes: <Badge className="ml-1 bg-blue-100 text-blue-700">{swapDaysRemaining}</Badge>
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <Badge className="bg-slate-100 text-slate-800 px-3 py-1">
+                    <User className="h-4 w-4 mr-1" />
+                    {swapRental.customer_name}
+                  </Badge>
+                  <Badge variant="outline">{swapRental.customer_dni}</Badge>
+                  <Badge className="bg-blue-100 text-blue-700">
+                    {swapDaysRemaining} días restantes
+                  </Badge>
+                </div>
+              </DialogDescription>
+            ) : (
+              <DialogDescription className="text-base text-slate-500">
+                Escanea el artículo que el cliente quiere devolver para identificarlo automáticamente
               </DialogDescription>
             )}
           </DialogHeader>
