@@ -1390,9 +1390,12 @@ export default function NewRental() {
       ).join(' / ');
       
       ticketItems.push({
-        name: `${packData.pack.name} (${childCodes})`,
+        name: `${packData.pack.name}`,
+        internal_code: childCodes,
+        item_type: 'pack',
         days: packDays,
-        price: packTotal
+        price: packTotal,
+        subtotal: packTotal
       });
     });
 
