@@ -80,6 +80,11 @@ export default function CashRegister() {
   const [showTicketDialog, setShowTicketDialog] = useState(false);
   const [selectedMovement, setSelectedMovement] = useState(null);
   
+  // Edit payment method dialog
+  const [showEditPaymentDialog, setShowEditPaymentDialog] = useState(false);
+  const [editingMovement, setEditingMovement] = useState(null);
+  const [newPaymentMethod, setNewPaymentMethod] = useState("");
+  
   // Session state
   const [activeSession, setActiveSession] = useState(null);
   const [openingBalance, setOpeningBalance] = useState("");
