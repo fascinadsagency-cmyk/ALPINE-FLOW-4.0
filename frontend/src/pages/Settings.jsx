@@ -25,7 +25,9 @@ import {
   Upload,
   X,
   Eye,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Moon,
+  Sun
 } from "lucide-react";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
