@@ -41,8 +41,30 @@ export default function Customers() {
     address: "",
     city: "",
     source: "",
-    notes: ""
+    notes: "",
+    boot_size: "",
+    height: "",
+    weight: "",
+    ski_level: ""
   });
+
+  // Technical data editing state
+  const [editingTechnicalData, setEditingTechnicalData] = useState(false);
+  const [technicalDataForm, setTechnicalDataForm] = useState({
+    boot_size: "",
+    height: "",
+    weight: "",
+    ski_level: ""
+  });
+  const [savingTechnicalData, setSavingTechnicalData] = useState(false);
+
+  const SKI_LEVELS = [
+    { value: "", label: "Sin especificar" },
+    { value: "principiante", label: "Principiante" },
+    { value: "intermedio", label: "Intermedio" },
+    { value: "avanzado", label: "Avanzado" },
+    { value: "experto", label: "Experto" }
+  ];
 
   // Import states
   const [showImportDialog, setShowImportDialog] = useState(false);
