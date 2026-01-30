@@ -1353,26 +1353,56 @@ export default function ActiveRentals() {
                       <Label className="text-sm mb-2 block">
                         Método de {combinedDelta > 0 ? 'cobro' : 'abono'}
                       </Label>
-                      <div className="flex gap-2">
-                        <Button
-                          variant={swapPaymentMethod === "cash" ? "default" : "outline"}
-                          onClick={() => setSwapPaymentMethod("cash")}
-                          className="flex-1"
-                          size="sm"
-                        >
-                          <Banknote className="h-4 w-4 mr-1" />
-                          Efectivo
-                        </Button>
-                        <Button
-                          variant={swapPaymentMethod === "card" ? "default" : "outline"}
-                          onClick={() => setSwapPaymentMethod("card")}
-                          className="flex-1"
-                          size="sm"
-                        >
-                          <CreditCard className="h-4 w-4 mr-1" />
-                          Tarjeta
-                        </Button>
-                      </div>
+                      
+                      {/* If positive (cobro), allow choice. If negative (abono), lock to original */}
+                      {combinedDelta > 0 ? (
+                        <div className="flex gap-2">
+                          <Button
+                            variant={swapPaymentMethod === "cash" ? "default" : "outline"}
+                            onClick={() => setSwapPaymentMethod("cash")}
+                            className="flex-1"
+                            size="sm"
+                          >
+                            <Banknote className="h-4 w-4 mr-1" />
+                            Efectivo
+                          </Button>
+                          <Button
+                            variant={swapPaymentMethod === "card" ? "default" : "outline"}
+                            onClick={() => setSwapPaymentMethod("card")}
+                            className="flex-1"
+                            size="sm"
+                          >
+                            <CreditCard className="h-4 w-4 mr-1" />
+                            Tarjeta
+                          </Button>
+                        </div>
+                      ) : (
+                        /* LOCKED for refunds/abonos */
+                        <>
+                          <div className="h-10 px-3 flex items-center justify-between rounded-md border border-slate-300 bg-slate-100 cursor-not-allowed">
+                            <div className="flex items-center gap-2">
+                              {(swapRental?.payment_method || 'cash') === 'cash' ? (
+                                <>
+                                  <Banknote className="h-4 w-4 text-emerald-600" />
+                                  <span className="font-medium text-slate-700">Efectivo</span>
+                                </>
+                              ) : (
+                                <>
+                                  <CreditCard className="h-4 w-4 text-blue-600" />
+                                  <span className="font-medium text-slate-700">Tarjeta</span>
+                                </>
+                              )}
+                            </div>
+                            <Lock className="h-4 w-4 text-slate-400" />
+                          </div>
+                          <div className="mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200">
+                            <p className="text-xs text-amber-800 flex items-center gap-1">
+                              <AlertCircle className="h-3 w-3 flex-shrink-0" />
+                              <span>Por seguridad, el abono se realiza al mismo método de pago original.</span>
+                            </p>
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
