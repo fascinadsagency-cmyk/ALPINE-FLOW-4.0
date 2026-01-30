@@ -78,13 +78,23 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - **ELIMINADO** el icono de edición (lápiz) en Alquileres Activos
   - El botón **CAMBIOS** es la ÚNICA forma de modificar artículos y fechas
   - Ficha de Cliente accesible desde modal con botón "Ver Ficha Completa"
-- ✅ **Sincronización de Ingresos con Caja (REINGENIERÍA 2026-01-30):**
-  - Caja muestra dos columnas separadas:
+- ✅ **Sincronización de Ingresos (Single Source of Truth - 2026-01-30):**
+  - **Dashboard "Ingresos Netos Hoy"** ahora lee de `cash_movements` (misma fuente que Caja)
+  - Fórmula: **Ingresos Netos = Total Income - Total Refunds** (sin fondo inicial)
+  - Al hacer clic en la tarjeta de Ingresos, navega directamente a /caja
+  - Caja muestra columnas separadas:
     - **📦 Contratos Nuevos**: Alquileres del día (categoría "rental")
-    - **🔄 Ajustes Cambios**: Cobros/Abonos por modificaciones (categoría "rental_adjustment")
+    - **🔄 Ajustes Cambios**: Cobros/Abonos por modificaciones (categorías rental_adjustment, swap_supplement, swap_refund)
   - Desglose por método de pago: Efectivo / Tarjeta
-  - Saldo Neto del Turno siempre coincide con el dinero real
+  - Saldo Neto del Turno = Fondo Inicial + Income - Expense - Refunds
   - Backend calcula `by_category` en agregación MongoDB
+- ✅ **Ficha de Cliente Completa (2026-01-30):**
+  - Al pulsar icono de persona en Alquileres Activos, abre modal con:
+    - Datos de contacto (nombre, DNI, teléfono, email, hotel)
+    - Botones de llamada y WhatsApp
+    - **Historial de Alquileres**: Lista de todos los alquileres del cliente
+    - **Total Histórico**: Suma de todos los importes
+    - Botón "Ver Ficha Completa" para navegar a /clientes con highlight
 
 ### 4. Sistema de Tickets/Comprobantes
 - ✅ Impresión de ticket de alquiler con desglose completo
