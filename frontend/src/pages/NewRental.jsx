@@ -152,6 +152,9 @@ export default function NewRental() {
   const [editingItemPrice, setEditingItemPrice] = useState(null);
   const [editingItemDays, setEditingItemDays] = useState(null);
   
+  // Customer technical data visibility toggle
+  const [showCustomerTechData, setShowCustomerTechData] = useState(false);
+  
   // Sources
   const [sources, setSources] = useState([]);
   
