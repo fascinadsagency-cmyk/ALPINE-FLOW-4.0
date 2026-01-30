@@ -1093,48 +1093,147 @@ export default function ActiveRentals() {
                 </div>
               )}
 
-              {/* PRICE DELTA DISPLAY */}
+              {/* ============ DATE ADJUSTMENT SECTION (Prominente) ============ */}
+              {swapRental && (
+                <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <CalendarPlus className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-800">Ajuste de Calendario</p>
+                        <p className="text-xs text-slate-500">Extensión o devolución anticipada</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant={dateAdjustActive ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setDateAdjustActive(!dateAdjustActive)}
+                      className={dateAdjustActive ? "bg-blue-600" : ""}
+                    >
+                      {dateAdjustActive ? '✓ Activo' : 'Activar'}
+                    </Button>
+                  </div>
+                  
+                  {dateAdjustActive && (
+                    <div className="space-y-4 mt-4 pt-4 border-t border-blue-200">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-sm text-slate-600">Fecha fin original</Label>
+                          <p className="text-lg font-bold text-slate-700">
+                            {originalEndDate ? new Date(originalEndDate).toLocaleDateString('es-ES') : '-'}
+                          </p>
+                        </div>
+                        <div>
+                          <Label className="text-sm text-slate-600">Nueva fecha de fin</Label>
+                          <Input
+                            type="date"
+                            value={newEndDate}
+                            onChange={(e) => handleDateAdjustment(e.target.value)}
+                            className="h-10 font-semibold"
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Days comparison */}
+                      <div className="p-3 rounded-lg bg-white/80 border border-blue-200">
+                        <div className="grid grid-cols-3 gap-4 text-center">
+                          <div>
+                            <p className="text-xs text-slate-500 uppercase">Días Originales</p>
+                            <p className="text-2xl font-bold text-slate-700">{originalDays}</p>
+                          </div>
+                          <div className="flex items-center justify-center">
+                            <ArrowRight className="h-6 w-6 text-slate-400" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-500 uppercase">Días Nuevos</p>
+                            <p className={`text-2xl font-bold ${
+                              newTotalDays > originalDays ? 'text-orange-600' :
+                              newTotalDays < originalDays ? 'text-emerald-600' : 'text-slate-700'
+                            }`}>{newTotalDays}</p>
+                          </div>
+                        </div>
+                        
+                        {dateDelta !== 0 && (
+                          <div className={`mt-3 p-2 rounded text-center ${
+                            dateDelta > 0 ? 'bg-orange-100' : 'bg-emerald-100'
+                          }`}>
+                            <p className="text-xs text-slate-600">
+                              {dateDelta > 0 ? 'Suplemento por extensión' : 'Abono por reducción'}
+                            </p>
+                            <p className={`text-lg font-bold ${
+                              dateDelta > 0 ? 'text-orange-700' : 'text-emerald-700'
+                            }`}>
+                              {dateDelta > 0 ? '+' : ''}€{dateDelta.toFixed(2)}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ============ MATERIAL DELTA (if swap active) ============ */}
               {swapDelta && swapNewItem && swapOldItem && (
-                <div className={`p-5 rounded-xl border-2 text-center ${
+                <div className={`p-4 rounded-xl border-2 ${
                   swapDelta.isUpgrade ? 'bg-emerald-50 border-emerald-300' :
                   swapDelta.isDowngrade ? 'bg-red-50 border-red-300' :
                   'bg-slate-50 border-slate-300'
                 }`}>
-                  <p className="text-sm font-medium mb-2">
-                    {swapDelta.isUpgrade ? '⬆️ UPGRADE - Suplemento a cobrar al cliente' :
-                     swapDelta.isDowngrade ? '⬇️ DOWNGRADE - Abono al cliente' :
-                     '↔️ MISMO PRECIO - Sin diferencia económica'}
-                  </p>
-                  <p className={`text-4xl font-bold ${
-                    swapDelta.isUpgrade ? 'text-emerald-600' :
-                    swapDelta.isDowngrade ? 'text-red-600' :
-                    'text-slate-600'
-                  }`}>
-                    {swapDelta.delta > 0 ? '+' : swapDelta.delta < 0 ? '-' : ''}€{Math.abs(swapDelta.delta).toFixed(2)}
-                  </p>
-                  <p className="text-xs text-slate-500 mt-2">para {swapDelta.days} días restantes</p>
+                  <p className="text-sm font-medium text-slate-700 mb-2">🔄 Diferencia por Material</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-600">
+                      {swapDelta.isUpgrade ? 'Upgrade' : swapDelta.isDowngrade ? 'Downgrade' : 'Sin cambio'}
+                    </span>
+                    <p className={`text-2xl font-bold ${
+                      swapDelta.isUpgrade ? 'text-emerald-600' :
+                      swapDelta.isDowngrade ? 'text-red-600' :
+                      'text-slate-600'
+                    }`}>
+                      {swapDelta.delta > 0 ? '+' : swapDelta.delta < 0 ? '-' : ''}€{Math.abs(swapDelta.delta).toFixed(2)}
+                    </p>
+                  </div>
                 </div>
               )}
 
-              {/* DAYS ADJUSTMENT */}
-              {swapNewItem && swapOldItem && (
-                <div className="flex items-center gap-4">
-                  <div className="flex-1">
-                    <Label className="text-sm">Ajustar días (opcional)</Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={swapNewDays}
-                      onChange={handleSwapDaysChange}
-                      className="h-10 w-24"
-                    />
+              {/* ============ COMBINED TOTAL DELTA ============ */}
+              {(combinedDelta !== 0 || (swapDelta && swapDelta.delta !== 0) || dateDelta !== 0) && (
+                <div className={`p-5 rounded-xl border-2 ${
+                  combinedDelta > 0 ? 'bg-orange-50 border-orange-300' :
+                  combinedDelta < 0 ? 'bg-emerald-50 border-emerald-300' :
+                  'bg-slate-50 border-slate-200'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-700">
+                        {combinedDelta > 0 ? '⬆️ TOTAL A COBRAR' : 
+                         combinedDelta < 0 ? '⬇️ TOTAL A ABONAR' : 
+                         '↔️ SIN DIFERENCIA'}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {swapNewItem && swapOldItem && 'Cambio material'}
+                        {swapNewItem && swapOldItem && dateAdjustActive && dateDelta !== 0 && ' + '}
+                        {dateAdjustActive && dateDelta !== 0 && (dateDelta > 0 ? 'extensión' : 'reducción')}
+                      </p>
+                    </div>
+                    <p className={`text-3xl font-bold ${
+                      combinedDelta > 0 ? 'text-orange-600' :
+                      combinedDelta < 0 ? 'text-emerald-600' :
+                      'text-slate-500'
+                    }`}>
+                      {combinedDelta > 0 ? '+' : combinedDelta < 0 ? '-' : ''}€{Math.abs(combinedDelta).toFixed(2)}
+                    </p>
                   </div>
                   
-                  {/* Payment method if delta != 0 */}
-                  {swapDelta && swapDelta.delta !== 0 && (
-                    <div className="flex-1">
-                      <Label className="text-sm">Método de {swapDelta.isUpgrade ? 'cobro' : 'abono'}</Label>
-                      <div className="flex gap-2 mt-1">
+                  {/* Payment method selection */}
+                  {combinedDelta !== 0 && (
+                    <div className="mt-4 pt-4 border-t border-current/20">
+                      <Label className="text-sm mb-2 block">
+                        Método de {combinedDelta > 0 ? 'cobro' : 'abono'}
+                      </Label>
+                      <div className="flex gap-2">
                         <Button
                           variant={swapPaymentMethod === "cash" ? "default" : "outline"}
                           onClick={() => setSwapPaymentMethod("cash")}
@@ -1148,6 +1247,14 @@ export default function ActiveRentals() {
                           variant={swapPaymentMethod === "card" ? "default" : "outline"}
                           onClick={() => setSwapPaymentMethod("card")}
                           className="flex-1"
+                          size="sm"
+                        >
+                          <CreditCard className="h-4 w-4 mr-1" />
+                          Tarjeta
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                           size="sm"
                         >
                           <CreditCard className="h-4 w-4 mr-1" />
