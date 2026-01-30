@@ -585,15 +585,23 @@ export default function ActiveRentals() {
         start_date: rental.start_date,
         end_date: rental.end_date,
         days: rental.days,
-        total_amount: rental.total_amount
+        total_amount: rental.total_amount,
+        rental_history: [] // Will be loaded
       };
       
       if (rental.customer_id) {
         try {
+          // Load customer data
           const response = await axios.get(`${API}/customers/${rental.customer_id}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
           });
           customerData = { ...customerData, ...response.data, items: rental.items || [], rental_id: rental.id };
+          
+          // Load rental history for this customer
+          const historyResponse = await axios.get(`${API}/rentals?customer_id=${rental.customer_id}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          });
+          customerData.rental_history = historyResponse.data || [];
         } catch (e) {
           // Customer might not exist in database, use rental data
           console.log("Customer lookup failed, using rental data");
