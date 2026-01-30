@@ -1369,13 +1369,15 @@ export default function NewRental() {
       const totalPrice = item.customPrice || item.custom_price || (tariff ? tariff[dayField] : 0) || 0;
       
       const modelStr = `${item.brand || ''} ${item.model || ''}`.trim();
-      const sizeStr = item.size ? ` (${item.size})` : '';
-      const codeStr = item.internal_code ? ` [${item.internal_code}]` : '';
       
       ticketItems.push({
-        name: `${typeLabel} ${modelStr}${sizeStr}${codeStr}`.trim(),
+        name: `${typeLabel} ${modelStr}`.trim(),
+        size: item.size || '',
+        internal_code: item.internal_code || '',
+        item_type: item.item_type,
         days: days,
-        price: totalPrice
+        price: totalPrice,
+        subtotal: totalPrice
       });
     });
     
