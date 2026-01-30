@@ -457,6 +457,12 @@ export function SettingsProvider({ children }) {
     defaultVat, setDefaultVat,
     vatIncludedInPrices, setVatIncludedInPrices,
     calculateVat,
+
+    // Hardware
+    quickScanMode, setQuickScanMode,
+    paperWidth, setPaperWidth,
+    autoPrintOnPayment, setAutoPrintOnPayment,
+    printDoubleCopy, setPrintDoubleCopy,
   };
 
   return (
