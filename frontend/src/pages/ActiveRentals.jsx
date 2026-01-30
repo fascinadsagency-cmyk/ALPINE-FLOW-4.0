@@ -77,6 +77,16 @@ export default function ActiveRentals() {
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerLoading, setCustomerLoading] = useState(false);
+  
+  // Technical data editing state
+  const [editingTechnicalData, setEditingTechnicalData] = useState(false);
+  const [technicalDataForm, setTechnicalDataForm] = useState({
+    boot_size: "",
+    height: "",
+    weight: "",
+    ski_level: ""
+  });
+  const [savingTechnicalData, setSavingTechnicalData] = useState(false);
 
   // ============ UNIVERSAL SWAP MODAL STATE ============
   const [swapModalOpen, setSwapModalOpen] = useState(false);
