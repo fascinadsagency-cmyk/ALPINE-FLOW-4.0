@@ -51,6 +51,7 @@ import { toast } from "sonner";
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Dashboard() {
+  const { darkMode, t } = useSettings();
   const [data, setData] = useState(null);
   const [analytics, setAnalytics] = useState(null);
   const [returnsControl, setReturnsControl] = useState(null);
