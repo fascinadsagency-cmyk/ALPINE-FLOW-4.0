@@ -513,32 +513,56 @@ export default function ActiveRentals() {
 
     setSwapLoading(true);
     try {
-      const response = await axios.post(`${API}/rentals/${swapRental.id}/central-swap`, {
-        old_item_barcode: swapOldItem.barcode || swapOldItem.internal_code,
-        new_item_barcode: swapNewItem.barcode || swapNewItem.internal_code,
-        days_remaining: parseInt(swapNewDays) || swapDaysRemaining,
-        payment_method: swapPaymentMethod,
-        delta_amount: swapDelta?.delta || 0
-      }, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
+      // Process material swap if items are set
+      if (swapOldItem && swapNewItem) {
+        await axios.post(`${API}/rentals/${swapRental.id}/central-swap`, {
+          old_item_barcode: swapOldItem.barcode || swapOldItem.internal_code,
+          new_item_barcode: swapNewItem.barcode || swapNewItem.internal_code,
+          days_remaining: parseInt(swapNewDays) || swapDaysRemaining,
+          payment_method: swapPaymentMethod,
+          delta_amount: swapDelta?.delta || 0
+        }, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+      }
+
+      // Process date adjustment if active and has delta
+      if (dateAdjustActive && dateDelta !== 0) {
+        await axios.patch(`${API}/rentals/${swapRental.id}/modify-duration`, {
+          new_days: newTotalDays,
+          new_end_date: newEndDate,
+          new_total: swapRental.total_amount + dateDelta,
+          payment_method: swapPaymentMethod,
+          difference_amount: dateDelta
+        }, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+      }
 
       // Success
       setSwapComplete(true);
       
-      if (swapDelta?.isUpgrade) {
-        toast.success(`✅ Cambio completado. Suplemento: +€${swapDelta.delta.toFixed(2)}`);
-      } else if (swapDelta?.isDowngrade) {
-        toast.success(`✅ Cambio completado. Abono: -€${Math.abs(swapDelta.delta).toFixed(2)}`);
+      // Build success message
+      const materialMsg = (swapOldItem && swapNewItem) 
+        ? (swapDelta?.isUpgrade ? `Material: +€${swapDelta.delta.toFixed(2)}` : 
+           swapDelta?.isDowngrade ? `Material: -€${Math.abs(swapDelta.delta).toFixed(2)}` : 
+           'Material: sin cambio')
+        : '';
+      const dateMsg = (dateAdjustActive && dateDelta !== 0)
+        ? (dateDelta > 0 ? `Extensión: +€${dateDelta.toFixed(2)}` : `Reducción: €${dateDelta.toFixed(2)}`)
+        : '';
+      
+      if (combinedDelta !== 0) {
+        toast.success(`✅ Cambios completados. ${combinedDelta > 0 ? 'Total cobrado' : 'Total abonado'}: €${Math.abs(combinedDelta).toFixed(2)}`);
       } else {
-        toast.success("✅ Cambio completado sin diferencia de precio");
+        toast.success("✅ Cambios completados sin diferencia económica");
       }
 
       // Reload rentals
       loadActiveRentals();
 
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Error al procesar el cambio");
+      toast.error(error.response?.data?.detail || "Error al procesar los cambios");
     } finally {
       setSwapLoading(false);
     }
