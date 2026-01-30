@@ -114,9 +114,26 @@
     @apply bg-slate-400;
 }
 
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+    background-color: #1a1a1a;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background-color: #404040;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background-color: #555555;
+}
+
 /* Focus states */
 *:focus-visible {
     @apply outline-none ring-2 ring-primary ring-offset-2;
+}
+
+.dark *:focus-visible {
+    --tw-ring-offset-color: #121212;
 }
 
 /* Status colors */
@@ -134,6 +151,168 @@
 
 .status-retired {
     @apply bg-slate-100 text-slate-600 border-slate-200;
+}
+
+/* Dark mode status colors - Higher contrast */
+.dark .status-available {
+    @apply bg-emerald-900/50 text-emerald-300 border-emerald-700;
+}
+
+.dark .status-rented {
+    @apply bg-red-900/50 text-red-300 border-red-700;
+}
+
+.dark .status-maintenance {
+    @apply bg-amber-900/50 text-amber-300 border-amber-700;
+}
+
+.dark .status-retired {
+    @apply bg-slate-800 text-slate-400 border-slate-600;
+}
+
+/* ========== DARK MODE GLOBAL UTILITIES ========== */
+
+/* Dark mode backgrounds */
+.dark-bg-primary {
+    background-color: #121212;
+}
+
+.dark-bg-secondary {
+    background-color: #1a1a1a;
+}
+
+.dark-bg-card {
+    background-color: #1e1e1e;
+}
+
+/* Dark mode cards and containers */
+.dark .card-override,
+.dark [class*="bg-white"],
+.dark [class*="bg-slate-50"] {
+    background-color: #1a1a1a !important;
+}
+
+/* Dark mode text colors - ensure legibility */
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-slate-700 {
+    color: #f0f0f0 !important;
+}
+
+.dark .text-slate-600,
+.dark .text-slate-500 {
+    color: #a0a0a0 !important;
+}
+
+/* Dark mode borders */
+.dark .border-slate-200,
+.dark .border-slate-300 {
+    border-color: #333333 !important;
+}
+
+/* Dark mode inputs */
+.dark input,
+.dark textarea,
+.dark select {
+    background-color: #262626 !important;
+    border-color: #404040 !important;
+    color: #f0f0f0 !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+    color: #666666 !important;
+}
+
+/* Dark mode tables */
+.dark table {
+    background-color: #1a1a1a;
+}
+
+.dark th {
+    background-color: #262626 !important;
+    color: #e0e0e0 !important;
+    border-color: #404040 !important;
+}
+
+.dark td {
+    border-color: #333333 !important;
+    color: #e0e0e0 !important;
+}
+
+.dark tr:hover td {
+    background-color: #262626 !important;
+}
+
+/* Dark mode badges with high contrast */
+.dark .bg-emerald-100 {
+    background-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+.dark .bg-red-100 {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+.dark .bg-amber-100,
+.dark .bg-yellow-100 {
+    background-color: rgba(245, 158, 11, 0.2) !important;
+}
+
+.dark .bg-blue-100 {
+    background-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+.dark .bg-purple-100 {
+    background-color: rgba(139, 92, 246, 0.2) !important;
+}
+
+.dark .bg-slate-100 {
+    background-color: #262626 !important;
+}
+
+/* Dark mode text colors for badges - vibrant/neon */
+.dark .text-emerald-700,
+.dark .text-emerald-600 {
+    color: #34d399 !important;
+}
+
+.dark .text-red-700,
+.dark .text-red-600 {
+    color: #f87171 !important;
+}
+
+.dark .text-amber-700,
+.dark .text-amber-600,
+.dark .text-yellow-700 {
+    color: #fbbf24 !important;
+}
+
+.dark .text-blue-700,
+.dark .text-blue-600 {
+    color: #60a5fa !important;
+}
+
+.dark .text-purple-700,
+.dark .text-purple-600 {
+    color: #a78bfa !important;
+}
+
+/* Dark mode dialogs/modals */
+.dark [role="dialog"] {
+    background-color: #1a1a1a !important;
+    border-color: #333333 !important;
+}
+
+/* Dark mode buttons */
+.dark .btn-outline,
+.dark button[class*="variant-outline"] {
+    border-color: #404040;
+    color: #e0e0e0;
+}
+
+.dark .btn-outline:hover,
+.dark button[class*="variant-outline"]:hover {
+    background-color: #262626;
 }
 
 /* Animation classes */
