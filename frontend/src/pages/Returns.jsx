@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { rentalApi } from "@/lib/api";
 import axios from "axios";
 import { 
@@ -30,7 +31,13 @@ import {
   MessageCircle,
   ExternalLink,
   Package,
-  Filter
+  Filter,
+  ArrowLeftRight,
+  Scan,
+  CreditCard,
+  CheckCircle,
+  Printer,
+  CalendarPlus
 } from "lucide-react";
 import { toast } from "sonner";
 
