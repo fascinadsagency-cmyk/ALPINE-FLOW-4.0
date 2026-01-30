@@ -52,6 +52,12 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - Una sola fila por cliente/contrato
   - Badge "N art." con Popover para ver detalle de artículos
   - UI más limpia y profesional
+- ✅ **NUEVO: Buscador Global (Reverse Lookup - Scan-to-Action):**
+  - Barra de búsqueda prominente en Dashboard con auto-foco
+  - Escenario A (Escaneo artículo): Detecta cliente y abre modal de gestión automáticamente
+  - Escenario B (Nombre cliente): Busca cliente y muestra su alquiler activo
+  - Modal de gestión rápida permite: Cambiar material, Devolver artículo, Ajustar días
+  - Endpoint: GET /api/lookup/{code}
 
 ### 4. Sistema de Tickets/Comprobantes
 - ✅ Impresión de ticket de alquiler con desglose completo
