@@ -401,6 +401,24 @@ export function SettingsProvider({ children }) {
     localStorage.setItem('vat_included_in_prices', vatIncludedInPrices.toString());
   }, [vatIncludedInPrices]);
 
+  // Hardware - Scanner
+  useEffect(() => {
+    localStorage.setItem('quick_scan_mode', quickScanMode.toString());
+  }, [quickScanMode]);
+
+  // Hardware - Printer
+  useEffect(() => {
+    localStorage.setItem('paper_width', paperWidth);
+  }, [paperWidth]);
+
+  useEffect(() => {
+    localStorage.setItem('auto_print_on_payment', autoPrintOnPayment.toString());
+  }, [autoPrintOnPayment]);
+
+  useEffect(() => {
+    localStorage.setItem('print_double_copy', printDoubleCopy.toString());
+  }, [printDoubleCopy]);
+
   // Translation function
   const t = (key) => {
     return translations[language]?.[key] || translations['es'][key] || key;
