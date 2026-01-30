@@ -71,6 +71,23 @@ const translations = {
     "settings.autoPrint.disabled": "Los tickets requieren confirmación manual",
     "settings.autoPrint.tip": "Activa esta opción si tienes una impresora térmica conectada",
     
+    // Hardware section
+    "settings.hardware": "Hardware",
+    "settings.hardware.desc": "Configuración de escáner e impresora",
+    "settings.scanner": "Escáner / Pistola de Códigos",
+    "settings.scanner.quickMode": "Modo Escaneo Rápido",
+    "settings.scanner.quickMode.desc": "Añade el producto automáticamente al detectar un código exacto",
+    "settings.scanner.quickMode.disabled": "Solo busca el producto y espera confirmación manual",
+    "settings.printer": "Impresora",
+    "settings.printer.paperWidth": "Ancho de Papel",
+    "settings.printer.paperWidth.desc": "Selecciona el ancho del papel de tu impresora térmica",
+    "settings.printer.80mm": "80mm (Estándar)",
+    "settings.printer.58mm": "58mm (Estrecho)",
+    "settings.printer.autoPrint": "Auto-Imprimir",
+    "settings.printer.autoPrint.desc": "Abre el diálogo de impresión automáticamente al confirmar un pago",
+    "settings.printer.doubleCopy": "Imprimir Doble Copia",
+    "settings.printer.doubleCopy.desc": "Imprime dos tickets seguidos (Tienda y Cliente)",
+    
     // Common
     "common.cancel": "Cancelar",
     "common.save": "Guardar",
