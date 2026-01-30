@@ -631,8 +631,6 @@ export default function ActiveRentals() {
     window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
   };
 
-  const diffInfo = editingRental ? getDifferenceLabel() : null;
-
   return (
     <div className="p-6 lg:p-8" data-testid="active-rentals-page">
       {/* ============ STICKY HEADER WITH SEARCH & CAMBIOS BUTTON ============ */}
