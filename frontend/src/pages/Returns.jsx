@@ -419,261 +419,53 @@ export default function Returns() {
     }
   };
 
-  // Print regularization ticket - Using centralized template from Settings
+  // ============ IMPRIMIR TICKET DE REGULARIZACIÓN (USA GENERADOR MAESTRO) ============
   const printRegularizationTicket = () => {
     if (!changeRental) return;
     
     const itemsSwapped = changeItems.filter(i => i.isSwapping && i.swapNewItem);
     const hasDateChange = changeAdjustDate && changeDateDelta !== 0;
     
-    // Get stored settings for branding
-    const companyLogo = localStorage.getItem('companyLogo');
-    const ticketHeader = localStorage.getItem('ticketHeader') || 'TIENDA DE ALQUILER DE ESQUÍ';
-    const ticketFooter = localStorage.getItem('ticketFooter') || '¡Gracias por su visita!';
-    const showDniOnTicket = localStorage.getItem('showDniOnTicket') !== 'false';
+    // Preparar datos para el generador maestro
+    const ticketData = {
+      operationNumber: changeRental.operation_number || null,
+      date: new Date().toISOString(),
+      customer: changeRental.customer_name,
+      dni: changeRental.customer_dni,
+      contractId: changeRental.id,
+      // Items cambiados
+      oldItems: itemsSwapped.map(item => ({
+        name: `${item.internal_code || item.barcode} - ${item.item_type}`,
+        item_type: item.item_type
+      })),
+      newItems: itemsSwapped.map(item => ({
+        name: `${item.swapNewItem.internal_code || item.swapNewItem.barcode} - ${item.swapNewItem.item_type}`,
+        item_type: item.swapNewItem.item_type
+      })),
+      // Ajuste de fechas
+      dateAdjustment: hasDateChange,
+      originalDays: changeOriginalDays,
+      newDays: changeNewTotalDays,
+      daysDelta: changeDateDelta,
+      // Totales
+      materialDelta: materialDelta,
+      difference: changeTotalDelta,
+      paymentMethod: changePaymentMethod
+    };
     
-    const ticketWindow = window.open('', '_blank', 'width=320,height=700');
-    if (!ticketWindow) {
-      toast.error("No se pudo abrir la ventana de impresión");
-      return;
-    }
-    
-    const fmt = (v) => (v || 0).toFixed(2);
-    const now = new Date();
-    const printTime = now.toLocaleString('es-ES', { 
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
+    // Usar generador maestro
+    const success = printTicket({
+      ticketType: 'swap',
+      data: ticketData
     });
     
-    ticketWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Ticket de Regularización</title>
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { 
-            font-family: 'Consolas', 'Courier New', monospace; 
-            font-size: 11px; 
-            padding: 8px; 
-            width: 80mm; 
-            line-height: 1.4;
-            color: #000;
-          }
-          .logo { text-align: center; margin-bottom: 8px; }
-          .logo img { max-width: 50mm; max-height: 20mm; }
-          .header { text-align: center; margin-bottom: 10px; }
-          .header-business { font-size: 12px; font-weight: bold; margin-bottom: 8px; }
-          .header-title { 
-            font-size: 14px; 
-            font-weight: bold; 
-            letter-spacing: 1px;
-            padding: 6px 0;
-            background: #f97316;
-            color: white;
-            margin: 8px 0;
-          }
-          .separator { border: none; border-top: 1px dashed #000; margin: 10px 0; }
-          .separator-double { border: none; border-top: 2px solid #000; margin: 10px 0; }
-          .block { margin: 10px 0; }
-          .block-title { font-weight: bold; font-size: 11px; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
-          .row { display: flex; justify-content: space-between; margin: 4px 0; }
-          .row-value { font-weight: bold; }
-          .swap-item { 
-            padding: 6px; 
-            margin: 5px 0; 
-            background: #f5f5f5; 
-            border-radius: 4px; 
-            border-left: 3px solid #f97316;
-          }
-          .swap-arrow { color: #f97316; font-weight: bold; }
-          .delta-box {
-            text-align: center;
-            padding: 12px;
-            margin: 10px 0;
-            border: 2px solid #000;
-          }
-          .delta-positive { background: #dcfce7; border-color: #16a34a; }
-          .delta-negative { background: #fee2e2; border-color: #dc2626; }
-          .delta-zero { background: #f3f4f6; border-color: #6b7280; }
-          .delta-label { font-size: 10px; color: #666; margin-bottom: 4px; }
-          .delta-amount { font-size: 20px; font-weight: bold; }
-          .delta-positive .delta-amount { color: #16a34a; }
-          .delta-negative .delta-amount { color: #dc2626; }
-          .footer { text-align: center; margin-top: 15px; font-size: 9px; color: #333; }
-          /* ========== THERMAL PRINTER 80mm OPTIMIZATION ========== */
-          @page { 
-            size: 80mm auto; 
-            margin: 0; /* Elimina encabezados/pies del navegador */
-          }
-          @media print {
-            html, body {
-              width: 80mm !important;
-              max-width: 80mm !important;
-              margin: 0 !important;
-              padding: 2mm !important;
-              background: #ffffff !important;
-              color: #000000 !important;
-            }
-            * {
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-              color: #000000 !important;
-            }
-            .header-title {
-              background: transparent !important;
-              color: #000000 !important;
-              border: 2px solid #000000 !important;
-            }
-            .swap-item {
-              background: transparent !important;
-              border: 1px solid #000000 !important;
-              border-left: 3px solid #000000 !important;
-            }
-            .delta-box, .delta-positive, .delta-negative, .delta-zero {
-              background: transparent !important;
-              border: 2px solid #000000 !important;
-            }
-            .delta-amount, .delta-positive .delta-amount, .delta-negative .delta-amount {
-              color: #000000 !important;
-            }
-            .block, .row, .swap-item, tr, td {
-              page-break-inside: avoid !important;
-              break-inside: avoid !important;
-            }
-          }
-        </style>
-      </head>
-      <body>
-        <!-- CABECERA -->
-        ${companyLogo ? `
-        <div class="logo">
-          <img src="${companyLogo}" alt="Logo" />
-        </div>
-        ` : `
-        <div class="header">
-          <div class="header-business">${ticketHeader}</div>
-        </div>
-        `}
-        
-        <div class="header-title">TICKET DE REGULARIZACIÓN</div>
-        
-        <div style="text-align: center; font-size: 10px; margin-bottom: 10px;">
-          ${printTime}
-        </div>
-        
-        <hr class="separator" />
-        
-        <!-- BLOQUE A: DATOS DEL CLIENTE -->
-        <div class="block">
-          <div class="block-title">A. Datos del Cliente</div>
-          <div class="row">
-            <span>Cliente:</span>
-            <span class="row-value">${changeRental.customer_name}</span>
-          </div>
-          ${showDniOnTicket && changeRental.customer_dni ? `
-          <div class="row">
-            <span>DNI:</span>
-            <span class="row-value">${changeRental.customer_dni}</span>
-          </div>
-          ` : ''}
-          <div class="row">
-            <span>Contrato:</span>
-            <span class="row-value">#${changeRental.id?.substring(0, 8)}</span>
-          </div>
-        </div>
-        
-        <hr class="separator" />
-        
-        <!-- BLOQUE B: CAMBIOS REALIZADOS -->
-        <div class="block">
-          <div class="block-title">B. Cambios Realizados</div>
-          
-          ${hasDateChange ? `
-          <div style="margin: 8px 0; padding: 8px; background: #eff6ff; border-radius: 4px; border-left: 3px solid #2563eb;">
-            <div style="font-weight: bold; margin-bottom: 4px;">📅 Ajuste de Fecha</div>
-            <div class="row" style="font-size: 10px;">
-              <span>Días originales:</span>
-              <span>${changeOriginalDays}</span>
-            </div>
-            <div class="row" style="font-size: 10px;">
-              <span>Días nuevos:</span>
-              <span>${changeNewTotalDays}</span>
-            </div>
-            <div class="row" style="margin-top: 4px;">
-              <span>${changeDateDelta >= 0 ? 'Suplemento:' : 'Abono:'}</span>
-              <span class="row-value" style="color: ${changeDateDelta >= 0 ? '#16a34a' : '#dc2626'};">
-                ${changeDateDelta >= 0 ? '+' : ''}€${fmt(changeDateDelta)}
-              </span>
-            </div>
-          </div>
-          ` : ''}
-          
-          ${itemsSwapped.length > 0 ? `
-          <div style="margin-top: 8px;">
-            <div style="font-weight: bold; margin-bottom: 6px;">🔄 Cambio de Material (${itemsSwapped.length})</div>
-            ${itemsSwapped.map(item => `
-              <div class="swap-item">
-                <div>
-                  <span style="text-decoration: line-through; color: #999;">${item.internal_code || item.barcode}</span>
-                  <span class="swap-arrow"> → </span>
-                  <span style="font-weight: bold;">${item.swapNewItem.internal_code || item.swapNewItem.barcode}</span>
-                </div>
-                <div style="font-size: 10px; color: #666; margin-top: 2px;">
-                  ${item.item_type} | 
-                  <span style="color: ${item.swapDelta >= 0 ? '#16a34a' : '#dc2626'};">
-                    ${item.swapDelta >= 0 ? '+' : ''}€${fmt(item.swapDelta)}
-                  </span>
-                </div>
-              </div>
-            `).join('')}
-            <div class="row" style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed #ccc;">
-              <span>Subtotal material:</span>
-              <span class="row-value" style="color: ${materialDelta >= 0 ? '#16a34a' : '#dc2626'};">
-                ${materialDelta >= 0 ? '+' : ''}€${fmt(materialDelta)}
-              </span>
-            </div>
-          </div>
-          ` : ''}
-        </div>
-        
-        <hr class="separator" />
-        
-        <!-- BLOQUE C: RESULTADO -->
-        <div class="delta-box ${changeTotalDelta > 0 ? 'delta-positive' : changeTotalDelta < 0 ? 'delta-negative' : 'delta-zero'}">
-          <div class="delta-label">
-            ${changeTotalDelta > 0 ? 'TOTAL COBRADO' : changeTotalDelta < 0 ? 'TOTAL ABONADO' : 'SIN DIFERENCIA'}
-          </div>
-          <div class="delta-amount">
-            ${changeTotalDelta > 0 ? '+' : changeTotalDelta < 0 ? '-' : ''}€${fmt(Math.abs(changeTotalDelta))}
-          </div>
-          ${changeTotalDelta !== 0 ? `
-          <div style="font-size: 9px; margin-top: 4px; color: #666;">
-            Método: ${changePaymentMethod === 'cash' ? 'Efectivo' : 'Tarjeta'}
-          </div>
-          ` : ''}
-        </div>
-        
-        <hr class="separator-double" />
-        
-        <div class="footer">
-          ${ticketFooter}<br/>
-          ─────────────────────────<br/>
-          Conserve este comprobante
-        </div>
-        
-        <script>
-          window.onload = function() { window.print(); };
-        </script>
-      </body>
-      </html>
-    `);
-    ticketWindow.document.close();
+    if (!success) {
+      toast.error("No se pudo abrir ventana de impresión. Permite los popups.");
+    }
   };
 
-  // Print ticket for all changes - Using centralized template from Settings
+  // Print ticket for all changes - Uses centralized template
   const printMultiChangeTicket = () => {
-    // Same implementation as printRegularizationTicket (unified)
     printRegularizationTicket();
   };
 
