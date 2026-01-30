@@ -306,18 +306,9 @@ export default function CashRegister() {
     }
   };
 
+  // ============ IMPRIMIR TICKET DE CIERRE (USA GENERADOR MAESTRO) ============
   const printClosingTicket = (data) => {
-    const win = window.open('', '_blank', 'width=320,height=700');
-    if (!win) return;
-    
-    // Get stored settings for logo and branding
-    const companyLogo = localStorage.getItem('companyLogo');
-    const ticketHeader = localStorage.getItem('ticketHeader') || 'TIENDA DE ALQUILER DE ESQUÍ';
-    
-    // Format helper
-    const fmt = (v) => (v || 0).toFixed(2);
-    
-    // Calculate discrepancies using SAME logic as modal
+    // Calcular descuadres usando la misma lógica del modal
     const realCash = parseFloat(data.physical_cash) || 0;
     const realCard = parseFloat(data.card_total) || 0;
     const expectedCash = data.efectivo_esperado || 0;
@@ -326,295 +317,45 @@ export default function CashRegister() {
     const discCard = realCard - expectedCard;
     const discTotal = discCash + discCard;
     
-    // Current timestamp
-    const now = new Date();
-    const printTime = now.toLocaleString('es-ES', { 
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    // Preparar datos para el generador maestro
+    const ticketData = {
+      date: data.date,
+      closureNumber: data.closure_number || 1,
+      shiftNumber: data.closure_number || 1,
+      closedBy: data.closed_by || 'N/A',
+      openingBalance: data.opening_balance || 0,
+      totalIncome: data.ingresos_brutos || 0,
+      ingresosBrutos: data.ingresos_brutos || 0,
+      totalRefunds: data.total_salidas || 0,
+      totalExpense: 0, // gastos ya incluidos en total_salidas
+      devoluciones: data.total_salidas || 0,
+      gastos: 0,
+      netIncome: data.balance_neto_dia || 0,
+      balanceNeto: data.balance_neto_dia || 0,
+      expectedCash: expectedCash,
+      efectivoEsperado: expectedCash,
+      countedCash: realCash,
+      physicalCash: realCash,
+      expectedCard: expectedCard,
+      tarjetaEsperada: expectedCard,
+      countedCard: realCard,
+      cardTotal: realCard,
+      discrepancyCash: discCash,
+      discrepancyCard: discCard,
+      discrepancyTotal: discTotal,
+      totalOperations: data.movements_count || 0,
+      notes: data.notes
+    };
+    
+    // Usar generador maestro
+    const success = printTicket({
+      ticketType: 'closing',
+      data: ticketData
     });
     
-    win.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Cierre de Caja - ${data.date}</title>
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { 
-            font-family: 'Consolas', 'Courier New', monospace; 
-            font-size: 11px; 
-            padding: 8px; 
-            width: 80mm; 
-            line-height: 1.4;
-            color: #000;
-          }
-          .logo { text-align: center; margin-bottom: 8px; }
-          .logo img { max-width: 50mm; max-height: 20mm; }
-          .header { text-align: center; margin-bottom: 12px; }
-          .header-title { font-size: 14px; font-weight: bold; letter-spacing: 1px; }
-          .header-subtitle { font-size: 10px; margin-top: 4px; color: #333; }
-          .header-info { font-size: 10px; margin-top: 6px; }
-          
-          .separator { 
-            border: none; 
-            border-top: 1px dashed #000; 
-            margin: 10px 0; 
-          }
-          .separator-double { 
-            border: none; 
-            border-top: 2px solid #000; 
-            margin: 10px 0; 
-          }
-          
-          .block { margin: 10px 0; }
-          .block-title { 
-            font-weight: bold; 
-            font-size: 11px; 
-            text-transform: uppercase; 
-            margin-bottom: 6px;
-            letter-spacing: 0.5px;
-          }
-          
-          .row { 
-            display: flex; 
-            justify-content: space-between; 
-            margin: 4px 0; 
-          }
-          .row-label { }
-          .row-value { font-weight: bold; text-align: right; }
-          
-          .row-total {
-            display: flex; 
-            justify-content: space-between;
-            font-size: 13px;
-            font-weight: bold;
-            padding: 6px 0;
-            margin: 6px 0;
-            border-top: 1px solid #000;
-            border-bottom: 1px solid #000;
-          }
-          
-          .highlight-box {
-            background: #f0f0f0;
-            padding: 8px;
-            margin: 8px 0;
-            border: 1px solid #000;
-          }
-          .highlight-box .row { margin: 3px 0; }
-          
-          .green { color: #000; }
-          .red { color: #000; }
-          .bold { font-weight: bold; }
-          
-          .result-box {
-            border: 2px solid #000;
-            padding: 10px;
-            margin: 10px 0;
-            text-align: center;
-          }
-          .result-label { font-size: 10px; margin-bottom: 4px; }
-          .result-value { font-size: 16px; font-weight: bold; }
-          
-          .footer { 
-            text-align: center; 
-            margin-top: 15px; 
-            font-size: 9px; 
-            color: #333; 
-          }
-          
-          /* ========== THERMAL PRINTER 80mm OPTIMIZATION ========== */
-          @page { 
-            size: 80mm auto; 
-            margin: 0; /* Elimina encabezados/pies del navegador */
-          }
-          @media print {
-            html, body {
-              width: 80mm !important;
-              max-width: 80mm !important;
-              margin: 0 !important;
-              padding: 2mm !important;
-              background: #ffffff !important;
-              color: #000000 !important;
-            }
-            * {
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-              color: #000000 !important;
-            }
-            .logo, .header, .block, .row, .highlight-box, .result-box, tr, td {
-              page-break-inside: avoid !important;
-              break-inside: avoid !important;
-            }
-            .highlight-box {
-              background: transparent !important;
-              border: 1px solid #000000 !important;
-            }
-            .result-box {
-              background: transparent !important;
-              border: 2px solid #000000 !important;
-            }
-            .green, .red {
-              color: #000000 !important;
-            }
-          }
-        </style>
-      </head>
-      <body>
-        <!-- ========== CABECERA ========== -->
-        ${companyLogo ? `
-        <div class="logo">
-          <img src="${companyLogo}" alt="Logo" />
-        </div>
-        ` : `
-        <div class="header">
-          <div style="font-size: 12px; font-weight: bold;">${ticketHeader}</div>
-        </div>
-        `}
-        
-        <div class="header">
-          <div class="header-title">CIERRE DE CAJA</div>
-          <div class="header-subtitle">${data.date} - Turno #${data.closure_number || 1}</div>
-          <div class="header-info">
-            Impreso: ${printTime}<br/>
-            Responsable: ${data.closed_by || 'N/A'}
-          </div>
-        </div>
-        
-        <hr class="separator-double" />
-        
-        <!-- ========== BLOQUE A: RESUMEN ECONÓMICO ========== -->
-        <div class="block">
-          <div class="block-title">A. RESUMEN ECONÓMICO</div>
-          
-          <div class="row">
-            <span class="row-label">(+) Fondo Caja Inicial:</span>
-            <span class="row-value">€${fmt(data.opening_balance)}</span>
-          </div>
-          <div class="row">
-            <span class="row-label">(+) Ventas Brutas:</span>
-            <span class="row-value">€${fmt(data.ingresos_brutos)}</span>
-          </div>
-          <div class="row">
-            <span class="row-label">(-) Devoluciones/Abonos:</span>
-            <span class="row-value">€${fmt(data.total_salidas)}</span>
-          </div>
-          
-          <div class="row-total">
-            <span>(=) INGRESO NETO REAL:</span>
-            <span>€${fmt(data.balance_neto_dia)}</span>
-          </div>
-        </div>
-        
-        <hr class="separator" />
-        
-        <!-- ========== BLOQUE B: DESGLOSE DE ARQUEO ========== -->
-        <div class="block">
-          <div class="block-title">B. DESGLOSE DE ARQUEO</div>
-          
-          <div class="highlight-box">
-            <div style="font-weight: bold; margin-bottom: 6px;">EFECTIVO</div>
-            <div class="row">
-              <span>Fondo inicial:</span>
-              <span>€${fmt(data.opening_balance)}</span>
-            </div>
-            <div class="row">
-              <span>+ Ventas efectivo:</span>
-              <span>€${fmt(data.by_payment_method?.cash?.income || 0)}</span>
-            </div>
-            <div class="row">
-              <span>- Salidas efectivo:</span>
-              <span>€${fmt((data.by_payment_method?.cash?.expense || 0) + (data.by_payment_method?.cash?.refund || 0))}</span>
-            </div>
-            <div class="row" style="border-top: 1px dashed #000; padding-top: 4px; margin-top: 4px;">
-              <span class="bold">ESPERADO EN CAJÓN:</span>
-              <span class="bold">€${fmt(expectedCash)}</span>
-            </div>
-            <div class="row">
-              <span>Contado físico:</span>
-              <span class="bold">€${fmt(realCash)}</span>
-            </div>
-            <div class="row">
-              <span>Descuadre:</span>
-              <span class="bold ${discCash === 0 ? 'green' : 'red'}">${discCash >= 0 ? '+' : ''}€${fmt(discCash)}</span>
-            </div>
-          </div>
-          
-          <div class="highlight-box">
-            <div style="font-weight: bold; margin-bottom: 6px;">TARJETA</div>
-            <div class="row">
-              <span>+ Ventas tarjeta:</span>
-              <span>€${fmt(data.by_payment_method?.card?.income || 0)}</span>
-            </div>
-            <div class="row">
-              <span>- Salidas tarjeta:</span>
-              <span>€${fmt((data.by_payment_method?.card?.expense || 0) + (data.by_payment_method?.card?.refund || 0))}</span>
-            </div>
-            <div class="row" style="border-top: 1px dashed #000; padding-top: 4px; margin-top: 4px;">
-              <span class="bold">TOTAL TARJETA:</span>
-              <span class="bold">€${fmt(expectedCard)}</span>
-            </div>
-            <div class="row">
-              <span>En datáfono:</span>
-              <span class="bold">€${fmt(realCard)}</span>
-            </div>
-            <div class="row">
-              <span>Descuadre:</span>
-              <span class="bold ${discCard === 0 ? 'green' : 'red'}">${discCard >= 0 ? '+' : ''}€${fmt(discCard)}</span>
-            </div>
-          </div>
-        </div>
-        
-        <hr class="separator" />
-        
-        <!-- ========== BLOQUE C: ESTADÍSTICAS OPERATIVAS ========== -->
-        <div class="block">
-          <div class="block-title">C. ESTADÍSTICAS OPERATIVAS</div>
-          <div class="row">
-            <span>Nº de Operaciones:</span>
-            <span class="bold">${data.movements_count || 0}</span>
-          </div>
-        </div>
-        
-        <hr class="separator" />
-        
-        <!-- ========== RESULTADO FINAL ========== -->
-        <div class="result-box">
-          <div class="result-label">DESCUADRE TOTAL</div>
-          <div class="result-value ${discTotal === 0 ? 'green' : 'red'}">
-            ${discTotal >= 0 ? '+' : ''}€${fmt(discTotal)}
-          </div>
-          <div style="font-size: 9px; margin-top: 4px;">
-            ${Math.abs(discTotal) < 0.01 ? '✓ CUADRADO' : discTotal > 0 ? '↑ SOBRANTE' : '↓ FALTANTE'}
-          </div>
-        </div>
-        
-        ${data.notes ? `
-        <div class="block">
-          <div class="block-title">OBSERVACIONES</div>
-          <div style="font-size: 10px; padding: 4px; background: #f9f9f9; border: 1px dashed #ccc;">
-            ${data.notes}
-          </div>
-        </div>
-        ` : ''}
-        
-        <hr class="separator-double" />
-        
-        <div class="footer">
-          ─────────────────────────<br/>
-          DOCUMENTO DE CIERRE DE CAJA<br/>
-          Conservar con la recaudación<br/>
-          ─────────────────────────
-        </div>
-        
-        <script>
-          window.onload = function() {
-            window.print();
-          };
-        </script>
-      </body>
-      </html>
-    `);
-    win.document.close();
+    if (!success) {
+      toast.error("No se pudo abrir ventana de impresión. Permite los popups.");
+    }
   };
 
   const confirmRevertClosure = async () => {
