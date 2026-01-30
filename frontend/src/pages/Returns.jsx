@@ -1027,20 +1027,22 @@ export default function Returns() {
                                 DEVOLUCIÓN RÁPIDA
                               </Button>
                               <Button 
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openChangeModal(rental, rental.pending_items?.[0])}
+                                className="gap-1 border-orange-300 text-orange-700 hover:bg-orange-50 font-semibold"
+                                data-testid={`change-btn-${rental.id}`}
+                              >
+                                <ArrowLeftRight className="h-4 w-4" />
+                                CAMBIO
+                              </Button>
+                              <Button 
                                 variant="outline" 
                                 size="sm"
                                 onClick={() => openCustomerModal(rental)}
                                 className="gap-1"
                               >
                                 <User className="h-3 w-3" />
-                                Ficha
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => loadRentalById(rental.id)}
-                              >
-                                Ver
                               </Button>
                             </div>
                           </div>
