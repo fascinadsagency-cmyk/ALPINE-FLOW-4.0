@@ -1966,34 +1966,16 @@ export default function ActiveRentals() {
                 </CardContent>
               </Card>
 
-              {/* ===== SECTION 5: PREFERRED SIZES (if available) ===== */}
-              {selectedCustomer.customerHistory?.preferred_sizes && 
-               Object.keys(selectedCustomer.customerHistory.preferred_sizes).length > 0 && (
-                <Card className="border-slate-200">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Star className="h-5 w-5 text-amber-500" />
-                      Tallas Preferidas
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {Object.entries(selectedCustomer.customerHistory.preferred_sizes).map(([type, sizes]) => (
-                        <Badge key={type} variant="outline" className="text-sm py-1 px-3">
-                          {type}: {Array.isArray(sizes) ? sizes.join(", ") : sizes}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
             </div>
           )}
 
           <DialogFooter className="flex gap-2 pt-4 border-t">
             <Button 
               variant="outline" 
-              onClick={() => setShowCustomerModal(false)}
+              onClick={() => {
+                setShowCustomerModal(false);
+                setEditingTechnicalData(false);
+              }}
               data-testid="close-customer-modal-btn"
             >
               Cerrar
