@@ -1672,7 +1672,7 @@ export default function Returns() {
               Gestión de Contrato Completo
             </DialogTitle>
             <DialogDescription>
-              Gestiona todos los artículos del cliente - Cambios masivos y prórroga
+              Gestiona todos los artículos del cliente - Cambios de material y ajuste de fecha
             </DialogDescription>
           </DialogHeader>
           
