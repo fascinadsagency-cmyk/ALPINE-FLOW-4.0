@@ -185,152 +185,145 @@
 
 /* ========== DARK MODE GLOBAL UTILITIES ========== */
 
-/* Force dark background on main containers */
-.dark main,
-.dark [data-testid] {
+/* Main containers force dark */
+html.dark body,
+html.dark main,
+html.dark #root {
+    background-color: #121212 !important;
+    color: #f0f0f0 !important;
+}
+
+/* Force dark background on page containers */
+html.dark .p-6,
+html.dark .p-8,
+html.dark [data-testid] {
     background-color: #121212 !important;
 }
 
-/* Dark mode backgrounds */
-.dark-bg-primary {
-    background-color: #121212;
-}
-
-.dark-bg-secondary {
-    background-color: #1a1a1a;
-}
-
-.dark-bg-card {
-    background-color: #1e1e1e;
-}
-
-/* Dark mode cards and containers - More aggressive targeting */
-.dark .card-override,
-.dark [class*="bg-white"]:not(button):not([role="dialog"] *),
-.dark [class*="bg-slate-50"]:not(button) {
-    background-color: #1a1a1a !important;
-}
-
-/* Preserve white text on primary buttons */
-.dark button[class*="bg-primary"] {
-    color: white !important;
-}
-
-/* Dark mode page containers */
-.dark .p-6,
-.dark .p-8 {
-    background-color: #121212;
-}
-
-/* Dark mode borders */
-.dark .border-slate-200,
-.dark .border-slate-300 {
+/* Dark mode cards */
+html.dark [class*="border-slate-200"],
+html.dark [class*="border-slate-100"] {
     border-color: #333333 !important;
 }
 
+html.dark .bg-white,
+html.dark [class*="bg-white"],
+html.dark .bg-slate-50,
+html.dark [class*="bg-slate-50"] {
+    background-color: #1a1a1a !important;
+}
+
+/* Card component specific */
+html.dark [class*="CardContent"],
+html.dark [class*="card-content"],
+html.dark [class*="Card"] {
+    background-color: #1a1a1a !important;
+}
+
+/* Dark mode text colors */
+html.dark .text-slate-900 { color: #f0f0f0 !important; }
+html.dark .text-slate-800 { color: #e8e8e8 !important; }
+html.dark .text-slate-700 { color: #d0d0d0 !important; }
+html.dark .text-slate-600 { color: #b0b0b0 !important; }
+html.dark .text-slate-500 { color: #909090 !important; }
+
+/* Preserve button colors */
+html.dark button[class*="bg-blue"],
+html.dark button[class*="bg-primary"],
+html.dark button[class*="bg-emerald"],
+html.dark button[class*="bg-green"],
+html.dark button[class*="bg-orange"],
+html.dark button[class*="bg-red"] {
+    color: white !important;
+}
+
 /* Dark mode inputs */
-.dark input,
-.dark textarea,
-.dark select {
+html.dark input,
+html.dark textarea,
+html.dark select,
+html.dark [role="combobox"] {
     background-color: #262626 !important;
     border-color: #404040 !important;
     color: #f0f0f0 !important;
 }
 
-.dark input::placeholder,
-.dark textarea::placeholder {
+html.dark input::placeholder,
+html.dark textarea::placeholder {
     color: #666666 !important;
 }
 
 /* Dark mode tables */
-.dark table {
-    background-color: #1a1a1a;
+html.dark table {
+    background-color: #1a1a1a !important;
 }
 
-.dark th {
+html.dark th {
     background-color: #262626 !important;
     color: #e0e0e0 !important;
     border-color: #404040 !important;
 }
 
-.dark td {
+html.dark td {
     border-color: #333333 !important;
+    color: #e0e0e0 !important;
+    background-color: transparent !important;
+}
+
+html.dark tbody tr:hover td {
+    background-color: #262626 !important;
+}
+
+/* Dark mode badges - Vibrant colors */
+html.dark .bg-emerald-100 { background-color: rgba(16, 185, 129, 0.2) !important; }
+html.dark .bg-red-100 { background-color: rgba(239, 68, 68, 0.2) !important; }
+html.dark .bg-amber-100,
+html.dark .bg-yellow-100 { background-color: rgba(245, 158, 11, 0.2) !important; }
+html.dark .bg-blue-100 { background-color: rgba(59, 130, 246, 0.2) !important; }
+html.dark .bg-purple-100 { background-color: rgba(139, 92, 246, 0.2) !important; }
+html.dark .bg-slate-100 { background-color: #262626 !important; }
+
+/* Dark mode text for badges - Neon/vibrant */
+html.dark .text-emerald-700,
+html.dark .text-emerald-600 { color: #34d399 !important; }
+html.dark .text-red-700,
+html.dark .text-red-600 { color: #f87171 !important; }
+html.dark .text-amber-700,
+html.dark .text-amber-600,
+html.dark .text-yellow-700 { color: #fbbf24 !important; }
+html.dark .text-blue-700,
+html.dark .text-blue-600 { color: #60a5fa !important; }
+html.dark .text-purple-700,
+html.dark .text-purple-600 { color: #a78bfa !important; }
+
+/* Dark mode dialogs/modals */
+html.dark [role="dialog"],
+html.dark [class*="DialogContent"] {
+    background-color: #1e1e1e !important;
+    border-color: #404040 !important;
+}
+
+/* Dark mode popovers and dropdowns */
+html.dark [role="listbox"],
+html.dark [role="menu"],
+html.dark [class*="SelectContent"],
+html.dark [class*="PopoverContent"] {
+    background-color: #262626 !important;
+    border-color: #404040 !important;
+}
+
+html.dark [role="option"],
+html.dark [role="menuitem"] {
     color: #e0e0e0 !important;
 }
 
-.dark tr:hover td {
-    background-color: #262626 !important;
+html.dark [role="option"]:hover,
+html.dark [role="menuitem"]:hover {
+    background-color: #333333 !important;
 }
 
-/* Dark mode badges with high contrast */
-.dark .bg-emerald-100 {
-    background-color: rgba(16, 185, 129, 0.2) !important;
-}
-
-.dark .bg-red-100 {
-    background-color: rgba(239, 68, 68, 0.2) !important;
-}
-
-.dark .bg-amber-100,
-.dark .bg-yellow-100 {
-    background-color: rgba(245, 158, 11, 0.2) !important;
-}
-
-.dark .bg-blue-100 {
-    background-color: rgba(59, 130, 246, 0.2) !important;
-}
-
-.dark .bg-purple-100 {
-    background-color: rgba(139, 92, 246, 0.2) !important;
-}
-
-.dark .bg-slate-100 {
-    background-color: #262626 !important;
-}
-
-/* Dark mode text colors for badges - vibrant/neon */
-.dark .text-emerald-700,
-.dark .text-emerald-600 {
-    color: #34d399 !important;
-}
-
-.dark .text-red-700,
-.dark .text-red-600 {
-    color: #f87171 !important;
-}
-
-.dark .text-amber-700,
-.dark .text-amber-600,
-.dark .text-yellow-700 {
-    color: #fbbf24 !important;
-}
-
-.dark .text-blue-700,
-.dark .text-blue-600 {
-    color: #60a5fa !important;
-}
-
-.dark .text-purple-700,
-.dark .text-purple-600 {
-    color: #a78bfa !important;
-}
-
-/* Dark mode dialogs/modals */
-.dark [role="dialog"] {
-    background-color: #1a1a1a !important;
-    border-color: #333333 !important;
-}
-
-/* Dark mode buttons */
-.dark .btn-outline,
-.dark button[class*="variant-outline"] {
-    border-color: #404040;
-    color: #e0e0e0;
-}
-
-.dark .btn-outline:hover,
-.dark button[class*="variant-outline"]:hover {
-    background-color: #262626;
+/* Sticky headers in dark mode */
+html.dark .sticky {
+    background-color: #121212 !important;
 }
 
 /* Animation classes */
