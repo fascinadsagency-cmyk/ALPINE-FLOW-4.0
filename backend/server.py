@@ -3084,6 +3084,203 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
         "inventory": inventory
     }
 
+# ==================== GLOBAL LOOKUP / REVERSE SEARCH ====================
+
+@api_router.get("/lookup/{code}")
+async def global_lookup(code: str, current_user: dict = Depends(get_current_user)):
+    """
+    GLOBAL REVERSE LOOKUP - Scan-to-Action
+    
+    Searches for a code (item barcode/internal_code or customer name) and returns:
+    - If it's an item currently rented: returns the rental info + customer + item details
+    - If it's a customer name: returns matching customers with their active rentals
+    
+    This enables the "scan the ski and get the customer" workflow.
+    """
+    code_upper = code.strip().upper()
+    code_lower = code.strip().lower()
+    
+    results = {
+        "found": False,
+        "type": None,  # "rented_item", "available_item", "customer", "multiple_customers"
+        "rental": None,
+        "customer": None,
+        "item": None,
+        "customers": [],
+        "message": ""
+    }
+    
+    # STEP 1: Check if it's an item barcode/internal_code
+    # Search in items collection
+    item = await db.items.find_one({
+        "$or": [
+            {"barcode": {"$regex": f"^{code}$", "$options": "i"}},
+            {"internal_code": {"$regex": f"^{code}$", "$options": "i"}}
+        ]
+    }, {"_id": 0})
+    
+    if item:
+        # Found an item - check if it's currently rented
+        if item.get("status") == "rented":
+            # Find the active rental that contains this item
+            rental = await db.rentals.find_one({
+                "status": {"$in": ["active", "partial"]},
+                "$or": [
+                    {"items.barcode": {"$regex": f"^{code}$", "$options": "i"}},
+                    {"items.internal_code": {"$regex": f"^{code}$", "$options": "i"}}
+                ]
+            }, {"_id": 0})
+            
+            if rental:
+                # Find the specific item in the rental
+                rented_item = None
+                for ri in rental.get("items", []):
+                    if not ri.get("returned"):
+                        ri_barcode = (ri.get("barcode") or "").upper()
+                        ri_internal = (ri.get("internal_code") or "").upper()
+                        if ri_barcode == code_upper or ri_internal == code_upper:
+                            rented_item = ri
+                            break
+                
+                # Get customer details
+                customer = None
+                if rental.get("customer_id"):
+                    customer = await db.customers.find_one(
+                        {"id": rental["customer_id"]}, 
+                        {"_id": 0}
+                    )
+                
+                # Calculate days remaining
+                try:
+                    end_date = datetime.strptime(rental.get("end_date", "")[:10], "%Y-%m-%d")
+                    today = datetime.now()
+                    days_remaining = max(0, (end_date - today).days + 1)
+                except:
+                    days_remaining = rental.get("days", 0)
+                
+                results["found"] = True
+                results["type"] = "rented_item"
+                results["rental"] = {
+                    "id": rental["id"],
+                    "customer_name": rental.get("customer_name"),
+                    "customer_dni": rental.get("customer_dni"),
+                    "customer_phone": rental.get("customer_phone"),
+                    "start_date": rental.get("start_date"),
+                    "end_date": rental.get("end_date"),
+                    "days": rental.get("days"),
+                    "days_remaining": days_remaining,
+                    "total_amount": rental.get("total_amount"),
+                    "pending_amount": rental.get("pending_amount", 0),
+                    "items": [i for i in rental.get("items", []) if not i.get("returned")],
+                    "item_count": len([i for i in rental.get("items", []) if not i.get("returned")])
+                }
+                results["customer"] = customer
+                results["item"] = {
+                    "id": item.get("id"),
+                    "barcode": item.get("barcode"),
+                    "internal_code": item.get("internal_code"),
+                    "item_type": item.get("item_type"),
+                    "brand": item.get("brand"),
+                    "model": item.get("model"),
+                    "size": item.get("size"),
+                    "category": item.get("category", "MEDIA"),
+                    "rental_item_data": rented_item
+                }
+                results["message"] = f"Artículo alquilado por {rental.get('customer_name')}"
+                return results
+        
+        # Item exists but is not rented
+        results["found"] = True
+        results["type"] = "available_item"
+        results["item"] = {
+            "id": item.get("id"),
+            "barcode": item.get("barcode"),
+            "internal_code": item.get("internal_code"),
+            "item_type": item.get("item_type"),
+            "brand": item.get("brand"),
+            "model": item.get("model"),
+            "size": item.get("size"),
+            "status": item.get("status"),
+            "category": item.get("category", "MEDIA")
+        }
+        results["message"] = f"Artículo disponible ({item.get('status')})"
+        return results
+    
+    # STEP 2: Check if it's a customer name/DNI search
+    customers = await db.customers.find({
+        "$or": [
+            {"name": {"$regex": code, "$options": "i"}},
+            {"dni": {"$regex": f"^{code}$", "$options": "i"}}
+        ]
+    }, {"_id": 0}).to_list(10)
+    
+    if customers:
+        # Find active rentals for these customers
+        customers_with_rentals = []
+        
+        for customer in customers:
+            # Check for active rentals
+            active_rental = await db.rentals.find_one({
+                "status": {"$in": ["active", "partial"]},
+                "$or": [
+                    {"customer_id": customer.get("id")},
+                    {"customer_dni": {"$regex": f"^{customer.get('dni')}$", "$options": "i"}}
+                ]
+            }, {"_id": 0})
+            
+            if active_rental:
+                # Calculate days remaining
+                try:
+                    end_date = datetime.strptime(active_rental.get("end_date", "")[:10], "%Y-%m-%d")
+                    today = datetime.now()
+                    days_remaining = max(0, (end_date - today).days + 1)
+                except:
+                    days_remaining = active_rental.get("days", 0)
+                
+                customers_with_rentals.append({
+                    "customer": customer,
+                    "rental": {
+                        "id": active_rental["id"],
+                        "customer_name": active_rental.get("customer_name"),
+                        "customer_dni": active_rental.get("customer_dni"),
+                        "start_date": active_rental.get("start_date"),
+                        "end_date": active_rental.get("end_date"),
+                        "days": active_rental.get("days"),
+                        "days_remaining": days_remaining,
+                        "total_amount": active_rental.get("total_amount"),
+                        "pending_amount": active_rental.get("pending_amount", 0),
+                        "items": [i for i in active_rental.get("items", []) if not i.get("returned")],
+                        "item_count": len([i for i in active_rental.get("items", []) if not i.get("returned")])
+                    }
+                })
+        
+        if len(customers_with_rentals) == 1:
+            # Single customer with active rental
+            results["found"] = True
+            results["type"] = "customer"
+            results["customer"] = customers_with_rentals[0]["customer"]
+            results["rental"] = customers_with_rentals[0]["rental"]
+            results["message"] = f"Cliente encontrado: {customers_with_rentals[0]['customer'].get('name')}"
+        elif len(customers_with_rentals) > 1:
+            # Multiple customers found
+            results["found"] = True
+            results["type"] = "multiple_customers"
+            results["customers"] = customers_with_rentals
+            results["message"] = f"{len(customers_with_rentals)} clientes encontrados con alquileres activos"
+        else:
+            # Customers found but no active rentals
+            results["found"] = True
+            results["type"] = "customer_no_rental"
+            results["customers"] = [{"customer": c, "rental": None} for c in customers]
+            results["message"] = f"{len(customers)} cliente(s) encontrado(s) sin alquileres activos"
+        
+        return results
+    
+    # Nothing found
+    results["message"] = f"No se encontró ningún artículo ni cliente con '{code}'"
+    return results
+
+
 # ==================== DASHBOARD ROUTES ====================
 
 @api_router.get("/dashboard")
