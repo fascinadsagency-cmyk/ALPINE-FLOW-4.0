@@ -49,7 +49,12 @@ export default function Settings() {
     showVatOnTicket, setShowVatOnTicket,
     defaultVat, setDefaultVat,
     vatIncludedInPrices, setVatIncludedInPrices,
-    calculateVat
+    calculateVat,
+    // Hardware
+    quickScanMode, setQuickScanMode,
+    paperWidth, setPaperWidth,
+    autoPrintOnPayment, setAutoPrintOnPayment,
+    printDoubleCopy, setPrintDoubleCopy
   } = useSettings();
   
   const [saving, setSaving] = useState(false);
