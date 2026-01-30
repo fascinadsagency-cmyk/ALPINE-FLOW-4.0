@@ -188,15 +188,19 @@
 /* Main containers force dark */
 html.dark body,
 html.dark main,
-html.dark #root {
+html.dark #root,
+html.dark #root > div {
     background-color: #121212 !important;
     color: #f0f0f0 !important;
 }
 
-/* Force dark background on page containers */
+/* Force dark background on ALL page containers */
 html.dark .p-6,
 html.dark .p-8,
-html.dark [data-testid] {
+html.dark [data-testid],
+html.dark .min-h-screen,
+html.dark main > div,
+html.dark [class*="bg-slate-50"]:not([role="dialog"] *):not(button) {
     background-color: #121212 !important;
 }
 
