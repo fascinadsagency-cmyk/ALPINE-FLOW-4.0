@@ -621,6 +621,7 @@ export default function NewRental() {
     setSearchTerm("");
     setShowSuggestions(false);
     setSelectedIndex(-1);
+    setShowCustomerTechData(false); // Reset tech data visibility
     
     // Load history with alerts
     try {
