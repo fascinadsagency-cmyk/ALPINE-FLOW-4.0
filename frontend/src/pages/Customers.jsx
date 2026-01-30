@@ -287,7 +287,11 @@ export default function Customers() {
       address: "",
       city: "",
       source: "",
-      notes: ""
+      notes: "",
+      boot_size: "",
+      height: "",
+      weight: "",
+      ski_level: ""
     });
   };
 
