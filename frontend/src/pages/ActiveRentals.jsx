@@ -825,13 +825,68 @@ export default function ActiveRentals() {
 
   return (
     <div className="p-6 lg:p-8" data-testid="active-rentals-page">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans' }}>
-          Alquileres Activos
-        </h1>
-        <Badge variant="outline" className="w-fit">
-          {rentals.length} alquileres activos
-        </Badge>
+      {/* ============ STICKY HEADER WITH SEARCH & CAMBIOS BUTTON ============ */}
+      <div className="sticky top-0 z-20 bg-white pb-4 -mx-6 px-6 lg:-mx-8 lg:px-8 pt-2 border-b border-slate-200 shadow-sm mb-6">
+        <div className="flex flex-col gap-4">
+          {/* Title row */}
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+              Alquileres Activos
+            </h1>
+            <Badge variant="outline" className="shrink-0">
+              {filteredRentals.length} de {rentals.length}
+            </Badge>
+          </div>
+          
+          {/* Search bar + CAMBIOS button */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Smart Search Input */}
+            <div className="flex-1 relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2 text-slate-400">
+                <Scan className="h-5 w-5" />
+              </div>
+              <Input
+                ref={searchInputRef}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value.toUpperCase())}
+                onKeyDown={handleSearchKeyDown}
+                placeholder="Escanea código o escribe nombre del cliente..."
+                className="h-12 pl-12 pr-12 text-base font-mono bg-slate-50 border-2 border-slate-200 focus:border-blue-400 focus:bg-white rounded-xl"
+                data-testid="smart-search-input"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
+                  onClick={() => setSearchQuery("")}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+              {searchLoading && (
+                <div className="absolute right-12 top-1/2 -translate-y-1/2">
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                </div>
+              )}
+            </div>
+            
+            {/* CAMBIOS Button - Prominent */}
+            <Button
+              onClick={openSwapModalBlank}
+              className="h-12 px-6 bg-orange-500 hover:bg-orange-600 text-white font-bold text-base shadow-lg hover:shadow-xl transition-all shrink-0"
+              data-testid="cambios-btn"
+            >
+              <RefreshCw className="h-5 w-5 mr-2" />
+              CAMBIOS
+            </Button>
+          </div>
+          
+          {/* Quick help text */}
+          <p className="text-xs text-slate-500">
+            💡 Escanea un artículo para identificar al cliente automáticamente, o pulsa <strong>CAMBIOS</strong> para abrir el gestor manualmente
+          </p>
+        </div>
       </div>
 
       <Card className="border-slate-200">
@@ -846,10 +901,15 @@ export default function ActiveRentals() {
             <div className="flex justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-          ) : rentals.length === 0 ? (
+          ) : filteredRentals.length === 0 ? (
             <div className="text-center py-12 text-slate-500">
               <ShoppingCart className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>No hay alquileres activos</p>
+              <p>{searchQuery ? `No se encontraron resultados para "${searchQuery}"` : "No hay alquileres activos"}</p>
+              {searchQuery && (
+                <Button variant="link" onClick={() => setSearchQuery("")} className="mt-2">
+                  Limpiar búsqueda
+                </Button>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -866,7 +926,7 @@ export default function ActiveRentals() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rentals.map((rental) => {
+                  {filteredRentals.map((rental) => {
                     const activeItems = rental.items.filter(i => !i.returned);
                     const itemCount = activeItems.length;
                     
