@@ -280,9 +280,12 @@ POST /api/cash/close            - Cerrar caja con arqueo
 - `/app/frontend/src/pages/CashRegister.jsx` - Módulo de caja
 - `/app/frontend/src/pages/NewRental.jsx` - Nuevo alquiler
 - `/app/frontend/src/pages/Inventory.jsx` - Gestión de inventario
+- `/app/frontend/src/pages/ActiveRentals.jsx` - Alquileres activos (incluye modal de ficha completa)
+- `/app/frontend/src/pages/Customers.jsx` - Base de datos de clientes
+- `/app/frontend/src/pages/Settings.jsx` - Configuración del sistema
 
 ---
 
 ## Credenciales de Prueba
-- Usuario: `testcaja`
-- Contraseña: `test1234`
+- Usuario: `testuser2`
+- Contraseña: `test123`
