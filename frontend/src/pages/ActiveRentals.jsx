@@ -594,7 +594,10 @@ export default function ActiveRentals() {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
           });
           customerData = { ...customerData, ...response.data, items: rental.items || [], rental_id: rental.id };
-        } catch (e) {}
+        } catch (e) {
+          // Customer might not exist in database, use rental data
+          console.log("Customer lookup failed, using rental data");
+        }
       }
       
       setSelectedCustomer(customerData);
