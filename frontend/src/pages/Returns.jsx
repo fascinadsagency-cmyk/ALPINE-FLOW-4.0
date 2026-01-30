@@ -73,40 +73,50 @@ export default function Returns() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerLoading, setCustomerLoading] = useState(false);
   
-  // ============ CHANGE/EXTENSION MODAL STATE ============
+  // ============ MULTI-ITEM CHANGE/EXTENSION MODAL STATE ============
   const [changeModal, setChangeModal] = useState(false);
   const [changeRental, setChangeRental] = useState(null);
-  const [changeOldItem, setChangeOldItem] = useState(null);
+  const [changeItems, setChangeItems] = useState([]); // Array of items with swap info
+  const [activeSwapIndex, setActiveSwapIndex] = useState(null); // Which item is being swapped
   const [changeNewBarcode, setChangeNewBarcode] = useState("");
-  const [changeNewItem, setChangeNewItem] = useState(null);
-  const [changeDelta, setChangeDelta] = useState(null);
+  const [changeTotalDelta, setChangeTotalDelta] = useState(0);
   const [changeNewDays, setChangeNewDays] = useState("");
   const [changeDaysRemaining, setChangeDaysRemaining] = useState(0);
   const [changePaymentMethod, setChangePaymentMethod] = useState("cash");
   const [changeLoading, setChangeLoading] = useState(false);
   const [changeComplete, setChangeComplete] = useState(false);
-  const [changeAction, setChangeAction] = useState("swap"); // "swap" or "extend"
+  const [changeExtendDays, setChangeExtendDays] = useState(false); // Toggle for day extension
   const changeInputRef = useRef(null);
   
   const barcodeRef = useRef(null);
 
-  // ============ CHANGE/EXTENSION FUNCTIONS ============
+  // ============ MULTI-ITEM CHANGE FUNCTIONS ============
   
-  const openChangeModal = (rental, item = null) => {
-    // Ensure we have the rental days - fallback to fetching from rental object
+  const openChangeModal = (rental, triggerItem = null) => {
     const rentalDays = rental.days || rental.duration || 1;
+    
+    // Get all pending items from the rental
+    const pendingItems = (rental.pending_items || rental.items || [])
+      .filter(i => !i.returned)
+      .map((item, index) => ({
+        ...item,
+        index,
+        swapNewItem: null, // Will hold the new item if swapping
+        swapDelta: 0, // Price difference for this item
+        isSwapping: false // Whether this item is marked for swap
+      }));
     
     setChangeRental({
       ...rental,
       days: rentalDays
     });
-    setChangeOldItem(item);
+    setChangeItems(pendingItems);
+    setActiveSwapIndex(null);
     setChangeNewBarcode("");
-    setChangeNewItem(null);
-    setChangeDelta(null);
+    setChangeTotalDelta(0);
     setChangeComplete(false);
     setChangePaymentMethod("cash");
-    setChangeAction(item ? "swap" : "extend");
+    setChangeExtendDays(false);
     
     // Calculate days remaining
     const endDate = new Date(rental.end_date);
@@ -125,9 +135,267 @@ export default function Returns() {
   const closeChangeModal = () => {
     setChangeModal(false);
     setChangeRental(null);
-    setChangeOldItem(null);
-    setChangeNewItem(null);
-    setChangeDelta(null);
+    setChangeItems([]);
+    setActiveSwapIndex(null);
+    setChangeTotalDelta(0);
+    setChangeComplete(false);
+  };
+
+  // Start swap mode for a specific item
+  const startItemSwap = (index) => {
+    setActiveSwapIndex(index);
+    setChangeNewBarcode("");
+    setTimeout(() => changeInputRef.current?.focus(), 100);
+  };
+
+  // Cancel swap for a specific item
+  const cancelItemSwap = (index) => {
+    const updated = [...changeItems];
+    updated[index] = {
+      ...updated[index],
+      swapNewItem: null,
+      swapDelta: 0,
+      isSwapping: false
+    };
+    setChangeItems(updated);
+    setActiveSwapIndex(null);
+    recalculateTotalDelta(updated);
+  };
+
+  // Search and assign new item for swap
+  const searchSwapItem = async (code) => {
+    if (!code.trim() || activeSwapIndex === null) return;
+    
+    setChangeLoading(true);
+    try {
+      const response = await axios.get(`${API}/items?search=${code}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      const items = response.data;
+      const foundItem = items.find(i => 
+        i.barcode?.toUpperCase() === code.toUpperCase() || 
+        i.internal_code?.toUpperCase() === code.toUpperCase()
+      );
+
+      if (!foundItem) {
+        toast.error(`No se encontró artículo "${code}"`);
+        return;
+      }
+
+      if (foundItem.status === 'rented') {
+        toast.error("Este artículo ya está alquilado");
+        return;
+      }
+
+      if (!['available', 'dirty'].includes(foundItem.status)) {
+        toast.error(`Artículo no disponible (${foundItem.status})`);
+        return;
+      }
+
+      // Calculate price delta for this swap
+      const oldItem = changeItems[activeSwapIndex];
+      const delta = await calculateItemDelta(oldItem, foundItem);
+
+      // Update the item in array
+      const updated = [...changeItems];
+      updated[activeSwapIndex] = {
+        ...updated[activeSwapIndex],
+        swapNewItem: foundItem,
+        swapDelta: delta,
+        isSwapping: true
+      };
+      setChangeItems(updated);
+      
+      toast.success(`✓ ${oldItem.internal_code || oldItem.barcode} → ${foundItem.internal_code || foundItem.barcode}`);
+      setActiveSwapIndex(null);
+      setChangeNewBarcode("");
+      
+      recalculateTotalDelta(updated);
+
+    } catch (error) {
+      toast.error("Error al buscar artículo");
+    } finally {
+      setChangeLoading(false);
+    }
+  };
+
+  // Calculate delta for a single item swap
+  const calculateItemDelta = async (oldItem, newItem) => {
+    try {
+      const tariffsRes = await axios.get(`${API}/tariffs`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const tariffs = tariffsRes.data;
+
+      const oldTariff = tariffs.find(t => t.item_type?.toLowerCase() === oldItem.item_type?.toLowerCase());
+      const dayField = changeDaysRemaining <= 10 ? `day_${changeDaysRemaining}` : 'day_11_plus';
+      const oldPrice = oldTariff?.[dayField] || oldItem.unit_price || 0;
+
+      const newTariff = tariffs.find(t => t.item_type?.toLowerCase() === newItem.item_type?.toLowerCase());
+      const newPrice = newTariff?.[dayField] || newItem.rental_price || 0;
+
+      return newPrice - oldPrice;
+    } catch {
+      return 0;
+    }
+  };
+
+  // Recalculate total delta from all swaps + day extension
+  const recalculateTotalDelta = (items) => {
+    let total = 0;
+    
+    // Sum all swap deltas
+    items.forEach(item => {
+      if (item.isSwapping && item.swapDelta) {
+        total += item.swapDelta;
+      }
+    });
+    
+    // Add day extension cost if enabled
+    if (changeExtendDays && changeRental) {
+      const newDaysNum = parseInt(changeNewDays) || changeRental.days;
+      const oldDaysNum = changeRental.days;
+      if (newDaysNum > oldDaysNum) {
+        const extraDays = newDaysNum - oldDaysNum;
+        const pricePerDay = changeRental.total_amount / oldDaysNum;
+        total += pricePerDay * extraDays;
+      }
+    }
+    
+    setChangeTotalDelta(total);
+  };
+
+  // Effect to recalculate when days change
+  useEffect(() => {
+    if (changeModal && changeRental) {
+      recalculateTotalDelta(changeItems);
+    }
+  }, [changeNewDays, changeExtendDays]);
+
+  // Execute all changes
+  const executeAllChanges = async () => {
+    if (!changeRental) {
+      toast.error("Faltan datos para el cambio");
+      return;
+    }
+
+    const itemsToSwap = changeItems.filter(i => i.isSwapping && i.swapNewItem);
+    const hasSwaps = itemsToSwap.length > 0;
+    const hasDayExtension = changeExtendDays && parseInt(changeNewDays) !== changeRental.days;
+
+    if (!hasSwaps && !hasDayExtension) {
+      toast.error("No hay cambios que procesar");
+      return;
+    }
+
+    setChangeLoading(true);
+    try {
+      // Process each swap
+      for (const item of itemsToSwap) {
+        await axios.post(`${API}/rentals/${changeRental.id}/central-swap`, {
+          old_item_barcode: item.barcode || item.internal_code,
+          new_item_barcode: item.swapNewItem.barcode || item.swapNewItem.internal_code,
+          days_remaining: changeDaysRemaining,
+          payment_method: changePaymentMethod,
+          delta_amount: item.swapDelta || 0
+        }, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+      }
+
+      // Process day extension if needed
+      if (hasDayExtension) {
+        const newDaysNum = parseInt(changeNewDays);
+        const extraDays = newDaysNum - changeRental.days;
+        const extensionCost = (changeRental.total_amount / changeRental.days) * extraDays;
+        
+        await axios.patch(`${API}/rentals/${changeRental.id}/modify-duration`, {
+          new_days: newDaysNum,
+          new_total: changeRental.total_amount + extensionCost,
+          payment_method: changePaymentMethod,
+          difference_amount: extensionCost
+        }, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+      }
+
+      setChangeComplete(true);
+      toast.success(`✅ ${itemsToSwap.length} cambio(s) procesado(s) correctamente`);
+      loadPendingReturns();
+
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al procesar los cambios");
+    } finally {
+      setChangeLoading(false);
+    }
+  };
+
+  // Print ticket for all changes
+  const printMultiChangeTicket = () => {
+    if (!changeRental) return;
+    
+    const itemsSwapped = changeItems.filter(i => i.isSwapping && i.swapNewItem);
+    const hasDayExtension = changeExtendDays && parseInt(changeNewDays) !== changeRental.days;
+    
+    const ticketWindow = window.open('', '_blank', 'width=400,height=700');
+    ticketWindow.document.write(`
+      <!DOCTYPE html><html><head><title>Ticket de Regularización</title>
+      <style>
+        @media print { @page { margin: 0; size: 80mm auto; } }
+        body { font-family: 'Courier New', monospace; width: 80mm; padding: 5mm; margin: 0 auto; font-size: 11px; }
+        .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 8px; margin-bottom: 10px; }
+        .section { border-bottom: 1px dashed #ccc; padding: 8px 0; }
+        .row { display: flex; justify-content: space-between; padding: 3px 0; }
+        .swap-item { padding: 5px; margin: 5px 0; background: #f5f5f5; border-radius: 4px; }
+        .delta-box { text-align: center; padding: 15px; margin: 10px 0; border-radius: 4px; }
+        .delta-positive { background: #dcfce7; color: #166534; }
+        .delta-negative { background: #fee2e2; color: #991b1b; }
+        .delta-zero { background: #f3f4f6; color: #374151; }
+        .delta-amount { font-size: 24px; font-weight: bold; }
+        .print-btn { display: block; width: 100%; padding: 10px; margin-top: 15px; background: #2563eb; color: white; border: none; cursor: pointer; }
+        @media print { .print-btn { display: none; } }
+      </style></head><body>
+        <div class="header">
+          <h1>TICKET DE REGULARIZACIÓN</h1>
+          <p>Cambios Múltiples</p>
+        </div>
+        <div class="section">
+          <div class="row"><span>Cliente:</span><strong>${changeRental.customer_name}</strong></div>
+          <div class="row"><span>DNI:</span><strong>${changeRental.customer_dni || '-'}</strong></div>
+          <div class="row"><span>Alquiler:</span><strong>#${changeRental.id?.substring(0, 8)}</strong></div>
+        </div>
+        
+        ${itemsSwapped.length > 0 ? `
+        <div class="section">
+          <p style="font-weight:bold;margin-bottom:8px;">CAMBIOS DE MATERIAL (${itemsSwapped.length})</p>
+          ${itemsSwapped.map(item => `
+            <div class="swap-item">
+              <div>❌ ${item.internal_code || item.barcode} → ✅ ${item.swapNewItem.internal_code || item.swapNewItem.barcode}</div>
+              <div style="font-size:10px;color:#666;">${item.item_type} • Delta: €${item.swapDelta?.toFixed(2) || '0.00'}</div>
+            </div>
+          `).join('')}
+        </div>` : ''}
+        
+        ${hasDayExtension ? `
+        <div class="section">
+          <p style="font-weight:bold;">PRÓRROGA</p>
+          <div class="row"><span>Días anteriores:</span><span>${changeRental.days}</span></div>
+          <div class="row"><span>Días nuevos:</span><span>${changeNewDays}</span></div>
+        </div>` : ''}
+        
+        <div class="delta-box ${changeTotalDelta > 0 ? 'delta-positive' : changeTotalDelta < 0 ? 'delta-negative' : 'delta-zero'}">
+          <p>${changeTotalDelta > 0 ? 'TOTAL COBRADO' : changeTotalDelta < 0 ? 'TOTAL ABONADO' : 'SIN DIFERENCIA'}</p>
+          <p class="delta-amount">${changeTotalDelta > 0 ? '+' : changeTotalDelta < 0 ? '-' : ''}€${Math.abs(changeTotalDelta).toFixed(2)}</p>
+          <p style="font-size:10px;margin-top:5px;">Método: ${changePaymentMethod === 'cash' ? 'Efectivo' : 'Tarjeta'}</p>
+        </div>
+        
+        <p style="text-align:center;font-size:9px;">${new Date().toLocaleString('es-ES')}</p>
+        <button class="print-btn" onclick="window.print();setTimeout(()=>window.close(),500)">IMPRIMIR</button>
+      </body></html>
+    `);
+    ticketWindow.document.close();
+  };;
     setChangeComplete(false);
   };
 
