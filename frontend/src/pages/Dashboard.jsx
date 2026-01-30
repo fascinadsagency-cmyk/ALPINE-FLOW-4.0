@@ -201,14 +201,14 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-6 lg:p-8 space-y-6" data-testid="dashboard">
+    <div className={`p-6 lg:p-8 space-y-6 min-h-screen transition-colors duration-300 ${darkMode ? 'bg-[#121212]' : 'bg-slate-50'}`} data-testid="dashboard">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+          <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`} style={{ fontFamily: 'Plus Jakarta Sans' }}>
             Dashboard
           </h1>
-          <p className="text-slate-500 mt-1">Vista general de tu negocio</p>
+          <p className={`mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Vista general de tu negocio</p>
         </div>
         <div className="flex items-center gap-2">
           {/* BOTÓN GRANDE - NUEVO ALQUILER */}
@@ -225,38 +225,38 @@ export default function Dashboard() {
 
       {/* KPI Cards Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-slate-200 hover:shadow-md transition-shadow cursor-pointer" onClick={() => window.location.href = '/caja'}>
+        <Card className={`hover:shadow-md transition-shadow cursor-pointer ${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`} onClick={() => window.location.href = '/caja'}>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500">Ingresos Netos Hoy</p>
-                <p className={`text-2xl font-bold ${(stats.revenue_today || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                <p className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Ingresos Netos Hoy</p>
+                <p className={`text-2xl font-bold ${(stats.revenue_today || 0) >= 0 ? (darkMode ? 'text-emerald-400' : 'text-emerald-600') : 'text-red-500'}`}>
                   €{(stats.revenue_today || 0).toFixed(2)}
                 </p>
-                <p className="text-xs text-slate-400 mt-1">Facturado - Devoluciones</p>
+                <p className={`text-xs mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Facturado - Devoluciones</p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-emerald-600" />
+              <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${darkMode ? 'bg-emerald-900/30' : 'bg-emerald-100'}`}>
+                <DollarSign className={`h-6 w-6 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 hover:shadow-md transition-shadow">
+        <Card className={`hover:shadow-md transition-shadow ${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`}>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500">Alquileres Activos</p>
-                <p className="text-2xl font-bold text-slate-900">{stats.active_rentals || 0}</p>
+                <p className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Alquileres Activos</p>
+                <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{stats.active_rentals || 0}</p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center">
-                <ShoppingCart className="h-6 w-6 text-blue-600" />
+              <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${darkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
+                <ShoppingCart className={`h-6 w-6 ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`} />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 hover:shadow-md transition-shadow">
+        <Card className={`hover:shadow-md transition-shadow ${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`}>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
