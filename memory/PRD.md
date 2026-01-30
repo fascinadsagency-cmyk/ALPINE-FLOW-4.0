@@ -62,7 +62,7 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - Muestra TODOS los artículos del contrato del cliente
   - **Entrada dual de material:** Escáner + teclado manual con Enter
   - **Contador de días corregido:** Días Restantes = Fecha Fin - Hoy
-  - **Terminología neutra:** "Ajuste de Fecha" (no "Prórroga")
+  - **Terminología neutra:** "Ajuste de Fecha" / "Ajuste de Calendario" (no "Prórroga")
   - **Permite extensión Y devolución anticipada:** Selector de fecha flexible
   - **Balance en tiempo real:** Días originales → Días nuevos + delta económico
   - **Validación de disponibilidad:** Verifica status del artículo antes de confirmar
@@ -74,6 +74,17 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - Escenario B (Nombre cliente): Busca cliente y muestra su alquiler activo
   - Modal de gestión rápida permite: Cambiar material, Devolver artículo, Ajustar días
   - Endpoint: GET /api/lookup/{code}
+- ✅ **Unificación de Gestión (REINGENIERÍA 2026-01-30):**
+  - **ELIMINADO** el icono de edición (lápiz) en Alquileres Activos
+  - El botón **CAMBIOS** es la ÚNICA forma de modificar artículos y fechas
+  - Ficha de Cliente accesible desde modal con botón "Ver Ficha Completa"
+- ✅ **Sincronización de Ingresos con Caja (REINGENIERÍA 2026-01-30):**
+  - Caja muestra dos columnas separadas:
+    - **📦 Contratos Nuevos**: Alquileres del día (categoría "rental")
+    - **🔄 Ajustes Cambios**: Cobros/Abonos por modificaciones (categoría "rental_adjustment")
+  - Desglose por método de pago: Efectivo / Tarjeta
+  - Saldo Neto del Turno siempre coincide con el dinero real
+  - Backend calcula `by_category` en agregación MongoDB
 
 ### 4. Sistema de Tickets/Comprobantes
 - ✅ Impresión de ticket de alquiler con desglose completo
