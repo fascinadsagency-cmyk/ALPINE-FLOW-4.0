@@ -50,6 +50,7 @@ export default function Customers() {
 
   // Technical data editing state
   const [editingTechnicalData, setEditingTechnicalData] = useState(false);
+  const [technicalDataExpanded, setTechnicalDataExpanded] = useState(false); // Accordion state
   const [technicalDataForm, setTechnicalDataForm] = useState({
     boot_size: "",
     height: "",
