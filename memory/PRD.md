@@ -154,7 +154,16 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - Ancho contenedor: 80mm / 100% del papel disponible
   - `page-break-inside: avoid` en filas/secciones previene cortes
   - Contraste: Todo texto `#000000` (negro puro), fondo `#ffffff`
-  - Aplicado a: `ticketGenerator.js`, `CashRegister.jsx`, `Returns.jsx`
+- ✅ **REFACTORIZACIÓN COMPLETA - PrintLayout Maestro (2026-01-30):**
+  - `ticketGenerator.js` es ahora el ÚNICO punto de generación de tickets
+  - Tipos soportados: rental, return, swap, movement, closing
+  - Header unificado: Logo (desde Configuración) o Nombre de Empresa como fallback
+  - Body dinámico según tipo de ticket
+  - Footer con textos legales desde Configuración
+  - Doble copia automática si está activado en Settings
+  - CashRegister.jsx y Returns.jsx refactorizados para usar el generador maestro
+  - Eliminadas >500 líneas de HTML/CSS duplicado
+  - Bundle reducido en 3.54 kB
 
 ### 5. Gestión de Datos
 - ✅ **Importador Universal (CSV/Excel):** Para clientes e inventario
