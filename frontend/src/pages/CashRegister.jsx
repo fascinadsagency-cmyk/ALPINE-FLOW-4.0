@@ -617,9 +617,40 @@ export default function CashRegister() {
             color: #333; 
           }
           
+          /* ========== THERMAL PRINTER 80mm OPTIMIZATION ========== */
+          @page { 
+            size: 80mm auto; 
+            margin: 0; /* Elimina encabezados/pies del navegador */
+          }
           @media print {
-            body { width: 80mm; }
-            @page { margin: 0; size: 80mm auto; }
+            html, body {
+              width: 80mm !important;
+              max-width: 80mm !important;
+              margin: 0 !important;
+              padding: 2mm !important;
+              background: #ffffff !important;
+              color: #000000 !important;
+            }
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              color: #000000 !important;
+            }
+            .logo, .header, .block, .row, .highlight-box, .result-box, tr, td {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+            }
+            .highlight-box {
+              background: transparent !important;
+              border: 1px solid #000000 !important;
+            }
+            .result-box {
+              background: transparent !important;
+              border: 2px solid #000000 !important;
+            }
+            .green, .red {
+              color: #000000 !important;
+            }
           }
         </style>
       </head>
