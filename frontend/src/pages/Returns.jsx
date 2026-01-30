@@ -1792,9 +1792,6 @@ export default function Returns() {
                                 <X className="h-4 w-4" />
                               </Button>
                             </div>
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
                           ) : (
                             <Button
                               variant="outline"
