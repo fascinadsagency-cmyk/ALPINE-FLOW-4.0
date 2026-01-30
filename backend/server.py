@@ -4340,10 +4340,19 @@ async def audit_and_sync_cash_movements(current_user: dict = Depends(get_current
 @api_router.get("/cash/summary/realtime")
 async def get_cash_summary_realtime(date: Optional[str] = None, current_user: dict = Depends(get_current_user)):
     """
-    RESUMEN DE CAJA EN TIEMPO REAL usando agregación MongoDB.
-    Calcula SUM(montos) directamente en la base de datos para máxima precisión.
-    Fórmula: Saldo_Total = Fondo_Apertura + SUM(Ingresos) - SUM(Gastos) - SUM(Devoluciones)
-    Incluye desglose por categoría (ventas nuevas vs ajustes de contratos).
+    RESUMEN DE CAJA EN TIEMPO REAL - LÓGICA CORREGIDA
+    
+    Variables maestras:
+    A. FONDO_INICIAL: Dinero con el que se abrió la caja
+    B. FLUJO_OPERATIVO_HOY: Entradas - Salidas - Devoluciones (Neto Real)
+    C. CAJA_ESPERADA: Fondo + Flujo Operativo (solo efectivo para arqueo físico)
+    
+    Fórmulas:
+    - INGRESOS_BRUTOS = SUM(income) donde income > 0
+    - TOTAL_SALIDAS = SUM(expense) + SUM(refund)  
+    - BALANCE_NETO_DIA = Ingresos Brutos - Total Salidas (SIN fondo inicial)
+    - EFECTIVO_ESPERADO = Fondo + (Ingresos Efectivo - Salidas Efectivo)
+    - TARJETA_ESPERADA = Ingresos Tarjeta - Salidas Tarjeta
     """
     if not date:
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -4351,24 +4360,38 @@ async def get_cash_summary_realtime(date: Optional[str] = None, current_user: di
     # Find active session
     active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
     
+    empty_response = {
+        "date": date,
+        "session_id": None,
+        "session_active": False,
+        "opening_balance": 0,
+        # KPIs principales (sin fondo)
+        "ingresos_brutos": 0,
+        "total_salidas": 0,
+        "balance_neto_dia": 0,
+        # Arqueo por método de pago
+        "efectivo_esperado": 0,
+        "tarjeta_esperada": 0,
+        # Desglose detallado
+        "by_payment_method": {
+            "cash": {"income": 0, "expense": 0, "refund": 0, "neto": 0},
+            "card": {"income": 0, "expense": 0, "refund": 0, "neto": 0}
+        },
+        "movements_count": 0,
+        # Legacy fields for compatibility
+        "total_income": 0,
+        "total_expense": 0,
+        "total_refunds": 0,
+        "balance": 0
+    }
+    
     if not active_session:
-        return {
-            "date": date,
-            "session_id": None,
-            "session_active": False,
-            "opening_balance": 0,
-            "total_income": 0,
-            "total_expense": 0,
-            "total_refunds": 0,
-            "balance": 0,
-            "by_payment_method": {"cash": {"income": 0, "expense": 0, "refund": 0}, "card": {"income": 0, "expense": 0, "refund": 0}},
-            "by_category": {"rental": 0, "rental_adjustment": 0, "other": 0},
-            "movements_count": 0
-        }
+        return empty_response
     
     session_id = active_session["id"]
+    opening_balance = active_session.get("opening_balance", 0)
     
-    # Use MongoDB aggregation for REAL-TIME SUM calculation
+    # Agregación por tipo de movimiento y método de pago
     pipeline = [
         {"$match": {"session_id": session_id}},
         {"$group": {
@@ -4383,82 +4406,59 @@ async def get_cash_summary_realtime(date: Optional[str] = None, current_user: di
     
     results = await db.cash_movements.aggregate(pipeline).to_list(100)
     
-    # Aggregation by category (for breakdown display)
-    category_pipeline = [
-        {"$match": {"session_id": session_id}},
-        {"$group": {
-            "_id": {
-                "category": "$category",
-                "movement_type": "$movement_type"
-            },
-            "total": {"$sum": "$amount"}
-        }}
-    ]
-    category_results = await db.cash_movements.aggregate(category_pipeline).to_list(100)
-    
-    # Process category results
-    # Categories: rental (new contracts), rental_adjustment (duration changes), 
-    #             swap_supplement (upgrade charges), swap_refund (downgrade refunds)
-    by_category = {"rental": 0, "rental_adjustment": 0, "other": 0}
-    for r in category_results:
-        cat = r["_id"]["category"] or "other"
-        movement_type = r["_id"]["movement_type"]
-        amount = r["total"]
-        
-        # For income, add to positive. For refund/expense, subtract
-        if movement_type == "income":
-            if cat == "rental":
-                by_category["rental"] += amount
-            elif cat in ["rental_adjustment", "swap_supplement"]:
-                # All adjustment-related income goes to rental_adjustment
-                by_category["rental_adjustment"] += amount
-            else:
-                by_category["other"] += amount
-        elif movement_type == "refund":
-            # Refunds subtract from the appropriate category
-            if cat in ["rental_adjustment", "swap_refund"]:
-                by_category["rental_adjustment"] -= amount
-            else:
-                by_category["other"] -= amount
-    
-    # Process aggregation results
-    total_income = 0
-    total_expense = 0
-    total_refunds = 0
+    # Inicializar acumuladores
+    by_method = {
+        "cash": {"income": 0, "expense": 0, "refund": 0},
+        "card": {"income": 0, "expense": 0, "refund": 0}
+    }
     movements_count = 0
-    by_method = {}
     
+    # Procesar resultados
     for r in results:
         movement_type = r["_id"]["movement_type"]
-        payment_method = r["_id"]["payment_method"]
+        payment_method = r["_id"]["payment_method"] or "cash"
         amount = r["total"]
         count = r["count"]
         movements_count += count
         
-        # Initialize payment method if not exists
+        # Asegurar que el método existe
         if payment_method not in by_method:
             by_method[payment_method] = {"income": 0, "expense": 0, "refund": 0}
         
-        # Accumulate totals
+        # Acumular por tipo
         if movement_type == "income":
-            total_income += amount
             by_method[payment_method]["income"] += amount
         elif movement_type == "expense":
-            total_expense += amount
             by_method[payment_method]["expense"] += amount
         elif movement_type == "refund":
-            total_refunds += amount
             by_method[payment_method]["refund"] += amount
     
-    # Calculate balance using EXACT formula
-    opening_balance = active_session.get("opening_balance", 0)
-    balance = opening_balance + total_income - total_expense - total_refunds
+    # ========== CÁLCULOS MAESTROS ==========
     
-    # Ensure both cash and card are in by_method for UI consistency
-    if "cash" not in by_method:
-        by_method["cash"] = {"income": 0, "expense": 0, "refund": 0}
-    if "card" not in by_method:
-        by_method["card"] = {"income": 0, "expense": 0, "refund": 0}
+    # 1. INGRESOS BRUTOS = Todas las entradas positivas
+    ingresos_brutos = sum(m["income"] for m in by_method.values())
+    
+    # 2. TOTAL SALIDAS = Gastos + Devoluciones (todo lo que sale)
+    total_gastos = sum(m["expense"] for m in by_method.values())
+    total_devoluciones = sum(m["refund"] for m in by_method.values())
+    total_salidas = total_gastos + total_devoluciones
+    
+    # 3. BALANCE NETO DEL DÍA = Ingresos - Salidas (SIN incluir fondo inicial)
+    balance_neto_dia = ingresos_brutos - total_salidas
+    
+    # 4. EFECTIVO ESPERADO EN CAJÓN = Fondo + (Entradas Efectivo - Salidas Efectivo)
+    cash_data = by_method.get("cash", {"income": 0, "expense": 0, "refund": 0})
+    efectivo_neto = cash_data["income"] - cash_data["expense"] - cash_data["refund"]
+    efectivo_esperado = opening_balance + efectivo_neto
+    
+    # 5. TARJETA ESPERADA = Entradas Tarjeta - Salidas Tarjeta
+    card_data = by_method.get("card", {"income": 0, "expense": 0, "refund": 0})
+    tarjeta_esperada = card_data["income"] - card_data["expense"] - card_data["refund"]
+    
+    # Añadir neto a cada método para UI
+    for method in by_method:
+        m = by_method[method]
+        m["neto"] = m["income"] - m["expense"] - m["refund"]
     
     return {
         "date": date,
@@ -4466,14 +4466,25 @@ async def get_cash_summary_realtime(date: Optional[str] = None, current_user: di
         "session_active": True,
         "session_number": active_session.get("session_number", 1),
         "opening_balance": opening_balance,
-        "total_income": total_income,
-        "total_expense": total_expense,
-        "total_refunds": total_refunds,
-        "balance": balance,
+        
+        # ===== KPIs PRINCIPALES (Panel Superior) =====
+        "ingresos_brutos": round(ingresos_brutos, 2),
+        "total_salidas": round(total_salidas, 2),
+        "balance_neto_dia": round(balance_neto_dia, 2),
+        
+        # ===== ARQUEO (Panel Secundario) =====
+        "efectivo_esperado": round(efectivo_esperado, 2),
+        "tarjeta_esperada": round(tarjeta_esperada, 2),
+        
+        # ===== DESGLOSE DETALLADO =====
         "by_payment_method": by_method,
-        "by_category": by_category,
         "movements_count": movements_count,
-        "calculation_method": "realtime_aggregation"
+        
+        # ===== LEGACY (compatibilidad) =====
+        "total_income": round(ingresos_brutos, 2),
+        "total_expense": round(total_gastos, 2),
+        "total_refunds": round(total_devoluciones, 2),
+        "balance": round(opening_balance + balance_neto_dia, 2)
     }
 
 async def get_next_closure_number(date: str) -> int:
