@@ -1,11 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { dashboardApi } from "@/lib/api";
 import axios from "axios";
@@ -30,7 +33,17 @@ import {
   AlertCircle,
   ChevronRight,
   CalendarRange,
-  X
+  X,
+  Search,
+  Scan,
+  ArrowLeftRight,
+  User,
+  Phone,
+  CreditCard,
+  Banknote,
+  CheckCircle,
+  Printer,
+  ArrowRight
 } from "lucide-react";
 import { toast } from "sonner";
 
