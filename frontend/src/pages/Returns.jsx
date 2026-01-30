@@ -163,7 +163,8 @@ export default function Returns() {
     setChangeTotalDelta(0);
     
     setChangeComplete(false);
-    setChangePaymentMethod("cash");
+    // SECURITY: Pre-select original payment method for refunds
+    setChangePaymentMethod(rental.payment_method || "cash");
     setChangeModal(true);
   };
 
