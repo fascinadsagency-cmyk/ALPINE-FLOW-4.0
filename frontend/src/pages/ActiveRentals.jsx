@@ -1051,16 +1051,7 @@ export default function ActiveRentals() {
                             >
                               <User className="h-4 w-4" />
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => openEditDialog(rental)}
-                              className="h-8 w-8"
-                              data-testid={`edit-rental-${rental.id}`}
-                              title="Modificar duración"
-                            >
-                              <Edit2 className="h-4 w-4" />
-                            </Button>
+                            {/* REMOVED: Edit button - All modifications go through CAMBIOS modal */}
                           </div>
                         </TableCell>
                       </TableRow>
