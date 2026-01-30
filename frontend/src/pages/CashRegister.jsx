@@ -222,6 +222,10 @@ export default function CashRegister() {
     const allCategories = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
     const categoryLabel = allCategories.find(c => c.value === movement.category)?.label || movement.category || '-';
     
+    // Determinar el tipo de ticket según la categoría y tipo de movimiento
+    const isRentalCategory = movement.category === 'rental';
+    const hasRentalItems = movement.rental_items && movement.rental_items.length > 0;
+    
     // Preparar datos para el generador maestro
     const ticketData = {
       operationNumber: movement.operation_number,
@@ -234,12 +238,21 @@ export default function CashRegister() {
       notes: movement.notes,
       amount: movement.amount,
       paymentMethod: movement.payment_method,
-      customerName: movement.customer_name
+      customerName: movement.customer_name,
+      customer: movement.customer_name,
+      // Datos de alquiler (si existen)
+      items: hasRentalItems ? movement.rental_items : [],
+      days: movement.rental_days || null,
+      startDate: movement.rental_start_date || null,
+      endDate: movement.rental_end_date || null,
+      total: movement.amount
     };
     
-    // Usar generador maestro
+    // Usar generador maestro - tipo 'rental' si tiene items, sino 'movement'
+    const ticketType = (isRentalCategory && hasRentalItems) ? 'rental' : 'movement';
+    
     const success = printTicket({
-      ticketType: 'movement',
+      ticketType: ticketType,
       data: ticketData
     });
     
