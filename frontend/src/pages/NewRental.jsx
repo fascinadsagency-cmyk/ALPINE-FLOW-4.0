@@ -90,6 +90,9 @@ const formatDateDisplay = (dateStr) => {
 };
 
 export default function NewRental() {
+  // Settings context for ticket configuration
+  const settings = useSettings();
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [customerSuggestions, setCustomerSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
