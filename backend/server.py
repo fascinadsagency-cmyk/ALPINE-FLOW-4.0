@@ -4368,13 +4368,6 @@ async def get_cash_summary_realtime(date: Optional[str] = None, current_user: di
                 by_category["rental_adjustment"] -= amount
             else:
                 by_category["other"] -= amount
-                by_category["other"] += amount
-        elif movement_type == "refund":
-            # Refunds from adjustments go negative in that category
-            if cat == "rental_adjustment":
-                by_category["rental_adjustment"] -= amount
-            else:
-                by_category["other"] -= amount
     
     # Process aggregation results
     total_income = 0
