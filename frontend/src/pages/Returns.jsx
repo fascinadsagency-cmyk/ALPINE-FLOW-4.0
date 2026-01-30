@@ -1518,19 +1518,31 @@ export default function Returns() {
                 </p>
               </div>
 
-              {/* Payment Method */}
+              {/* Payment Method - LOCKED for security */}
               <div>
                 <Label>Método de devolución</Label>
-                <Select value={refundMethod} onValueChange={setRefundMethod}>
-                  <SelectTrigger className="h-11 mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PAYMENT_METHODS.map(m => (
-                      <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="mt-1 h-11 px-3 flex items-center justify-between rounded-md border border-slate-300 bg-slate-100 cursor-not-allowed">
+                  <div className="flex items-center gap-2">
+                    {refundMethod === 'cash' ? (
+                      <>
+                        <Banknote className="h-4 w-4 text-emerald-600" />
+                        <span className="font-medium text-slate-700">Efectivo</span>
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="h-4 w-4 text-blue-600" />
+                        <span className="font-medium text-slate-700">Tarjeta</span>
+                      </>
+                    )}
+                  </div>
+                  <Lock className="h-4 w-4 text-slate-400" />
+                </div>
+                <div className="mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200">
+                  <p className="text-xs text-amber-800 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3 flex-shrink-0" />
+                    <span>Por seguridad, la devolución se realiza al mismo método de pago original.</span>
+                  </p>
+                </div>
               </div>
 
               {/* Reason */}
