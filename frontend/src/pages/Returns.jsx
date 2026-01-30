@@ -177,6 +177,8 @@ export default function Returns() {
     setMaterialDelta(0);
     setTotalDelta(0);
     setChangeComplete(false);
+    // Auto-focus barcode input after closing modal
+    refocusBarcodeInput();
   };
 
   // Calculate time delta when days change
