@@ -81,12 +81,25 @@
     body {
         @apply bg-background text-foreground antialiased;
         font-family: 'Inter', sans-serif;
+        transition: background-color 0.3s ease, color 0.3s ease;
     }
+    
+    /* Dark mode body styling */
+    body.dark {
+        background-color: #121212 !important;
+        color: #f0f0f0 !important;
+    }
+    
     h1, h2, h3, h4, h5, h6 {
         font-family: 'Plus Jakarta Sans', sans-serif;
     }
     code, .mono {
         font-family: 'JetBrains Mono', monospace;
+    }
+    
+    /* Dark mode root styles */
+    html.dark {
+        color-scheme: dark;
     }
 }
 
