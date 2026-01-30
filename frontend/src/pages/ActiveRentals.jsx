@@ -853,7 +853,7 @@ export default function ActiveRentals() {
   };
 
   const SKI_LEVELS = [
-    { value: "", label: "Sin especificar" },
+    { value: "sin_especificar", label: "Sin especificar" },
     { value: "principiante", label: "Principiante" },
     { value: "intermedio", label: "Intermedio" },
     { value: "avanzado", label: "Avanzado" },
