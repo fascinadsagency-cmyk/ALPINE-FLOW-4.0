@@ -402,7 +402,7 @@ export default function ActiveRentals() {
           
           // Clear barcode for new item scan
           setSwapBarcode("");
-          setTimeout(() => swapInputRef.current?.focus(), 100);
+          refocusSwapInput(); // Use helper with select
         } else if (result.found && result.type === "available_item") {
           toast.warning(`Artículo "${code}" está disponible, no alquilado. Escanea un artículo que el cliente quiera devolver.`);
         } else {
