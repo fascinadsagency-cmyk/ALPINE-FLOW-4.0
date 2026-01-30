@@ -413,141 +413,222 @@ export default function Returns() {
     }
   };
 
-  // Print regularization ticket
+  // Print regularization ticket - Using centralized template from Settings
   const printRegularizationTicket = () => {
     if (!changeRental) return;
     
     const itemsSwapped = changeItems.filter(i => i.isSwapping && i.swapNewItem);
     const hasDateChange = changeAdjustDate && changeDateDelta !== 0;
     
-    const ticketWindow = window.open('', '_blank', 'width=400,height=700');
+    // Get stored settings for branding
+    const companyLogo = localStorage.getItem('companyLogo');
+    const ticketHeader = localStorage.getItem('ticketHeader') || 'TIENDA DE ALQUILER DE ESQUÍ';
+    const ticketFooter = localStorage.getItem('ticketFooter') || '¡Gracias por su visita!';
+    const showDniOnTicket = localStorage.getItem('showDniOnTicket') !== 'false';
+    
+    const ticketWindow = window.open('', '_blank', 'width=320,height=700');
+    if (!ticketWindow) {
+      toast.error("No se pudo abrir la ventana de impresión");
+      return;
+    }
+    
+    const fmt = (v) => (v || 0).toFixed(2);
+    const now = new Date();
+    const printTime = now.toLocaleString('es-ES', { 
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+    
     ticketWindow.document.write(`
-      <!DOCTYPE html><html><head><title>Ticket de Regularización</title>
-      <style>
-        @media print { @page { margin: 0; size: 80mm auto; } }
-        body { font-family: 'Courier New', monospace; width: 80mm; padding: 5mm; margin: 0 auto; font-size: 11px; }
-        .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 8px; margin-bottom: 10px; }
-        .section { border-bottom: 1px dashed #ccc; padding: 8px 0; margin-bottom: 8px; }
-        .section-title { font-weight: bold; font-size: 10px; color: #666; margin-bottom: 5px; }
-        .row { display: flex; justify-content: space-between; padding: 2px 0; }
-        .swap-item { padding: 4px; margin: 4px 0; background: #f5f5f5; border-radius: 3px; font-size: 10px; }
-        .delta-box { text-align: center; padding: 12px; margin: 10px 0; border-radius: 4px; }
-        .delta-positive { background: #dcfce7; color: #166534; }
-        .delta-negative { background: #fee2e2; color: #991b1b; }
-        .delta-zero { background: #f3f4f6; color: #374151; }
-        .delta-amount { font-size: 22px; font-weight: bold; }
-        .print-btn { display: block; width: 100%; padding: 10px; margin-top: 15px; background: #2563eb; color: white; border: none; cursor: pointer; }
-        @media print { .print-btn { display: none; } }
-      </style></head><body>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Ticket de Regularización</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { 
+            font-family: 'Consolas', 'Courier New', monospace; 
+            font-size: 11px; 
+            padding: 8px; 
+            width: 80mm; 
+            line-height: 1.4;
+            color: #000;
+          }
+          .logo { text-align: center; margin-bottom: 8px; }
+          .logo img { max-width: 50mm; max-height: 20mm; }
+          .header { text-align: center; margin-bottom: 10px; }
+          .header-business { font-size: 12px; font-weight: bold; margin-bottom: 8px; }
+          .header-title { 
+            font-size: 14px; 
+            font-weight: bold; 
+            letter-spacing: 1px;
+            padding: 6px 0;
+            background: #f97316;
+            color: white;
+            margin: 8px 0;
+          }
+          .separator { border: none; border-top: 1px dashed #000; margin: 10px 0; }
+          .separator-double { border: none; border-top: 2px solid #000; margin: 10px 0; }
+          .block { margin: 10px 0; }
+          .block-title { font-weight: bold; font-size: 11px; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
+          .row { display: flex; justify-content: space-between; margin: 4px 0; }
+          .row-value { font-weight: bold; }
+          .swap-item { 
+            padding: 6px; 
+            margin: 5px 0; 
+            background: #f5f5f5; 
+            border-radius: 4px; 
+            border-left: 3px solid #f97316;
+          }
+          .swap-arrow { color: #f97316; font-weight: bold; }
+          .delta-box {
+            text-align: center;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #000;
+          }
+          .delta-positive { background: #dcfce7; border-color: #16a34a; }
+          .delta-negative { background: #fee2e2; border-color: #dc2626; }
+          .delta-zero { background: #f3f4f6; border-color: #6b7280; }
+          .delta-label { font-size: 10px; color: #666; margin-bottom: 4px; }
+          .delta-amount { font-size: 20px; font-weight: bold; }
+          .delta-positive .delta-amount { color: #16a34a; }
+          .delta-negative .delta-amount { color: #dc2626; }
+          .footer { text-align: center; margin-top: 15px; font-size: 9px; color: #333; }
+          @media print { @page { margin: 0; size: 80mm auto; } }
+        </style>
+      </head>
+      <body>
+        <!-- CABECERA -->
+        ${companyLogo ? `
+        <div class="logo">
+          <img src="${companyLogo}" alt="Logo" />
+        </div>
+        ` : `
         <div class="header">
-          <h1 style="margin:0;font-size:14px;">TICKET DE REGULARIZACIÓN</h1>
-          <p style="margin:5px 0 0 0;font-size:10px;">${new Date().toLocaleString('es-ES')}</p>
+          <div class="header-business">${ticketHeader}</div>
+        </div>
+        `}
+        
+        <div class="header-title">TICKET DE REGULARIZACIÓN</div>
+        
+        <div style="text-align: center; font-size: 10px; margin-bottom: 10px;">
+          ${printTime}
         </div>
         
-        <div class="section">
-          <div class="row"><span>Cliente:</span><strong>${changeRental.customer_name}</strong></div>
-          <div class="row"><span>DNI:</span><strong>${changeRental.customer_dni || '-'}</strong></div>
-          <div class="row"><span>Contrato:</span><strong>#${changeRental.id?.substring(0, 8)}</strong></div>
+        <hr class="separator" />
+        
+        <!-- BLOQUE A: DATOS DEL CLIENTE -->
+        <div class="block">
+          <div class="block-title">A. Datos del Cliente</div>
+          <div class="row">
+            <span>Cliente:</span>
+            <span class="row-value">${changeRental.customer_name}</span>
+          </div>
+          ${showDniOnTicket && changeRental.customer_dni ? `
+          <div class="row">
+            <span>DNI:</span>
+            <span class="row-value">${changeRental.customer_dni}</span>
+          </div>
+          ` : ''}
+          <div class="row">
+            <span>Contrato:</span>
+            <span class="row-value">#${changeRental.id?.substring(0, 8)}</span>
+          </div>
         </div>
         
-        ${hasDateChange ? `
-        <div class="section">
-          <div class="section-title">📅 AJUSTE DE FECHA</div>
-          <div class="row"><span>Días originales:</span><span>${changeOriginalDays}</span></div>
-          <div class="row"><span>Días nuevos:</span><span>${changeNewTotalDays}</span></div>
-          <div class="row"><span>${changeDateDelta >= 0 ? 'Suplemento' : 'Abono'}:</span><strong>${changeDateDelta >= 0 ? '+' : ''}€${changeDateDelta.toFixed(2)}</strong></div>
-        </div>` : ''}
+        <hr class="separator" />
         
-        ${itemsSwapped.length > 0 ? `
-        <div class="section">
-          <div class="section-title">🔄 CAMBIO DE MATERIAL (${itemsSwapped.length})</div>
-          ${itemsSwapped.map(item => `
-            <div class="swap-item">
-              <div>${item.swapType === 'upgrade' ? '⬆️' : item.swapType === 'downgrade' ? '⬇️' : '🔄'} ${item.internal_code || item.barcode} → ${item.swapNewItem.internal_code || item.swapNewItem.barcode}</div>
-              <div style="color:#666;">${item.item_type} | ${item.swapDelta >= 0 ? '+' : ''}€${item.swapDelta?.toFixed(2)}</div>
+        <!-- BLOQUE B: CAMBIOS REALIZADOS -->
+        <div class="block">
+          <div class="block-title">B. Cambios Realizados</div>
+          
+          ${hasDateChange ? `
+          <div style="margin: 8px 0; padding: 8px; background: #eff6ff; border-radius: 4px; border-left: 3px solid #2563eb;">
+            <div style="font-weight: bold; margin-bottom: 4px;">📅 Ajuste de Fecha</div>
+            <div class="row" style="font-size: 10px;">
+              <span>Días originales:</span>
+              <span>${changeOriginalDays}</span>
             </div>
-          `).join('')}
-          <div class="row" style="margin-top:5px;"><span>Subtotal material:</span><strong>${materialDelta >= 0 ? '+' : ''}€${materialDelta.toFixed(2)}</strong></div>
-        </div>` : ''}
-        
-        <div class="delta-box ${changeTotalDelta > 0 ? 'delta-positive' : changeTotalDelta < 0 ? 'delta-negative' : 'delta-zero'}">
-          <p style="margin:0 0 5px 0;font-size:10px;">${changeTotalDelta > 0 ? 'TOTAL COBRADO' : changeTotalDelta < 0 ? 'TOTAL ABONADO' : 'SIN DIFERENCIA'}</p>
-          <p class="delta-amount">${changeTotalDelta > 0 ? '+' : changeTotalDelta < 0 ? '-' : ''}€${Math.abs(changeTotalDelta).toFixed(2)}</p>
-          ${changeTotalDelta !== 0 ? `<p style="font-size:9px;margin-top:5px;">Método: ${changePaymentMethod === 'cash' ? 'Efectivo' : 'Tarjeta'}</p>` : ''}
+            <div class="row" style="font-size: 10px;">
+              <span>Días nuevos:</span>
+              <span>${changeNewTotalDays}</span>
+            </div>
+            <div class="row" style="margin-top: 4px;">
+              <span>${changeDateDelta >= 0 ? 'Suplemento:' : 'Abono:'}</span>
+              <span class="row-value" style="color: ${changeDateDelta >= 0 ? '#16a34a' : '#dc2626'};">
+                ${changeDateDelta >= 0 ? '+' : ''}€${fmt(changeDateDelta)}
+              </span>
+            </div>
+          </div>
+          ` : ''}
+          
+          ${itemsSwapped.length > 0 ? `
+          <div style="margin-top: 8px;">
+            <div style="font-weight: bold; margin-bottom: 6px;">🔄 Cambio de Material (${itemsSwapped.length})</div>
+            ${itemsSwapped.map(item => `
+              <div class="swap-item">
+                <div>
+                  <span style="text-decoration: line-through; color: #999;">${item.internal_code || item.barcode}</span>
+                  <span class="swap-arrow"> → </span>
+                  <span style="font-weight: bold;">${item.swapNewItem.internal_code || item.swapNewItem.barcode}</span>
+                </div>
+                <div style="font-size: 10px; color: #666; margin-top: 2px;">
+                  ${item.item_type} | 
+                  <span style="color: ${item.swapDelta >= 0 ? '#16a34a' : '#dc2626'};">
+                    ${item.swapDelta >= 0 ? '+' : ''}€${fmt(item.swapDelta)}
+                  </span>
+                </div>
+              </div>
+            `).join('')}
+            <div class="row" style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed #ccc;">
+              <span>Subtotal material:</span>
+              <span class="row-value" style="color: ${materialDelta >= 0 ? '#16a34a' : '#dc2626'};">
+                ${materialDelta >= 0 ? '+' : ''}€${fmt(materialDelta)}
+              </span>
+            </div>
+          </div>
+          ` : ''}
         </div>
         
-        <p style="text-align:center;font-size:9px;color:#666;">Gracias por su confianza</p>
-        <button class="print-btn" onclick="window.print();setTimeout(()=>window.close(),500)">IMPRIMIR</button>
-      </body></html>
+        <hr class="separator" />
+        
+        <!-- BLOQUE C: RESULTADO -->
+        <div class="delta-box ${changeTotalDelta > 0 ? 'delta-positive' : changeTotalDelta < 0 ? 'delta-negative' : 'delta-zero'}">
+          <div class="delta-label">
+            ${changeTotalDelta > 0 ? 'TOTAL COBRADO' : changeTotalDelta < 0 ? 'TOTAL ABONADO' : 'SIN DIFERENCIA'}
+          </div>
+          <div class="delta-amount">
+            ${changeTotalDelta > 0 ? '+' : changeTotalDelta < 0 ? '-' : ''}€${fmt(Math.abs(changeTotalDelta))}
+          </div>
+          ${changeTotalDelta !== 0 ? `
+          <div style="font-size: 9px; margin-top: 4px; color: #666;">
+            Método: ${changePaymentMethod === 'cash' ? 'Efectivo' : 'Tarjeta'}
+          </div>
+          ` : ''}
+        </div>
+        
+        <hr class="separator-double" />
+        
+        <div class="footer">
+          ${ticketFooter}<br/>
+          ─────────────────────────<br/>
+          Conserve este comprobante
+        </div>
+        
+        <script>
+          window.onload = function() { window.print(); };
+        </script>
+      </body>
+      </html>
     `);
     ticketWindow.document.close();
   };
 
-  // Print ticket for all changes
+  // Print ticket for all changes - Using centralized template from Settings
   const printMultiChangeTicket = () => {
-    if (!changeRental) return;
-    
-    const itemsSwapped = changeItems.filter(i => i.isSwapping && i.swapNewItem);
-    const hasDateChange = changeAdjustDate && changeDateDelta !== 0;
-    
-    const ticketWindow = window.open('', '_blank', 'width=400,height=700');
-    ticketWindow.document.write(`
-      <!DOCTYPE html><html><head><title>Ticket de Regularización</title>
-      <style>
-        @media print { @page { margin: 0; size: 80mm auto; } }
-        body { font-family: 'Courier New', monospace; width: 80mm; padding: 5mm; margin: 0 auto; font-size: 11px; }
-        .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 8px; margin-bottom: 10px; }
-        .section { border-bottom: 1px dashed #ccc; padding: 8px 0; }
-        .row { display: flex; justify-content: space-between; padding: 3px 0; }
-        .swap-item { padding: 5px; margin: 5px 0; background: #f5f5f5; border-radius: 4px; }
-        .delta-box { text-align: center; padding: 15px; margin: 10px 0; border-radius: 4px; }
-        .delta-positive { background: #dcfce7; color: #166534; }
-        .delta-negative { background: #fee2e2; color: #991b1b; }
-        .delta-zero { background: #f3f4f6; color: #374151; }
-        .delta-amount { font-size: 24px; font-weight: bold; }
-        .print-btn { display: block; width: 100%; padding: 10px; margin-top: 15px; background: #2563eb; color: white; border: none; cursor: pointer; }
-        @media print { .print-btn { display: none; } }
-      </style></head><body>
-        <div class="header">
-          <h1>TICKET DE REGULARIZACIÓN</h1>
-          <p>Cambios Múltiples</p>
-        </div>
-        <div class="section">
-          <div class="row"><span>Cliente:</span><strong>${changeRental.customer_name}</strong></div>
-          <div class="row"><span>DNI:</span><strong>${changeRental.customer_dni || '-'}</strong></div>
-          <div class="row"><span>Alquiler:</span><strong>#${changeRental.id?.substring(0, 8)}</strong></div>
-        </div>
-        
-        ${itemsSwapped.length > 0 ? `
-        <div class="section">
-          <p style="font-weight:bold;margin-bottom:8px;">CAMBIOS DE MATERIAL (${itemsSwapped.length})</p>
-          ${itemsSwapped.map(item => `
-            <div class="swap-item">
-              <div>❌ ${item.internal_code || item.barcode} → ✅ ${item.swapNewItem.internal_code || item.swapNewItem.barcode}</div>
-              <div style="font-size:10px;color:#666;">${item.item_type} • Delta: €${item.swapDelta?.toFixed(2) || '0.00'}</div>
-            </div>
-          `).join('')}
-        </div>` : ''}
-        
-        ${hasDateChange ? `
-        <div class="section">
-          <p style="font-weight:bold;">AJUSTE DE FECHA</p>
-          <div class="row"><span>Días anteriores:</span><span>${changeOriginalDays}</span></div>
-          <div class="row"><span>Días nuevos:</span><span>${changeNewTotalDays}</span></div>
-          <div class="row"><span>${changeDateDelta >= 0 ? 'Suplemento' : 'Abono'}:</span><strong>${changeDateDelta >= 0 ? '+' : ''}€${changeDateDelta.toFixed(2)}</strong></div>
-        </div>` : ''}
-        
-        <div class="delta-box ${changeTotalDelta > 0 ? 'delta-positive' : changeTotalDelta < 0 ? 'delta-negative' : 'delta-zero'}">
-          <p>${changeTotalDelta > 0 ? 'TOTAL COBRADO' : changeTotalDelta < 0 ? 'TOTAL ABONADO' : 'SIN DIFERENCIA'}</p>
-          <p class="delta-amount">${changeTotalDelta > 0 ? '+' : changeTotalDelta < 0 ? '-' : ''}€${Math.abs(changeTotalDelta).toFixed(2)}</p>
-          <p style="font-size:10px;margin-top:5px;">Método: ${changePaymentMethod === 'cash' ? 'Efectivo' : 'Tarjeta'}</p>
-        </div>
-        
-        <p style="text-align:center;font-size:9px;">${new Date().toLocaleString('es-ES')}</p>
-        <button class="print-btn" onclick="window.print();setTimeout(()=>window.close(),500)">IMPRIMIR</button>
-      </body></html>
-    `);
-    ticketWindow.document.close();
+    // Same implementation as printRegularizationTicket (unified)
+    printRegularizationTicket();
   };
 
   const quickReturn = async (rentalId, customerName) => {
