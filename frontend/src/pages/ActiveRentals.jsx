@@ -47,7 +47,12 @@ import {
   History,
   AlertTriangle,
   Star,
-  FileWarning
+  FileWarning,
+  Ruler,
+  Scale,
+  Mountain,
+  Edit3,
+  Save
 } from "lucide-react";
 import { toast } from "sonner";
 
