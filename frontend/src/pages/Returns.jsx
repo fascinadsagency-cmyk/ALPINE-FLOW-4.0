@@ -1756,21 +1756,40 @@ export default function Returns() {
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter' && changeNewBarcode.trim()) {
                                     searchSwapItem(changeNewBarcode);
-                                    setChangeNewBarcode("");
                                   } else if (e.key === 'Escape') {
                                     setActiveSwapIndex(null);
                                   }
                                 }}
-                                placeholder="Escanea nuevo..."
-                                className="h-8 w-36 text-sm font-mono"
+                                placeholder="Código (ej: BOT-102)"
+                                className="h-8 w-40 text-sm font-mono"
                                 autoFocus
                               />
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => {
+                                  if (changeNewBarcode.trim()) {
+                                    searchSwapItem(changeNewBarcode);
+                                  }
+                                }}
+                                disabled={!changeNewBarcode.trim() || changeLoading}
+                                className="h-8 px-2 bg-blue-600 hover:bg-blue-700"
+                              >
+                                {changeLoading ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <Check className="h-3 w-3" />
+                                )}
+                              </Button>
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setActiveSwapIndex(null)}
                                 className="h-8 w-8 p-0"
                               >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
                                 <X className="h-4 w-4" />
                               </Button>
                             </div>
