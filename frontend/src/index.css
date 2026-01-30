@@ -209,22 +209,6 @@
     background-color: #121212;
 }
 
-/* Dark mode text colors - ensure legibility */
-.dark .text-slate-900,
-.dark .text-slate-800,
-.dark .text-slate-700 {
-    color: #f0f0f0 !important;
-}
-
-.dark .text-slate-600,
-.dark .text-slate-500 {
-    color: #a0a0a0 !important;
-}
-
-.dark .text-slate-400 {
-    color: #888888 !important;
-}
-
 /* Dark mode borders */
 .dark .border-slate-200,
 .dark .border-slate-300 {
