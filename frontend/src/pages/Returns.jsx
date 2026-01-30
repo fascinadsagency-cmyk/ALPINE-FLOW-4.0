@@ -488,7 +488,7 @@ export default function Returns() {
     if (!changeRental) return;
     
     const itemsSwapped = changeItems.filter(i => i.isSwapping && i.swapNewItem);
-    const hasDayExtension = changeExtendDays && parseInt(changeNewDays) !== changeRental.days;
+    const hasDateChange = changeAdjustDate && changeDateDelta !== 0;
     
     const ticketWindow = window.open('', '_blank', 'width=400,height=700');
     ticketWindow.document.write(`
@@ -529,11 +529,12 @@ export default function Returns() {
           `).join('')}
         </div>` : ''}
         
-        ${hasDayExtension ? `
+        ${hasDateChange ? `
         <div class="section">
-          <p style="font-weight:bold;">PRÓRROGA</p>
-          <div class="row"><span>Días anteriores:</span><span>${changeRental.days}</span></div>
-          <div class="row"><span>Días nuevos:</span><span>${changeNewDays}</span></div>
+          <p style="font-weight:bold;">AJUSTE DE FECHA</p>
+          <div class="row"><span>Días anteriores:</span><span>${changeOriginalDays}</span></div>
+          <div class="row"><span>Días nuevos:</span><span>${changeNewTotalDays}</span></div>
+          <div class="row"><span>${changeDateDelta >= 0 ? 'Suplemento' : 'Abono'}:</span><strong>${changeDateDelta >= 0 ? '+' : ''}€${changeDateDelta.toFixed(2)}</strong></div>
         </div>` : ''}
         
         <div class="delta-box ${changeTotalDelta > 0 ? 'delta-positive' : changeTotalDelta < 0 ? 'delta-negative' : 'delta-zero'}">
