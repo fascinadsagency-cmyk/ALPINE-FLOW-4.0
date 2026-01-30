@@ -1,0 +1,139 @@
+{
+  "summary": "Iteration 14 - Complete frontend testing of CAMBIOS modal with Calendar Adjustment feature. All 10 requested features verified successfully via UI automation.",
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "DialogDescription in CAMBIOS modal",
+        "issue": "HTML nesting warning: <div> inside <p> tag causes hydration error warning in console",
+        "selector": "DialogDescription containing Badge components",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  
+  "passed_tests": [
+    "1. No pencil/edit icon in Active Rentals table - PASSED",
+    "2. CAMBIOS button opens 'Gestor Universal de Cambios' modal - PASSED",
+    "3. Modal has prominent 'Ajuste de Calendario' section with 'Activar' button - PASSED",
+    "4. After Activar: Shows 'Fecha fin original' (30/1/2026) and 'Nueva fecha de fin' (date input) - PASSED",
+    "5. Date selector allows earlier dates (reduction) and later dates (extension) - PASSED",
+    "6. Shows visual comparison: DÍAS ORIGINALES (1) → DÍAS NUEVOS (4) - PASSED",
+    "7. Calculates 'Suplemento por extensión' (+€81.00) or 'Abono por reducción' (€-27.00) - PASSED",
+    "8. 'TOTAL A COBRAR' shows combinedDelta (material + date) - PASSED",
+    "9. Allows confirm with date-only change (no material swap required) - PASSED",
+    "10. Payment method (Efectivo/Tarjeta) appears when delta exists - PASSED"
+  ],
+  
+  "ui_verification": {
+    "active_rentals_table": {
+      "no_pencil_icon": true,
+      "cambios_button_in_header": true,
+      "cambios_button_in_rows": true,
+      "customer_shown": "Erika Quijano Guerrero"
+    },
+    "cambios_modal": {
+      "title": "Gestor Universal de Cambios",
+      "customer_badge": "Erika Quijano Guerrero",
+      "dni_badge": "757190361",
+      "days_remaining_badge": "0 días restantes / 3 días restantes",
+      "scan_input_section": true,
+      "calendar_adjustment_section": {
+        "title": "Ajuste de Calendario",
+        "subtitle": "Extensión o devolución anticipada",
+        "activar_button": true,
+        "activo_state": "✓ Activo"
+      }
+    },
+    "calendar_adjustment_activated": {
+      "fecha_fin_original": "30/1/2026",
+      "nueva_fecha_de_fin_input": true,
+      "dias_originales": 1,
+      "dias_nuevos_extension": 4,
+      "dias_nuevos_reduction": 0
+    },
+    "extension_test": {
+      "new_date": "02/02/2026",
+      "suplemento_por_extension": "+€81.00",
+      "total_a_cobrar": "+€81.00",
+      "background_color": "orange"
+    },
+    "reduction_test": {
+      "new_date": "01/29/2026",
+      "abono_por_reduccion": "€-27.00",
+      "total_a_abonar": "-€27.00",
+      "background_color": "green"
+    },
+    "payment_method": {
+      "efectivo_button": true,
+      "tarjeta_button": true,
+      "label_cobro": "Método de cobro",
+      "label_abono": "Método de abono"
+    },
+    "confirm_button": {
+      "text": "Confirmar Cambio",
+      "enabled_for_date_only": true
+    }
+  },
+  
+  "test_report_links": [
+    "/app/test_reports/iteration_14.json"
+  ],
+  
+  "action_items": [],
+  
+  "critical_code_review_comments": [
+    "Minor HTML nesting issue: DialogDescription (p tag) contains div elements (Badge components). This causes React hydration warnings but doesn't affect functionality. Consider wrapping Badge components in a span or changing DialogDescription to use a div."
+  ],
+  
+  "updated_files": [],
+  
+  "success_rate": {
+    "backend": "N/A (frontend only testing)",
+    "frontend": "100% (10/10 features verified)"
+  },
+  
+  "test_credentials": {
+    "username": "demo",
+    "password": "demo1234"
+  },
+  
+  "seed_data_creation": "None - used existing test data (Erika Quijano Guerrero rental)",
+  
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  
+  "context_for_next_testing_agent": "All CAMBIOS modal features verified. Key findings: 1) No pencil/edit icon in table - all modifications go through CAMBIOS button, 2) Modal shows 'Gestor Universal de Cambios' with customer info, 3) 'Ajuste de Calendario' section with Activar button, 4) Date input allows extension (later dates) and reduction (earlier dates), 5) Shows DÍAS ORIGINALES → DÍAS NUEVOS comparison, 6) Calculates 'Suplemento por extensión' or 'Abono por reducción', 7) TOTAL A COBRAR/ABONAR shows combined delta, 8) Payment method buttons appear when delta exists, 9) Confirm button enabled for date-only changes. Test rental: Erika Quijano Guerrero with 1 day original (30/1/2026), extending to Feb 2 generates +€81.00 (3 days × €27/day).",
+  
+  "feature_verification": {
+    "no_pencil_icon_in_table": true,
+    "cambios_button_opens_modal": true,
+    "modal_title_gestor_universal": true,
+    "ajuste_calendario_section": true,
+    "activar_button": true,
+    "fecha_fin_original_shown": true,
+    "nueva_fecha_de_fin_input": true,
+    "dias_comparison_shown": true,
+    "suplemento_extension_calculated": true,
+    "abono_reduccion_calculated": true,
+    "total_cobrar_combined_delta": true,
+    "payment_method_when_delta": true,
+    "confirm_date_only_change": true
+  },
+  
+  "screenshots": [
+    ".screenshots/active_rentals_table.png - Active Rentals page with CAMBIOS buttons",
+    ".screenshots/cambios_modal_with_rental.png - Modal with customer selected",
+    ".screenshots/calendar_adjustment_activated.png - Calendar adjustment section activated",
+    ".screenshots/date_extended.png - Extension to Feb 2, 2026 showing +€81.00",
+    ".screenshots/date_reduced.png - Reduction to Jan 29, 2026 showing -€27.00",
+    ".screenshots/ready_to_confirm_date_only.png - Ready to confirm date-only change"
+  ]
+}
