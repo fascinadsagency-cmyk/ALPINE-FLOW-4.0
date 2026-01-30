@@ -225,12 +225,24 @@ export default function ActiveRentals() {
     setSwapPaymentMethod("cash");
     setSwapAction("swap");
     
-    // Calculate days remaining
+    // Calculate days remaining: End Date - Today
     const endDate = new Date(rental.end_date);
+    endDate.setHours(0, 0, 0, 0);
     const today = new Date();
-    const daysLeft = Math.max(1, Math.ceil((endDate - today) / (1000 * 60 * 60 * 24)) + 1);
+    today.setHours(0, 0, 0, 0);
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const daysLeft = Math.max(0, Math.ceil((endDate - today) / msPerDay));
     setSwapDaysRemaining(daysLeft);
     setSwapNewDays(daysLeft.toString());
+    
+    // Initialize date adjustment state
+    setDateAdjustActive(false);
+    setOriginalEndDate(rental.end_date ? rental.end_date.split('T')[0] : "");
+    setNewEndDate(rental.end_date ? rental.end_date.split('T')[0] : "");
+    setOriginalDays(rental.days || 1);
+    setNewTotalDays(rental.days || 1);
+    setDateDelta(0);
+    setCombinedDelta(0);
     
     setSwapModalOpen(true);
     
@@ -252,6 +264,9 @@ export default function ActiveRentals() {
     setSwapOldItem(null);
     setSwapDelta(null);
     setSwapComplete(false);
+    setDateAdjustActive(false);
+    setDateDelta(0);
+    setCombinedDelta(0);
     
     // Re-focus search input
     setTimeout(() => {
