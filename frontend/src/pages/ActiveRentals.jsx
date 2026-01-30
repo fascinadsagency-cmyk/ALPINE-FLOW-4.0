@@ -1226,6 +1226,59 @@ export default function ActiveRentals() {
                   </div>
                 )}
               </div>
+
+              {/* Rental History Section */}
+              {selectedCustomer.rental_history && selectedCustomer.rental_history.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-slate-200">
+                  <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                    <ShoppingCart className="h-4 w-4" />
+                    Historial de Alquileres ({selectedCustomer.rental_history.length})
+                  </h4>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {selectedCustomer.rental_history.slice(0, 10).map((rental, idx) => (
+                      <div 
+                        key={rental.id || idx}
+                        className={`p-3 rounded-lg border text-sm ${
+                          rental.status === 'active' || rental.status === 'partial' 
+                            ? 'bg-emerald-50 border-emerald-200' 
+                            : 'bg-slate-50 border-slate-200'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-slate-800">
+                              {new Date(rental.start_date).toLocaleDateString('es-ES')} 
+                              {rental.days && ` • ${rental.days} días`}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {rental.items?.length || 0} artículos
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-slate-800">€{(rental.total_amount || 0).toFixed(2)}</p>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              rental.status === 'active' || rental.status === 'partial'
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : 'bg-slate-200 text-slate-600'
+                            }`}>
+                              {rental.status === 'active' || rental.status === 'partial' ? 'Activo' : 'Cerrado'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Total stats */}
+                  <div className="mt-3 p-3 rounded-lg bg-slate-100 border border-slate-200">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-600">Total Histórico</span>
+                      <span className="font-bold text-slate-800">
+                        €{selectedCustomer.rental_history.reduce((sum, r) => sum + (r.total_amount || 0), 0).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
