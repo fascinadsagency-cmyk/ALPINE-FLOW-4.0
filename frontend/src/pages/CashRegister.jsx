@@ -216,38 +216,37 @@ export default function CashRegister() {
     };
   };
 
-  // ============ IMPRIMIR TICKET DE MOVIMIENTO (con plantilla de Configuración) ============
+  // ============ IMPRIMIR TICKET DE MOVIMIENTO (USA GENERADOR MAESTRO) ============
   const printMovementTicket = (movement) => {
-    const win = window.open('', '_blank', 'width=320,height=600');
-    if (!win) {
-      toast.error("No se pudo abrir ventana de impresión");
-      return;
+    // Obtener etiqueta de categoría
+    const allCategories = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
+    const categoryLabel = allCategories.find(c => c.value === movement.category)?.label || movement.category || '-';
+    
+    // Preparar datos para el generador maestro
+    const ticketData = {
+      operationNumber: movement.operation_number,
+      date: movement.created_at,
+      createdAt: movement.created_at,
+      movementType: movement.movement_type,
+      category: movement.category,
+      categoryLabel: categoryLabel,
+      concept: movement.concept,
+      notes: movement.notes,
+      amount: movement.amount,
+      paymentMethod: movement.payment_method,
+      customerName: movement.customer_name
+    };
+    
+    // Usar generador maestro
+    const success = printTicket({
+      ticketType: 'movement',
+      data: ticketData
+    });
+    
+    if (!success) {
+      toast.error("No se pudo abrir ventana de impresión. Permite los popups.");
     }
-    
-    // Get stored settings for branding
-    const companyLogo = localStorage.getItem('companyLogo');
-    const ticketHeader = localStorage.getItem('ticketHeader') || 'TIENDA DE ALQUILER DE ESQUÍ';
-    const ticketFooter = localStorage.getItem('ticketFooter') || '¡Gracias por su visita!';
-    const ticketTerms = localStorage.getItem('ticketTerms') || '';
-    
-    // Format helpers
-    const fmt = (v) => (v || 0).toFixed(2);
-    const formatDate = (dateStr) => {
-      if (!dateStr) return '-';
-      const d = new Date(dateStr);
-      return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    };
-    const formatTime = (dateStr) => {
-      if (!dateStr) return '-';
-      return dateStr.split('T')[1]?.substring(0, 5) || '-';
-    };
-    
-    // Determine ticket type
-    const isRefund = movement.movement_type === 'refund';
-    const isExpense = movement.movement_type === 'expense';
-    const isIncome = movement.movement_type === 'income';
-    
-    const ticketTitle = isRefund ? 'TICKET DE DEVOLUCIÓN' : isExpense ? 'TICKET DE SALIDA' : 'TICKET DE VENTA';
+  };
     const ticketColor = isRefund ? '#f97316' : isExpense ? '#dc2626' : '#16a34a';
     const amountPrefix = isIncome ? '+' : '-';
     
