@@ -863,16 +863,18 @@ export default function ActiveRentals() {
   ];
 
   return (
-    <div className="p-6 lg:p-8" data-testid="active-rentals-page">
+    <div className={`p-6 lg:p-8 min-h-screen transition-colors duration-300 ${darkMode ? 'bg-[#121212]' : 'bg-slate-50'}`} data-testid="active-rentals-page">
       {/* ============ STICKY HEADER WITH SEARCH & CAMBIOS BUTTON ============ */}
-      <div className="sticky top-0 z-20 bg-white pb-4 -mx-6 px-6 lg:-mx-8 lg:px-8 pt-2 border-b border-slate-200 shadow-sm mb-6">
+      <div className={`sticky top-0 z-20 pb-4 -mx-6 px-6 lg:-mx-8 lg:px-8 pt-2 border-b shadow-sm mb-6 transition-colors duration-300 ${
+        darkMode ? 'bg-[#121212] border-[#333]' : 'bg-white border-slate-200'
+      }`}>
         <div className="flex flex-col gap-4">
           {/* Title row */}
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+            <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`} style={{ fontFamily: 'Plus Jakarta Sans' }}>
               Alquileres Activos
             </h1>
-            <Badge variant="outline" className="shrink-0">
+            <Badge variant="outline" className={`shrink-0 ${darkMode ? 'border-[#444] text-slate-300' : ''}`}>
               {filteredRentals.length} de {rentals.length}
             </Badge>
           </div>
@@ -881,7 +883,7 @@ export default function ActiveRentals() {
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Smart Search Input */}
             <div className="flex-1 relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2 text-slate-400">
+              <div className={`absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                 <Scan className="h-5 w-5" />
               </div>
               <Input
@@ -890,14 +892,18 @@ export default function ActiveRentals() {
                 onChange={(e) => setSearchQuery(e.target.value.toUpperCase())}
                 onKeyDown={handleSearchKeyDown}
                 placeholder="Escanea código o escribe nombre del cliente..."
-                className="h-12 pl-12 pr-12 text-base font-mono bg-slate-50 border-2 border-slate-200 focus:border-blue-400 focus:bg-white rounded-xl"
+                className={`h-12 pl-12 pr-12 text-base font-mono border-2 rounded-xl ${
+                  darkMode 
+                    ? 'bg-[#1a1a1a] border-[#333] text-white focus:border-cyan-500 focus:bg-[#1e1e1e] placeholder:text-slate-500' 
+                    : 'bg-slate-50 border-slate-200 focus:border-blue-400 focus:bg-white'
+                }`}
                 data-testid="smart-search-input"
               />
               {searchQuery && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
+                  className={`absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 ${darkMode ? 'hover:bg-[#333]' : ''}`}
                   onClick={() => setSearchQuery("")}
                 >
                   <X className="h-4 w-4" />
@@ -905,7 +911,7 @@ export default function ActiveRentals() {
               )}
               {searchLoading && (
                 <div className="absolute right-12 top-1/2 -translate-y-1/2">
-                  <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                  <Loader2 className={`h-4 w-4 animate-spin ${darkMode ? 'text-cyan-400' : 'text-blue-500'}`} />
                 </div>
               )}
             </div>
