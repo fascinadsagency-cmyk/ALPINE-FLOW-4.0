@@ -753,6 +753,8 @@ export default function NewRental() {
     toast.success(`${item.brand} ${item.model} añadido`);
     // Update search results
     setSearchResults(searchResults.filter(i => i.barcode !== item.barcode));
+    // Auto-focus barcode for next scan
+    refocusBarcodeInput();
   };
 
   const addItemByBarcode = async (e) => {
