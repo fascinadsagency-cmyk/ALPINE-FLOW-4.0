@@ -578,7 +578,12 @@ export default function ActiveRentals() {
 
   // Print swap ticket
   const printSwapTicket = () => {
-    if (!swapRental || !swapNewItem || !swapOldItem || !swapDelta) return;
+    if (!swapRental) return;
+    
+    const hasMaterialChange = swapNewItem && swapOldItem && swapDelta;
+    const hasDateChange = dateAdjustActive && dateDelta !== 0;
+    
+    if (!hasMaterialChange && !hasDateChange) return;
 
     const ticketWindow = window.open('', '_blank', 'width=400,height=600');
     ticketWindow.document.write(`
@@ -596,8 +601,8 @@ export default function ActiveRentals() {
           .label { color: #666; }
           .value { font-weight: bold; }
           .delta-box { text-align: center; padding: 15px; margin: 10px 0; border-radius: 4px; }
-          .delta-positive { background: #dcfce7; color: #166534; }
-          .delta-negative { background: #fee2e2; color: #991b1b; }
+          .delta-positive { background: #fff7ed; color: #c2410c; }
+          .delta-negative { background: #dcfce7; color: #166534; }
           .delta-zero { background: #f3f4f6; color: #374151; }
           .delta-amount { font-size: 24px; font-weight: bold; }
           .footer { text-align: center; margin-top: 15px; font-size: 9px; color: #666; }
@@ -607,8 +612,8 @@ export default function ActiveRentals() {
       </head>
       <body>
         <div class="header">
-          <h1>COMPROBANTE DE CAMBIO</h1>
-          <p>Regularización de material</p>
+          <h1>COMPROBANTE DE REGULARIZACIÓN</h1>
+          <p>${hasMaterialChange && hasDateChange ? 'Material + Fecha' : hasMaterialChange ? 'Cambio de material' : 'Ajuste de calendario'}</p>
         </div>
         
         <div class="section">
@@ -617,27 +622,39 @@ export default function ActiveRentals() {
           <div class="row"><span class="label">Alquiler:</span><span class="value">#${swapRental.id.substring(0, 8).toUpperCase()}</span></div>
         </div>
         
+        ${hasMaterialChange ? `
         <div class="section">
-          <p style="font-weight: bold; margin: 0 0 8px 0;">❌ MATERIAL DEVUELTO</p>
-          <div class="row"><span>${swapOldItem.internal_code || swapOldItem.barcode}</span><span>€${swapDelta.oldPrice.toFixed(2)}</span></div>
-          <div style="font-size: 10px; color: #666;">${swapOldItem.item_type} - ${swapOldItem.brand || ''} ${swapOldItem.model || ''}</div>
+          <p style="font-weight: bold; margin: 0 0 8px 0;">🔄 CAMBIO DE MATERIAL</p>
+          <div class="row"><span>❌ ${swapOldItem.internal_code || swapOldItem.barcode}</span><span>€${swapDelta.oldPrice.toFixed(2)}</span></div>
+          <div class="row"><span>✅ ${swapNewItem.internal_code || swapNewItem.barcode}</span><span>€${swapDelta.newPrice.toFixed(2)}</span></div>
+          <div class="row" style="border-top: 1px dashed #ccc; margin-top: 5px; padding-top: 5px;">
+            <span class="label">Diferencia material:</span>
+            <span class="value">${swapDelta.delta >= 0 ? '+' : ''}€${swapDelta.delta.toFixed(2)}</span>
+          </div>
         </div>
+        ` : ''}
         
+        ${hasDateChange ? `
         <div class="section">
-          <p style="font-weight: bold; margin: 0 0 8px 0;">✅ MATERIAL ENTREGADO</p>
-          <div class="row"><span>${swapNewItem.internal_code || swapNewItem.barcode}</span><span>€${swapDelta.newPrice.toFixed(2)}</span></div>
-          <div style="font-size: 10px; color: #666;">${swapNewItem.item_type} - ${swapNewItem.brand || ''} ${swapNewItem.model || ''}</div>
+          <p style="font-weight: bold; margin: 0 0 8px 0;">📅 AJUSTE DE CALENDARIO</p>
+          <div class="row"><span class="label">Días originales:</span><span class="value">${originalDays}</span></div>
+          <div class="row"><span class="label">Días nuevos:</span><span class="value">${newTotalDays}</span></div>
+          <div class="row"><span class="label">Nueva fecha fin:</span><span class="value">${new Date(newEndDate).toLocaleDateString('es-ES')}</span></div>
+          <div class="row" style="border-top: 1px dashed #ccc; margin-top: 5px; padding-top: 5px;">
+            <span class="label">${dateDelta > 0 ? 'Suplemento' : 'Abono'}:</span>
+            <span class="value">${dateDelta >= 0 ? '+' : ''}€${dateDelta.toFixed(2)}</span>
+          </div>
         </div>
+        ` : ''}
         
-        <div class="delta-box ${swapDelta.isUpgrade ? 'delta-positive' : swapDelta.isDowngrade ? 'delta-negative' : 'delta-zero'}">
-          <p style="margin: 0 0 5px 0; font-size: 10px;">${swapDelta.isUpgrade ? 'SUPLEMENTO COBRADO' : swapDelta.isDowngrade ? 'ABONO AL CLIENTE' : 'SIN DIFERENCIA'}</p>
-          <p class="delta-amount">${swapDelta.delta > 0 ? '+' : swapDelta.delta < 0 ? '-' : ''}€${Math.abs(swapDelta.delta).toFixed(2)}</p>
-          <p style="margin: 5px 0 0 0; font-size: 10px;">Método: ${swapPaymentMethod === 'cash' ? 'Efectivo' : 'Tarjeta'}</p>
+        <div class="delta-box ${combinedDelta > 0 ? 'delta-positive' : combinedDelta < 0 ? 'delta-negative' : 'delta-zero'}">
+          <p style="margin: 0 0 5px 0; font-size: 10px;">${combinedDelta > 0 ? 'TOTAL COBRADO' : combinedDelta < 0 ? 'TOTAL ABONADO' : 'SIN DIFERENCIA'}</p>
+          <p class="delta-amount">${combinedDelta > 0 ? '+' : combinedDelta < 0 ? '-' : ''}€${Math.abs(combinedDelta).toFixed(2)}</p>
+          ${combinedDelta !== 0 ? `<p style="margin: 5px 0 0 0; font-size: 10px;">Método: ${swapPaymentMethod === 'cash' ? 'Efectivo' : 'Tarjeta'}</p>` : ''}
         </div>
         
         <div class="footer">
           <p>Fecha: ${new Date().toLocaleString('es-ES')}</p>
-          <p>Días restantes: ${swapDelta.days}</p>
           <p style="margin-top: 8px;">Gracias por su confianza</p>
         </div>
         
