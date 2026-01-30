@@ -309,22 +309,58 @@ export default function CashRegister() {
           .amount-value { font-size: 20px; font-weight: bold; color: ${ticketColor}; }
           .footer { text-align: center; margin-top: 15px; font-size: 9px; color: #333; }
           .terms { font-size: 8px; color: #666; margin-top: 10px; padding: 8px; background: #f9f9f9; border: 1px dashed #ccc; }
-          @media print { @page { margin: 0; size: 80mm auto; } }
+          /* ========== THERMAL PRINTER 80mm OPTIMIZATION ========== */
+          @page { 
+            size: 80mm auto; 
+            margin: 0; /* Elimina encabezados/pies del navegador */
+          }
+          @media print {
+            html, body {
+              width: 80mm !important;
+              max-width: 80mm !important;
+              margin: 0 !important;
+              padding: 2mm !important;
+              background: #ffffff !important;
+              color: #000000 !important;
+            }
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              color: #000000 !important;
+              background: transparent !important;
+            }
+            .header-title {
+              background: transparent !important;
+              color: #000000 !important;
+              border: 2px solid #000000 !important;
+            }
+            .amount-box {
+              background: transparent !important;
+              border: 2px solid #000000 !important;
+            }
+            .amount-value {
+              color: #000000 !important;
+            }
+            .block, .row, tr, td {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+            }
+          }
         </style>
       </head>
       <body>
         <!-- CABECERA -->
-        ${companyLogo ? `
+        ${companyLogo ? \`
         <div class="logo">
-          <img src="${companyLogo}" alt="Logo" />
+          <img src="\${companyLogo}" alt="Logo" />
         </div>
-        ` : `
+        \` : \`
         <div class="header">
-          <div class="header-business">${ticketHeader}</div>
+          <div class="header-business">\${ticketHeader}</div>
         </div>
-        `}
+        \`}
         
-        <div class="header-title">${ticketTitle}</div>
+        <div class="header-title">\${ticketTitle}</div>
         
         <div class="ticket-number">Nº ${movement.operation_number || 'PENDIENTE'}</div>
         
