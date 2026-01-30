@@ -1309,21 +1309,23 @@ export default function ActiveRentals() {
                 </Button>
                 <Button 
                   onClick={executeSwap}
-                  disabled={swapLoading || !swapNewItem || !swapOldItem}
+                  disabled={swapLoading || ((!swapNewItem || !swapOldItem) && !(dateAdjustActive && dateDelta !== 0))}
                   className={`min-w-[200px] ${
-                    swapDelta?.isUpgrade ? 'bg-emerald-600 hover:bg-emerald-700' :
-                    swapDelta?.isDowngrade ? 'bg-red-600 hover:bg-red-700' :
-                    ''
+                    combinedDelta > 0 ? 'bg-orange-600 hover:bg-orange-700' :
+                    combinedDelta < 0 ? 'bg-emerald-600 hover:bg-emerald-700' :
+                    'bg-blue-600 hover:bg-blue-700'
                   }`}
                   data-testid="confirm-swap-btn"
                 >
                   {swapLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : combinedDelta !== 0 ? (
+                    <DollarSign className="h-4 w-4 mr-2" />
                   ) : (
                     <Zap className="h-4 w-4 mr-2" />
                   )}
-                  {swapDelta?.isUpgrade ? `Cobrar €${swapDelta.delta.toFixed(2)} y Cambiar` :
-                   swapDelta?.isDowngrade ? `Abonar €${Math.abs(swapDelta.delta).toFixed(2)} y Cambiar` :
+                  {combinedDelta > 0 ? `Cobrar €${combinedDelta.toFixed(2)} y Confirmar` :
+                   combinedDelta < 0 ? `Abonar €${Math.abs(combinedDelta).toFixed(2)} y Confirmar` :
                    'Confirmar Cambio'}
                 </Button>
               </>
