@@ -249,7 +249,8 @@ export default function ActiveRentals() {
     setSwapOldItem(triggerItem?.rental_item_data || triggerItem);
     setSwapDelta(null);
     setSwapComplete(false);
-    setSwapPaymentMethod("cash");
+    // SECURITY: Pre-select original payment method for refunds
+    setSwapPaymentMethod(rental.payment_method || "cash");
     setSwapAction("swap");
     
     // Calculate days remaining: End Date - Today
