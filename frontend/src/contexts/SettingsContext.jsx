@@ -209,6 +209,23 @@ const translations = {
     "settings.autoPrint.disabled": "Tickets require manual confirmation",
     "settings.autoPrint.tip": "Enable this option if you have a thermal printer connected",
     
+    // Hardware section
+    "settings.hardware": "Hardware",
+    "settings.hardware.desc": "Scanner and printer configuration",
+    "settings.scanner": "Scanner / Barcode Gun",
+    "settings.scanner.quickMode": "Quick Scan Mode",
+    "settings.scanner.quickMode.desc": "Automatically adds the product when an exact code is detected",
+    "settings.scanner.quickMode.disabled": "Only searches the product and waits for manual confirmation",
+    "settings.printer": "Printer",
+    "settings.printer.paperWidth": "Paper Width",
+    "settings.printer.paperWidth.desc": "Select your thermal printer paper width",
+    "settings.printer.80mm": "80mm (Standard)",
+    "settings.printer.58mm": "58mm (Narrow)",
+    "settings.printer.autoPrint": "Auto-Print",
+    "settings.printer.autoPrint.desc": "Automatically opens print dialog when confirming a payment",
+    "settings.printer.doubleCopy": "Print Double Copy",
+    "settings.printer.doubleCopy.desc": "Prints two tickets in a row (Store and Customer)",
+    
     // Common
     "common.cancel": "Cancel",
     "common.save": "Save",
