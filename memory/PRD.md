@@ -2,7 +2,7 @@
 
 ## Estado del Proyecto
 **Última actualización:** 2026-01-30
-**Estado:** Operativo - Lógica financiera de caja CORREGIDA y unificada
+**Estado:** Operativo - Lógica financiera de caja CORREGIDA + Ticket de cierre REDISEÑADO
 
 ---
 
@@ -36,6 +36,13 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
     - Efectivo en Cajón = Fondo + Neto Efectivo
     - Total Tarjeta = Ingresos - Salidas (puede ser negativo)
   - **Modal de Cierre:** Valores COINCIDEN EXACTAMENTE con Panel de Arqueo
+  - **Ticket de Cierre (REDISEÑADO 30/01/2026):**
+    - Formato 80mm para impresora térmica
+    - Cabecera: Logo, fecha, turno, hora, responsable
+    - Bloque A: Resumen Económico (+Fondo, +Ventas, -Devoluciones, =INGRESO NETO)
+    - Bloque B: Desglose Arqueo (Efectivo y Tarjeta con desglose detallado)
+    - Bloque C: Estadísticas Operativas
+    - Resultado Final: Descuadre Total con indicador visual
   - Historial de cierres con reabrir
   - Múltiples turnos/sesiones por día
 - ✅ **Reportes Flexibles:** Filtro por rango, botones de selección rápida
