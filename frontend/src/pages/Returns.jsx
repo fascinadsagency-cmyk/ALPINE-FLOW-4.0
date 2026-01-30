@@ -802,7 +802,7 @@ export default function Returns() {
     setRental(null);
     setScannedBarcodes([]);
     setBarcodeInput("");
-    if (barcodeRef.current) barcodeRef.current.focus();
+    refocusBarcodeInput(); // Use helper with select
   };
 
   const loadRentalById = async (rentalId) => {
