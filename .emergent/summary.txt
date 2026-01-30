@@ -1,174 +1,167 @@
 <analysis>**original_problem_statement:**
-Crear un sistema de gestión completo para tiendas de alquiler de equipos de esquí/snowboard.
+El problema principal del usuario era un error contable crítico en el sistema. La aplicación mostraba cifras financieras contradictorias en diferentes vistas (Dashboard, Registro de Caja, Informe de Cierre). El objetivo era reescribir por completo la lógica de cálculo financiero para garantizar la coherencia y la precisión, junto con varias mejoras de UI/UX para apoyar esta corrección y optimizar los flujos de trabajo.
 
 **PRODUCT REQUIREMENTS (Consolidated & Updated):**
 1.  **Gestión Central:** Alquileres, Devoluciones, Inventario (con código interno manual), Clientes (con historial financiero), Proveedores, Tarifas.
 2.  **Módulos Financieros:**
-    *   **Dashboard Estratégico:** Con calendario de ocupación, rankings de rendimiento, y un nuevo panel de Control de Devoluciones.
-    *   **Gestión de Caja:** Con arqueo manual detallado, historial, y posibilidad de revertir cierres. Debe registrar y sincronizar todos los movimientos y permitir múltiples turnos/sesiones por día.
+    *   **Dashboard Operativo:** Con calendario de ocupación, estado del stock y clientes del día. (Datos financieros eliminados por privacidad).
+    *   **Gestión de Caja:** Con arqueo manual detallado, historial, y un nuevo indicador de Ingresos Netos del Día separado del saldo total.
     *   **Reportes Flexibles:** Con filtro por rango, botones de selección rápida y comparativa interanual.
     *   **Rentabilidad de Inventario:** Trackear coste, ingresos, amortización y beneficio neto por artículo.
 3.  **Flujos de Trabajo Optimizados:**
+    *   **Ficha de Cliente Enriquecida:** Acceso con un clic desde 'Alquileres Activos' a una ficha completa con historial, notas y datos técnicos priorizados (tallas, nivel, etc.) con edición rápida y diseño colapsable.
     *   **Numeración Unificada:** Todos los movimientos de caja (ventas, devoluciones, salidas) deben seguir una secuencia única AXXXXXX.
-    *   **Gestión de Cambios Centralizada (SWAP):** Un modal global en la lista de alquileres activos para gestionar cambios de material, gama o duración, con cálculo automático de la diferencia económica.
-    *   **Precios por Tramos (Look-up):** El sistema debe usar tarifas escalonadas en lugar de multiplicación lineal (Precio Base * Días).
-    *   **Borrado Masivo en Inventario:** Habilitar selección múltiple y borrado (lógico o físico) de artículos.
-    *   **Visualización de Packs FUSIONADA:** UNA SOLA LÍNEA por pack en el carrito y ticket.
-    *   **Visibilidad en Mantenimiento:** La vista de Mi Flota debe mostrar información detallada.
-    *   **Ticket Completo y Claro:** El ticket impreso debe ser un comprobante profesional.
-    *   **Buscador Global de Gestión Rápida (Reverse Lookup):** Una barra de búsqueda universal que, al escanear un artículo, abre directamente el modal de gestión del cliente que lo tiene alquilado.
-4.  **Sistema de Tickets/Comprobantes:** Impresión como comprobante de un pago ya realizado.
-5.  **Gestión de Datos:** Importador Universal (CSV/Excel).
-6.  **Soporte y Personalizaciones:**
+    *   **Gestión de Cambios Centralizada (SWAP):** Un modal global en la lista de alquileres activos para gestionar cambios de material, gama o duración.
+    *   **Optimización para Lector de Códigos:** Auto-foco y auto-selección en campos de búsqueda para un flujo de trabajo rápido con pistola de códigos de barras.
+4.  **Sistema de Tickets/Comprobantes:**
+    *   **Impresión Centralizada y Personalizable:** TODOS los tickets generados deben usar una única plantilla definida en 'Configuración', respetando el logo, textos, y opciones, y optimizada para impresoras térmicas de 80mm.
+5.  **Seguridad:**
+    *   **Restricción en Devoluciones:** El método de pago de una devolución debe estar bloqueado y ser el mismo que el del pago original.
+6.  **Gestión de Datos:** Importador Universal (CSV/Excel).
+7.  **Soporte y Personalizaciones:**
     *   Pestaña para que el usuario pueda abrir tickets de soporte.
-    *   Pestaña de 'Configuración' para personalizar la apariencia (Modo Oscuro, Idioma), diseño del ticket, e identidad de marca.
-7.  **Integraciones Futuras:** VeriFactu, WhatsApp, TPV, Email, Google Calendar.
+    *   Pestaña de 'Configuración' para personalizar el sistema.
 
 **User's preferred language**: Spanish
 
 **what currently exists?**
-Es un sistema full-stack (React, FastAPI, MongoDB) para la gestión de alquileres de esquí. En esta sesión se han realizado correcciones críticas en el flujo de caja, unificando toda la lógica de modificación de contratos en un único modal (CAMBIOS) y asegurando que cualquier diferencia económica se refleje de forma inmediata y sincronizada en el Dashboard y en la Caja. Se eliminaron accesos redundantes (icono de lápiz) y se solucionó un error que bloqueaba el botón de cobro. Finalmente, se ha construido desde cero una nueva y completa sección de Configuración que permite al usuario personalizar el tema (modo oscuro/claro), el idioma (ES/EN), la identidad de marca (logo) y el diseño del ticket (cabecera, pie, datos a mostrar), incluyendo una vista previa del ticket en tiempo real.
+Es un sistema full-stack (React, FastAPI, MongoDB) para la gestión de alquileres de esquí. En esta sesión se ha corregido un error contable crítico y se han implementado importantes mejoras de UI/UX.
+1.  **Lógica Financiera Corregida**: Se ha reescrito desde cero toda la lógica para calcular los balances diarios, el flujo de caja y los informes de cierre, tanto en el backend () como en el frontend (). Ahora el sistema utiliza fórmulas unificadas y fiables.
+2.  **Página de 'Caja' Rediseñada**: La interfaz se ha reconstruido para presentar los datos financieros de forma clara, utilizando tarjetas KPI (Ingresos Brutos, Salidas, Balance Neto) y una sección separada para el arqueo de caja.
+3.  **Tickets Estandarizados**: El diseño de los tickets (cierre de caja, devoluciones, regularizaciones) se ha unificado a un formato de recibo profesional utilizando un generador central ().
+4.  **Mejoras de UX Significativas**:
+    *   **Optimización para Lector de Códigos**: El flujo de trabajo con pistola de códigos de barras se ha optimizado con auto-foco y auto-selección en las páginas de ,  y .
+    *   **Interfaz más Limpia**: Los datos técnicos del cliente ahora son colapsables (acordeón) y, en el flujo de nuevo alquiler, están ocultos por defecto.
+5.  **Seguridad Mejorada**: El método de pago para las devoluciones ahora está bloqueado al método de pago original para prevenir fraudes.
 
 **Last working item**:
--   Last item agent was working: El agente acaba de finalizar la implementación de la nueva página de 'Configuración' (), que incluye la gestión de la identidad de marca, el diseño del ticket con vista previa en vivo y la configuración del IVA, según la última solicitud detallada del usuario.
--   Status: USER VERIFICATION PENDING
+-   Last item agent was working: El agente estaba implementando una solicitud del usuario para optimizar el CSS para impresoras térmicas (). Actualizó el generador central  con reglas CSS mejoradas y aplicó estos cambios a la función del ticket de cierre en .
+-   Status: IN PROGRESS
 -   Agent Testing Done: N
--   Which testing method agent to use? both
+-   Which testing method agent to use? frontend
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1**: (P0) **Verificar la implementación de la página de 'Configuración'.**
-    -   **Description**: El usuario debe validar que la nueva página de 'Configuración' cumple con todos los requisitos funcionales: la subida del logo y su aplicación, el cambio de idioma en toda la app, la personalización del ticket (textos e interruptores) y la correcta actualización de la vista previa en tiempo real.
-    -   **Status**: USER VERIFICATION PENDING
+-   **Issue 1**: (P0) **Finalizar y verificar los estilos de impresión CSS en todos los tickets.**
+    -   **Description**: El agente actualizó  y el ticket de cierre en  con nuevas reglas . Sin embargo, es necesario verificar que estos cambios se apliquen correctamente en todos los puntos de generación de tickets (Devoluciones, ticket de movimiento individual en Caja, etc.) para asegurar la consistencia.
+    -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: both
+    -   **Should Test frontend/backend/both after fix?**: frontend
 
 **In progress Task List**:
--   **Task 1**: (P2) Implementar personalización de la tabla de Inventario (Drag & Drop).
-    -   **Where to resume**: La dependencia  está instalada. El trabajo en  fue pausado para atender tareas de mayor prioridad.
-    -   **What will be achieved with this?**: Ofrecerá una experiencia de usuario altamente personalizada para gestionar el inventario.
-    -   **Status**: IN PROGRESS (Paused)
+-   **Task 1**: (P1) **Completar la unificación del sistema de impresión de tickets.**
+    -   **Where to resume**: El agente ha refactorizado la impresión en la mayoría de las secciones. El siguiente paso inmediato es completar el . Después, se debe realizar una auditoría final para asegurar que absolutamente TODAS las funciones de impresión de la aplicación utilizan el generador central  y heredan los nuevos estilos de impresión.
+    -   **What will be achieved with this?**: Consistencia del 100% en todos los documentos impresos, que respetarán la configuración central de logo, texto y estilo.
+    -   **Status**: IN PROGRESS
     -   **Should Test frontend/backend/both after fix?**: frontend
-    -   **Blocked on something**: Tareas de flujo de trabajo crítico tienen mayor prioridad.
+    -   **Blocked on something**: Issue 1.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    -   (P1) **Refactorización del Backend**: Dividir el monolito  en una estructura modular (routers, models, services) para mejorar la estabilidad y mantenibilidad.
-    -   (P1) **Aplicar Modo Oscuro Globalmente**: El modo oscuro funciona en el Layout y en la página de Configuración, pero debe adaptarse al resto de páginas y componentes para que utilicen el  y reaccionen al cambio de tema.
-    -   (P2) **Crear Pestaña de Soporte y Mejoras:** Crear una nueva página con un formulario para que el usuario pueda solicitar nuevas funcionalidades o reportar problemas.
-    -   (P2) **Finalizar Sistema de Impresión Automática:** Conectar funcionalmente el interruptor Impresión Automática en  a los flujos de trabajo de alquiler y cambio para que la impresión se dispare sin confirmación manual.
+    -   (P1) **Refactorización del Backend**: Dividir el monolito  en una estructura modular (routers, models, services). Esta es una deuda técnica de alta prioridad.
+    -   (P2) **Crear Pestaña de Soporte y Mejoras:** Implementar una nueva página con un formulario para que el usuario pueda solicitar nuevas funcionalidades o reportar problemas.
+    -   (P2) **Finalizar Sistema de Impresión Automática:** Conectar el interruptor Impresión Automática en  a los flujos de trabajo.
+    -   (P3) **Implementar personalización de la tabla de Inventario (Drag & Drop)**: La dependencia  ya está instalada.
 -   **Future Tasks:**
     -   Integraciones (VeriFactu, WhatsApp API, TPV, Email, Google Calendar).
     -   Sistema de Reservas Online.
+    -   Buscador Global de Gestión Rápida (Reverse Lookup).
+    -   Borrado Masivo en Inventario.
+    -   Importador Universal (CSV/Excel).
 
 **Completed work in this session**
--   **Corrección Modal 'Gestionar Cambio' ()**: Se corrigió la lógica del contador de días, se cambió el lenguaje a Ajuste de Fecha y se aseguró la entrada manual de códigos.
--   **Reingeniería del Flujo de Caja**: Se eliminó el icono de edición de , centralizando todas las modificaciones en el modal CAMBIOS. Se implementó un flujo de caja obligatorio para cualquier ajuste, asegurando que todos los cobros/abonos se registren.
--   **Sincronización de Ingresos**: Se unificó la fuente de datos para los ingresos. El Dashboard ('Ingresos Hoy') y la Caja ('Saldo de Turno') ahora leen de la colección , eliminando descuadres contables.
--   **Ficha de Cliente Mejorada**: El modal de cliente en  ahora muestra el historial completo de alquileres y gastos del cliente.
--   **Unificación Modal 'CAMBIOS' ()**: Se expandió el modal para gestionar tanto cambios de material como ajustes de fecha en una sola operación, con un cálculo de delta financiero combinado.
--   **Desbloqueo de Botón de Cobro**: Se corrigió el error crítico que deshabilitaba el botón de pago en el modal 'CAMBIOS' cuando solo se ajustaba la fecha, completando el flujo de pago.
--   **Creación de la Página de 'Configuración'**: Se implementó una nueva sección  con las siguientes funcionalidades:
-    -   **Contexto Global**: Se creó  para persistir el tema y el idioma.
-    -   **Modo Oscuro**: Implementado un interruptor funcional con persistencia.
-    -   **Selector de Idioma**: Implementado un selector funcional (ES/EN) con persistencia.
-    -   **Personalización del Ticket**: Se añadieron campos para configurar la cabecera, pie de página, y términos y condiciones, con interruptores para mostrar/ocultar DNI e IVA.
-    -   **Identidad de Marca**: Se añadió la funcionalidad para subir un logo.
-    -   **Vista Previa de Ticket en Vivo**: Integrada para reflejar todos los cambios de configuración al instante.
+-   **Corrección Crítica de Contabilidad**: Se reescribió por completo la lógica financiera en el backend y el frontend () para unificar los cálculos y eliminar las discrepancias (probado con el agente de testing).
+-   **Rediseño de la Pestaña de Caja**: Se reconstruyó  con una nueva interfaz de KPIs y un panel de arqueo claro.
+-   **Rediseño del Ticket de Cierre de Caja**: Se implementó un nuevo formato de ticket contable profesional.
+-   **Restauración de Impresión en Historial**: Se añadieron botones para imprimir y editar en la tabla de movimientos de caja.
+-   **Unificación de Tickets en Devoluciones**: Se refactorizó  para usar el  centralizado.
+-   **Optimización UX para Lector de Códigos**: Se implementó el auto-foco y la selección de texto en los campos de búsqueda de ,  y .
+-   **Mejora de Ficha de Cliente**: Se implementó un acordeón colapsable para los datos técnicos en  y .
+-   **Mejora de UX en Nuevo Alquiler**: Se ocultaron por defecto los datos del cliente en  tras la selección.
+-   **Restricción de Seguridad en Devoluciones**: Se bloqueó el método de pago en los modales de devolución/cambio en  y .
+-   **Corrección de CSS en Modal**: Se arregló un desbordamiento visual en el modal de confirmación de .
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1**: **Inconsistencia en el diseño del ticket.**
-    -   **Status**: La nueva página de 'Configuración' con vista previa en vivo pretende resolver esto de forma definitiva. Pendiente de verificación por parte del usuario.
--   **Issue 2**: **Monolito en el backend ().**
-    -   **Status**: Sigue siendo un riesgo técnico alto. La refactorización está planificada como una tarea próxima de alta prioridad.
+-   **Issue 1**: **Monolito en el backend ().**
+    -   **Status**: No solucionado. Sigue siendo un riesgo técnico alto. La refactorización está planificada como una tarea próxima de alta prioridad (P1).
 
 **Known issue recurrence from previous fork**
--   **Issue recurrence in previous fork**: Errores de sintaxis/indentación en  tras realizar modificaciones.
--   **Recurrence count**: El riesgo persiste y es alto debido a la naturaleza monolítica del archivo. Se recomienda encarecidamente priorizar la refactorización.
+-   **Issue recurrence in previous fork**: Errores de sintaxis/indentación en .
+-   **Recurrence count**: El riesgo persiste y es alto debido a la naturaleza monolítica del archivo. La refactorización es urgente.
 -   **Status**: RECURRING.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Single Source of Truth (SSoT)**: La colección  se ha establecido como la fuente de verdad única para todos los datos financieros, sincronizando el Dashboard y la Caja.
--   **React Context**: Se ha introducido  para la gestión de estado global y persistente (tema, idioma) a través de .
--   **Flujo de Caja Centralizado**: Toda modificación de contrato que implique un cambio económico pasa obligatoriamente por un flujo de pago/abono que se registra en .
--   **Componentes Complejos con Estado Derivado**: Los modales en  y  calculan en tiempo real deltas financieros combinados (material + días) a partir de las interacciones del usuario.
+-   **Refactorización de Lógica Financiera**: Lógica de cálculo centralizada en el backend () que proporciona una única fuente de verdad para Ingresos Brutos, Salidas Totales, Balance Neto, Efectivo Esperado y Tarjeta Esperada.
+-   **Optimización UX para Lector de Códigos**: Uso extensivo de  para gestionar el foco () y la selección de texto () en los campos de entrada tras acciones específicas del usuario para crear una experiencia de escanear y listo.
+-   **Generación Centralizada de Tickets**: Refactorización de múltiples funciones de impresión para llamar a una única utilidad () que construye un string HTML para una nueva ventana, asegurando la consistencia del diseño.
+-   **Reglas CSS de Impresión**: Estandarización de las reglas  y  para optimizar la salida para impresoras térmicas de 80mm (sin márgenes, texto negro, evitar cortes de página).
 
 **key DB schema**
--   Sin cambios en la estructura de las colecciones, pero se ha reforzado el uso de  como el registro central de todas las transacciones financieras, incluyendo nuevas categorías como  y .
+-   No hay nuevos esquemas ni cambios significativos. La lógica se basa en las colecciones existentes , , y .
 
 **changes in tech stack**
 -   Ninguno.
 
 **All files of reference**
--   **/app/frontend/src/contexts/SettingsContext.jsx**: Creado para gestionar el estado global de configuración.
--   **/app/frontend/src/pages/Settings.jsx**: Reescrito completamente para implementar la nueva sección de configuración con todas sus funcionalidades.
--   **/app/frontend/src/components/Layout.jsx**: Modificado para consumir  y aplicar el tema y el enlace de navegación.
--   **/app/frontend/src/App.js**: Modificado para envolver la aplicación con el .
--   **/app/frontend/src/pages/ActiveRentals.jsx**: Modificado masivamente para eliminar la edición directa, unificar el modal de cambios (con ajuste de fecha) y arreglar el flujo de pago.
--   **/app/frontend/src/pages/Returns.jsx**: Modificado para corregir la lógica del modal de gestión de cambios.
--   **/app/backend/server.py**: Modificado para unificar el cálculo de ingresos en los endpoints  y  basándose en .
--   **/app/frontend/src/pages/CashRegister.jsx**: Modificado para mostrar un desglose más claro de los ingresos.
--   **/app/frontend/src/pages/Dashboard.jsx**: Modificado para que sus KPIs reflejen los ingresos netos calculados desde el backend.
--   **/app/memory/PRD.md**: Actualizado con los últimos cambios y funcionalidades.
+-   **/app/backend/server.py**: Endpoints financieros modificados (, ) y añadido un nuevo endpoint ().
+-   **/app/frontend/src/pages/CashRegister.jsx**: Reescrito por completo.
+-   **/app/frontend/src/pages/Returns.jsx**: Modificado para unificar la impresión de tickets y añadir seguridad en los pagos.
+-   **/app/frontend/src/pages/ActiveRentals.jsx**: Modificado para añadir seguridad en pagos, UX para lector de códigos y acordeón de datos de cliente.
+-   **/app/frontend/src/pages/NewRental.jsx**: Modificado para UX de lector de códigos, ocultar datos de cliente y corregir CSS de modal.
+-   **/app/frontend/src/pages/Customers.jsx**: Modificado para añadir el acordeón de datos de cliente.
+-   **/app/frontend/src/lib/ticketGenerator.js**: Actualizado con CSS mejorado para impresión térmica.
 
 **Areas that need refactoring**:
--   **CRÍTICO:**  es un monolito que necesita ser dividido en módulos (routers, servicios) urgentemente.
--   **ALTO:** Los componentes , , y el nuevo  son muy grandes y complejos. Deberían descomponerse en hooks personalizados y sub-componentes.
+-   **CRÍTICO:** . El riesgo de introducir errores con cualquier cambio es extremadamente alto.
+-   **ALTO:** Las páginas de frontend como ,  y  siguen siendo muy grandes y podrían descomponerse en componentes más pequeños.
 
 **key api endpoints**
--   **Modificados:**
-    -   : Ahora calcula  a partir de  para reflejar el ingreso neto real.
-    -   : Modificado para desglosar los ingresos por categoría (, , , etc.).
-    -   : Lógica de confirmación y flujo de pago mejorada.
--   **Potencialmente Nuevos/Modificados (para Settings):** Endpoints para guardar y cargar las preferencias del usuario (logo, textos de ticket, etc.).
+-   **Reescritos:**
+    -   : Devuelve la nueva estructura financiera unificada.
+-   **Nuevos:**
+    -   : Para actualizar el método de pago de un movimiento de caja.
 
 **Critical Info for New Agent**
--   **Prioridad Máxima:** Obtener la validación del usuario para la nueva página de 'Configuración'. Esté preparado para hacer ajustes finos según su feedback.
--   **Fuente de Verdad Financiera:** Recuerde que  es ahora la única fuente de verdad para todos los cálculos de ingresos y saldos. Cualquier nueva función que implique dinero debe registrar una transacción allí.
--   **Riesgo del Backend:**  es extremadamente grande y frágil. Edítelo con extrema precaución. La refactorización de este archivo es la siguiente gran tarea técnica prioritaria.
--   **Modo Oscuro Incompleto**: El modo oscuro solo se aplica al layout principal y a la página de Configuración. Otras páginas no son reactivas al cambio. La siguiente tarea debería ser adaptar los componentes restantes para que usen las variables de color del tema desde el .
+-   **El Bug Crítico está Solucionado**: El objetivo principal, corregir los errores contables, está completo y ha sido verificado por el agente de testing. Los datos financieros son ahora fiables.
+-   **Enfoque en los Retoques Finales**: El siguiente paso inmediato es verificar los estilos de impresión CSS (Issue 1) y asegurar que la tarea de unificación de tickets esté 100% completa.
+-   **Priorizar la Refactorización del Backend**: Una vez terminadas las tareas de impresión, la máxima prioridad es refactorizar  para reducir la deuda técnica y mejorar la estabilidad. No añadas nuevas funcionalidades antes de abordar esto.
 
 **documents and test reports created in this job**
 -   /app/memory/PRD.md (actualizado)
--   /app/test_reports/iteration_11.json
--   /app/test_reports/iteration_12.json
--   /app/test_reports/iteration_13.json
--   /app/test_reports/iteration_14.json
--   /app/test_reports/iteration_15.json
--   /app/test_reports/iteration_16.json
+-   /app/test_reports/iteration_19.json
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Pide optimizar la interfaz de , eliminando el icono de lápiz y centralizando todo en el botón CAMBIOS. (COMPLETADO)
-2.  **Agent**: Inicia la implementación, confirmando que el lápiz ya estaba eliminado y enfocándose en mejorar el modal CAMBIOS. (COMPLETADO)
-3.  **Agent**: Añade la funcionalidad completa de Ajuste de Calendario al modal CAMBIOS de , unificando la experiencia con la de . (COMPLETADO)
-4.  **Agent**: Realiza pruebas visuales y confirma que la nueva interfaz del modal es correcta y funcional. (COMPLETADO)
-5.  **Agent**: Llama al agente de testing, que confirma que todo el flujo de cambios combinados (material + fecha) funciona. (COMPLETADO)
-6.  **User**: Reporta un error crítico: el botón de cobro en el modal CAMBIOS está deshabilitado si solo se cambia la fecha, bloqueando el flujo. (EN PROGRESO)
-7.  **Agent**: Identifica y corrige la lógica  del botón, asegurando que se active si hay cualquier diferencia económica (por material o por fecha). (COMPLETADO)
-8.  **Agent**: Realiza pruebas E2E, confirmando que el cobro se procesa y se refleja correctamente en el Dashboard y en la Caja. (COMPLETADO)
-9.  **Agent**: Llama al agente de testing, que valida el flujo de pago completo con éxito. (COMPLETADO)
-10. **User**: Solicita la creación de una nueva sección de Configuración con ajustes de tema, idioma, personalización de ticket, etc. (EN PROGRESO -> COMPLETADO EN ESTA SESIÓN)
-11. **User**: Proporciona requisitos detallados para la página de 'Configuración', incluyendo 'Identidad de Marca', 'Diseño de Ticket', 'IVA' y una vista previa en vivo. (ÚLTIMO MENSAJE, IMPLEMENTADO)
+1.  **User**: Corregir bug contable crítico, rediseñar la página de 'Caja' y limpiar el Dashboard. (COMPLETED)
+2.  **User**: Rediseñar el ticket de cierre de caja para mayor claridad y estándares contables. (COMPLETED)
+3.  **User**: Restaurar la funcionalidad de impresión/edición en la tabla del historial de movimientos de caja. (COMPLETED)
+4.  **User**: Unificar la impresión en  para que use la plantilla de ticket central. (COMPLETED)
+5.  **User**: Corregir un bug de desbordamiento de CSS en el modal de confirmación de nuevo alquiler. (COMPLETED)
+6.  **User**: Hacer que la sección de datos técnicos del cliente sea colapsable (acordeón). (COMPLETED)
+7.  **User**: Ocultar los datos técnicos del cliente por defecto en el flujo de 'Nuevo Alquiler'. (COMPLETED)
+8.  **User**: Añadir restricción de seguridad: forzar que el método de pago de la devolución coincida con el pago original. (COMPLETED)
+9.  **User**: Optimizar la UI/UX para lectores de códigos de barras (auto-foco, auto-enter, auto-selección). (COMPLETED)
+10. **User**: Añadir reglas CSS  específicas para impresoras térmicas. (IN PROGRESS)
 
 **Project Health Check:**
--   **Broken**: No. Las funcionalidades implementadas son estables y han sido probadas.
--   **Mocked**: Algunas secciones dentro de  fueron creadas como placeholders (Gestión de IVA, Personalización de Ticket) antes de ser completamente implementadas en la última fase de la sesión.
+-   **Broken**: No. El bug financiero crítico ha sido resuelto.
+-   **Mocked**: No.
 
 **3rd Party Integrations**
 -   
 -   , 
 
 **Testing status**
--   **Testing agent used after significant changes**: YES
+-   **Testing agent used after significant changes**: YES, para la refactorización crítica de la lógica financiera. Las pruebas pasaron al 100%.
 -   **Troubleshoot agent used after agent stuck in loop**: NO
--   **Test files created**: []
+-   **Test files created**:  fue creado por el agente de testing.
 -   **Known regressions**: Ninguna.
 
 **Credentials to test flow:**
--   Registra un nuevo usuario desde la interfaz de login (ej.  / ) o usa el endpoint de creación de usuario.
+-   Usuario:  / 
+-   Usuario:  / 
 
 **What agent forgot to execute**
--   El agente ha sido muy completo. La única tarea pendiente derivada de la implementación es la aplicación global del modo oscuro a todas las páginas, lo cual el agente identificó como un paso siguiente necesario.</analysis>
+-   El agente siguió todas las solicitudes del usuario en esta sesión. El único trabajo inacabado es la última solicitud ( CSS), que está correctamente marcada como . Es crucial verificar este cambio en todos los tipos de tickets.</analysis>
