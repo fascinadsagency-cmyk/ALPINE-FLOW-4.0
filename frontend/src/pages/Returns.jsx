@@ -1792,44 +1792,83 @@ export default function Returns() {
                 </div>
               </div>
 
-              {/* DAY EXTENSION TOGGLE */}
+              {/* DATE ADJUSTMENT - Allows both extension and early return */}
               <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <CalendarPlus className="h-5 w-5 text-blue-600" />
                     <div>
-                      <p className="font-medium text-slate-900">Prórroga de días</p>
-                      <p className="text-xs text-slate-500">Extender el período de alquiler</p>
+                      <p className="font-medium text-slate-900">Ajuste de Fecha</p>
+                      <p className="text-xs text-slate-500">Extensión o devolución anticipada</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <Button
-                      variant={changeExtendDays ? "default" : "outline"}
+                      variant={changeAdjustDate ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setChangeExtendDays(!changeExtendDays)}
-                      className={changeExtendDays ? "bg-blue-600" : ""}
+                      onClick={() => setChangeAdjustDate(!changeAdjustDate)}
+                      className={changeAdjustDate ? "bg-blue-600" : ""}
                     >
-                      {changeExtendDays ? 'Activado' : 'Activar'}
+                      {changeAdjustDate ? 'Activado' : 'Activar'}
                     </Button>
                   </div>
                 </div>
                 
-                {changeExtendDays && (
-                  <div className="mt-4 flex items-center gap-4">
-                    <div>
-                      <Label className="text-sm">Días actuales</Label>
-                      <p className="text-2xl font-bold text-slate-400">{changeRental.days}</p>
+                {changeAdjustDate && (
+                  <div className="mt-4 space-y-4">
+                    {/* Date picker and info */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm text-slate-600">Fecha fin original</Label>
+                        <p className="text-lg font-semibold text-slate-700">
+                          {changeRental?.end_date ? new Date(changeRental.end_date).toLocaleDateString('es-ES') : '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-sm text-slate-600">Nueva fecha de fin</Label>
+                        <Input
+                          type="date"
+                          value={changeNewEndDate}
+                          onChange={(e) => handleDateAdjustment(e.target.value)}
+                          className="h-10 font-semibold"
+                        />
+                      </div>
                     </div>
-                    <ArrowRight className="h-6 w-6 text-slate-400" />
-                    <div>
-                      <Label className="text-sm">Nuevos días</Label>
-                      <Input
-                        type="number"
-                        min={changeRental.days}
-                        value={changeNewDays}
-                        onChange={(e) => setChangeNewDays(e.target.value)}
-                        className="w-20 h-12 text-xl font-bold text-center"
-                      />
+                    
+                    {/* Clear visualization of days */}
+                    <div className="p-3 rounded-lg bg-white border border-blue-200">
+                      <div className="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                          <p className="text-xs text-slate-500 uppercase font-medium">Días Originales</p>
+                          <p className="text-2xl font-bold text-slate-700">{changeOriginalDays}</p>
+                        </div>
+                        <div className="flex items-center justify-center">
+                          <ArrowRight className="h-6 w-6 text-slate-400" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-500 uppercase font-medium">Días Nuevos</p>
+                          <p className={`text-2xl font-bold ${
+                            changeNewTotalDays > changeOriginalDays ? 'text-orange-600' :
+                            changeNewTotalDays < changeOriginalDays ? 'text-emerald-600' : 'text-slate-700'
+                          }`}>{changeNewTotalDays}</p>
+                        </div>
+                      </div>
+                      
+                      {/* Economic difference */}
+                      {changeDateDelta !== 0 && (
+                        <div className={`mt-3 p-2 rounded text-center ${
+                          changeDateDelta > 0 ? 'bg-orange-100' : 'bg-emerald-100'
+                        }`}>
+                          <p className="text-xs text-slate-600">
+                            {changeDateDelta > 0 ? 'Suplemento por extensión' : 'Abono por devolución anticipada'}
+                          </p>
+                          <p className={`text-lg font-bold ${
+                            changeDateDelta > 0 ? 'text-orange-700' : 'text-emerald-700'
+                          }`}>
+                            {changeDateDelta > 0 ? '+' : ''}€{changeDateDelta.toFixed(2)}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -1851,8 +1890,11 @@ export default function Returns() {
                        '↔️ SIN DIFERENCIA'}
                     </p>
                     <p className="text-xs text-slate-500 mt-1">
-                      {changeItems.filter(i => i.isSwapping).length} cambio(s) de material
-                      {changeExtendDays && parseInt(changeNewDays) > changeRental.days && ' + prórroga'}
+                      {changeItems.filter(i => i.isSwapping).length > 0 && 
+                        `${changeItems.filter(i => i.isSwapping).length} cambio(s) de material`}
+                      {changeItems.filter(i => i.isSwapping).length > 0 && changeAdjustDate && changeDateDelta !== 0 && ' + '}
+                      {changeAdjustDate && changeDateDelta !== 0 && 
+                        (changeDateDelta > 0 ? 'extensión de fecha' : 'devolución anticipada')}
                     </p>
                   </div>
                   <p className={`text-3xl font-bold ${
