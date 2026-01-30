@@ -1106,11 +1106,19 @@ export default function ActiveRentals() {
               {/* SCANNER INPUT - Auto-focused */}
               <div className="relative">
                 <Label className="text-base font-semibold flex items-center gap-2 mb-2">
-                  <Scan className="h-5 w-5 text-blue-600" />
-                  Escanear Nuevo Artículo
+                  <Scan className="h-5 w-5 text-orange-500" />
+                  {!swapRental 
+                    ? "Escanear Artículo a Devolver" 
+                    : swapOldItem 
+                      ? "Escanear Nuevo Artículo" 
+                      : "Escanear Artículo"}
                 </Label>
                 <p className="text-sm text-slate-500 mb-3">
-                  Escanea con el lector láser o escribe el código del material nuevo
+                  {!swapRental 
+                    ? "Escanea el artículo que el cliente entrega para identificarlo" 
+                    : swapOldItem 
+                      ? "Escanea el nuevo artículo que reemplazará al anterior"
+                      : "Escanea con el lector láser o escribe el código"}
                 </p>
                 <div className="flex gap-2">
                   <Input
@@ -1118,20 +1126,37 @@ export default function ActiveRentals() {
                     value={swapBarcode}
                     onChange={handleSwapBarcodeChange}
                     onKeyDown={handleSwapBarcodeKeyDown}
-                    placeholder="SKI-001, BOT-002..."
-                    className="h-14 text-xl font-mono flex-1"
+                    placeholder={!swapRental ? "Escanea artículo del cliente..." : "SKI-001, BOT-002..."}
+                    className="h-14 text-xl font-mono flex-1 border-2 border-orange-200 focus:border-orange-400"
                     autoFocus
                     data-testid="swap-barcode-input"
                   />
                   <Button 
                     onClick={() => searchSwapItem(swapBarcode)}
                     disabled={swapLoading || !swapBarcode.trim()}
-                    className="h-14 px-6"
+                    className="h-14 px-6 bg-orange-500 hover:bg-orange-600"
                   >
                     {swapLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Scan className="h-5 w-5" />}
                   </Button>
                 </div>
               </div>
+
+              {/* Show identified customer when rental is set */}
+              {swapRental && swapOldItem && !swapNewItem && (
+                <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                  <p className="text-sm text-blue-700 font-semibold mb-2">✓ Cliente y artículo identificados</p>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-red-100 rounded-lg">
+                      <Package className="h-6 w-6 text-red-600" />
+                    </div>
+                    <div>
+                      <p className="font-mono font-bold">{swapOldItem.internal_code || swapOldItem.barcode}</p>
+                      <p className="text-sm text-slate-600">{swapOldItem.item_type}</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-blue-600 mt-3">Ahora escanea el NUEVO artículo que entregará al cliente</p>
+                </div>
+              )}
 
               {/* SWAP PREVIEW - When items are detected */}
               {swapNewItem && swapOldItem && (
