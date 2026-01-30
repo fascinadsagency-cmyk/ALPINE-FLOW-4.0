@@ -1388,13 +1388,17 @@ export default function ActiveRentals() {
 
       {/* Modification Dialog - Multi-step */}
       {/* Customer Info Modal */}
+      {/* ============ CUSTOMER FULL INFO MODAL ============ */}
       <Dialog open={showCustomerModal} onOpenChange={setShowCustomerModal}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <User className="h-5 w-5 text-primary" />
-              Ficha del Cliente
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              <User className="h-6 w-6 text-primary" />
+              Ficha Completa del Cliente
             </DialogTitle>
+            <DialogDescription>
+              Información detallada e historial completo
+            </DialogDescription>
           </DialogHeader>
           
           {customerLoading ? (
@@ -1402,142 +1406,358 @@ export default function ActiveRentals() {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : selectedCustomer && (
-            <div className="space-y-4 py-4">
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-xl font-bold text-slate-900">{selectedCustomer.name}</h3>
-                    {selectedCustomer.rental_id && (
-                      <p className="text-sm text-slate-500 mt-1">
-                        Alquiler #{selectedCustomer.rental_id.substring(0, 8).toUpperCase()}
-                      </p>
-                    )}
+            <div className="space-y-6">
+              {/* ===== SECTION 1: PERSONAL DATA ===== */}
+              <Card className="border-slate-200 bg-slate-50">
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs text-slate-500">Nombre Completo</Label>
+                      <p className="text-lg font-semibold text-slate-900">{selectedCustomer.name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-slate-500">DNI/Pasaporte</Label>
+                      <p className="text-lg font-mono font-semibold text-slate-900">{selectedCustomer.dni || '-'}</p>
+                    </div>
                   </div>
-                  {selectedCustomer.dni && (
-                    <div className="text-right">
-                      <p className="text-xs text-slate-500">DNI</p>
-                      <p className="font-mono font-semibold">{selectedCustomer.dni}</p>
+
+                  {/* Current Rental Reference */}
+                  {selectedCustomer.rental_id && (
+                    <div className="mt-4 p-3 rounded-lg bg-emerald-100 border border-emerald-300">
+                      <div className="flex items-center gap-2">
+                        <Package className="h-4 w-4 text-emerald-700" />
+                        <span className="text-sm font-semibold text-emerald-800">
+                          Alquiler Activo: #{selectedCustomer.rental_id.substring(0, 8).toUpperCase()}
+                        </span>
+                        <Badge className="bg-emerald-200 text-emerald-800 ml-auto">
+                          {selectedCustomer.days} días • €{selectedCustomer.total_amount?.toFixed(2)}
+                        </Badge>
+                      </div>
                     </div>
                   )}
-                </div>
-              </div>
 
-              <div className="space-y-3">
-                {selectedCustomer.phone && (
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200">
-                    <div className="flex items-center gap-3">
-                      <Phone className="h-5 w-5 text-emerald-600" />
-                      <div>
-                        <p className="text-xs text-emerald-600">Teléfono</p>
-                        <p className="font-semibold">{selectedCustomer.phone}</p>
+                  {/* ===== CONTACT ACTIONS ===== */}
+                  <div className="mt-4 pt-4 border-t border-slate-200 space-y-3">
+                    {/* Phone */}
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                      <div className="flex items-center gap-3">
+                        <Phone className="h-5 w-5 text-emerald-600" />
+                        <div>
+                          <p className="text-xs text-emerald-600 font-medium">Teléfono</p>
+                          <p className="font-semibold text-slate-900">{selectedCustomer.phone || 'No registrado'}</p>
+                        </div>
                       </div>
+                      {selectedCustomer.phone && (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-100"
+                            onClick={() => callPhone(selectedCustomer.phone)}
+                          >
+                            <Phone className="h-3 w-3" />
+                            Llamar
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="gap-1 bg-green-600 hover:bg-green-700 text-white"
+                            onClick={() => sendWhatsAppMessage(selectedCustomer.phone, selectedCustomer.name)}
+                            data-testid="customer-modal-whatsapp-btn"
+                          >
+                            <MessageCircle className="h-3 w-3" />
+                            WhatsApp
+                          </Button>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => callPhone(selectedCustomer.phone)}>
-                        <Phone className="h-3 w-3" />
-                      </Button>
-                      <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => sendWhatsAppMessage(selectedCustomer.phone, selectedCustomer.name)}>
-                        <MessageCircle className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
 
-                {selectedCustomer.email && (
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200">
-                    <div className="flex items-center gap-3">
-                      <Mail className="h-5 w-5 text-blue-600" />
-                      <div>
-                        <p className="text-xs text-blue-600">Email</p>
-                        <p className="font-semibold">{selectedCustomer.email}</p>
-                      </div>
-                    </div>
-                    <Button size="sm" variant="outline" onClick={() => sendEmail(selectedCustomer.email, selectedCustomer.name)}>
-                      <Mail className="h-3 w-3" />
-                    </Button>
-                  </div>
-                )}
-
-                {selectedCustomer.hotel && (
-                  <div className="flex items-center p-3 rounded-lg bg-purple-50 border border-purple-200">
-                    <MapPin className="h-5 w-5 text-purple-600 mr-3" />
-                    <div>
-                      <p className="text-xs text-purple-600">Hotel</p>
-                      <p className="font-semibold">{selectedCustomer.hotel}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Rental History Section */}
-              {selectedCustomer.rental_history && selectedCustomer.rental_history.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-slate-200">
-                  <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                    <ShoppingCart className="h-4 w-4" />
-                    Historial de Alquileres ({selectedCustomer.rental_history.length})
-                  </h4>
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {selectedCustomer.rental_history.slice(0, 10).map((rental, idx) => (
-                      <div 
-                        key={rental.id || idx}
-                        className={`p-3 rounded-lg border text-sm ${
-                          rental.status === 'active' || rental.status === 'partial' 
-                            ? 'bg-emerald-50 border-emerald-200' 
-                            : 'bg-slate-50 border-slate-200'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
+                    {/* Email */}
+                    {selectedCustomer.email && (
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200">
+                        <div className="flex items-center gap-3">
+                          <Mail className="h-5 w-5 text-blue-600" />
                           <div>
-                            <p className="font-medium text-slate-800">
-                              {new Date(rental.start_date).toLocaleDateString('es-ES')} 
-                              {rental.days && ` • ${rental.days} días`}
-                            </p>
-                            <p className="text-xs text-slate-500">
-                              {rental.items?.length || 0} artículos
-                            </p>
+                            <p className="text-xs text-blue-600 font-medium">Email</p>
+                            <p className="font-semibold text-slate-900">{selectedCustomer.email}</p>
                           </div>
-                          <div className="text-right">
-                            <p className="font-bold text-slate-800">€{(rental.total_amount || 0).toFixed(2)}</p>
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${
-                              rental.status === 'active' || rental.status === 'partial'
-                                ? 'bg-emerald-100 text-emerald-700'
-                                : 'bg-slate-200 text-slate-600'
-                            }`}>
-                              {rental.status === 'active' || rental.status === 'partial' ? 'Activo' : 'Cerrado'}
-                            </span>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-100"
+                          onClick={() => sendEmail(selectedCustomer.email, selectedCustomer.name)}
+                        >
+                          <Mail className="h-3 w-3" />
+                          Enviar Email
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Address/Hotel/City */}
+                    {(selectedCustomer.hotel || selectedCustomer.address || selectedCustomer.city) && (
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-purple-50 border border-purple-200">
+                        <div className="flex items-center gap-3">
+                          <MapPin className="h-5 w-5 text-purple-600" />
+                          <div>
+                            <p className="text-xs text-purple-600 font-medium">
+                              {selectedCustomer.hotel ? 'Hotel / Ubicación' : 'Población / Dirección'}
+                            </p>
+                            <p className="font-semibold text-slate-900">
+                              {selectedCustomer.hotel || selectedCustomer.city || 'No registrado'}
+                              {selectedCustomer.hotel && selectedCustomer.city && ` • ${selectedCustomer.city}`}
+                              {selectedCustomer.address && ` - ${selectedCustomer.address}`}
+                            </p>
                           </div>
                         </div>
                       </div>
-                    ))}
+                    )}
                   </div>
-                  {/* Total stats */}
-                  <div className="mt-3 p-3 rounded-lg bg-slate-100 border border-slate-200">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Total Histórico</span>
-                      <span className="font-bold text-slate-800">
-                        €{selectedCustomer.rental_history.reduce((sum, r) => sum + (r.total_amount || 0), 0).toFixed(2)}
-                      </span>
+
+                  {/* Total Rentals Count */}
+                  <div className="mt-4 pt-4 border-t border-slate-200">
+                    <Label className="text-xs text-slate-500">Total Alquileres</Label>
+                    <p className="text-base font-semibold text-slate-900">
+                      {selectedCustomer.customerHistory?.total_rentals || selectedCustomer.rental_history?.length || 0}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* ===== SECTION 2: NOTES & ALERTS ===== */}
+              {selectedCustomer.notes && (
+                <Card className="border-amber-200 bg-amber-50">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2 text-amber-800">
+                      <AlertTriangle className="h-5 w-5" />
+                      Notas y Alertas Internas
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-amber-900 whitespace-pre-wrap">{selectedCustomer.notes}</p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* ===== SECTION 3: FINANCIAL SUMMARY ===== */}
+              {selectedCustomer.customerHistory?.financial_summary && (
+                <Card className="border-slate-200">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Banknote className="h-5 w-5 text-slate-600" />
+                      Resumen Financiero
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4 p-4 rounded-lg bg-slate-50">
+                      <div className="text-center">
+                        <p className="text-xs text-slate-500 mb-1">Total Pagado</p>
+                        <p className="text-xl font-bold text-emerald-600">
+                          €{selectedCustomer.customerHistory.financial_summary.total_paid?.toFixed(2) || '0.00'}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-slate-500 mb-1">Devoluciones</p>
+                        <p className="text-xl font-bold text-orange-600">
+                          €{selectedCustomer.customerHistory.financial_summary.total_refunded?.toFixed(2) || '0.00'}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-slate-500 mb-1">Ingreso Neto</p>
+                        <p className="text-xl font-bold text-slate-900">
+                          €{selectedCustomer.customerHistory.financial_summary.net_revenue?.toFixed(2) || '0.00'}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </div>
+
+                    {/* Transactions List */}
+                    {selectedCustomer.customerHistory?.transactions && selectedCustomer.customerHistory.transactions.length > 0 && (
+                      <div>
+                        <p className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                          <History className="h-4 w-4" />
+                          Últimas Transacciones
+                        </p>
+                        <div className="max-h-[200px] overflow-y-auto space-y-2">
+                          {selectedCustomer.customerHistory.transactions.slice(0, 10).map((tx, idx) => (
+                            <div 
+                              key={idx}
+                              className={`flex items-center justify-between p-3 rounded-lg border ${
+                                tx.type === 'income' 
+                                  ? 'bg-emerald-50 border-emerald-200' 
+                                  : 'bg-orange-50 border-orange-200'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                {tx.type === 'income' ? (
+                                  <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center">
+                                    <ArrowUpRight className="h-4 w-4 text-emerald-600" />
+                                  </div>
+                                ) : (
+                                  <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
+                                    <ArrowDownLeft className="h-4 w-4 text-orange-600" />
+                                  </div>
+                                )}
+                                <div>
+                                  <p className={`font-medium text-sm ${
+                                    tx.type === 'income' ? 'text-emerald-900' : 'text-orange-900'
+                                  }`}>
+                                    {tx.type === 'income' ? 'Pago' : 'Devolución'}
+                                  </p>
+                                  <p className="text-xs text-slate-500">
+                                    {new Date(tx.date).toLocaleDateString('es-ES', { 
+                                      day: '2-digit', 
+                                      month: '2-digit',
+                                      year: 'numeric'
+                                    })} • {tx.payment_method}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className={`font-bold ${
+                                  tx.type === 'income' ? 'text-emerald-700' : 'text-orange-700'
+                                }`}>
+                                  {tx.type === 'income' ? '+' : '-'}€{tx.amount?.toFixed(2)}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* ===== SECTION 4: RENTAL HISTORY ===== */}
+              <Card className="border-slate-200">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <History className="h-5 w-5" />
+                    Historial de Alquileres ({selectedCustomer.rental_history?.length || 0})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {!selectedCustomer.rental_history || selectedCustomer.rental_history.length === 0 ? (
+                    <p className="text-slate-500 text-center py-8">Sin alquileres previos registrados</p>
+                  ) : (
+                    <div className="space-y-3 max-h-[350px] overflow-y-auto">
+                      {selectedCustomer.rental_history.map((rental, idx) => (
+                        <div 
+                          key={rental.id || idx}
+                          className={`p-4 rounded-lg border hover:bg-slate-50/50 transition-colors ${
+                            rental.status === 'active' || rental.status === 'partial'
+                              ? 'border-emerald-300 bg-emerald-50/30'
+                              : 'border-slate-200'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-slate-500" />
+                              <span className="font-medium text-slate-900">
+                                {new Date(rental.start_date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                {' - '}
+                                {new Date(rental.end_date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                              </span>
+                              <Badge variant="outline">
+                                {rental.days} {rental.days === 1 ? 'día' : 'días'}
+                              </Badge>
+                              {(rental.status === 'active' || rental.status === 'partial') && (
+                                <Badge className="bg-emerald-100 text-emerald-700 border-emerald-300">
+                                  Activo
+                                </Badge>
+                              )}
+                            </div>
+                            <Badge className="bg-emerald-100 text-emerald-700">
+                              <DollarSign className="h-3 w-3 mr-1" />
+                              €{(rental.total_amount || 0).toFixed(2)}
+                            </Badge>
+                          </div>
+                          
+                          {/* Items in this rental */}
+                          {rental.items && rental.items.length > 0 && (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2 text-sm text-slate-600">
+                                <Package className="h-4 w-4" />
+                                <span className="font-medium">Equipos alquilados:</span>
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ml-6">
+                                {rental.items.slice(0, 6).map((item, itemIdx) => (
+                                  <div key={itemIdx} className="flex items-center justify-between p-2 rounded bg-slate-50 text-sm">
+                                    <span className="text-slate-700 truncate">
+                                      {item.item_type} {item.brand && `- ${item.brand}`} {item.model && item.model}
+                                    </span>
+                                    {item.size && (
+                                      <Badge variant="secondary" className="text-xs shrink-0 ml-1">
+                                        Talla {item.size}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                ))}
+                                {rental.items.length > 6 && (
+                                  <p className="text-xs text-slate-500 ml-2">
+                                    + {rental.items.length - 6} más...
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="mt-3 pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+                            <span>Método: {rental.payment_method || 'N/A'}</span>
+                            <span className={rental.payment_status === 'paid' ? 'text-emerald-600 font-medium' : 'text-amber-600 font-medium'}>
+                              {rental.payment_status === 'paid' ? '✓ Pagado' : '⏳ Pendiente'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Total Historical Stats */}
+                  {selectedCustomer.rental_history && selectedCustomer.rental_history.length > 0 && (
+                    <div className="mt-4 p-3 rounded-lg bg-slate-100 border border-slate-200">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-600">Total Histórico de Alquileres</span>
+                        <span className="font-bold text-slate-800">
+                          €{selectedCustomer.rental_history.reduce((sum, r) => sum + (r.total_amount || 0), 0).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* ===== SECTION 5: PREFERRED SIZES (if available) ===== */}
+              {selectedCustomer.customerHistory?.preferred_sizes && 
+               Object.keys(selectedCustomer.customerHistory.preferred_sizes).length > 0 && (
+                <Card className="border-slate-200">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Star className="h-5 w-5 text-amber-500" />
+                      Tallas Preferidas
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(selectedCustomer.customerHistory.preferred_sizes).map(([type, sizes]) => (
+                        <Badge key={type} variant="outline" className="text-sm py-1 px-3">
+                          {type}: {Array.isArray(sizes) ? sizes.join(", ") : sizes}
+                        </Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               )}
             </div>
           )}
 
-          <DialogFooter className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowCustomerModal(false)}>Cerrar</Button>
-            {selectedCustomer?.id && (
-              <Button 
-                onClick={() => {
-                  setShowCustomerModal(false);
-                  navigate(`/clientes?highlight=${selectedCustomer.id}`);
-                }}
-                className="gap-2"
-              >
-                <ExternalLink className="h-4 w-4" />
-                Ver Ficha Completa
-              </Button>
-            )}
+          <DialogFooter className="flex gap-2 pt-4 border-t">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowCustomerModal(false)}
+              data-testid="close-customer-modal-btn"
+            >
+              Cerrar
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
