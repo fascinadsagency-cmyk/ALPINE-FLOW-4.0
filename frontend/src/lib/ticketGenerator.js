@@ -575,6 +575,59 @@ function renderRentalBody(data, settings, t) {
   const paymentMethodLabel = (data.paymentMethod === 'efectivo' || data.paymentMethod === 'cash') 
     ? t.cash : t.card;
 
+  // Calcular días si no viene directamente
+  let rentalDays = data.days;
+  if (!rentalDays && data.startDate && data.endDate) {
+    const start = new Date(data.startDate);
+    const end = new Date(data.endDate);
+    rentalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+  }
+  rentalDays = rentalDays || 1;
+
+  // Renderizar items con 3 columnas: ARTÍCULO | DÍAS | IMPORTE
+  const renderItems = () => {
+    const items = data.items || [];
+    if (items.length === 0) {
+      return '<div style="color: #666; font-style: italic; text-align: center; padding: 10px;">Sin artículos detallados</div>';
+    }
+    
+    return `
+      <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+        <thead>
+          <tr style="border-bottom: 1px solid #000;">
+            <th style="text-align: left; padding: 4px 0; font-weight: bold;">CONCEPTO</th>
+            <th style="text-align: center; padding: 4px 0; font-weight: bold; width: 50px;">DÍAS</th>
+            <th style="text-align: right; padding: 4px 0; font-weight: bold; width: 60px;">IMPORTE</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map(item => {
+            // Construir nombre del artículo con talla si existe
+            let itemName = item.name || item.item_type || 'Artículo';
+            if (item.size) {
+              itemName += ` (${item.size})`;
+            }
+            // Días del item (individual o global)
+            const itemDays = item.days || rentalDays;
+            // Importe del item
+            const itemPrice = item.price || item.subtotal || 0;
+            
+            return `
+              <tr style="page-break-inside: avoid;">
+                <td style="text-align: left; padding: 4px 0; max-width: 100px; overflow: hidden; text-overflow: ellipsis;">
+                  ${escapeHtml(itemName)}
+                  ${item.internal_code ? `<br/><span style="font-size: 8px; color: #666;">${escapeHtml(item.internal_code)}</span>` : ''}
+                </td>
+                <td style="text-align: center; padding: 4px 0;">${itemDays} ${itemDays === 1 ? t.day : t.days}</td>
+                <td style="text-align: right; padding: 4px 0; font-weight: bold;">€${itemPrice.toFixed(2)}</td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  };
+
   return `
     ${data.operationNumber ? `
       <div class="operation-number-box">Nº ${escapeHtml(data.operationNumber)}</div>
@@ -587,7 +640,7 @@ function renderRentalBody(data, settings, t) {
     
     <div class="info-row">
       <span class="label">${t.customer}:</span>
-      <span class="value">${escapeHtml(data.customer)}</span>
+      <span class="value">${escapeHtml(data.customer || data.customerName || '-')}</span>
     </div>
     
     ${showDniOnTicket && data.dni ? `
@@ -601,18 +654,13 @@ function renderRentalBody(data, settings, t) {
       <div class="date-range">
         <strong>${t.dateRange}</strong><br/>
         ${t.from}: ${formatDate(data.startDate)} - ${t.to}: ${formatDate(data.endDate)}<br/>
-        <strong>(${data.days || 1} ${(data.days || 1) === 1 ? t.day : t.days})</strong>
+        <strong>(${rentalDays} ${rentalDays === 1 ? t.day : t.days})</strong>
       </div>
     ` : ''}
     
     <div class="section">
       <div class="section-title">${t.items}:</div>
-      ${(data.items || []).map(item => `
-        <div class="item-row">
-          <span class="item-name">${escapeHtml(item.name || item.item_type || 'Artículo')}</span>
-          <span class="item-price">€${(item.price || item.subtotal || 0).toFixed(2)}</span>
-        </div>
-      `).join('')}
+      ${renderItems()}
     </div>
     
     ${showVatOnTicket ? `
