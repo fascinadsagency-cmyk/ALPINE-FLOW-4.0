@@ -1061,6 +1061,7 @@ export default function CashRegister() {
                         <TableHead>Concepto</TableHead>
                         <TableHead>Método</TableHead>
                         <TableHead className="text-right">Importe</TableHead>
+                        <TableHead className="text-center">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1084,6 +1085,28 @@ export default function CashRegister() {
                             m.movement_type === 'refund' ? 'text-orange-600' : 'text-red-600'
                           }`}>
                             {m.movement_type === 'income' ? '+' : '-'}€{m.amount.toFixed(2)}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center justify-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openEditPaymentDialog(m)}
+                                title="Editar método de pago"
+                                data-testid={`edit-payment-${m.id}`}
+                              >
+                                <Pencil className="h-4 w-4 text-slate-500 hover:text-blue-600" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => printMovementTicket(m)}
+                                title="Imprimir ticket"
+                                data-testid={`print-ticket-${m.id}`}
+                              >
+                                <Printer className="h-4 w-4 text-slate-500 hover:text-emerald-600" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
