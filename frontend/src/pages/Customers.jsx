@@ -335,6 +335,60 @@ export default function Customers() {
     window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
   };
 
+  // ============== TECHNICAL DATA FUNCTIONS ==============
+  const startEditingTechnicalData = () => {
+    setTechnicalDataForm({
+      boot_size: selectedCustomer?.boot_size || "",
+      height: selectedCustomer?.height || "",
+      weight: selectedCustomer?.weight || "",
+      ski_level: selectedCustomer?.ski_level || ""
+    });
+    setEditingTechnicalData(true);
+  };
+
+  const cancelEditingTechnicalData = () => {
+    setEditingTechnicalData(false);
+    setTechnicalDataForm({
+      boot_size: "",
+      height: "",
+      weight: "",
+      ski_level: ""
+    });
+  };
+
+  const saveTechnicalData = async () => {
+    if (!selectedCustomer?.id) {
+      toast.error("No se puede guardar: cliente no identificado");
+      return;
+    }
+
+    setSavingTechnicalData(true);
+    try {
+      await axios.patch(`${API}/customers/${selectedCustomer.id}/technical-data`, technicalDataForm, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      // Update local state
+      setSelectedCustomer(prev => ({
+        ...prev,
+        boot_size: technicalDataForm.boot_size,
+        height: technicalDataForm.height,
+        weight: technicalDataForm.weight,
+        ski_level: technicalDataForm.ski_level
+      }));
+
+      toast.success("Datos técnicos guardados correctamente");
+      setEditingTechnicalData(false);
+      
+      // Reload customers list to reflect changes
+      loadCustomersWithStatus();
+    } catch (error) {
+      toast.error("Error al guardar datos técnicos");
+    } finally {
+      setSavingTechnicalData(false);
+    }
+  };
+
   // ============== IMPORT FUNCTIONS ==============
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
