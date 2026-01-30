@@ -306,16 +306,25 @@ export function SettingsProvider({ children }) {
 
   // ========== EFFECTS FOR PERSISTENCE ==========
   
-  // Dark mode
+  // Dark mode - Global application
   useEffect(() => {
+    const root = document.documentElement;
+    const body = document.body;
+    
     if (darkMode) {
-      document.documentElement.classList.add('dark');
-      document.body.style.backgroundColor = '#0f172a';
-      document.body.style.color = '#f1f5f9';
+      root.classList.add('dark');
+      body.classList.add('dark');
+      // Set explicit colors for better compatibility
+      body.style.backgroundColor = '#121212';
+      body.style.color = '#f0f0f0';
+      // Add data attribute for CSS targeting
+      root.setAttribute('data-theme', 'dark');
     } else {
-      document.documentElement.classList.remove('dark');
-      document.body.style.backgroundColor = '#f8fafc';
-      document.body.style.color = '#0f172a';
+      root.classList.remove('dark');
+      body.classList.remove('dark');
+      body.style.backgroundColor = '#f8fafc';
+      body.style.color = '#0f172a';
+      root.setAttribute('data-theme', 'light');
     }
     localStorage.setItem('darkMode', darkMode.toString());
   }, [darkMode]);
