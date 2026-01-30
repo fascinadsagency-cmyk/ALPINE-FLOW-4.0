@@ -68,7 +68,7 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - Detección automática del tipo de artículo y sustitución propuesta
   - Balance económico en tiempo real (verde=upgrade, rojo=downgrade)
   - Actualización automática de inventario
-  - Ticket de regularización
+  - **Ticket de regularización UNIFICADO (30/01/2026):** Usa plantilla de Configuración con logo, cabecera y estructura A-B-C
 - ✅ **Vista Compacta de Alquileres Activos:**
   - Una sola fila por cliente/contrato
   - Badge "N art." con Popover para ver detalle de artículos
