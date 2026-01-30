@@ -27,7 +27,10 @@ import {
   Eye,
   Image as ImageIcon,
   Moon,
-  Sun
+  Sun,
+  ScanBarcode,
+  MonitorSmartphone,
+  Copy
 } from "lucide-react";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
