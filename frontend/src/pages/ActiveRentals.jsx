@@ -274,6 +274,44 @@ export default function ActiveRentals() {
     }, 100);
   };
 
+  // Handle date adjustment in swap modal
+  const handleDateAdjustment = (newEndDateStr) => {
+    if (!swapRental || !newEndDateStr) return;
+    
+    setNewEndDate(newEndDateStr);
+    
+    // Calculate new total days from original start date to new end date
+    const startDate = new Date(swapRental.start_date);
+    startDate.setHours(0, 0, 0, 0);
+    const newEnd = new Date(newEndDateStr);
+    newEnd.setHours(0, 0, 0, 0);
+    const msPerDay = 24 * 60 * 60 * 1000;
+    
+    const calculatedNewDays = Math.ceil((newEnd - startDate) / msPerDay) + 1;
+    const daysDiff = calculatedNewDays - originalDays;
+    const pricePerDay = swapRental.total_amount / originalDays;
+    const newDateDelta = daysDiff * pricePerDay;
+    
+    setNewTotalDays(calculatedNewDays);
+    setDateDelta(newDateDelta);
+    
+    // Update days remaining
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const newDaysRemaining = Math.ceil((newEnd - today) / msPerDay);
+    setSwapDaysRemaining(newDaysRemaining);
+    setSwapNewDays(calculatedNewDays.toString());
+    
+    // Calculate combined delta (material + date)
+    const materialDelta = swapDelta?.delta || 0;
+    setCombinedDelta(materialDelta + newDateDelta);
+  };
+
+  // Recalculate combined delta when material delta changes
+  const updateCombinedDelta = (newMaterialDelta) => {
+    setCombinedDelta(newMaterialDelta + dateDelta);
+  };
+
   // Handle barcode scan/input
   const handleSwapBarcodeChange = async (e) => {
     const code = e.target.value.toUpperCase();
