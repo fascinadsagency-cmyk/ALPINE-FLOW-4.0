@@ -75,6 +75,15 @@ export default function Settings() {
     toast.success(lang === 'es' ? 'Idioma cambiado a Español' : 'Language changed to English');
   };
 
+  const handleDarkModeChange = (enabled) => {
+    setDarkMode(enabled);
+    setHasChanges(true);
+    toast.success(enabled 
+      ? (language === 'es' ? 'Modo Oscuro activado' : 'Dark Mode enabled')
+      : (language === 'es' ? 'Modo Claro activado' : 'Light Mode enabled')
+    );
+  };
+
   const handleAutoPrintChange = (enabled) => {
     setAutoPrint(enabled);
     setHasChanges(true);
