@@ -367,9 +367,9 @@ export default function Returns() {
     }
 
     const itemsToSwap = changeItems.filter(i => i.isSwapping && i.swapNewItem);
-    const hasDayChange = newDays !== originalDays;
+    const hasDateChange = changeAdjustDate && changeDateDelta !== 0;
 
-    if (itemsToSwap.length === 0 && !hasDayChange) {
+    if (itemsToSwap.length === 0 && !hasDateChange) {
       toast.error("No hay cambios que procesar");
       return;
     }
@@ -381,7 +381,7 @@ export default function Returns() {
         await axios.post(`${API}/rentals/${changeRental.id}/central-swap`, {
           old_item_barcode: item.barcode || item.internal_code,
           new_item_barcode: item.swapNewItem.barcode || item.swapNewItem.internal_code,
-          days_remaining: newDays,
+          days_remaining: changeNewTotalDays,
           payment_method: changePaymentMethod,
           delta_amount: item.swapDelta || 0
         }, {
@@ -389,13 +389,14 @@ export default function Returns() {
         });
       }
 
-      // Process day change if needed
-      if (hasDayChange) {
+      // Process date change if needed
+      if (hasDateChange) {
         await axios.patch(`${API}/rentals/${changeRental.id}/modify-duration`, {
-          new_days: newDays,
-          new_total: changeRental.total_amount + timeDelta,
+          new_days: changeNewTotalDays,
+          new_end_date: changeNewEndDate,
+          new_total: changeRental.total_amount + changeDateDelta,
           payment_method: changePaymentMethod,
-          difference_amount: timeDelta
+          difference_amount: changeDateDelta
         }, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
