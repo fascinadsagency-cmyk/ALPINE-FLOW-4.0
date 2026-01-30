@@ -1964,8 +1964,10 @@ export default function Returns() {
                 ¡Cambios Procesados!
               </h3>
               <p className="text-slate-600 mb-6">
-                {changeItems.filter(i => i.isSwapping).length} artículo(s) sustituido(s)
-                {changeExtendDays && parseInt(changeNewDays) > changeRental?.days && ' + prórroga aplicada'}
+                {changeItems.filter(i => i.isSwapping).length > 0 && 
+                  `${changeItems.filter(i => i.isSwapping).length} artículo(s) sustituido(s)`}
+                {changeItems.filter(i => i.isSwapping).length > 0 && changeAdjustDate && changeDateDelta !== 0 && ' + '}
+                {changeAdjustDate && changeDateDelta !== 0 && 'ajuste de fecha aplicado'}
               </p>
               <div className="flex gap-3 justify-center">
                 <Button
@@ -1991,7 +1993,7 @@ export default function Returns() {
                 </Button>
                 <Button 
                   onClick={executeAllChanges}
-                  disabled={changeLoading || (changeItems.filter(i => i.isSwapping).length === 0 && (!changeExtendDays || parseInt(changeNewDays) === changeRental?.days))}
+                  disabled={changeLoading || (changeItems.filter(i => i.isSwapping).length === 0 && (!changeAdjustDate || changeDateDelta === 0))}
                   className={`min-w-[180px] ${
                     changeTotalDelta > 0 ? 'bg-orange-600 hover:bg-orange-700' :
                     changeTotalDelta < 0 ? 'bg-emerald-600 hover:bg-emerald-700' :
