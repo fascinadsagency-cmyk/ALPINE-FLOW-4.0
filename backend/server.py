@@ -4502,7 +4502,7 @@ async def get_next_closure_number(date: str) -> int:
 
 @api_router.post("/cash/close")
 async def close_cash_register(closing: CashClosingCreate, current_user: dict = Depends(get_current_user)):
-    """Close the active cash session and create closing record"""
+    """Close the active cash session and create closing record with corrected financial logic"""
     
     # Find active session
     active_session = await db.cash_sessions.find_one({"date": closing.date, "status": "open"})
@@ -4510,37 +4510,58 @@ async def close_cash_register(closing: CashClosingCreate, current_user: dict = D
     if not active_session:
         raise HTTPException(status_code=400, detail="No active cash session found for this date")
     
-    # Get summary for active session
-    summary = await get_cash_summary(closing.date, current_user)
+    # Get realtime summary (corrected logic)
+    summary = await get_cash_summary_realtime(closing.date, current_user)
     
     if not summary.get("session_active"):
         raise HTTPException(status_code=400, detail="No active session to close")
     
-    # Create closing record
+    # Extract values from corrected summary
+    opening_balance = summary.get("opening_balance", 0)
+    ingresos_brutos = summary.get("ingresos_brutos", 0)
+    total_salidas = summary.get("total_salidas", 0)
+    balance_neto_dia = summary.get("balance_neto_dia", 0)
+    efectivo_esperado = summary.get("efectivo_esperado", 0)
+    tarjeta_esperada = summary.get("tarjeta_esperada", 0)
+    
+    # Create closing record with corrected fields
     closing_id = str(uuid.uuid4())
     closing_doc = {
         "id": closing_id,
         "date": closing.date,
         "session_id": active_session["id"],
-        "total_income": summary["total_income"],
-        "total_expense": summary["total_expense"],
-        "total_refunds": summary["total_refunds"],
-        "expected_balance": summary["balance"],
-        "opening_balance": active_session["opening_balance"],
+        "opening_balance": opening_balance,
+        
+        # KPIs principales
+        "ingresos_brutos": ingresos_brutos,
+        "total_salidas": total_salidas,
+        "balance_neto_dia": balance_neto_dia,
+        
+        # Arqueo esperado vs real
+        "expected_cash": efectivo_esperado,
+        "expected_card": tarjeta_esperada,
         "physical_cash": closing.physical_cash,
         "card_total": closing.card_total,
-        "expected_cash": closing.expected_cash or summary.get("by_payment_method", {}).get("cash", {}).get("income", 0),
-        "expected_card": closing.expected_card or summary.get("by_payment_method", {}).get("card", {}).get("income", 0),
+        
+        # Descuadres
         "discrepancy_cash": closing.discrepancy_cash,
         "discrepancy_card": closing.discrepancy_card,
         "discrepancy_total": closing.discrepancy_total,
-        "difference": closing.physical_cash - summary["balance"],
+        
+        # Metadata
         "notes": closing.notes or "",
         "closed_by": current_user["username"],
         "closed_at": datetime.now(timezone.utc).isoformat(),
-        "movements_count": summary["movements_count"],
-        "by_payment_method": summary["by_payment_method"],
-        "closure_number": active_session.get("session_number", 1)
+        "movements_count": summary.get("movements_count", 0),
+        "by_payment_method": summary.get("by_payment_method", {}),
+        "closure_number": active_session.get("session_number", 1),
+        
+        # Legacy fields for compatibility
+        "total_income": ingresos_brutos,
+        "total_expense": summary.get("total_expense", 0),
+        "total_refunds": summary.get("total_refunds", 0),
+        "expected_balance": opening_balance + balance_neto_dia,
+        "difference": closing.physical_cash - efectivo_esperado
     }
     await db.cash_closings.insert_one(closing_doc)
     
