@@ -515,6 +515,147 @@ export default function Settings() {
               </div>
             </CardContent>
           </Card>
+
+          {/* ============ HARDWARE ============ */}
+          <Card className={`border-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`} data-testid="hardware-settings">
+            <CardHeader className={`border-b ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-gradient-to-r from-violet-50 to-purple-50 border-slate-200'}`}>
+              <CardTitle className={`text-lg flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                <MonitorSmartphone className="h-5 w-5 text-violet-500" />
+                {t('settings.hardware')}
+              </CardTitle>
+              <CardDescription className={darkMode ? 'text-slate-400' : 'text-slate-500'}>
+                {t('settings.hardware.desc')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-6">
+              
+              {/* ===== SECCIÓN A: ESCÁNER / PISTOLA ===== */}
+              <div className={`p-4 rounded-xl border-2 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className={`p-2 rounded-lg ${darkMode ? 'bg-violet-500/20' : 'bg-violet-100'}`}>
+                    <ScanBarcode className={`h-5 w-5 ${darkMode ? 'text-violet-400' : 'text-violet-600'}`} />
+                  </div>
+                  <h3 className={`font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                    {t('settings.scanner')}
+                  </h3>
+                </div>
+                
+                {/* Modo Escaneo Rápido */}
+                <div className={`flex items-center justify-between p-3 rounded-lg ${
+                  quickScanMode 
+                    ? (darkMode ? 'bg-violet-500/10 border border-violet-500/30' : 'bg-violet-50 border border-violet-200')
+                    : (darkMode ? 'bg-slate-700/50' : 'bg-slate-50')
+                }`}>
+                  <div className="flex-1 pr-4">
+                    <Label className={`font-medium ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                      {t('settings.scanner.quickMode')}
+                    </Label>
+                    <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {quickScanMode 
+                        ? t('settings.scanner.quickMode.desc')
+                        : t('settings.scanner.quickMode.disabled')
+                      }
+                    </p>
+                  </div>
+                  <Switch 
+                    checked={quickScanMode} 
+                    onCheckedChange={(value) => { setQuickScanMode(value); setHasChanges(true); }}
+                    className="data-[state=checked]:bg-violet-500"
+                    data-testid="quick-scan-mode-switch"
+                  />
+                </div>
+              </div>
+
+              {/* ===== SECCIÓN B: IMPRESORA ===== */}
+              <div className={`p-4 rounded-xl border-2 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className={`p-2 rounded-lg ${darkMode ? 'bg-cyan-500/20' : 'bg-cyan-100'}`}>
+                    <Printer className={`h-5 w-5 ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
+                  </div>
+                  <h3 className={`font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                    {t('settings.printer')}
+                  </h3>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Ancho de Papel */}
+                  <div className={`flex items-center justify-between p-3 rounded-lg ${darkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
+                    <div className="flex-1 pr-4">
+                      <Label className={`font-medium ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                        {t('settings.printer.paperWidth')}
+                      </Label>
+                      <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {t('settings.printer.paperWidth.desc')}
+                      </p>
+                    </div>
+                    <Select 
+                      value={paperWidth} 
+                      onValueChange={(value) => { setPaperWidth(value); setHasChanges(true); }}
+                    >
+                      <SelectTrigger className={`w-[160px] ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : ''}`} data-testid="paper-width-selector">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className={darkMode ? 'bg-slate-800 border-slate-700' : ''}>
+                        <SelectItem value="80mm" className={darkMode ? 'text-white hover:bg-slate-700' : ''}>
+                          {t('settings.printer.80mm')}
+                        </SelectItem>
+                        <SelectItem value="58mm" className={darkMode ? 'text-white hover:bg-slate-700' : ''}>
+                          {t('settings.printer.58mm')}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Auto-Imprimir */}
+                  <div className={`flex items-center justify-between p-3 rounded-lg ${
+                    autoPrintOnPayment 
+                      ? (darkMode ? 'bg-cyan-500/10 border border-cyan-500/30' : 'bg-cyan-50 border border-cyan-200')
+                      : (darkMode ? 'bg-slate-700/50' : 'bg-slate-50')
+                  }`}>
+                    <div className="flex-1 pr-4">
+                      <Label className={`font-medium ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                        {t('settings.printer.autoPrint')}
+                      </Label>
+                      <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {t('settings.printer.autoPrint.desc')}
+                      </p>
+                    </div>
+                    <Switch 
+                      checked={autoPrintOnPayment} 
+                      onCheckedChange={(value) => { setAutoPrintOnPayment(value); setHasChanges(true); }}
+                      className="data-[state=checked]:bg-cyan-500"
+                      data-testid="auto-print-on-payment-switch"
+                    />
+                  </div>
+
+                  {/* Imprimir Doble Copia */}
+                  <div className={`flex items-center justify-between p-3 rounded-lg ${
+                    printDoubleCopy 
+                      ? (darkMode ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-amber-50 border border-amber-200')
+                      : (darkMode ? 'bg-slate-700/50' : 'bg-slate-50')
+                  }`}>
+                    <div className="flex items-start gap-3 flex-1 pr-4">
+                      <Copy className={`h-4 w-4 mt-0.5 ${printDoubleCopy ? 'text-amber-500' : (darkMode ? 'text-slate-500' : 'text-slate-400')}`} />
+                      <div>
+                        <Label className={`font-medium ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                          {t('settings.printer.doubleCopy')}
+                        </Label>
+                        <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                          {t('settings.printer.doubleCopy.desc')}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch 
+                      checked={printDoubleCopy} 
+                      onCheckedChange={(value) => { setPrintDoubleCopy(value); setHasChanges(true); }}
+                      className="data-[state=checked]:bg-amber-500"
+                      data-testid="print-double-copy-switch"
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Right Column - Ticket Preview */}
