@@ -149,6 +149,12 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
 
 ### 4. Sistema de Tickets/Comprobantes
 - ✅ Impresión como comprobante de un pago ya realizado
+- ✅ **CSS Optimizado para Impresoras Térmicas 80mm (COMPLETADO 2026-01-30):**
+  - `@page { size: 80mm auto; margin: 0; }` elimina headers/footers del navegador
+  - Ancho contenedor: 80mm / 100% del papel disponible
+  - `page-break-inside: avoid` en filas/secciones previene cortes
+  - Contraste: Todo texto `#000000` (negro puro), fondo `#ffffff`
+  - Aplicado a: `ticketGenerator.js`, `CashRegister.jsx`, `Returns.jsx`
 
 ### 5. Gestión de Datos
 - ✅ **Importador Universal (CSV/Excel):** Para clientes e inventario
