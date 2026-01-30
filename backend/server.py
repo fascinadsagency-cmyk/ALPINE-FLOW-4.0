@@ -4345,6 +4345,8 @@ async def get_cash_summary_realtime(date: Optional[str] = None, current_user: di
     category_results = await db.cash_movements.aggregate(category_pipeline).to_list(100)
     
     # Process category results
+    # Categories: rental (new contracts), rental_adjustment (duration changes), 
+    #             swap_supplement (upgrade charges), swap_refund (downgrade refunds)
     by_category = {"rental": 0, "rental_adjustment": 0, "other": 0}
     for r in category_results:
         cat = r["_id"]["category"] or "other"
@@ -4355,9 +4357,17 @@ async def get_cash_summary_realtime(date: Optional[str] = None, current_user: di
         if movement_type == "income":
             if cat == "rental":
                 by_category["rental"] += amount
-            elif cat == "rental_adjustment":
+            elif cat in ["rental_adjustment", "swap_supplement"]:
+                # All adjustment-related income goes to rental_adjustment
                 by_category["rental_adjustment"] += amount
             else:
+                by_category["other"] += amount
+        elif movement_type == "refund":
+            # Refunds subtract from the appropriate category
+            if cat in ["rental_adjustment", "swap_refund"]:
+                by_category["rental_adjustment"] -= amount
+            else:
+                by_category["other"] -= amount
                 by_category["other"] += amount
         elif movement_type == "refund":
             # Refunds from adjustments go negative in that category
