@@ -719,39 +719,63 @@ export default function CashRegister() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <Card className="border-emerald-200 bg-emerald-50">
                   <CardContent className="pt-6">
-                    <p className="text-sm text-emerald-700">Entradas</p>
-                    <p className="text-2xl font-bold text-emerald-700">€{(summary?.total_income || 0).toFixed(2)}</p>
+                    <p className="text-sm text-emerald-700">📦 Contratos Nuevos</p>
+                    <p className="text-2xl font-bold text-emerald-700">€{(summary?.by_category?.rental || 0).toFixed(2)}</p>
+                    <p className="text-xs text-emerald-600 mt-1">Alquileres del día</p>
+                  </CardContent>
+                </Card>
+                <Card className={`border-2 ${(summary?.by_category?.rental_adjustment || 0) >= 0 ? 'border-blue-200 bg-blue-50' : 'border-orange-200 bg-orange-50'}`}>
+                  <CardContent className="pt-6">
+                    <p className={`text-sm ${(summary?.by_category?.rental_adjustment || 0) >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>🔄 Ajustes Cambios</p>
+                    <p className={`text-2xl font-bold ${(summary?.by_category?.rental_adjustment || 0) >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>
+                      {(summary?.by_category?.rental_adjustment || 0) >= 0 ? '+' : ''}€{(summary?.by_category?.rental_adjustment || 0).toFixed(2)}
+                    </p>
+                    <p className={`text-xs mt-1 ${(summary?.by_category?.rental_adjustment || 0) >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
+                      Ampliaciones y reducciones
+                    </p>
                   </CardContent>
                 </Card>
                 <Card className="border-red-200 bg-red-50">
                   <CardContent className="pt-6">
-                    <p className="text-sm text-red-700">Salidas</p>
+                    <p className="text-sm text-red-700">📤 Salidas</p>
                     <p className="text-2xl font-bold text-red-700">€{(summary?.total_expense || 0).toFixed(2)}</p>
+                    <p className="text-xs text-red-600 mt-1">Gastos operativos</p>
                   </CardContent>
                 </Card>
                 <Card className="border-orange-200 bg-orange-50">
                   <CardContent className="pt-6">
-                    <p className="text-sm text-orange-700">Devoluciones</p>
+                    <p className="text-sm text-orange-700">↩️ Devoluciones</p>
                     <p className="text-2xl font-bold text-orange-700">€{(summary?.total_refunds || 0).toFixed(2)}</p>
+                    <p className="text-xs text-orange-600 mt-1">Reembolsos a clientes</p>
                   </CardContent>
                 </Card>
-                <Card className="border-blue-200 bg-blue-50">
+              </div>
+              
+              {/* Payment Method Breakdown */}
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <Card className="border-slate-200">
                   <CardContent className="pt-6">
-                    <p className="text-sm text-blue-700">Efectivo</p>
-                    <p className="text-2xl font-bold text-blue-700">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-lg">💵</span>
+                      <p className="text-sm font-semibold text-slate-700">Efectivo</p>
+                    </div>
+                    <p className="text-2xl font-bold text-slate-800">
                       €{(((summary?.by_payment_method?.cash?.income || 0) - 
                          (summary?.by_payment_method?.cash?.expense || 0) - 
                          (summary?.by_payment_method?.cash?.refund || 0)) || 0).toFixed(2)}
                     </p>
                   </CardContent>
                 </Card>
-                <Card className="border-purple-200 bg-purple-50">
+                <Card className="border-slate-200">
                   <CardContent className="pt-6">
-                    <p className="text-sm text-purple-700">Tarjeta</p>
-                    <p className="text-2xl font-bold text-purple-700">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-lg">💳</span>
+                      <p className="text-sm font-semibold text-slate-700">Tarjeta</p>
+                    </div>
+                    <p className="text-2xl font-bold text-slate-800">
                       €{(((summary?.by_payment_method?.card?.income || 0) - 
                          (summary?.by_payment_method?.card?.expense || 0) - 
                          (summary?.by_payment_method?.card?.refund || 0)) || 0).toFixed(2)}
