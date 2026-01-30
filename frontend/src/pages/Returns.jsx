@@ -191,6 +191,42 @@ export default function Returns() {
     recalculateTotal(newTimeDelta, materialDelta);
   };
 
+  // Handle date adjustment - calculates new total days and delta
+  const handleDateAdjustment = (newEndDateStr) => {
+    if (!changeRental || !newEndDateStr) return;
+    
+    setChangeNewEndDate(newEndDateStr);
+    
+    // Calculate new total days from original start date to new end date
+    const startDate = new Date(changeRental.start_date);
+    startDate.setHours(0, 0, 0, 0);
+    const newEndDate = new Date(newEndDateStr);
+    newEndDate.setHours(0, 0, 0, 0);
+    const msPerDay = 24 * 60 * 60 * 1000;
+    
+    const newTotalDays = Math.ceil((newEndDate - startDate) / msPerDay) + 1; // +1 includes both start and end day
+    const daysDiff = newTotalDays - changeOriginalDays;
+    const pricePerDay = changeRental.pricePerDay || 0;
+    const dateDelta = daysDiff * pricePerDay;
+    
+    setChangeNewTotalDays(newTotalDays);
+    setChangeDateDelta(dateDelta);
+    
+    // Update days remaining
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const newDaysRemaining = Math.ceil((newEndDate - today) / msPerDay);
+    setChangeDaysRemaining(newDaysRemaining);
+    
+    // Recalculate total with material delta
+    recalculateChangeTotalDelta(dateDelta, materialDelta);
+  };
+
+  // Recalculate total from date + material changes
+  const recalculateChangeTotalDelta = (dateDelta, materialDelta) => {
+    setChangeTotalDelta(dateDelta + materialDelta);
+  };
+
   // Recalculate total from time + material
   const recalculateTotal = (time, material) => {
     setTotalDelta(time + material);
@@ -206,6 +242,8 @@ export default function Returns() {
     }, 0);
     setMaterialDelta(total);
     recalculateTotal(timeDelta, total);
+    // Also update the change total delta with date delta
+    recalculateChangeTotalDelta(changeDateDelta, total);
   };
 
   // Start swap mode for item
