@@ -177,12 +177,27 @@ export default function NewRental() {
     loadPacks();
     loadItemTypes();
     const timer = setTimeout(() => setShowTimeHint(false), 5000);
+    
+    // AUTO-FOCUS: Focus barcode input on page load (for barcode scanner)
+    setTimeout(() => {
+      if (barcodeRef.current) {
+        barcodeRef.current.focus();
+      }
+    }, 500);
+    
     return () => clearTimeout(timer);
   }, []);
 
+  // AUTO-FOCUS after customer selection: Move focus to barcode input
   useEffect(() => {
-    if (customer && daysRef.current) {
-      daysRef.current.focus();
+    if (customer) {
+      // Small delay to let customer card render, then focus barcode
+      setTimeout(() => {
+        if (barcodeRef.current) {
+          barcodeRef.current.focus();
+          barcodeRef.current.select();
+        }
+      }, 300);
     }
   }, [customer]);
 
