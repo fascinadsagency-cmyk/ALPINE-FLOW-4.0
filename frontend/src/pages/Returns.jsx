@@ -124,6 +124,14 @@ export default function Returns() {
         swapType: null // 'upgrade', 'downgrade', 'technical'
       }));
     
+    // Calculate REAL days remaining: End Date - Today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endDate = rental.end_date ? new Date(rental.end_date) : new Date();
+    endDate.setHours(0, 0, 0, 0);
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const daysRemaining = Math.ceil((endDate - today) / msPerDay);
+    
     setChangeRental({
       ...rental,
       days: rentalDays,
@@ -138,10 +146,19 @@ export default function Returns() {
     setMaterialDelta(0);
     setTotalDelta(0);
     
-    // Day settings
+    // Day settings - Real calculation
     setOriginalDays(rentalDays);
     setNewDays(rentalDays);
     setAdjustDays(false);
+    
+    // Set days remaining correctly
+    setChangeDaysRemaining(daysRemaining);
+    setChangeOriginalDays(rentalDays);
+    setChangeNewTotalDays(rentalDays);
+    setChangeNewEndDate(rental.end_date ? rental.end_date.split('T')[0] : "");
+    setChangeAdjustDate(false);
+    setChangeDateDelta(0);
+    setChangeTotalDelta(0);
     
     setChangeComplete(false);
     setChangePaymentMethod("cash");
