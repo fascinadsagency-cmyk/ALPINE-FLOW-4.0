@@ -2582,7 +2582,7 @@ export default function NewRental() {
 
       {/* Success Dialog with Print Button */}
       <Dialog open={showSuccessDialog} onOpenChange={closeSuccessDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md overflow-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-emerald-600 text-xl">
               <CheckCircle className="h-7 w-7" />
@@ -2591,14 +2591,14 @@ export default function NewRental() {
           </DialogHeader>
           
           <div className="py-6 space-y-4">
-            <div className="p-4 rounded-lg bg-emerald-50 border-2 border-emerald-200">
-              <p className="text-sm font-semibold text-emerald-900">
+            <div className="p-4 rounded-lg bg-emerald-50 border-2 border-emerald-200 w-full max-w-full box-border">
+              <p className="text-sm font-semibold text-emerald-900 break-words">
                 <strong>Cliente:</strong> {completedRental?.customer_name}
               </p>
               <p className="text-sm font-semibold text-emerald-900 mt-2">
                 <strong>Total pagado:</strong> €{completedRental?.paid_amount?.toFixed(2)}
               </p>
-              <p className="text-xs text-emerald-700 mt-2">
+              <p className="text-xs text-emerald-700 mt-2 font-mono">
                 ID: {completedRental?.id?.substring(0, 8)}
               </p>
             </div>
@@ -2609,7 +2609,7 @@ export default function NewRental() {
               size="lg"
             >
               <Printer className="h-6 w-6 mr-3" />
-              🖨️ IMPRIMIR TICKET DE ALQUILER
+              🖨️ IMPRIMIR TICKET
             </Button>
           </div>
 
