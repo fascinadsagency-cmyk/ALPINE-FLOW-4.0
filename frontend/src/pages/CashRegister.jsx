@@ -765,12 +765,15 @@ export default function CashRegister() {
                   <CardContent className="pt-6">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-lg">💵</span>
-                      <p className="text-sm font-semibold text-slate-700">Efectivo</p>
+                      <p className="text-sm font-semibold text-slate-700">Efectivo (Neto)</p>
                     </div>
                     <p className="text-2xl font-bold text-slate-800">
                       €{(((summary?.by_payment_method?.cash?.income || 0) - 
                          (summary?.by_payment_method?.cash?.expense || 0) - 
                          (summary?.by_payment_method?.cash?.refund || 0)) || 0).toFixed(2)}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Ingresos - Salidas - Devol.
                     </p>
                   </CardContent>
                 </Card>
@@ -778,24 +781,66 @@ export default function CashRegister() {
                   <CardContent className="pt-6">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-lg">💳</span>
-                      <p className="text-sm font-semibold text-slate-700">Tarjeta</p>
+                      <p className="text-sm font-semibold text-slate-700">Tarjeta (Neto)</p>
                     </div>
                     <p className="text-2xl font-bold text-slate-800">
                       €{(((summary?.by_payment_method?.card?.income || 0) - 
                          (summary?.by_payment_method?.card?.expense || 0) - 
                          (summary?.by_payment_method?.card?.refund || 0)) || 0).toFixed(2)}
                     </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Ingresos - Salidas - Devol.
+                    </p>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Balance Card */}
-              <Card className={`border-2 mb-6 ${(summary?.balance || 0) >= 0 ? 'border-emerald-300 bg-emerald-50' : 'border-red-300 bg-red-50'}`}>
-                <CardContent className="py-6">
+              {/* ========== INGRESOS NETOS DEL DÍA - NEW HIGHLIGHTED CARD ========== */}
+              {(() => {
+                // Formula: (Contratos Nuevos + Ajustes Cambios) - (Salidas + Devoluciones)
+                const contratosNuevos = summary?.by_category?.rental || 0;
+                const ajustesCambios = summary?.by_category?.rental_adjustment || 0;
+                const salidas = summary?.total_expense || 0;
+                const devoluciones = summary?.total_refunds || 0;
+                const ingresosNetosDelDia = (contratosNuevos + ajustesCambios) - (salidas + devoluciones);
+                
+                return (
+                  <Card className={`border-2 mb-4 ${ingresosNetosDelDia >= 0 ? 'border-emerald-400 bg-gradient-to-r from-emerald-50 to-green-50' : 'border-red-400 bg-gradient-to-r from-red-50 to-orange-50'}`}>
+                    <CardContent className="py-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-2xl">💰</span>
+                            <p className="text-lg font-bold text-slate-800">INGRESOS NETOS DEL DÍA</p>
+                          </div>
+                          <p className={`text-5xl font-black ${ingresosNetosDelDia >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                            {ingresosNetosDelDia >= 0 ? '+' : ''}€{ingresosNetosDelDia.toFixed(2)}
+                          </p>
+                          <p className="text-xs text-slate-500 mt-2">
+                            = (Contratos €{contratosNuevos.toFixed(2)} + Ajustes €{ajustesCambios.toFixed(2)}) - (Salidas €{salidas.toFixed(2)} + Devol. €{devoluciones.toFixed(2)})
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <Badge className={`text-sm px-3 py-1 ${ingresosNetosDelDia >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                            {ingresosNetosDelDia >= 0 ? '📈 Ganancia' : '📉 Pérdida'}
+                          </Badge>
+                          <p className="text-xs text-slate-500 mt-2">
+                            (Sin contar fondo de caja)
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })()}
+
+              {/* Balance Card - Saldo del Turno (incluye fondo inicial) */}
+              <Card className={`border-2 mb-6 ${(summary?.balance || 0) >= 0 ? 'border-slate-300 bg-slate-50' : 'border-red-300 bg-red-50'}`}>
+                <CardContent className="py-5">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-slate-600">Saldo Neto del Turno</p>
-                      <p className={`text-4xl font-bold ${(summary?.balance || 0) >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+                      <p className="text-sm font-medium text-slate-600">Saldo en Caja (incl. Fondo Inicial)</p>
+                      <p className={`text-3xl font-bold ${(summary?.balance || 0) >= 0 ? 'text-slate-700' : 'text-red-700'}`}>
                         €{(summary?.balance || 0).toFixed(2)}
                       </p>
                       {activeSession && (
