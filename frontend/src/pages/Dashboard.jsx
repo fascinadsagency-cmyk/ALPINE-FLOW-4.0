@@ -152,6 +152,297 @@ export default function Dashboard() {
     toast.info("Filtro de fecha eliminado");
   };
 
+  // ============ GLOBAL LOOKUP FUNCTIONS ============
+
+  // Auto-focus on search input when component mounts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleGlobalSearch = async (code) => {
+    if (!code || code.trim().length < 2) return;
+    
+    setSearchLoading(true);
+    try {
+      const response = await axios.get(`${API}/lookup/${encodeURIComponent(code.trim())}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      const result = response.data;
+      setLookupResult(result);
+      
+      if (result.found) {
+        if (result.type === "rented_item") {
+          // SCENARIO A: Item is rented - Open Quick Management Modal
+          toast.success(`✓ ${result.item?.internal_code || result.item?.barcode}: Alquilado por ${result.rental?.customer_name}`);
+          openQuickModal(result.rental, result.item);
+        } else if (result.type === "customer") {
+          // SCENARIO B: Customer found with active rental
+          toast.success(`✓ Cliente encontrado: ${result.customer?.name}`);
+          openQuickModal(result.rental, null);
+        } else if (result.type === "multiple_customers") {
+          // Multiple customers - show selection
+          toast.info(`${result.customers.length} clientes encontrados`);
+        } else if (result.type === "available_item") {
+          toast.info(`Artículo ${result.item?.internal_code || result.item?.barcode} disponible (${result.item?.status})`);
+        } else if (result.type === "customer_no_rental") {
+          toast.warning("Cliente encontrado pero sin alquileres activos");
+        }
+      } else {
+        toast.error(result.message || "No encontrado");
+      }
+    } catch (error) {
+      toast.error("Error en la búsqueda");
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter' && searchCode.trim()) {
+      handleGlobalSearch(searchCode);
+    }
+  };
+
+  // ============ QUICK MANAGEMENT MODAL FUNCTIONS ============
+
+  const openQuickModal = (rental, triggerItem) => {
+    setQuickRental(rental);
+    setQuickItem(triggerItem);
+    setQuickSwapOldItem(triggerItem?.rental_item_data || triggerItem);
+    setQuickNewBarcode("");
+    setQuickNewItem(null);
+    setQuickDelta(null);
+    setQuickComplete(false);
+    setQuickAction("swap");
+    setQuickPaymentMethod("cash");
+    
+    // Set days remaining
+    const daysRemaining = rental?.days_remaining || rental?.days || 1;
+    setQuickNewDays(daysRemaining.toString());
+    
+    setQuickModal(true);
+    
+    // Auto-focus swap input
+    setTimeout(() => {
+      quickSwapInputRef.current?.focus();
+    }, 200);
+  };
+
+  const closeQuickModal = () => {
+    setQuickModal(false);
+    setQuickRental(null);
+    setQuickItem(null);
+    setQuickNewItem(null);
+    setQuickSwapOldItem(null);
+    setQuickDelta(null);
+    setQuickComplete(false);
+    setSearchCode("");
+    setLookupResult(null);
+    
+    // Re-focus main search
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 100);
+  };
+
+  const handleQuickSwapSearch = async (code) => {
+    if (!code.trim() || !quickRental) return;
+    
+    setSearchLoading(true);
+    try {
+      const response = await axios.get(`${API}/items?search=${code}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      const items = response.data;
+      const foundItem = items.find(i => 
+        i.barcode?.toUpperCase() === code.toUpperCase() || 
+        i.internal_code?.toUpperCase() === code.toUpperCase()
+      );
+
+      if (!foundItem) {
+        toast.error(`No se encontró artículo "${code}"`);
+        return;
+      }
+
+      if (foundItem.status === 'rented') {
+        toast.error("Este artículo ya está alquilado");
+        return;
+      }
+
+      if (!['available', 'dirty'].includes(foundItem.status)) {
+        toast.error(`Artículo no disponible (${foundItem.status})`);
+        return;
+      }
+
+      setQuickNewItem(foundItem);
+
+      // If no old item pre-selected, try to auto-match by type
+      if (!quickSwapOldItem) {
+        const activeItems = quickRental.items.filter(i => !i.returned);
+        const matchingItem = activeItems.find(i => 
+          i.item_type?.toLowerCase() === foundItem.item_type?.toLowerCase()
+        );
+        if (matchingItem) {
+          setQuickSwapOldItem(matchingItem);
+          toast.success(`Sustitución: ${matchingItem.internal_code || matchingItem.barcode} → ${foundItem.internal_code || foundItem.barcode}`);
+        }
+      } else {
+        toast.success(`Nuevo artículo: ${foundItem.internal_code || foundItem.barcode}`);
+      }
+
+      // Calculate price delta
+      await calculateQuickDelta(quickSwapOldItem, foundItem);
+
+    } catch (error) {
+      toast.error("Error al buscar artículo");
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const calculateQuickDelta = async (oldItem, newItem) => {
+    if (!quickRental || !oldItem || !newItem) {
+      setQuickDelta({ oldPrice: 0, newPrice: 0, delta: 0, days: parseInt(quickNewDays) || 1, isEqual: true });
+      return;
+    }
+
+    try {
+      const tariffsRes = await axios.get(`${API}/tariffs`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const tariffs = tariffsRes.data;
+      const days = parseInt(quickNewDays) || quickRental.days_remaining || 1;
+
+      const oldTariff = tariffs.find(t => t.item_type?.toLowerCase() === oldItem.item_type?.toLowerCase());
+      const oldDayField = days <= 10 ? `day_${days}` : 'day_11_plus';
+      const oldPrice = oldTariff?.[oldDayField] || oldItem.unit_price || 0;
+
+      const newTariff = tariffs.find(t => t.item_type?.toLowerCase() === newItem.item_type?.toLowerCase());
+      const newDayField = days <= 10 ? `day_${days}` : 'day_11_plus';
+      const newPrice = newTariff?.[newDayField] || newItem.rental_price || 0;
+
+      const delta = newPrice - oldPrice;
+
+      setQuickDelta({
+        oldPrice,
+        newPrice,
+        delta,
+        days,
+        isUpgrade: delta > 0,
+        isDowngrade: delta < 0,
+        isEqual: delta === 0
+      });
+    } catch {
+      setQuickDelta({ oldPrice: 0, newPrice: 0, delta: 0, days: parseInt(quickNewDays) || 1, isEqual: true });
+    }
+  };
+
+  // Recalculate when days change
+  useEffect(() => {
+    if (quickSwapOldItem && quickNewItem) {
+      calculateQuickDelta(quickSwapOldItem, quickNewItem);
+    }
+  }, [quickNewDays]);
+
+  const executeQuickSwap = async () => {
+    if (!quickRental || !quickNewItem || !quickSwapOldItem) {
+      toast.error("Faltan datos para el cambio");
+      return;
+    }
+
+    setQuickProcessing(true);
+    try {
+      await axios.post(`${API}/rentals/${quickRental.id}/central-swap`, {
+        old_item_barcode: quickSwapOldItem.barcode || quickSwapOldItem.internal_code,
+        new_item_barcode: quickNewItem.barcode || quickNewItem.internal_code,
+        days_remaining: parseInt(quickNewDays) || quickRental.days_remaining,
+        payment_method: quickPaymentMethod,
+        delta_amount: quickDelta?.delta || 0
+      }, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      setQuickComplete(true);
+      toast.success("✅ Cambio realizado correctamente");
+      loadDashboard();
+
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al procesar el cambio");
+    } finally {
+      setQuickProcessing(false);
+    }
+  };
+
+  const executeQuickReturn = async () => {
+    if (!quickRental || !quickSwapOldItem) {
+      toast.error("Faltan datos para la devolución");
+      return;
+    }
+
+    setQuickProcessing(true);
+    try {
+      // Return the specific item
+      await axios.post(`${API}/rentals/${quickRental.id}/return-item`, {
+        item_barcode: quickSwapOldItem.barcode || quickSwapOldItem.internal_code
+      }, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      setQuickComplete(true);
+      toast.success("✅ Artículo devuelto correctamente");
+      loadDashboard();
+
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al procesar la devolución");
+    } finally {
+      setQuickProcessing(false);
+    }
+  };
+
+  const printQuickTicket = () => {
+    if (!quickRental || !quickDelta) return;
+    
+    const ticketWindow = window.open('', '_blank', 'width=400,height=600');
+    ticketWindow.document.write(`
+      <!DOCTYPE html><html><head><title>Ticket</title>
+      <style>
+        @media print { @page { margin: 0; size: 80mm auto; } }
+        body { font-family: 'Courier New', monospace; width: 80mm; padding: 5mm; margin: 0 auto; font-size: 11px; }
+        .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 8px; margin-bottom: 10px; }
+        .section { border-bottom: 1px dashed #ccc; padding: 8px 0; }
+        .row { display: flex; justify-content: space-between; padding: 3px 0; }
+        .delta-box { text-align: center; padding: 15px; margin: 10px 0; border-radius: 4px; }
+        .delta-positive { background: #dcfce7; color: #166534; }
+        .delta-negative { background: #fee2e2; color: #991b1b; }
+        .delta-amount { font-size: 24px; font-weight: bold; }
+        .print-btn { display: block; width: 100%; padding: 10px; margin-top: 15px; background: #2563eb; color: white; border: none; cursor: pointer; }
+        @media print { .print-btn { display: none; } }
+      </style></head><body>
+        <div class="header"><h1>COMPROBANTE DE CAMBIO</h1></div>
+        <div class="section">
+          <div class="row"><span>Cliente:</span><strong>${quickRental.customer_name}</strong></div>
+          <div class="row"><span>DNI:</span><strong>${quickRental.customer_dni || '-'}</strong></div>
+        </div>
+        <div class="section">
+          <p><strong>❌ DEVUELVE:</strong> ${quickSwapOldItem?.internal_code || quickSwapOldItem?.barcode}</p>
+          <p><strong>✅ RECIBE:</strong> ${quickNewItem?.internal_code || quickNewItem?.barcode}</p>
+        </div>
+        <div class="delta-box ${quickDelta.delta > 0 ? 'delta-positive' : 'delta-negative'}">
+          <p>${quickDelta.delta > 0 ? 'SUPLEMENTO' : 'ABONO'}</p>
+          <p class="delta-amount">${quickDelta.delta > 0 ? '+' : '-'}€${Math.abs(quickDelta.delta).toFixed(2)}</p>
+        </div>
+        <p style="text-align:center;font-size:9px;">${new Date().toLocaleString('es-ES')}</p>
+        <button class="print-btn" onclick="window.print();setTimeout(()=>window.close(),500)">IMPRIMIR</button>
+      </body></html>
+    `);
+    ticketWindow.document.close();
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[80vh]">
