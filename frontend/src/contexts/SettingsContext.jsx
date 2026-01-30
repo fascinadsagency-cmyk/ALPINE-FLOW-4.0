@@ -304,6 +304,29 @@ export function SettingsProvider({ children }) {
     return saved !== 'false'; // Default true
   });
 
+  // ========== HARDWARE SETTINGS ==========
+  // Scanner / Barcode Gun
+  const [quickScanMode, setQuickScanMode] = useState(() => {
+    const saved = localStorage.getItem('quick_scan_mode');
+    return saved === 'true';
+  });
+
+  // Printer
+  const [paperWidth, setPaperWidth] = useState(() => {
+    const saved = localStorage.getItem('paper_width');
+    return saved || '80mm';
+  });
+
+  const [autoPrintOnPayment, setAutoPrintOnPayment] = useState(() => {
+    const saved = localStorage.getItem('auto_print_on_payment');
+    return saved === 'true';
+  });
+
+  const [printDoubleCopy, setPrintDoubleCopy] = useState(() => {
+    const saved = localStorage.getItem('print_double_copy');
+    return saved === 'true';
+  });
+
   // ========== EFFECTS FOR PERSISTENCE ==========
   
   // Dark mode - Global application
