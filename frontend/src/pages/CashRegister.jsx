@@ -350,17 +350,17 @@ export default function CashRegister() {
       </head>
       <body>
         <!-- CABECERA -->
-        ${companyLogo ? \`
+        ${companyLogo ? `
         <div class="logo">
-          <img src="\${companyLogo}" alt="Logo" />
+          <img src="${companyLogo}" alt="Logo" />
         </div>
-        \` : \`
+        ` : `
         <div class="header">
-          <div class="header-business">\${ticketHeader}</div>
+          <div class="header-business">${ticketHeader}</div>
         </div>
-        \`}
+        `}
         
-        <div class="header-title">\${ticketTitle}</div>
+        <div class="header-title">${ticketTitle}</div>
         
         <div class="ticket-number">Nº ${movement.operation_number || 'PENDIENTE'}</div>
         
