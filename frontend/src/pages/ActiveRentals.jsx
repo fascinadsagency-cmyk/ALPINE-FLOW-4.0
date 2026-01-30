@@ -1465,167 +1465,231 @@ export default function ActiveRentals() {
                     </div>
                   </div>
 
-                  {/* ===== TECHNICAL DATA - PRIORITY SECTION ===== */}
-                  <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <div className="p-2 bg-blue-100 rounded-lg">
-                          <Mountain className="h-5 w-5 text-blue-600" />
+                  {/* ===== TECHNICAL DATA - COLLAPSIBLE ACCORDION ===== */}
+                  <div className="mt-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 overflow-hidden">
+                    {/* HEADER - Always visible with summary */}
+                    <div 
+                      className={`p-3 flex items-center justify-between cursor-pointer hover:bg-blue-100/50 transition-colors ${technicalDataExpanded ? 'border-b border-blue-200' : ''}`}
+                      onClick={() => !editingTechnicalData && setTechnicalDataExpanded(!technicalDataExpanded)}
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
+                          <Mountain className="h-4 w-4 text-blue-600" />
                         </div>
-                        <div>
-                          <p className="font-bold text-slate-800">Datos Técnicos</p>
-                          <p className="text-xs text-slate-500">Información para preparar el material</p>
-                        </div>
-                      </div>
-                      {!editingTechnicalData ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={startEditingTechnicalData}
-                          className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-100"
-                          data-testid="edit-technical-data-btn"
-                        >
-                          <Edit3 className="h-3 w-3" />
-                          Editar
-                        </Button>
-                      ) : (
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={cancelEditingTechnicalData}
-                            className="gap-1"
-                          >
-                            <X className="h-3 w-3" />
-                            Cancelar
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={saveTechnicalData}
-                            disabled={savingTechnicalData}
-                            className="gap-1 bg-blue-600 hover:bg-blue-700"
-                            data-testid="save-technical-data-btn"
-                          >
-                            {savingTechnicalData ? (
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                            ) : (
-                              <Save className="h-3 w-3" />
-                            )}
-                            Guardar
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-
-                    {!editingTechnicalData ? (
-                      /* VIEW MODE - Badges */
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <div className="p-3 bg-white rounded-lg border border-blue-100 text-center">
-                          <div className="flex items-center justify-center gap-1 mb-1">
-                            <Package className="h-4 w-4 text-blue-500" />
-                            <span className="text-xs text-slate-500 font-medium">Talla Bota</span>
-                          </div>
-                          <p className="text-xl font-bold text-slate-900">
-                            {selectedCustomer.boot_size || '-'}
-                          </p>
-                        </div>
-                        <div className="p-3 bg-white rounded-lg border border-blue-100 text-center">
-                          <div className="flex items-center justify-center gap-1 mb-1">
-                            <Ruler className="h-4 w-4 text-blue-500" />
-                            <span className="text-xs text-slate-500 font-medium">Altura</span>
-                          </div>
-                          <p className="text-xl font-bold text-slate-900">
-                            {selectedCustomer.height ? `${selectedCustomer.height} cm` : '-'}
-                          </p>
-                        </div>
-                        <div className="p-3 bg-white rounded-lg border border-blue-100 text-center">
-                          <div className="flex items-center justify-center gap-1 mb-1">
-                            <Scale className="h-4 w-4 text-blue-500" />
-                            <span className="text-xs text-slate-500 font-medium">Peso</span>
-                          </div>
-                          <p className="text-xl font-bold text-slate-900">
-                            {selectedCustomer.weight ? `${selectedCustomer.weight} kg` : '-'}
-                          </p>
-                        </div>
-                        <div className="p-3 bg-white rounded-lg border border-blue-100 text-center">
-                          <div className="flex items-center justify-center gap-1 mb-1">
-                            <Mountain className="h-4 w-4 text-blue-500" />
-                            <span className="text-xs text-slate-500 font-medium">Nivel</span>
-                          </div>
-                          <p className="text-xl font-bold text-slate-900 capitalize">
-                            {selectedCustomer.ski_level || '-'}
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      /* EDIT MODE - Inputs */
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <div>
-                          <Label className="text-xs text-slate-600">Talla Bota</Label>
-                          <Input
-                            value={technicalDataForm.boot_size}
-                            onChange={(e) => setTechnicalDataForm(prev => ({ ...prev, boot_size: e.target.value }))}
-                            placeholder="Ej: 42, 27.5"
-                            className="h-10 mt-1 text-center font-bold"
-                            data-testid="boot-size-input"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-xs text-slate-600">Altura (cm)</Label>
-                          <Input
-                            value={technicalDataForm.height}
-                            onChange={(e) => setTechnicalDataForm(prev => ({ ...prev, height: e.target.value }))}
-                            placeholder="Ej: 175"
-                            className="h-10 mt-1 text-center font-bold"
-                            data-testid="height-input"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-xs text-slate-600">Peso (kg)</Label>
-                          <Input
-                            value={technicalDataForm.weight}
-                            onChange={(e) => setTechnicalDataForm(prev => ({ ...prev, weight: e.target.value }))}
-                            placeholder="Ej: 70"
-                            className="h-10 mt-1 text-center font-bold"
-                            data-testid="weight-input"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-xs text-slate-600">Nivel Esquí</Label>
-                          <Select
-                            value={technicalDataForm.ski_level}
-                            onValueChange={(v) => setTechnicalDataForm(prev => ({ ...prev, ski_level: v }))}
-                          >
-                            <SelectTrigger className="h-10 mt-1" data-testid="ski-level-select">
-                              <SelectValue placeholder="Seleccionar..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {SKI_LEVELS.map(level => (
-                                <SelectItem key={level.value} value={level.value}>
-                                  {level.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Show historical preferred sizes if available */}
-                    {selectedCustomer.customerHistory?.preferred_sizes && 
-                     Object.keys(selectedCustomer.customerHistory.preferred_sizes).length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-blue-200">
-                        <p className="text-xs text-slate-500 mb-2 flex items-center gap-1">
-                          <History className="h-3 w-3" />
-                          Tallas usadas anteriormente:
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {Object.entries(selectedCustomer.customerHistory.preferred_sizes).map(([type, sizes]) => (
-                            <Badge key={type} variant="outline" className="text-xs bg-white">
-                              {type}: {Array.isArray(sizes) ? sizes.slice(0, 3).join(", ") : sizes}
+                        
+                        {/* COMPACT SUMMARY - One line with key data */}
+                        <div className="flex items-center gap-3 flex-wrap text-sm min-w-0">
+                          {selectedCustomer.height && (
+                            <span className="flex items-center gap-1 text-slate-700">
+                              <Ruler className="h-3 w-3 text-blue-500" />
+                              <strong>{selectedCustomer.height}</strong>cm
+                            </span>
+                          )}
+                          {selectedCustomer.weight && (
+                            <span className="flex items-center gap-1 text-slate-700">
+                              <Scale className="h-3 w-3 text-blue-500" />
+                              <strong>{selectedCustomer.weight}</strong>kg
+                            </span>
+                          )}
+                          {selectedCustomer.boot_size && (
+                            <span className="flex items-center gap-1 text-slate-700">
+                              <Package className="h-3 w-3 text-blue-500" />
+                              Pie <strong>{selectedCustomer.boot_size}</strong>
+                            </span>
+                          )}
+                          {selectedCustomer.ski_level && selectedCustomer.ski_level !== 'sin_especificar' && (
+                            <Badge className="bg-blue-100 text-blue-700 border-blue-300 capitalize text-xs">
+                              {selectedCustomer.ski_level}
                             </Badge>
-                          ))}
+                          )}
+                          {!selectedCustomer.height && !selectedCustomer.weight && !selectedCustomer.boot_size && (
+                            <span className="text-slate-400 italic text-xs">Sin datos técnicos</span>
+                          )}
                         </div>
+                      </div>
+                      
+                      {/* EXPAND/COLLAPSE BUTTON */}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="gap-1 text-blue-600 hover:bg-blue-100 flex-shrink-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!editingTechnicalData) setTechnicalDataExpanded(!technicalDataExpanded);
+                        }}
+                      >
+                        {technicalDataExpanded ? (
+                          <>
+                            <ChevronDown className="h-4 w-4 rotate-180 transition-transform" />
+                            <span className="hidden sm:inline text-xs">Cerrar</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-xs">Editar</span>
+                            <ChevronDown className="h-4 w-4 transition-transform" />
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    
+                    {/* EXPANDED CONTENT */}
+                    {technicalDataExpanded && (
+                      <div className="p-4 pt-3">
+                        {/* Edit/Save buttons */}
+                        <div className="flex justify-end mb-3">
+                          {!editingTechnicalData ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={startEditingTechnicalData}
+                              className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-100"
+                              data-testid="edit-technical-data-btn"
+                            >
+                              <Edit3 className="h-3 w-3" />
+                              Editar datos
+                            </Button>
+                          ) : (
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  cancelEditingTechnicalData();
+                                }}
+                                className="gap-1"
+                              >
+                                <X className="h-3 w-3" />
+                                Cancelar
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={saveTechnicalData}
+                                disabled={savingTechnicalData}
+                                className="gap-1 bg-blue-600 hover:bg-blue-700"
+                                data-testid="save-technical-data-btn"
+                              >
+                                {savingTechnicalData ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <Save className="h-3 w-3" />
+                                )}
+                                Guardar
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+
+                        {!editingTechnicalData ? (
+                          /* VIEW MODE - Badges */
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div className="p-3 bg-white rounded-lg border border-blue-100 text-center">
+                              <div className="flex items-center justify-center gap-1 mb-1">
+                                <Package className="h-4 w-4 text-blue-500" />
+                                <span className="text-xs text-slate-500 font-medium">Talla Bota</span>
+                              </div>
+                              <p className="text-xl font-bold text-slate-900">
+                                {selectedCustomer.boot_size || '-'}
+                              </p>
+                            </div>
+                            <div className="p-3 bg-white rounded-lg border border-blue-100 text-center">
+                              <div className="flex items-center justify-center gap-1 mb-1">
+                                <Ruler className="h-4 w-4 text-blue-500" />
+                                <span className="text-xs text-slate-500 font-medium">Altura</span>
+                              </div>
+                              <p className="text-xl font-bold text-slate-900">
+                                {selectedCustomer.height ? `${selectedCustomer.height} cm` : '-'}
+                              </p>
+                            </div>
+                            <div className="p-3 bg-white rounded-lg border border-blue-100 text-center">
+                              <div className="flex items-center justify-center gap-1 mb-1">
+                                <Scale className="h-4 w-4 text-blue-500" />
+                                <span className="text-xs text-slate-500 font-medium">Peso</span>
+                              </div>
+                              <p className="text-xl font-bold text-slate-900">
+                                {selectedCustomer.weight ? `${selectedCustomer.weight} kg` : '-'}
+                              </p>
+                            </div>
+                            <div className="p-3 bg-white rounded-lg border border-blue-100 text-center">
+                              <div className="flex items-center justify-center gap-1 mb-1">
+                                <Mountain className="h-4 w-4 text-blue-500" />
+                                <span className="text-xs text-slate-500 font-medium">Nivel</span>
+                              </div>
+                              <p className="text-xl font-bold text-slate-900 capitalize">
+                                {selectedCustomer.ski_level || '-'}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          /* EDIT MODE - Inputs */
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div>
+                              <Label className="text-xs text-slate-600">Talla Bota</Label>
+                              <Input
+                                value={technicalDataForm.boot_size}
+                                onChange={(e) => setTechnicalDataForm(prev => ({ ...prev, boot_size: e.target.value }))}
+                                placeholder="Ej: 42, 27.5"
+                                className="h-10 mt-1 text-center font-bold"
+                                data-testid="boot-size-input"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-slate-600">Altura (cm)</Label>
+                              <Input
+                                value={technicalDataForm.height}
+                                onChange={(e) => setTechnicalDataForm(prev => ({ ...prev, height: e.target.value }))}
+                                placeholder="Ej: 175"
+                                className="h-10 mt-1 text-center font-bold"
+                                data-testid="height-input"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-slate-600">Peso (kg)</Label>
+                              <Input
+                                value={technicalDataForm.weight}
+                                onChange={(e) => setTechnicalDataForm(prev => ({ ...prev, weight: e.target.value }))}
+                                placeholder="Ej: 70"
+                                className="h-10 mt-1 text-center font-bold"
+                                data-testid="weight-input"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-slate-600">Nivel Esquí</Label>
+                              <Select
+                                value={technicalDataForm.ski_level}
+                                onValueChange={(v) => setTechnicalDataForm(prev => ({ ...prev, ski_level: v }))}
+                              >
+                                <SelectTrigger className="h-10 mt-1" data-testid="ski-level-select">
+                                  <SelectValue placeholder="Seleccionar..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {SKI_LEVELS.map(level => (
+                                    <SelectItem key={level.value} value={level.value}>
+                                      {level.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Show historical preferred sizes if available */}
+                        {selectedCustomer.customerHistory?.preferred_sizes && 
+                         Object.keys(selectedCustomer.customerHistory.preferred_sizes).length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-blue-200">
+                            <p className="text-xs text-slate-500 mb-2 flex items-center gap-1">
+                              <History className="h-3 w-3" />
+                              Tallas usadas anteriormente:
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {Object.entries(selectedCustomer.customerHistory.preferred_sizes).map(([type, sizes]) => (
+                                <Badge key={type} variant="outline" className="text-xs bg-white">
+                                  {type}: {Array.isArray(sizes) ? sizes.slice(0, 3).join(", ") : sizes}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
