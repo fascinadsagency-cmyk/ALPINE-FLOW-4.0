@@ -1218,8 +1218,20 @@ export default function ActiveRentals() {
             </div>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="flex gap-2">
             <Button variant="outline" onClick={() => setShowCustomerModal(false)}>Cerrar</Button>
+            {selectedCustomer?.id && (
+              <Button 
+                onClick={() => {
+                  setShowCustomerModal(false);
+                  navigate(`/clientes?highlight=${selectedCustomer.id}`);
+                }}
+                className="gap-2"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Ver Ficha Completa
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
