@@ -3982,6 +3982,11 @@ class CashMovementResponse(BaseModel):
     notes: str
     created_at: str
     created_by: str
+    # Rental details for ticket printing
+    rental_items: Optional[List[dict]] = None  # Items from rental
+    rental_days: Optional[int] = None  # Number of days
+    rental_start_date: Optional[str] = None
+    rental_end_date: Optional[str] = None
 
 class CashClosingCreate(BaseModel):
     date: str
