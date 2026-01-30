@@ -42,7 +42,12 @@ import {
   Search,
   RotateCcw,
   X,
-  ExternalLink
+  ExternalLink,
+  FileText,
+  History,
+  AlertTriangle,
+  Star,
+  FileWarning
 } from "lucide-react";
 import { toast } from "sonner";
 
