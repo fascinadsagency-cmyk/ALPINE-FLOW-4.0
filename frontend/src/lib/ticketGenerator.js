@@ -139,35 +139,35 @@ export function generateTicketHTML(options) {
           background: #ffffff;
         }
         
-        .logo { text-align: center; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #000; }
+        .logo { text-align: center; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #000000; }
         .logo img { max-height: 50px; max-width: 100%; object-fit: contain; }
-        .header { text-align: center; white-space: pre-wrap; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #000; font-size: 10px; }
-        .title { text-align: center; font-weight: bold; font-size: 14px; margin: 10px 0; padding: 5px 0; border-bottom: 2px solid #000; }
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 4px; page-break-inside: avoid; }
-        .info-row .label { font-weight: normal; }
-        .info-row .value { font-weight: bold; text-align: right; max-width: 55%; }
-        .section { margin: 10px 0; padding: 10px 0; border-top: 1px dashed #000; border-bottom: 1px dashed #000; page-break-inside: avoid; }
-        .section-title { font-weight: bold; margin-bottom: 6px; }
-        .item-row { display: flex; justify-content: space-between; margin: 4px 0; font-size: 10px; page-break-inside: avoid; }
-        .item-name { max-width: 65%; overflow: hidden; text-overflow: ellipsis; }
-        .item-price { font-weight: bold; }
-        .total-section { margin-top: 10px; padding-top: 10px; border-top: 2px double #000; page-break-inside: avoid; }
-        .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; }
-        .vat-note { text-align: center; font-size: 9px; color: #000; margin-top: 4px; }
-        .vat-breakdown { margin: 6px 0; font-size: 10px; }
-        .footer { text-align: center; white-space: pre-wrap; margin-top: 12px; padding-top: 10px; border-top: 1px dashed #000; font-size: 10px; }
-        .terms { text-align: center; font-size: 8px; color: #000; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #000; }
+        .header { text-align: center; white-space: pre-wrap; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #000000; font-size: 10px; color: #000000; }
+        .title { text-align: center; font-weight: bold; font-size: 14px; margin: 10px 0; padding: 5px 0; border-bottom: 2px solid #000000; color: #000000; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 4px; page-break-inside: avoid; color: #000000; }
+        .info-row .label { font-weight: normal; color: #000000; }
+        .info-row .value { font-weight: bold; text-align: right; max-width: 55%; color: #000000; }
+        .section { margin: 10px 0; padding: 10px 0; border-top: 1px dashed #000000; border-bottom: 1px dashed #000000; page-break-inside: avoid; }
+        .section-title { font-weight: bold; margin-bottom: 6px; color: #000000; }
+        .item-row { display: flex; justify-content: space-between; margin: 4px 0; font-size: 10px; page-break-inside: avoid; color: #000000; }
+        .item-name { max-width: 65%; overflow: hidden; text-overflow: ellipsis; color: #000000; }
+        .item-price { font-weight: bold; color: #000000; }
+        .total-section { margin-top: 10px; padding-top: 10px; border-top: 2px double #000000; page-break-inside: avoid; }
+        .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; color: #000000; }
+        .vat-note { text-align: center; font-size: 9px; color: #000000; margin-top: 4px; }
+        .vat-breakdown { margin: 6px 0; font-size: 10px; color: #000000; }
+        .footer { text-align: center; white-space: pre-wrap; margin-top: 12px; padding-top: 10px; border-top: 1px dashed #000000; font-size: 10px; color: #000000; }
+        .terms { text-align: center; font-size: 8px; color: #000000; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #000000; }
         .print-btn { 
           display: block; width: 100%; padding: 12px; margin-top: 15px; 
           background: #2563eb; color: white; border: none; 
           font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 4px;
         }
         .print-btn:hover { background: #1d4ed8; }
-        .date-range { background: #f0f0f0; padding: 6px; border-radius: 4px; margin: 8px 0; text-align: center; font-size: 10px; }
-        .date-range strong { font-size: 11px; }
-        .balance-positive { color: #000; font-weight: bold; }
-        .balance-negative { color: #000; font-weight: bold; }
-        .operation-number { font-family: monospace; font-size: 10px; background: #e0e0e0; padding: 4px 8px; border-radius: 3px; }
+        .date-range { background: #f0f0f0; padding: 6px; border-radius: 4px; margin: 8px 0; text-align: center; font-size: 10px; color: #000000; }
+        .date-range strong { font-size: 11px; color: #000000; }
+        .balance-positive { color: #000000; font-weight: bold; }
+        .balance-negative { color: #000000; font-weight: bold; }
+        .operation-number { font-family: monospace; font-size: 10px; background: #e0e0e0; padding: 4px 8px; border-radius: 3px; color: #000000; }
       </style>
     </head>
     <body>
