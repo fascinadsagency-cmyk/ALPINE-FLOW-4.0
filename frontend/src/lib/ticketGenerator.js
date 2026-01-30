@@ -46,63 +46,112 @@ export function generateTicketHTML(options) {
       <meta charset="UTF-8">
       <title>${ticketTitle}</title>
       <style>
+        /* ========== RESET & BASE ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        /* ========== PRINT-SPECIFIC: THERMAL PRINTER OPTIMIZATION ========== */
         @page { 
-          size: 80mm auto; 
-          margin: 2mm;
+          size: 80mm auto;  /* Standard thermal paper width */
+          margin: 0;        /* Remove browser headers/footers */
         }
+        
+        @media print {
+          /* Force print colors for thermal printers */
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+          }
+          
+          html, body {
+            width: 80mm;
+            margin: 0 !important;
+            padding: 2mm !important;
+            background: #fff !important;
+            color: #000 !important;
+          }
+          
+          /* Hide print button */
+          .print-btn, .no-print { 
+            display: none !important; 
+          }
+          
+          /* Prevent page breaks inside elements */
+          .ticket-container, .section, .item-row, tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+          
+          /* Force black text for thermal clarity */
+          body, p, span, div, td, th {
+            color: #000 !important;
+          }
+          
+          /* Force white background */
+          body, .ticket-container {
+            background: #fff !important;
+          }
+        }
+        
+        /* ========== SCREEN STYLES ========== */
         body {
-          font-family: 'Courier New', monospace;
+          font-family: 'Courier New', 'Consolas', monospace;
           font-size: 11px;
           line-height: 1.4;
           padding: 8mm;
           max-width: 80mm;
+          width: 80mm;
           margin: 0 auto;
           background: white;
           color: #000;
         }
-        .logo { text-align: center; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #ccc; }
+        
+        .ticket-container {
+          width: 100%;
+          max-width: 80mm;
+          background: #fff;
+        }
+        
+        .logo { text-align: center; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #000; }
         .logo img { max-height: 50px; max-width: 100%; object-fit: contain; }
-        .header { text-align: center; white-space: pre-wrap; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #ccc; font-size: 10px; }
+        .header { text-align: center; white-space: pre-wrap; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #000; font-size: 10px; }
         .title { text-align: center; font-weight: bold; font-size: 14px; margin: 10px 0; padding: 5px 0; border-bottom: 2px solid #000; }
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 4px; page-break-inside: avoid; }
         .info-row .label { font-weight: normal; }
         .info-row .value { font-weight: bold; text-align: right; max-width: 55%; }
-        .section { margin: 10px 0; padding: 10px 0; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc; }
+        .section { margin: 10px 0; padding: 10px 0; border-top: 1px dashed #000; border-bottom: 1px dashed #000; page-break-inside: avoid; }
         .section-title { font-weight: bold; margin-bottom: 6px; }
-        .item-row { display: flex; justify-content: space-between; margin: 4px 0; font-size: 10px; }
+        .item-row { display: flex; justify-content: space-between; margin: 4px 0; font-size: 10px; page-break-inside: avoid; }
         .item-name { max-width: 65%; overflow: hidden; text-overflow: ellipsis; }
         .item-price { font-weight: bold; }
-        .total-section { margin-top: 10px; padding-top: 10px; border-top: 2px double #000; }
+        .total-section { margin-top: 10px; padding-top: 10px; border-top: 2px double #000; page-break-inside: avoid; }
         .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; }
-        .vat-note { text-align: center; font-size: 9px; color: #666; margin-top: 4px; }
+        .vat-note { text-align: center; font-size: 9px; color: #000; margin-top: 4px; }
         .vat-breakdown { margin: 6px 0; font-size: 10px; }
-        .footer { text-align: center; white-space: pre-wrap; margin-top: 12px; padding-top: 10px; border-top: 1px dashed #ccc; font-size: 10px; }
-        .terms { text-align: center; font-size: 8px; color: #666; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #ccc; }
+        .footer { text-align: center; white-space: pre-wrap; margin-top: 12px; padding-top: 10px; border-top: 1px dashed #000; font-size: 10px; }
+        .terms { text-align: center; font-size: 8px; color: #000; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #000; }
         .print-btn { 
           display: block; width: 100%; padding: 12px; margin-top: 15px; 
           background: #2563eb; color: white; border: none; 
           font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 4px;
         }
         .print-btn:hover { background: #1d4ed8; }
-        @media print {
-          .print-btn { display: none; }
-          body { padding: 2mm; }
-        }
         .date-range { background: #f0f0f0; padding: 6px; border-radius: 4px; margin: 8px 0; text-align: center; font-size: 10px; }
         .date-range strong { font-size: 11px; }
-        .balance-positive { color: #059669; }
-        .balance-negative { color: #dc2626; }
+        .balance-positive { color: #000; font-weight: bold; }
+        .balance-negative { color: #000; font-weight: bold; }
         .operation-number { font-family: monospace; font-size: 10px; background: #e0e0e0; padding: 4px 8px; border-radius: 3px; }
       </style>
     </head>
     <body>
+      <div class="ticket-container">
       ${renderLogo(companyLogo)}
       ${renderHeader(ticketHeader)}
       ${renderTitle(ticketTitle)}
       ${renderTicketBody(ticketType, data, t, showDniOnTicket, showVatOnTicket, defaultVat, vatIncludedInPrices, vatInfo)}
       ${renderFooter(ticketFooter)}
       ${renderTerms(ticketTerms)}
+      </div>
       <button class="print-btn" onclick="window.print(); setTimeout(() => window.close(), 500);">${t.print}</button>
     </body>
     </html>
