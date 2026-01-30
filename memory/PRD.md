@@ -2,7 +2,7 @@
 
 ## Estado del Proyecto
 **Última actualización:** 2026-01-30
-**Estado:** Operativo - Datos Técnicos prioritarios implementados en Ficha de Cliente
+**Estado:** Operativo - Lógica financiera de caja CORREGIDA y unificada
 
 ---
 
@@ -22,14 +22,22 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
 - ✅ Tarifas por días
 
 ### 2. Módulos Financieros
-- ✅ **Dashboard Estratégico:** Calendario de ocupación, rankings, control de devoluciones
-- ✅ **Gestión de Caja:** 
-  - Arqueo manual detallado
-  - Historial de cierres
+- ✅ **Dashboard Operativo:** Calendario de ocupación, rankings, control de devoluciones (SIN datos financieros por privacidad)
+- ✅ **Gestión de Caja (REESCRITA 30/01/2026):** 
+  - **Lógica financiera corregida con 3 variables maestras:**
+    - `FONDO_INICIAL`: Dinero con el que se abrió la caja
+    - `FLUJO_OPERATIVO_HOY`: Entradas - Salidas - Devoluciones (neto real)
+    - `CAJA_ESPERADA`: Fondo + Flujo (solo efectivo para arqueo físico)
+  - **Panel Superior (3 KPIs):**
+    - Ingresos Brutos (negro)
+    - Devoluciones y Salidas (rojo)
+    - Balance Neto del Día (verde/rojo) - SIN incluir fondo inicial
+  - **Panel Secundario (Arqueo):**
+    - Efectivo en Cajón = Fondo + Neto Efectivo
+    - Total Tarjeta = Ingresos - Salidas (puede ser negativo)
+  - **Modal de Cierre:** Valores COINCIDEN EXACTAMENTE con Panel de Arqueo
+  - Historial de cierres con reabrir
   - Múltiples turnos/sesiones por día
-  - Cálculo en tiempo real con agregación MongoDB
-  - Sincronización automática de movimientos faltantes
-  - Auditoría de integridad contable
 - ✅ **Reportes Flexibles:** Filtro por rango, botones de selección rápida
 - ✅ **Rentabilidad de Inventario:** Trackear coste, ingresos, amortización
 
