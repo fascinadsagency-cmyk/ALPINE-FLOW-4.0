@@ -345,7 +345,7 @@ export default function Customers() {
       boot_size: selectedCustomer?.boot_size || "",
       height: selectedCustomer?.height || "",
       weight: selectedCustomer?.weight || "",
-      ski_level: selectedCustomer?.ski_level || ""
+      ski_level: selectedCustomer?.ski_level || "sin_especificar"
     });
     setEditingTechnicalData(true);
   };
