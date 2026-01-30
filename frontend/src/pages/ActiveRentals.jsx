@@ -17,7 +17,6 @@ import {
   User, 
   Calendar, 
   DollarSign, 
-  Edit2,
   Loader2,
   ArrowRight,
   AlertCircle,
@@ -40,7 +39,8 @@ import {
   ChevronDown,
   Search,
   RotateCcw,
-  X
+  X,
+  ExternalLink
 } from "lucide-react";
 import { toast } from "sonner";
 
