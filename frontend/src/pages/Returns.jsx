@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { rentalApi } from "@/lib/api";
+import { printTicket } from "@/lib/ticketGenerator";
 import axios from "axios";
 import { 
   RotateCcw, 
