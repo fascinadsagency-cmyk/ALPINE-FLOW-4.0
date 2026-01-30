@@ -28,7 +28,13 @@ import {
   AlertCircle,
   Sparkles,
   CheckCircle,
-  Printer
+  Printer,
+  Eye,
+  EyeOff,
+  ChevronDown,
+  Ruler,
+  Scale,
+  Mountain
 } from "lucide-react";
 import { toast } from "sonner";
 
