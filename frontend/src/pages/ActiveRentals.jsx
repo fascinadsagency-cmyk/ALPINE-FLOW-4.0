@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { rentalApi } from "@/lib/api";
 import axios from "axios";
 import { 
@@ -36,7 +37,10 @@ import {
   ArrowLeftRight,
   Zap,
   Eye,
-  ChevronDown
+  ChevronDown,
+  Search,
+  RotateCcw,
+  X
 } from "lucide-react";
 import { toast } from "sonner";
 
