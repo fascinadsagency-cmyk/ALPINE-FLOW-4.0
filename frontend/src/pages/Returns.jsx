@@ -424,6 +424,72 @@ export default function Returns() {
     ticketWindow.document.close();
   };
 
+  // Print ticket for all changes
+  const printMultiChangeTicket = () => {
+    if (!changeRental) return;
+    
+    const itemsSwapped = changeItems.filter(i => i.isSwapping && i.swapNewItem);
+    const hasDayExtension = changeExtendDays && parseInt(changeNewDays) !== changeRental.days;
+    
+    const ticketWindow = window.open('', '_blank', 'width=400,height=700');
+    ticketWindow.document.write(`
+      <!DOCTYPE html><html><head><title>Ticket de Regularización</title>
+      <style>
+        @media print { @page { margin: 0; size: 80mm auto; } }
+        body { font-family: 'Courier New', monospace; width: 80mm; padding: 5mm; margin: 0 auto; font-size: 11px; }
+        .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 8px; margin-bottom: 10px; }
+        .section { border-bottom: 1px dashed #ccc; padding: 8px 0; }
+        .row { display: flex; justify-content: space-between; padding: 3px 0; }
+        .swap-item { padding: 5px; margin: 5px 0; background: #f5f5f5; border-radius: 4px; }
+        .delta-box { text-align: center; padding: 15px; margin: 10px 0; border-radius: 4px; }
+        .delta-positive { background: #dcfce7; color: #166534; }
+        .delta-negative { background: #fee2e2; color: #991b1b; }
+        .delta-zero { background: #f3f4f6; color: #374151; }
+        .delta-amount { font-size: 24px; font-weight: bold; }
+        .print-btn { display: block; width: 100%; padding: 10px; margin-top: 15px; background: #2563eb; color: white; border: none; cursor: pointer; }
+        @media print { .print-btn { display: none; } }
+      </style></head><body>
+        <div class="header">
+          <h1>TICKET DE REGULARIZACIÓN</h1>
+          <p>Cambios Múltiples</p>
+        </div>
+        <div class="section">
+          <div class="row"><span>Cliente:</span><strong>${changeRental.customer_name}</strong></div>
+          <div class="row"><span>DNI:</span><strong>${changeRental.customer_dni || '-'}</strong></div>
+          <div class="row"><span>Alquiler:</span><strong>#${changeRental.id?.substring(0, 8)}</strong></div>
+        </div>
+        
+        ${itemsSwapped.length > 0 ? `
+        <div class="section">
+          <p style="font-weight:bold;margin-bottom:8px;">CAMBIOS DE MATERIAL (${itemsSwapped.length})</p>
+          ${itemsSwapped.map(item => `
+            <div class="swap-item">
+              <div>❌ ${item.internal_code || item.barcode} → ✅ ${item.swapNewItem.internal_code || item.swapNewItem.barcode}</div>
+              <div style="font-size:10px;color:#666;">${item.item_type} • Delta: €${item.swapDelta?.toFixed(2) || '0.00'}</div>
+            </div>
+          `).join('')}
+        </div>` : ''}
+        
+        ${hasDayExtension ? `
+        <div class="section">
+          <p style="font-weight:bold;">PRÓRROGA</p>
+          <div class="row"><span>Días anteriores:</span><span>${changeRental.days}</span></div>
+          <div class="row"><span>Días nuevos:</span><span>${changeNewDays}</span></div>
+        </div>` : ''}
+        
+        <div class="delta-box ${changeTotalDelta > 0 ? 'delta-positive' : changeTotalDelta < 0 ? 'delta-negative' : 'delta-zero'}">
+          <p>${changeTotalDelta > 0 ? 'TOTAL COBRADO' : changeTotalDelta < 0 ? 'TOTAL ABONADO' : 'SIN DIFERENCIA'}</p>
+          <p class="delta-amount">${changeTotalDelta > 0 ? '+' : changeTotalDelta < 0 ? '-' : ''}€${Math.abs(changeTotalDelta).toFixed(2)}</p>
+          <p style="font-size:10px;margin-top:5px;">Método: ${changePaymentMethod === 'cash' ? 'Efectivo' : 'Tarjeta'}</p>
+        </div>
+        
+        <p style="text-align:center;font-size:9px;">${new Date().toLocaleString('es-ES')}</p>
+        <button class="print-btn" onclick="window.print();setTimeout(()=>window.close(),500)">IMPRIMIR</button>
+      </body></html>
+    `);
+    ticketWindow.document.close();
+  };
+
   const quickReturn = async (rentalId, customerName) => {
     // Acción RÁPIDA - Ejecutar inmediatamente sin confirmación
     setLoading(true);
