@@ -4251,6 +4251,7 @@ async def get_cash_summary_realtime(date: Optional[str] = None, current_user: di
     RESUMEN DE CAJA EN TIEMPO REAL usando agregación MongoDB.
     Calcula SUM(montos) directamente en la base de datos para máxima precisión.
     Fórmula: Saldo_Total = Fondo_Apertura + SUM(Ingresos) - SUM(Gastos) - SUM(Devoluciones)
+    Incluye desglose por categoría (ventas nuevas vs ajustes de contratos).
     """
     if not date:
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -4269,6 +4270,7 @@ async def get_cash_summary_realtime(date: Optional[str] = None, current_user: di
             "total_refunds": 0,
             "balance": 0,
             "by_payment_method": {"cash": {"income": 0, "expense": 0, "refund": 0}, "card": {"income": 0, "expense": 0, "refund": 0}},
+            "by_category": {"rental": 0, "rental_adjustment": 0, "other": 0},
             "movements_count": 0
         }
     
@@ -4288,6 +4290,41 @@ async def get_cash_summary_realtime(date: Optional[str] = None, current_user: di
     ]
     
     results = await db.cash_movements.aggregate(pipeline).to_list(100)
+    
+    # Aggregation by category (for breakdown display)
+    category_pipeline = [
+        {"$match": {"session_id": session_id}},
+        {"$group": {
+            "_id": {
+                "category": "$category",
+                "movement_type": "$movement_type"
+            },
+            "total": {"$sum": "$amount"}
+        }}
+    ]
+    category_results = await db.cash_movements.aggregate(category_pipeline).to_list(100)
+    
+    # Process category results
+    by_category = {"rental": 0, "rental_adjustment": 0, "other": 0}
+    for r in category_results:
+        cat = r["_id"]["category"] or "other"
+        movement_type = r["_id"]["movement_type"]
+        amount = r["total"]
+        
+        # For income, add to positive. For refund/expense, subtract
+        if movement_type == "income":
+            if cat == "rental":
+                by_category["rental"] += amount
+            elif cat == "rental_adjustment":
+                by_category["rental_adjustment"] += amount
+            else:
+                by_category["other"] += amount
+        elif movement_type == "refund":
+            # Refunds from adjustments go negative in that category
+            if cat == "rental_adjustment":
+                by_category["rental_adjustment"] -= amount
+            else:
+                by_category["other"] -= amount
     
     # Process aggregation results
     total_income = 0
@@ -4339,6 +4376,7 @@ async def get_cash_summary_realtime(date: Optional[str] = None, current_user: di
         "total_refunds": total_refunds,
         "balance": balance,
         "by_payment_method": by_method,
+        "by_category": by_category,
         "movements_count": movements_count,
         "calculation_method": "realtime_aggregation"
     }
