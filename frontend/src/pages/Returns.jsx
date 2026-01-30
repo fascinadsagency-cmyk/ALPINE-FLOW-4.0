@@ -38,7 +38,9 @@ import {
   CreditCard,
   CheckCircle,
   Printer,
-  CalendarPlus
+  CalendarPlus,
+  Lock,
+  AlertCircle
 } from "lucide-react";
 import { toast } from "sonner";
 
