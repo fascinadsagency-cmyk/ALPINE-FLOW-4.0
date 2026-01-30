@@ -49,51 +49,78 @@ export function generateTicketHTML(options) {
         /* ========== RESET & BASE ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        /* ========== PRINT-SPECIFIC: THERMAL PRINTER OPTIMIZATION ========== */
+        /* ========== PRINT-SPECIFIC: THERMAL PRINTER 80mm OPTIMIZATION ========== */
+        /* 1. Eliminación de ruido del navegador (headers/footers/URL/fecha) */
         @page { 
-          size: 80mm auto;  /* Standard thermal paper width */
-          margin: 0;        /* Remove browser headers/footers */
+          size: 80mm auto;  /* Ancho estándar papel térmico */
+          margin: 0;        /* CRÍTICO: Elimina encabezados y pies del navegador */
         }
         
         @media print {
-          /* Force print colors for thermal printers */
+          /* Forzar colores de impresión para térmicas */
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
             color-adjust: exact !important;
           }
           
+          /* 2. Ancho del papel: 80mm sin márgenes laterales */
           html, body {
-            width: 80mm;
+            width: 80mm !important;
+            max-width: 80mm !important;
             margin: 0 !important;
             padding: 2mm !important;
-            background: #fff !important;
-            color: #000 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
           }
           
-          /* Hide print button */
+          /* 4. Contraste: Texto negro puro (#000000) y fondo blanco */
+          body, p, span, div, td, th, strong, b, h1, h2, h3, h4, h5, h6, 
+          .info-row, .item-row, .total-row, .section-title, .header, .footer, .terms {
+            color: #000000 !important;
+            background: #ffffff !important;
+          }
+          
+          /* Ocultar botón de impresión */
           .print-btn, .no-print { 
             display: none !important; 
           }
           
-          /* Prevent page breaks inside elements */
-          .ticket-container, .section, .item-row, tr {
-            page-break-inside: avoid;
-            break-inside: avoid;
+          /* 3. Corte de papel: Evitar que tablas/filas se corten a la mitad */
+          .ticket-container, 
+          .section, 
+          .item-row, 
+          .info-row,
+          .total-section,
+          .total-row,
+          tr, td, th,
+          table, tbody {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
           
-          /* Force black text for thermal clarity */
-          body, p, span, div, td, th {
-            color: #000 !important;
+          /* Contenedor principal a ancho completo */
+          .ticket-container {
+            width: 100% !important;
+            max-width: 80mm !important;
+            background: #ffffff !important;
+            padding: 0 !important;
+            margin: 0 !important;
           }
           
-          /* Force white background */
-          body, .ticket-container {
-            background: #fff !important;
+          /* Eliminar colores de fondo decorativos */
+          .date-range, .operation-number {
+            background: transparent !important;
+            border: 1px solid #000000 !important;
+          }
+          
+          /* Líneas de separación visibles */
+          .section, .header, .footer, .terms, .logo {
+            border-color: #000000 !important;
           }
         }
         
-        /* ========== SCREEN STYLES ========== */
+        /* ========== SCREEN STYLES (Vista previa en navegador) ========== */
         body {
           font-family: 'Courier New', 'Consolas', monospace;
           font-size: 11px;
@@ -103,13 +130,13 @@ export function generateTicketHTML(options) {
           width: 80mm;
           margin: 0 auto;
           background: white;
-          color: #000;
+          color: #000000;
         }
         
         .ticket-container {
           width: 100%;
           max-width: 80mm;
-          background: #fff;
+          background: #ffffff;
         }
         
         .logo { text-align: center; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #000; }
