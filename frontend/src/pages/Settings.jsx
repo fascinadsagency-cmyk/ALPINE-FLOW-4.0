@@ -32,7 +32,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 
 export default function Settings() {
   const { 
-    darkMode, 
+    darkMode, setDarkMode,
     language, setLanguage, 
     autoPrint, setAutoPrint, 
     t,
