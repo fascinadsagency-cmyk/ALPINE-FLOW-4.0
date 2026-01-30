@@ -3052,23 +3052,62 @@ async def get_range_report(
 
 @api_router.get("/reports/stats")
 async def get_stats(current_user: dict = Depends(get_current_user)):
+    """
+    Dashboard stats - revenue_today now comes from cash_movements (Single Source of Truth)
+    This ensures Dashboard shows same value as Cash Register.
+    """
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     start = f"{today}T00:00:00"
     end = f"{today}T23:59:59"
     
-    # Today's rentals
+    # Today's rentals count (new contracts)
     today_rentals = await db.rentals.count_documents({
         "created_at": {"$gte": start, "$lte": end}
     })
     
-    # Today's revenue
-    rentals = await db.rentals.find({
-        "created_at": {"$gte": start, "$lte": end}
-    }, {"_id": 0, "paid_amount": 1}).to_list(500)
-    today_revenue = sum(r["paid_amount"] for r in rentals)
+    # ========== UNIFIED REVENUE CALCULATION (Single Source of Truth) ==========
+    # Revenue today = Sum of all cash movements from today's active session
+    # This includes: new rentals + adjustments (extensions/reductions) - refunds
+    
+    active_session = await db.cash_sessions.find_one({"date": today, "status": "open"})
+    
+    if active_session:
+        # Use MongoDB aggregation to calculate total revenue from cash movements
+        revenue_pipeline = [
+            {"$match": {"session_id": active_session["id"]}},
+            {"$group": {
+                "_id": "$movement_type",
+                "total": {"$sum": "$amount"}
+            }}
+        ]
+        revenue_results = await db.cash_movements.aggregate(revenue_pipeline).to_list(10)
+        
+        total_income = 0
+        total_refunds = 0
+        
+        for r in revenue_results:
+            if r["_id"] == "income":
+                total_income = r["total"]
+            elif r["_id"] == "refund":
+                total_refunds = r["total"]
+        
+        # Net revenue = income - refunds (same formula as cash register balance)
+        today_revenue = total_income - total_refunds
+    else:
+        # No active session - fallback to rentals created today
+        rentals = await db.rentals.find({
+            "created_at": {"$gte": start, "$lte": end}
+        }, {"_id": 0, "paid_amount": 1}).to_list(500)
+        today_revenue = sum(r.get("paid_amount", 0) for r in rentals)
+    
+    # Today's returns count
+    returns_today = await db.rentals.count_documents({
+        "status": "returned",
+        "actual_return_date": {"$gte": start, "$lte": end}
+    })
     
     # Active rentals
-    active_rentals = await db.rentals.count_documents({"status": "active"})
+    active_rentals = await db.rentals.count_documents({"status": {"$in": ["active", "partial"]}})
     
     # Pending returns (overdue)
     overdue = await db.rentals.count_documents({
@@ -3081,7 +3120,8 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
     
     return {
         "today_rentals": today_rentals,
-        "today_revenue": today_revenue,
+        "revenue_today": today_revenue,  # Now unified with cash register
+        "returns_today": returns_today,
         "active_rentals": active_rentals,
         "overdue_returns": overdue,
         "inventory": inventory
