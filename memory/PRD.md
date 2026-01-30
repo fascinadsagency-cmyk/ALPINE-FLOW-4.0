@@ -2,7 +2,7 @@
 
 ## Estado del Proyecto
 **Última actualización:** 2026-01-30
-**Estado:** Operativo - Modal "GESTIONAR CAMBIO" en Devoluciones corregido y verificado
+**Estado:** Operativo - Ficha Completa del Cliente implementada en Alquileres Activos
 
 ---
 
