@@ -918,6 +918,8 @@ export default function Returns() {
     setRefundDays(1);
     setRefundAmount(calculateRefundAmount(1));
     setRefundReason("");
+    // SECURITY: Pre-select original payment method (forced, not editable)
+    setRefundMethod(rental.payment_method || "cash");
     setShowRefundDialog(true);
   };
 
