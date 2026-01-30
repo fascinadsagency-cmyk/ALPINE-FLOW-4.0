@@ -826,7 +826,7 @@ export default function Customers() {
       </Card>
 
       {/* History Dialog */}
-      <Dialog open={!!selectedCustomer} onOpenChange={() => setSelectedCustomer(null)}>
+      <Dialog open={!!selectedCustomer} onOpenChange={() => { setSelectedCustomer(null); setEditingTechnicalData(false); }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl">Ficha de Cliente</DialogTitle>
