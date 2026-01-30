@@ -1293,23 +1293,20 @@ export default function NewRental() {
   const printRentalTicket = () => {
     if (!completedRental) return;
     
-    const printWindow = window.open('', '_blank', 'width=350,height=800');
-    const subtotal_val = completedRental.subtotal || completedRental.total_amount;
-    const total_val = completedRental.total_amount;
-    const ticketNumber = completedRental.operation_number || `A${String(Date.now()).slice(-6)}`;
-    
     // Helper to get item type label
     const getTypeLabel = (itemType) => {
       const type = itemTypes.find(t => t.value === itemType);
       return type?.label || itemType || 'Artículo';
     };
     
+    // Prepare items for the ticket
+    const ticketItems = [];
+    
     // Group items by pack
-    const packItems = {};  // { packId: { pack, items: [] } }
+    const packItems = {};
     const standaloneItems = [];
     
     (completedRental.items_detail || []).forEach(item => {
-      // Check if item is part of a detected pack
       const inPack = detectedPacks.find(dp => dp.items.includes(item.barcode));
       if (inPack) {
         const packId = inPack.pack.id;
@@ -1322,231 +1319,67 @@ export default function NewRental() {
       }
     });
     
-    // Generate HTML for standalone items - TARIFA ESCALONADA
-    const standaloneHtml = standaloneItems.map(item => {
+    // Add standalone items
+    standaloneItems.forEach(item => {
       const typeLabel = getTypeLabel(item.item_type);
       const days = item.itemDays || numDays;
-      
-      // LOOK-UP: Buscar el precio TOTAL para X días en la tarifa
       const tariff = tariffs.find(t => t.item_type === item.item_type);
       const dayField = days <= 10 ? `day_${days}` : 'day_11_plus';
       const totalPrice = item.customPrice || item.custom_price || (tariff ? tariff[dayField] : 0) || 0;
       
-      // Build full description: "Esquís Atomic Redster (42) [SKI-001]"
       const modelStr = `${item.brand || ''} ${item.model || ''}`.trim();
       const sizeStr = item.size ? ` (${item.size})` : '';
       const codeStr = item.internal_code ? ` [${item.internal_code}]` : '';
-      const description = `${typeLabel} ${modelStr}${sizeStr}${codeStr}`.trim();
       
-      return `
-        <tr class="item-row">
-          <td class="item-desc">${description}</td>
-          <td class="item-days">${days}</td>
-          <td class="item-total">€${totalPrice.toFixed(2)}</td>
-        </tr>
-      `;
-    }).join('');
+      ticketItems.push({
+        name: `${typeLabel} ${modelStr}${sizeStr}${codeStr}`.trim(),
+        days: days,
+        price: totalPrice
+      });
+    });
     
-    // Generate HTML for pack items - SINGLE LINE PER PACK
-    const packsHtml = Object.values(packItems).map(packData => {
+    // Add pack items as single lines
+    Object.values(packItems).forEach(packData => {
       const packDays = packData.days;
       const packTotal = getPackPrice(packData.pack, packDays);
-      
-      // Extraer códigos de los componentes
       const childCodes = packData.items.map(item => 
         item.internal_code || item.barcode?.substring(0, 10) || 'N/A'
       ).join(' / ');
       
-      // NOMBRE FUSIONADO: "Pack Esquí Plata (SKI-001 / BOT-204)"
-      const fusedPackName = `${packData.pack.name} (${childCodes})`;
-      
-      return `
-        <tr class="item-row pack-row">
-          <td class="item-desc">${fusedPackName}</td>
-          <td class="item-days">${packDays}</td>
-          <td class="item-total">€${packTotal.toFixed(2)}</td>
-        </tr>
-      `;
-    }).join('');
-    
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Ticket de Alquiler - ${ticketNumber}</title>
-          <style>
-            @page { size: 80mm auto; margin: 3mm; }
-            * { box-sizing: border-box; }
-            body { 
-              font-family: 'Courier New', monospace; 
-              font-size: 11px; 
-              margin: 0; 
-              padding: 4mm; 
-              width: 76mm; 
-              line-height: 1.3;
-            }
-            .center { text-align: center; }
-            .bold { font-weight: bold; }
-            .line { border-bottom: 1px dashed #333; margin: 6px 0; }
-            .double-line { border-bottom: 2px solid #333; margin: 8px 0; }
-            .right { text-align: right; }
-            
-            /* Header */
-            .header { text-align: center; margin-bottom: 8px; }
-            .header h1 { margin: 0; font-size: 16px; letter-spacing: 1px; }
-            .header .subtitle { font-size: 10px; color: #666; margin-top: 2px; }
-            
-            /* Ticket Number */
-            .ticket-number {
-              text-align: center;
-              font-size: 14px;
-              font-weight: bold;
-              background: #f0f0f0;
-              padding: 6px;
-              margin: 8px 0;
-              border-radius: 4px;
-              letter-spacing: 1px;
-            }
-            
-            /* Customer Info */
-            .info-table { width: 100%; margin-bottom: 6px; }
-            .info-table td { padding: 2px 0; }
-            .info-table .label { color: #666; width: 35%; }
-            .info-table .value { font-weight: bold; text-align: right; }
-            
-            /* Items Table */
-            .items-section { margin: 10px 0; }
-            .items-header { 
-              font-weight: bold; 
-              font-size: 12px; 
-              margin-bottom: 6px;
-              padding: 4px;
-              background: #333;
-              color: #fff;
-            }
-            .items-table { width: 100%; border-collapse: collapse; font-size: 10px; }
-            .items-table th { 
-              background: #e5e5e5; 
-              padding: 4px 2px; 
-              text-align: left;
-              font-size: 9px;
-              border-bottom: 1px solid #333;
-            }
-            .items-table th.col-days { width: 15%; text-align: center; }
-            .items-table th.col-total { width: 25%; text-align: right; }
-            
-            .item-row td { padding: 4px 2px; border-bottom: 1px dotted #ccc; }
-            .item-desc { max-width: 60%; word-wrap: break-word; font-weight: 500; font-size: 10px; }
-            .item-days { text-align: center; }
-            .item-total { text-align: right; font-weight: bold; }
-            
-            /* Pack Row - highlighted */
-            .pack-row { background: #fffbeb; }
-            .pack-row .item-desc { color: #92400e; font-weight: bold; }
-            
-            /* IVA Note */
-            .iva-note { 
-              font-size: 8px; 
-              color: #666; 
-              text-align: right; 
-              margin-top: 4px;
-              font-style: italic;
-            }
-            
-            /* Totals */
-            .totals-table { width: 100%; margin-top: 8px; }
-            .totals-table td { padding: 3px 0; }
-            .totals-table .label { width: 60%; }
-            .totals-table .amount { text-align: right; font-weight: bold; }
-            .total-row { font-size: 14px; border-top: 2px solid #333; padding-top: 4px !important; }
-            .paid-row { color: #166534; }
-            .change-row { font-size: 12px; color: #1e40af; }
-            
-            /* Footer */
-            .footer { 
-              text-align: center; 
-              margin-top: 12px; 
-              font-size: 9px; 
-              color: #666;
-              padding-top: 8px;
-              border-top: 1px dashed #333;
-            }
-            .footer p { margin: 3px 0; }
-            
-            /* Print button */
-            .print-btn { 
-              display: block; 
-              width: 100%; 
-              padding: 10px; 
-              margin-top: 15px; 
-              background: #2563eb; 
-              color: white; 
-              border: none; 
-              cursor: pointer; 
-              font-size: 13px;
-              border-radius: 4px;
-            }
-            @media print { .print-btn { display: none; } }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>COMPROBANTE</h1>
-            <div class="subtitle">Alquiler de Equipos</div>
-          </div>
-          
-          <div class="ticket-number">Nº Ticket: ${ticketNumber}</div>
-          
-          <table class="info-table">
-            <tr><td class="label">Cliente:</td><td class="value">${completedRental.customer_name}</td></tr>
-            <tr><td class="label">DNI:</td><td class="value">${completedRental.customer_dni}</td></tr>
-            <tr><td class="label">Inicio:</td><td class="value">${completedRental.start_date}</td></tr>
-            <tr><td class="label">Fin:</td><td class="value">${completedRental.end_date}</td></tr>
-          </table>
-          
-          <div class="line"></div>
-          
-          <div class="items-section">
-            <div class="items-header">DETALLE DE ARTÍCULOS</div>
-            <table class="items-table">
-              <thead>
-                <tr>
-                  <th>Artículo</th>
-                  <th class="col-days">Días</th>
-                  <th class="col-total">Total (IVA inc.)</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${packsHtml}
-                ${standaloneHtml}
-              </tbody>
-            </table>
-            <p class="iva-note">* Todos los precios incluyen IVA</p>
-          </div>
-          
-          <div class="double-line"></div>
-          
-          <table class="totals-table">
-            <tr><td class="label">Subtotal:</td><td class="amount">€${subtotal_val.toFixed(2)}</td></tr>
-            ${total_val < subtotal_val ? `<tr><td class="label">Descuento:</td><td class="amount" style="color:#dc2626;">-€${(subtotal_val - total_val).toFixed(2)}</td></tr>` : ''}
-            <tr class="total-row"><td class="label bold">TOTAL (IVA inc.):</td><td class="amount">€${total_val.toFixed(2)}</td></tr>
-            <tr class="paid-row"><td class="label">Pagado (${PAYMENT_METHODS.find(p => p.value === completedRental.payment_method)?.label || completedRental.payment_method}):</td><td class="amount">€${completedRental.paid_amount.toFixed(2)}</td></tr>
-            ${completedRental.change > 0 ? `<tr class="change-row"><td class="label bold">CAMBIO:</td><td class="amount">€${completedRental.change.toFixed(2)}</td></tr>` : ''}
-          </table>
-          
-          <div class="footer">
-            <p>¡Gracias por confiar en nosotros!</p>
-            <p>Conserve este ticket como comprobante</p>
-          </div>
-          
-          <button class="print-btn" onclick="window.print(); setTimeout(() => window.close(), 500);">
-            🖨️ IMPRIMIR TICKET
-          </button>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
+      ticketItems.push({
+        name: `${packData.pack.name} (${childCodes})`,
+        days: packDays,
+        price: packTotal
+      });
+    });
+
+    // Use centralized ticket generator with settings
+    printTicket({
+      settings: {
+        companyLogo: settings.companyLogo,
+        ticketHeader: settings.ticketHeader,
+        ticketFooter: settings.ticketFooter,
+        ticketTerms: settings.ticketTerms,
+        showDniOnTicket: settings.showDniOnTicket,
+        showVatOnTicket: settings.showVatOnTicket,
+        defaultVat: settings.defaultVat,
+        vatIncludedInPrices: settings.vatIncludedInPrices,
+        language: settings.language
+      },
+      ticketType: 'rental',
+      data: {
+        operationNumber: completedRental.operation_number || `A${String(Date.now()).slice(-6)}`,
+        date: new Date().toLocaleDateString('es-ES'),
+        customer: customer?.name || completedRental.customer_name || '',
+        dni: customer?.dni || completedRental.customer_dni || '',
+        startDate: startDate,
+        endDate: endDate,
+        days: numDays,
+        items: ticketItems,
+        total: completedRental.total_amount || 0,
+        paymentMethod: completedRental.payment_method || paymentMethod
+      }
+    });
   };
 
   const closeSuccessDialog = () => {
