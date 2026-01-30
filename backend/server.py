@@ -1795,6 +1795,25 @@ async def create_rental(rental: RentalCreate, current_user: dict = Depends(get_c
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
         
+        # Prepare rental items for ticket printing
+        rental_items_for_ticket = []
+        for item in rental.items:
+            # Get item details from database
+            item_doc = await db.items.find_one({"id": item.item_id})
+            item_name = item_doc.get("item_type", "Artículo") if item_doc else "Artículo"
+            item_size = item_doc.get("size", "") if item_doc else ""
+            item_brand = item_doc.get("brand", "") if item_doc else ""
+            item_internal_code = item_doc.get("internal_code", "") if item_doc else ""
+            
+            rental_items_for_ticket.append({
+                "name": f"{item_name.title()} {item_brand}".strip(),
+                "size": item_size,
+                "internal_code": item_internal_code,
+                "days": days,
+                "subtotal": item.subtotal,
+                "item_type": item_name
+            })
+        
         cash_movement_id = str(uuid.uuid4())
         operation_number = await get_next_operation_number()
         cash_doc = {
@@ -1810,7 +1829,12 @@ async def create_rental(rental: RentalCreate, current_user: dict = Depends(get_c
             "customer_name": customer["name"],
             "notes": f"Alquiler {days} días ({rental.start_date} a {rental.end_date})",
             "created_at": datetime.now(timezone.utc).isoformat(),
-            "created_by": current_user["username"]
+            "created_by": current_user["username"],
+            # NEW: Store rental details for ticket printing
+            "rental_items": rental_items_for_ticket,
+            "rental_days": days,
+            "rental_start_date": rental.start_date,
+            "rental_end_date": rental.end_date
         }
         await db.cash_movements.insert_one(cash_doc)
         
