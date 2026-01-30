@@ -340,6 +340,16 @@ export default function ActiveRentals() {
     setCombinedDelta(newMaterialDelta + dateDelta);
   };
 
+  // HELPER: Re-focus swap input with text selection (for barcode scanner optimization)
+  const refocusSwapInput = () => {
+    setTimeout(() => {
+      if (swapInputRef.current) {
+        swapInputRef.current.focus();
+        swapInputRef.current.select(); // Select all text so next scan overwrites
+      }
+    }, 50);
+  };
+
   // Handle barcode scan/input
   const handleSwapBarcodeChange = async (e) => {
     const code = e.target.value.toUpperCase();
