@@ -103,13 +103,21 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - Desglose por método de pago: Efectivo / Tarjeta
   - Saldo Neto del Turno = Fondo Inicial + Income - Expense - Refunds
   - Backend calcula `by_category` en agregación MongoDB
-- ✅ **Ficha de Cliente Completa (2026-01-30):**
-  - Al pulsar icono de persona en Alquileres Activos, abre modal con:
-    - Datos de contacto (nombre, DNI, teléfono, email, hotel)
-    - Botones de llamada y WhatsApp
-    - **Historial de Alquileres**: Lista de todos los alquileres del cliente
-    - **Total Histórico**: Suma de todos los importes
-    - Botón "Ver Ficha Completa" para navegar a /clientes con highlight
+- ✅ **Ficha de Cliente Completa (MEJORADA 2026-01-30):**
+  - Al pulsar **nombre del cliente** o icono de persona en Alquileres Activos, abre modal profesional con:
+    - **Datos Personales:** Nombre completo, DNI/Pasaporte
+    - **Alquiler Activo:** Referencia #ID, días y total del contrato actual
+    - **Contacto con acciones:** Teléfono con botones "Llamar" y "WhatsApp", Email
+    - **Ubicación:** Hotel/Ciudad/Dirección
+    - **Notas y Alertas:** Observaciones internas (si existen)
+    - **Resumen Financiero:** Total Pagado, Devoluciones, Ingreso Neto
+    - **Últimas Transacciones:** Lista de pagos/abonos con fecha, método y monto
+    - **Historial de Alquileres:** Lista completa con fechas, días, estado, equipos (con tallas), precios y estado de pago
+    - **Tallas Preferidas:** Historial de tallas usadas por tipo de artículo
+    - **Total Histórico:** Suma de todos los importes de alquileres
+  - Modal de **tamaño grande** (max-w-4xl) para mostrar toda la información
+  - **Navegación fluida:** Botón "Cerrar" devuelve a la lista sin refrescar la página
+  - Carga datos desde `/api/customers/{id}/history` para historial financiero completo
 
 ### 4. Sistema de Tickets/Comprobantes
 - ✅ Impresión como comprobante de un pago ya realizado
