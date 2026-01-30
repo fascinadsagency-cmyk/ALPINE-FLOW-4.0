@@ -34,7 +34,9 @@ import {
   RefreshCw,
   Scan,
   ArrowLeftRight,
-  Zap
+  Zap,
+  Eye,
+  ChevronDown
 } from "lucide-react";
 import { toast } from "sonner";
 
