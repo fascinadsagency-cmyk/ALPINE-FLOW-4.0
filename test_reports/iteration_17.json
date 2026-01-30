@@ -1,0 +1,164 @@
+{
+  "summary": "Iteration 17 - Complete frontend testing of Customer Modal ('Ficha Completa del Cliente') in Active Rentals page. All 9 requested features verified successfully via UI automation.",
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  
+  "passed_tests": [
+    "1. Al hacer clic en el nombre de un cliente en 'Alquileres Activos', se abre el modal de 'Ficha Completa del Cliente' - PASSED",
+    "2. El modal muestra datos personales: Nombre, DNI/Pasaporte - PASSED (Erika Quijano Guerrero, 757190361T)",
+    "3. El modal muestra información de contacto con acciones: Teléfono (con botones Llamar y WhatsApp), Email - PASSED (677370788 with Llamar and WhatsApp buttons)",
+    "4. El modal muestra el alquiler activo actual con referencia y total - PASSED (#DBAAF17F - 6 días • €162.00, #CAEF0AC5 - 2 días • €86.67)",
+    "5. El modal muestra el 'Resumen Financiero' con Total Pagado, Devoluciones e Ingreso Neto - PASSED (€709.00, €0.00, €709.00)",
+    "6. El modal muestra las 'Últimas Transacciones' con fechas, métodos de pago y montos - PASSED (30/01/2026 cash +€27.00, 29/01/2026 card +€130.00, etc.)",
+    "7. El modal muestra el 'Historial de Alquileres' con fechas, duración, estado, equipos alquilados y precios - PASSED (22 rentals with dates, days, Activo/Pendiente status, equipment with sizes, prices)",
+    "8. El botón 'Cerrar' del modal cierra correctamente el modal y devuelve al operario a la lista de Alquileres Activos - PASSED",
+    "9. La lista de Alquileres Activos no se refresca después de cerrar el modal - PASSED (2 customer links before and after)"
+  ],
+  
+  "ui_verification": {
+    "customer_modal": {
+      "title": "Ficha Completa del Cliente",
+      "subtitle": "Información detallada e historial completo",
+      "data_testid_close_btn": "close-customer-modal-btn",
+      "data_testid_whatsapp_btn": "customer-modal-whatsapp-btn"
+    },
+    "personal_data_section": {
+      "nombre_completo_label": true,
+      "dni_pasaporte_label": true,
+      "test_customer": {
+        "name": "Erika Quijano Guerrero",
+        "dni": "757190361T"
+      }
+    },
+    "contact_section": {
+      "telefono_label": true,
+      "phone_number": "677370788",
+      "llamar_button": true,
+      "whatsapp_button": true,
+      "email_section": "Conditional - only shown if email exists"
+    },
+    "active_rental_reference": {
+      "label": "Alquiler Activo",
+      "format": "#RENTAL_ID_SHORT - X días • €TOTAL",
+      "examples": [
+        "#DBAAF17F - 6 días • €162.00",
+        "#CAEF0AC5 - 2 días • €86.67"
+      ]
+    },
+    "financial_summary_section": {
+      "title": "Resumen Financiero",
+      "total_pagado": "€709.00",
+      "devoluciones": "€0.00",
+      "ingreso_neto": "€709.00"
+    },
+    "transactions_section": {
+      "title": "Últimas Transacciones",
+      "format": "Pago - DATE • METHOD - +€AMOUNT",
+      "examples": [
+        "Pago - 30/01/2026 • cash - +€27.00",
+        "Pago - 29/01/2026 • card - +€130.00",
+        "Pago - 29/01/2026 • card - +€5.00"
+      ]
+    },
+    "rental_history_section": {
+      "title": "Historial de Alquileres (22)",
+      "rental_card_format": {
+        "dates": "DD/MM/YYYY - DD/MM/YYYY",
+        "duration_badge": "X días",
+        "status_badge": "Activo/Pendiente",
+        "price_badge": "€TOTAL",
+        "equipment_list": "item_type - brand model with Talla X badge",
+        "payment_method": "Método: cash/card",
+        "payment_status": "✓ Pagado / ⏳ Pendiente"
+      },
+      "total_historico": "€938.92"
+    },
+    "preferred_sizes_section": {
+      "title": "Tallas Preferidas",
+      "examples": [
+        "esqui_gama_media_: 175, 170, efwef, 140",
+        "bota_esqui_: 42, 27.5, 27, 40",
+        "boots: 42, 27, 27.5, 40",
+        "ski: 175, 170, efwef"
+      ]
+    },
+    "close_button": {
+      "text": "Cerrar",
+      "data_testid": "close-customer-modal-btn",
+      "closes_modal": true,
+      "returns_to_list": true,
+      "no_page_refresh": true
+    }
+  },
+  
+  "navigation_verification": {
+    "active_rentals_page": {
+      "route": "/alquileres-activos",
+      "data_testid": "active-rentals-page",
+      "customer_link_testid_pattern": "customer-link-{rental_id}"
+    },
+    "modal_opens_via": [
+      "Clicking customer name (button with data-testid='customer-link-{id}')",
+      "Clicking User icon button (title='Ver ficha del cliente')"
+    ],
+    "no_page_refresh_after_close": true
+  },
+  
+  "test_report_links": [
+    "/app/test_reports/iteration_17.json"
+  ],
+  
+  "action_items": [],
+  
+  "critical_code_review_comments": [],
+  
+  "updated_files": [],
+  
+  "success_rate": {
+    "backend": "N/A (frontend only testing)",
+    "frontend": "100% (9/9 features verified)"
+  },
+  
+  "test_credentials": {
+    "username": "testuser2",
+    "password": "test123"
+  },
+  
+  "seed_data_creation": "None - used existing test data (Erika Quijano Guerrero with 22 rentals)",
+  
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  
+  "context_for_next_testing_agent": "Customer modal ('Ficha Completa del Cliente') fully functional in Active Rentals page. Key implementation details: 1) Modal opens via openCustomerModal(rental) function, 2) Loads customer data from /api/customers/{id} and history from /api/customers/{id}/history, 3) Shows personal data, contact info with action buttons, active rental reference, financial summary, transactions, rental history with equipment details, and preferred sizes, 4) Close button uses data-testid='close-customer-modal-btn', 5) Modal uses Dialog component from shadcn/ui, 6) No page refresh after closing modal - uses React state management. Test customer: Erika Quijano Guerrero (757190361T) with 22 rentals and €709.00 total paid.",
+  
+  "feature_verification": {
+    "modal_opens_on_customer_click": true,
+    "personal_data_displayed": true,
+    "contact_info_with_actions": true,
+    "active_rental_reference": true,
+    "financial_summary": true,
+    "transactions_list": true,
+    "rental_history": true,
+    "close_button_works": true,
+    "no_page_refresh": true
+  },
+  
+  "screenshots": [
+    ".screenshots/03_active_rentals.png - Active Rentals page with 2 rentals",
+    ".screenshots/04_customer_modal.png - Customer modal showing personal data, contact, financial summary",
+    ".screenshots/05_customer_modal_scrolled.png - Modal scrolled showing rental history and preferred sizes",
+    ".screenshots/06_after_modal_close.png - Active Rentals page after closing modal (no refresh)",
+    ".screenshots/07_second_customer_modal.png - Modal for second rental",
+    ".screenshots/09_modal_via_icon.png - Modal opened via User icon button",
+    ".screenshots/10_final_state.png - Final state after all tests"
+  ]
+}
