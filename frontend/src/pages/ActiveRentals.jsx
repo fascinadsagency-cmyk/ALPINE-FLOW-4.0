@@ -93,11 +93,38 @@ export default function ActiveRentals() {
     loadActiveRentals();
   }, []);
 
+  // Auto-focus search input on mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Filter rentals when search query changes
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredRentals(rentals);
+    } else {
+      const query = searchQuery.toLowerCase();
+      const filtered = rentals.filter(r => 
+        r.customer_name?.toLowerCase().includes(query) ||
+        r.customer_dni?.toLowerCase().includes(query) ||
+        r.items?.some(i => 
+          i.internal_code?.toLowerCase().includes(query) ||
+          i.barcode?.toLowerCase().includes(query)
+        )
+      );
+      setFilteredRentals(filtered);
+    }
+  }, [searchQuery, rentals]);
+
   const loadActiveRentals = async () => {
     setLoading(true);
     try {
       const response = await rentalApi.getAll({ status: 'active' });
       setRentals(response.data);
+      setFilteredRentals(response.data);
     } catch (error) {
       toast.error("Error al cargar alquileres");
     } finally {
@@ -105,16 +132,91 @@ export default function ActiveRentals() {
     }
   };
 
-  // ============ SWAP CENTRALIZED FUNCTIONS ============
+  // ============ SMART SEARCH - REVERSE LOOKUP ============
   
-  const openSwapModal = (rental) => {
-    setSwapRental(rental);
+  const handleSmartSearch = async (code) => {
+    if (!code || code.trim().length < 2) return;
+    
+    setSearchLoading(true);
+    try {
+      const response = await axios.get(`${API}/lookup/${encodeURIComponent(code.trim())}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      const result = response.data;
+      
+      if (result.found && result.type === "rented_item") {
+        // Item is currently rented - auto-open swap modal
+        toast.success(`✓ ${result.item?.internal_code || result.item?.barcode}: Cliente ${result.rental?.customer_name}`);
+        
+        // Find the rental in our list
+        const rental = rentals.find(r => r.id === result.rental?.id);
+        if (rental) {
+          openSwapModalWithItem(rental, result.item);
+        } else {
+          // Use the rental data from lookup
+          openSwapModalWithItem(result.rental, result.item);
+        }
+        setSearchQuery("");
+      } else if (result.found && result.type === "customer") {
+        // Customer found
+        toast.success(`✓ Cliente: ${result.customer?.name}`);
+        const rental = rentals.find(r => r.id === result.rental?.id);
+        if (rental) {
+          openSwapModalWithItem(rental, null);
+        }
+        setSearchQuery("");
+      } else if (result.found && result.type === "available_item") {
+        toast.info(`Artículo ${result.item?.internal_code || result.item?.barcode} está disponible (${result.item?.status})`);
+      } else {
+        // Not found via lookup - just filter the list
+        toast.info("Filtrando lista...");
+      }
+    } catch (error) {
+      // If lookup fails, just filter
+      console.error("Lookup error:", error);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      handleSmartSearch(searchQuery);
+    }
+  };
+
+  // ============ UNIVERSAL SWAP MODAL FUNCTIONS ============
+  
+  const openSwapModalBlank = () => {
+    // Open modal without pre-selected rental (operator will scan to identify)
+    setSwapRental(null);
     setSwapBarcode("");
     setSwapNewItem(null);
     setSwapOldItem(null);
     setSwapDelta(null);
     setSwapComplete(false);
     setSwapPaymentMethod("cash");
+    setSwapAction("swap");
+    setSwapDaysRemaining(0);
+    setSwapNewDays("");
+    setSwapModalOpen(true);
+    
+    // Auto-focus input
+    setTimeout(() => {
+      swapInputRef.current?.focus();
+    }, 150);
+  };
+
+  const openSwapModalWithItem = (rental, triggerItem) => {
+    setSwapRental(rental);
+    setSwapBarcode("");
+    setSwapNewItem(null);
+    setSwapOldItem(triggerItem?.rental_item_data || triggerItem);
+    setSwapDelta(null);
+    setSwapComplete(false);
+    setSwapPaymentMethod("cash");
+    setSwapAction("swap");
     
     // Calculate days remaining
     const endDate = new Date(rental.end_date);
@@ -123,10 +225,16 @@ export default function ActiveRentals() {
     setSwapDaysRemaining(daysLeft);
     setSwapNewDays(daysLeft.toString());
     
-    // Auto-focus input after modal opens
+    setSwapModalOpen(true);
+    
+    // Auto-focus input
     setTimeout(() => {
       swapInputRef.current?.focus();
-    }, 100);
+    }, 150);
+  };
+
+  const openSwapModal = (rental) => {
+    openSwapModalWithItem(rental, null);
   };
 
   const closeSwapModal = () => {
