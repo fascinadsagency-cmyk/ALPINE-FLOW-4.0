@@ -71,6 +71,9 @@ const MOVEMENT_TYPE_FILTERS = [
 ];
 
 export default function CashRegister() {
+  // Settings context for ticket configuration
+  const settings = useSettings();
+  
   // Current day state
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [summary, setSummary] = useState(null);
