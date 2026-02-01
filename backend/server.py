@@ -1933,9 +1933,9 @@ async def create_rental(rental: RentalCreate, current_user: dict = Depends(get_c
         
         # Prepare rental items for ticket printing
         rental_items_for_ticket = []
-        for item in rental.items:
-            # Get item details from database
-            item_doc = await db.items.find_one({"id": item.item_id})
+        for item_input in rental.items:
+            # Get item details from database using barcode
+            item_doc = await db.items.find_one({"barcode": item_input.barcode})
             item_name = item_doc.get("item_type", "Artículo") if item_doc else "Artículo"
             item_size = item_doc.get("size", "") if item_doc else ""
             item_brand = item_doc.get("brand", "") if item_doc else ""
@@ -1946,7 +1946,7 @@ async def create_rental(rental: RentalCreate, current_user: dict = Depends(get_c
                 "size": item_size,
                 "internal_code": item_internal_code,
                 "days": days,
-                "subtotal": item.subtotal,
+                "subtotal": item_input.unit_price or 0,
                 "item_type": item_name
             })
         
