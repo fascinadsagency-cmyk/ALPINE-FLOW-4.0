@@ -2410,6 +2410,167 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ============ PROFITABILITY MODAL ============ */}
+      <Dialog open={showProfitModal} onOpenChange={setShowProfitModal}>
+        <DialogContent className="sm:max-w-lg" data-testid="profitability-modal">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-emerald-600" />
+              Rentabilidad del Producto
+            </DialogTitle>
+            {selectedItemForProfit && (
+              <DialogDescription className="text-base font-medium text-slate-700">
+                {selectedItemForProfit.brand} {selectedItemForProfit.model}
+                {selectedItemForProfit.internal_code && (
+                  <span className="ml-2 font-mono text-sm text-slate-500">
+                    [{selectedItemForProfit.internal_code}]
+                  </span>
+                )}
+              </DialogDescription>
+            )}
+          </DialogHeader>
+          
+          {loadingProfit ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+            </div>
+          ) : itemProfitData ? (
+            <div className="space-y-6 py-4">
+              {/* Warning if no purchase price */}
+              {!itemProfitData.has_purchase_price && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-amber-800">Coste de compra no registrado</p>
+                    <p className="text-xs text-amber-700 mt-1">
+                      Edita el producto para añadir su precio de compra y calcular la rentabilidad real.
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {/* 3 KPI Cards */}
+              <div className="grid grid-cols-3 gap-3">
+                {/* Coste de Inversión */}
+                <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-center">
+                  <p className="text-xs text-red-600 font-medium uppercase tracking-wide">Coste Inversión</p>
+                  <p className="text-2xl font-bold text-red-700 mt-1">
+                    €{(itemProfitData.purchase_price || 0).toLocaleString()}
+                  </p>
+                </div>
+                
+                {/* Ingresos Totales */}
+                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
+                  <p className="text-xs text-emerald-600 font-medium uppercase tracking-wide">Ingresos Totales</p>
+                  <p className="text-2xl font-bold text-emerald-700 mt-1">
+                    €{(itemProfitData.total_revenue || 0).toLocaleString()}
+                  </p>
+                </div>
+                
+                {/* Beneficio Neto */}
+                <div className={`p-4 rounded-xl border text-center ${
+                  itemProfitData.net_profit >= 0 
+                    ? 'bg-green-50 border-green-200' 
+                    : 'bg-red-50 border-red-200'
+                }`}>
+                  <p className={`text-xs font-medium uppercase tracking-wide ${
+                    itemProfitData.net_profit >= 0 ? 'text-green-600' : 'text-red-600'
+                  }`}>Beneficio Neto</p>
+                  <p className={`text-2xl font-bold mt-1 ${
+                    itemProfitData.net_profit >= 0 ? 'text-green-700' : 'text-red-700'
+                  }`}>
+                    {itemProfitData.net_profit >= 0 ? '+' : ''}€{(itemProfitData.net_profit || 0).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Amortization Progress Bar */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium text-slate-700">Amortización</span>
+                  <span className={`text-sm font-bold ${
+                    itemProfitData.amortization_percent >= 100 ? 'text-emerald-600' : 'text-slate-600'
+                  }`}>
+                    {Math.min(itemProfitData.amortization_percent || 0, 100).toFixed(1)}%
+                  </span>
+                </div>
+                
+                <Progress 
+                  value={Math.min(itemProfitData.amortization_percent || 0, 100)} 
+                  className="h-4"
+                />
+                
+                {/* Status message below progress bar */}
+                <div className="mt-3 text-center">
+                  {itemProfitData.is_amortized ? (
+                    <div className="flex items-center justify-center gap-2 text-emerald-600">
+                      <CheckCircle className="h-5 w-5" />
+                      <span className="font-bold">¡AMORTIZADO! Generando beneficios puros</span>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-500">
+                      {itemProfitData.purchase_price > 0 ? (
+                        <>Faltan <span className="font-bold text-slate-700">
+                          €{(itemProfitData.purchase_price - itemProfitData.total_revenue).toFixed(2)}
+                        </span> para amortizar</>
+                      ) : (
+                        'Añade el coste de compra para ver el progreso'
+                      )}
+                    </p>
+                  )}
+                </div>
+              </div>
+              
+              {/* Rental Stats */}
+              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <span className="text-sm text-blue-700">Total de alquileres</span>
+                <span className="text-lg font-bold text-blue-800">{itemProfitData.rental_count || 0}</span>
+              </div>
+              
+              {/* Rental History (if available) */}
+              {itemProfitData.rental_history && itemProfitData.rental_history.length > 0 && (
+                <div className="border rounded-lg overflow-hidden">
+                  <div className="bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-600 uppercase">
+                    Últimos Alquileres
+                  </div>
+                  <div className="max-h-32 overflow-y-auto">
+                    {itemProfitData.rental_history.map((rental, idx) => (
+                      <div key={idx} className="flex justify-between items-center px-3 py-2 border-t text-sm">
+                        <div>
+                          <span className="text-slate-600">{rental.date}</span>
+                          <span className="mx-2 text-slate-400">•</span>
+                          <span className="text-slate-700">{rental.customer}</span>
+                        </div>
+                        <span className="font-medium text-emerald-600">+€{rental.revenue?.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="py-8 text-center text-slate-500">
+              No se pudieron cargar los datos de rentabilidad
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowProfitModal(false)}>
+              Cerrar
+            </Button>
+            {selectedItemForProfit && (
+              <Button onClick={() => {
+                setShowProfitModal(false);
+                openEditDialog(selectedItemForProfit);
+              }}>
+                <Edit2 className="h-4 w-4 mr-2" />
+                Editar Producto
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
