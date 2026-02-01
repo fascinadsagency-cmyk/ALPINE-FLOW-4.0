@@ -250,6 +250,17 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - Escanear → ¡Pum! Aparece cliente y artículos
   - Click/escanear items → Se ponen verdes
   - Click "Procesar Devolución" → Finaliza
+- ✅ **CORRECCIÓN DE ESCÁNER (2026-02-01):**
+  - **Búsqueda Multi-Campo:** El endpoint `/api/rentals/barcode/{code}` ahora busca por:
+    - `barcode` (código de barras de fábrica)
+    - `internal_code` (etiqueta propia de la tienda, ej: ESQ-001)
+    - `item_id` (UUID de base de datos)
+  - Búsqueda case-insensitive con regex para barcode/internal_code
+  - Frontend también compara escaneados contra los 3 campos
+- ✅ **MODAL DE SUSTITUCIÓN SCANNER-FRIENDLY (2026-02-01):**
+  - **Auto-Foco:** Al hacer clic en "Sustituir", el cursor aparece automáticamente en el input
+  - **Auto-Submit con Enter:** Al escanear código y recibir Enter, ejecuta la búsqueda sin clic
+  - Flujo completo sin tocar ratón: Escanear roto → Clic Sustituir → Escanear nuevo → Listo
 ---
 
 ## Arquitectura Técnica
