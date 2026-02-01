@@ -238,29 +238,27 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
 - ✅ **Zona Superior - Área Activa:**
   - Campo de escaneo grande y centrado con fondo verde esmeralda
   - Al escanear/seleccionar contrato se carga:
-    - Ficha del Cliente (izquierda): Avatar, nombre, DNI, período, total
-    - Listado de Artículos (derecha): Grid de tarjetas clicables
+    - Ficha del Cliente (izquierda): Avatar, nombre, DNI, período, total, **FECHAS INICIO/FIN**
+    - Listado de Artículos (derecha): **Lista vertical de filas** con columnas Producto|Código|Talla|Estado
   - Estados visuales: GRIS (pendiente) → VERDE (escaneado/listo)
+  - **TOGGLE REVERSIBLE**: Click marca, click desmarca (funciona con ratón y escáner)
+  - **Nombre del Cliente Clicable**: Abre modal con ficha completa (teléfono, DNI, WhatsApp)
   - Botonera: "Marcar TODO", "Cambio/Sustitución", "PROCESAR DEVOLUCIÓN", "Cancelar"
 - ✅ **Zona Inferior - Colas de Trabajo:**
   - TABLA 1: PENDIENTES DE HOY (rojo, prioridad alta)
   - TABLA 2: OTRAS DEVOLUCIONES (gris, con badges ATRASADO en rojo)
   - Click en cliente carga contrato en zona activa (no procesa directamente)
-- ✅ **Flujo UX optimizado:**
-  - Escanear → ¡Pum! Aparece cliente y artículos
-  - Click/escanear items → Se ponen verdes
-  - Click "Procesar Devolución" → Finaliza
 - ✅ **CORRECCIÓN DE ESCÁNER (2026-02-01):**
-  - **Búsqueda Multi-Campo:** El endpoint `/api/rentals/barcode/{code}` ahora busca por:
-    - `barcode` (código de barras de fábrica)
-    - `internal_code` (etiqueta propia de la tienda, ej: ESQ-001)
-    - `item_id` (UUID de base de datos)
-  - Búsqueda case-insensitive con regex para barcode/internal_code
-  - Frontend también compara escaneados contra los 3 campos
-- ✅ **MODAL DE SUSTITUCIÓN SCANNER-FRIENDLY (2026-02-01):**
-  - **Auto-Foco:** Al hacer clic en "Sustituir", el cursor aparece automáticamente en el input
-  - **Auto-Submit con Enter:** Al escanear código y recibir Enter, ejecuta la búsqueda sin clic
-  - Flujo completo sin tocar ratón: Escanear roto → Clic Sustituir → Escanear nuevo → Listo
+  - Búsqueda Multi-Campo por `barcode`, `internal_code`, `item_id`
+  - Auto-foco y Auto-submit con Enter en modal de sustitución
+- ✅ **MODAL DE LIQUIDACIÓN (2026-02-01):**
+  - **CASO A (Saldo 0)**: Procesa directamente sin modal
+  - **CASO B (Cliente debe)**: Modal "Saldo Pendiente a Cobrar" con selector Efectivo/Tarjeta
+  - **CASO C (Hay que devolver)**: Modal "Reembolso al Cliente" con restricción de método de pago
+  - Cálculo automático: días usados vs días pagados, precio/día proporcional
+  - Desglose visual: días contratados, días usados, pagado inicialmente, servicio usado
+  - Restricción de seguridad: si pago original fue efectivo, reembolso debe ser en efectivo
+  - Botones: Cancelar / Cobrar|Devolver €XX.XX
 ---
 
 ## Arquitectura Técnica
