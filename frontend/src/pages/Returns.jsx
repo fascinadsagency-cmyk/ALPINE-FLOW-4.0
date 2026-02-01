@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { rentalApi } from "@/lib/api";
 import { printTicket } from "@/lib/ticketGenerator";
 import axios from "axios";
@@ -41,7 +42,14 @@ import {
   Printer,
   CalendarPlus,
   Lock,
-  AlertCircle
+  AlertCircle,
+  Clock,
+  CheckCheck,
+  ArrowDownToLine,
+  Wrench,
+  Search,
+  Users,
+  PackageCheck
 } from "lucide-react";
 import { toast } from "sonner";
 
