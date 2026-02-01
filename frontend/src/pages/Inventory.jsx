@@ -1344,6 +1344,17 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                         ))}
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
+                            {/* Profitability Button */}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => loadItemProfitability(item)}
+                              className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                              title="Ver Rentabilidad"
+                              data-testid={`profit-btn-${item.id}`}
+                            >
+                              <BarChart3 className="h-4 w-4" />
+                            </Button>
                             <Button
                               variant="ghost"
                               size="icon"
