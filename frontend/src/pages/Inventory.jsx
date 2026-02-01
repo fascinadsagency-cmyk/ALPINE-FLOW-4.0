@@ -777,6 +777,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
     try {
       await axios.put(`${API}/items/${editingItem.id}`, {
         barcode: editingItem.barcode,
+        barcode_2: editingItem.barcode_2 || "",
         internal_code: editingItem.internal_code,
         serial_number: editingItem.serial_number || "",
         item_type: editingItem.item_type,
