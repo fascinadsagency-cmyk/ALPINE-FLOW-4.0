@@ -1708,13 +1708,16 @@ export default function Returns() {
                                 value={changeNewBarcode}
                                 onChange={(e) => setChangeNewBarcode(e.target.value.toUpperCase())}
                                 onKeyDown={(e) => {
-                                  if (e.key === 'Enter' && changeNewBarcode.trim()) {
-                                    searchSwapItem(changeNewBarcode);
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault(); // Prevent form submission
+                                    if (changeNewBarcode.trim() && !changeLoading) {
+                                      searchSwapItem(changeNewBarcode);
+                                    }
                                   } else if (e.key === 'Escape') {
                                     setActiveSwapIndex(null);
                                   }
                                 }}
-                                placeholder="Código (ej: BOT-102)"
+                                placeholder="Escanear código..."
                                 className="h-8 w-40 text-sm font-mono"
                                 autoFocus
                               />
