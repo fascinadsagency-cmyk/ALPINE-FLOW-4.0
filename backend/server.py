@@ -2001,8 +2001,23 @@ async def get_rental(rental_id: str, current_user: dict = Depends(get_current_us
 
 @api_router.get("/rentals/barcode/{barcode}")
 async def get_rental_by_barcode(barcode: str, current_user: dict = Depends(get_current_user)):
+    """
+    Search for active rental by item barcode, internal_code, or item_id.
+    This enables scanner-friendly workflow with any type of code.
+    """
+    code = barcode.strip()
+    code_upper = code.upper()
+    
+    # Search by barcode OR internal_code OR item_id (case-insensitive for codes)
     rental = await db.rentals.find_one(
-        {"items.barcode": barcode, "status": {"$in": ["active", "partial"]}},
+        {
+            "status": {"$in": ["active", "partial"]},
+            "$or": [
+                {"items.barcode": {"$regex": f"^{code}$", "$options": "i"}},
+                {"items.internal_code": {"$regex": f"^{code}$", "$options": "i"}},
+                {"items.item_id": code}
+            ]
+        },
         {"_id": 0}
     )
     if not rental:

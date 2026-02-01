@@ -620,7 +620,13 @@ export default function Returns() {
     }
     
     // Rental loaded, add barcode to scanned list
-    const item = rental.items.find(i => i.barcode === barcode);
+    // Search by barcode, internal_code, or item_id (case-insensitive)
+    const codeUpper = barcode.toUpperCase();
+    const item = rental.items.find(i => 
+      (i.barcode && i.barcode.toUpperCase() === codeUpper) ||
+      (i.internal_code && i.internal_code.toUpperCase() === codeUpper) ||
+      (i.item_id && i.item_id === barcode)
+    );
     if (!item) {
       toast.error("Este artículo no pertenece a este alquiler");
       refocusBarcodeInput();
@@ -633,13 +639,20 @@ export default function Returns() {
       return;
     }
     
-    if (scannedBarcodes.includes(barcode)) {
+    // Check if already scanned (using the item's primary identifier)
+    const itemIdentifier = item.internal_code || item.barcode || item.item_id;
+    if (scannedBarcodes.some(code => 
+      code.toUpperCase() === (item.barcode || "").toUpperCase() ||
+      code.toUpperCase() === (item.internal_code || "").toUpperCase() ||
+      code === item.item_id
+    )) {
       toast.info("Artículo ya escaneado");
       refocusBarcodeInput();
       return;
     }
     
-    setScannedBarcodes([...scannedBarcodes, barcode]);
+    // Store the item's barcode for processing (backend expects barcode)
+    setScannedBarcodes([...scannedBarcodes, item.barcode || barcode]);
     toast.success(`${item.brand} ${item.model} escaneado`);
     refocusBarcodeInput(); // Re-focus for next scan
   };
