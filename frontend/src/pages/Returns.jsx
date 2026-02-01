@@ -80,6 +80,21 @@ export default function Returns() {
   const [refundReason, setRefundReason] = useState("");
   const [processingRefund, setProcessingRefund] = useState(false);
   
+  // ============ SETTLEMENT MODAL STATE (Liquidación) ============
+  const [showSettlementModal, setShowSettlementModal] = useState(false);
+  const [settlementData, setSettlementData] = useState({
+    balance: 0,           // + cliente debe, - hay que devolver
+    daysUsed: 0,
+    daysPaid: 0,
+    pricePerDay: 0,
+    serviceUsed: 0,       // Precio real del servicio usado
+    totalPaid: 0,         // Lo que pagó inicialmente
+    itemsToReturn: [],
+    paymentMethod: "cash",
+    originalPaymentMethod: "cash"
+  });
+  const [settlementProcessing, setSettlementProcessing] = useState(false);
+  
   // Customer modal state
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
