@@ -237,6 +237,7 @@ export default function Inventory() {
   const [newItem, setNewItem] = useState({
     internal_code: "",
     barcode: "",
+    barcode_2: "",  // Secondary barcode
     serial_number: "",
     item_type: "",  // Empty by default - user selects from custom types
     brand: "",
