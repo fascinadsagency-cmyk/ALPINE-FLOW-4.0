@@ -874,10 +874,11 @@ async def get_items(
     if category:
         query["category"] = category
     if search:
-        # Search by internal_code, barcode, serial_number, brand, model, size, name (for generic)
+        # Search by internal_code, barcode, barcode_2, serial_number, brand, model, size, name (for generic)
         search_conditions = [
             {"internal_code": {"$regex": search, "$options": "i"}},
             {"barcode": {"$regex": search, "$options": "i"}},
+            {"barcode_2": {"$regex": search, "$options": "i"}},  # Secondary barcode search
             {"serial_number": {"$regex": search, "$options": "i"}},
             {"brand": {"$regex": search, "$options": "i"}},
             {"model": {"$regex": search, "$options": "i"}},
