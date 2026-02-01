@@ -651,21 +651,29 @@ export default function Returns() {
       return;
     }
     
-    // Check if already scanned (using the item's primary identifier)
-    const itemIdentifier = item.internal_code || item.barcode || item.item_id;
-    if (scannedBarcodes.some(code => 
+    // Check if already scanned (using the item's primary identifier) - TOGGLE LOGIC
+    const itemBarcode = item.barcode || barcode;
+    const isAlreadyScanned = scannedBarcodes.some(code => 
       code.toUpperCase() === (item.barcode || "").toUpperCase() ||
       code.toUpperCase() === (item.internal_code || "").toUpperCase() ||
       code === item.item_id
-    )) {
-      toast.info("Artículo ya escaneado");
+    );
+    
+    if (isAlreadyScanned) {
+      // TOGGLE OFF: Remove from scanned list
+      setScannedBarcodes(prev => prev.filter(code => 
+        code.toUpperCase() !== (item.barcode || "").toUpperCase() &&
+        code.toUpperCase() !== (item.internal_code || "").toUpperCase() &&
+        code !== item.item_id
+      ));
+      toast.info(`${item.item_type || item.brand} desmarcado`);
       refocusBarcodeInput();
       return;
     }
     
-    // Store the item's barcode for processing (backend expects barcode)
-    setScannedBarcodes([...scannedBarcodes, item.barcode || barcode]);
-    toast.success(`${item.brand} ${item.model} escaneado`);
+    // TOGGLE ON: Store the item's barcode for processing (backend expects barcode)
+    setScannedBarcodes([...scannedBarcodes, itemBarcode]);
+    toast.success(`${item.item_type || item.brand} marcado ✓`);
     refocusBarcodeInput(); // Re-focus for next scan
   };
 
