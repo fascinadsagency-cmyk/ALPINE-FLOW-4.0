@@ -1036,51 +1036,82 @@ export default function Returns() {
                       </div>
                     </div>
                     
-                    {/* Grid de Artículos */}
-                    <div className="p-4 grid grid-cols-2 gap-3 max-h-[280px] overflow-y-auto">
+                    {/* Lista Vertical de Artículos (Row Layout) */}
+                    <div className="divide-y divide-slate-100 max-h-[320px] overflow-y-auto">
                       {rental.items.filter(i => !i.returned).map((item, idx) => {
                         const isScanned = scannedBarcodes.includes(item.barcode);
+                        
+                        // Toggle handler - marcar/desmarcar
+                        const handleToggle = () => {
+                          if (isScanned) {
+                            // Desmarcar
+                            setScannedBarcodes(prev => prev.filter(code => code !== item.barcode));
+                            toast.info(`${item.item_type || item.brand} desmarcado`);
+                          } else {
+                            // Marcar
+                            setScannedBarcodes(prev => [...prev, item.barcode]);
+                            toast.success(`${item.item_type || item.brand} marcado ✓`);
+                          }
+                        };
+                        
                         return (
                           <div 
                             key={idx}
-                            onClick={() => {
-                              if (!isScanned) {
-                                setScannedBarcodes(prev => [...prev, item.barcode]);
-                                toast.success(`${item.item_type} marcado ✓`);
-                              }
-                            }}
-                            className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                            onClick={handleToggle}
+                            className={`px-4 py-3 cursor-pointer transition-all duration-200 flex items-center gap-4 ${
                               isScanned 
-                                ? 'bg-emerald-50 border-emerald-400 shadow-md ring-2 ring-emerald-200' 
-                                : 'bg-slate-50 border-slate-200 hover:border-slate-300 hover:bg-slate-100'
+                                ? 'bg-emerald-50 border-l-4 border-l-emerald-500' 
+                                : 'bg-white hover:bg-slate-50 border-l-4 border-l-transparent'
                             }`}
                           >
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <p className={`font-bold ${isScanned ? 'text-emerald-800' : 'text-slate-700'}`}>
-                                  {item.item_type || 'Artículo'}
-                                </p>
-                                <p className="text-xs font-mono text-slate-500 mt-1">
-                                  {item.internal_code || item.barcode}
-                                </p>
-                                {item.brand && (
-                                  <p className="text-xs text-slate-400 mt-1">{item.brand} {item.model}</p>
-                                )}
-                              </div>
-                              <div className={`p-2 rounded-full ${
-                                isScanned 
-                                  ? 'bg-emerald-500 text-white' 
-                                  : 'bg-slate-200 text-slate-400'
-                              }`}>
-                                {isScanned ? <Check className="h-5 w-5" /> : <Package className="h-5 w-5" />}
-                              </div>
+                            {/* Icono de Estado */}
+                            <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                              isScanned 
+                                ? 'bg-emerald-500 text-white' 
+                                : 'bg-slate-100 text-slate-400'
+                            }`}>
+                              {isScanned ? <Check className="h-5 w-5" /> : <Package className="h-5 w-5" />}
                             </div>
-                            {isScanned && (
-                              <div className="mt-2 flex items-center gap-1 text-emerald-600">
-                                <CheckCircle className="h-4 w-4" />
-                                <span className="text-xs font-semibold">LISTO PARA DEVOLVER</span>
-                              </div>
-                            )}
+                            
+                            {/* Nombre del Producto */}
+                            <div className="flex-1 min-w-0">
+                              <p className={`font-semibold truncate ${isScanned ? 'text-emerald-800' : 'text-slate-800'}`}>
+                                {item.item_type || 'Artículo'}
+                                {item.brand && <span className="font-normal text-slate-500 ml-1">- {item.brand} {item.model}</span>}
+                              </p>
+                            </div>
+                            
+                            {/* Código */}
+                            <div className="flex-shrink-0 w-32 text-center">
+                              <span className={`font-mono text-sm px-2 py-1 rounded ${
+                                isScanned ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
+                              }`}>
+                                {item.internal_code || item.barcode?.substring(0, 12) || '-'}
+                              </span>
+                            </div>
+                            
+                            {/* Talla */}
+                            <div className="flex-shrink-0 w-20 text-center">
+                              {item.size ? (
+                                <Badge variant="outline" className={isScanned ? 'border-emerald-300 text-emerald-700' : ''}>
+                                  T. {item.size}
+                                </Badge>
+                              ) : (
+                                <span className="text-xs text-slate-400">-</span>
+                              )}
+                            </div>
+                            
+                            {/* Estado */}
+                            <div className="flex-shrink-0 w-28 text-right">
+                              {isScanned ? (
+                                <span className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600">
+                                  <CheckCircle className="h-4 w-4" />
+                                  LISTO
+                                </span>
+                              ) : (
+                                <span className="text-sm text-slate-400">Pendiente</span>
+                              )}
+                            </div>
                           </div>
                         );
                       })}
