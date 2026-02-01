@@ -2412,20 +2412,20 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
         </DialogContent>
       </Dialog>
 
-      {/* ============ PROFITABILITY MODAL ============ */}
+      {/* ============ PROFITABILITY MODAL - VISUAL DASHBOARD ============ */}
       <Dialog open={showProfitModal} onOpenChange={setShowProfitModal}>
-        <DialogContent className="sm:max-w-lg" data-testid="profitability-modal">
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto" data-testid="profitability-modal">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-emerald-600" />
-              Rentabilidad del Producto
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <BarChart3 className="h-6 w-6 text-emerald-600" />
+              Dashboard de Rentabilidad
             </DialogTitle>
             {selectedItemForProfit && (
-              <DialogDescription className="text-base font-medium text-slate-700">
+              <DialogDescription className="text-lg font-semibold text-slate-800">
                 {selectedItemForProfit.brand} {selectedItemForProfit.model}
                 {selectedItemForProfit.internal_code && (
-                  <span className="ml-2 font-mono text-sm text-slate-500">
-                    [{selectedItemForProfit.internal_code}]
+                  <span className="ml-2 font-mono text-sm bg-slate-100 px-2 py-1 rounded">
+                    {selectedItemForProfit.internal_code}
                   </span>
                 )}
               </DialogDescription>
@@ -2433,130 +2433,334 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
           </DialogHeader>
           
           {loadingProfit ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+            <div className="flex flex-col items-center justify-center py-16">
+              <Loader2 className="h-12 w-12 animate-spin text-emerald-600 mb-4" />
+              <p className="text-slate-500">Calculando rentabilidad...</p>
             </div>
           ) : itemProfitData ? (
             <div className="space-y-6 py-4">
               {/* Warning if no purchase price */}
               {!itemProfitData.has_purchase_price && (
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
-                  <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="p-4 bg-amber-50 border-2 border-amber-300 rounded-xl flex items-start gap-3">
+                  <AlertTriangle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-amber-800">Coste de compra no registrado</p>
-                    <p className="text-xs text-amber-700 mt-1">
-                      Edita el producto para añadir su precio de compra y calcular la rentabilidad real.
+                    <p className="text-base font-semibold text-amber-800">⚠️ Coste de compra no registrado</p>
+                    <p className="text-sm text-amber-700 mt-1">
+                      Edita el producto para añadir su precio de compra y ver la curva de amortización real.
                     </p>
                   </div>
                 </div>
               )}
               
-              {/* 3 KPI Cards */}
-              <div className="grid grid-cols-3 gap-3">
+              {/* ========== 4 KPI CARDS ========== */}
+              <div className="grid grid-cols-4 gap-4">
+                {/* ROI Actual */}
+                <div className="p-5 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Target className="h-5 w-5 text-purple-600" />
+                    <p className="text-xs text-purple-600 font-bold uppercase tracking-wide">ROI Actual</p>
+                  </div>
+                  <p className="text-3xl font-black text-purple-700">
+                    {Math.min(itemProfitData.amortization_percent || 0, 999).toFixed(0)}%
+                  </p>
+                  <p className="text-xs text-purple-500 mt-1">recuperado</p>
+                </div>
+                
                 {/* Coste de Inversión */}
-                <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-center">
-                  <p className="text-xs text-red-600 font-medium uppercase tracking-wide">Coste Inversión</p>
-                  <p className="text-2xl font-bold text-red-700 mt-1">
+                <div className="p-5 rounded-xl bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-200 text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <DollarSign className="h-5 w-5 text-red-600" />
+                    <p className="text-xs text-red-600 font-bold uppercase tracking-wide">Inversión</p>
+                  </div>
+                  <p className="text-3xl font-black text-red-700">
                     €{(itemProfitData.purchase_price || 0).toLocaleString()}
                   </p>
+                  <p className="text-xs text-red-500 mt-1">coste inicial</p>
                 </div>
                 
                 {/* Ingresos Totales */}
-                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
-                  <p className="text-xs text-emerald-600 font-medium uppercase tracking-wide">Ingresos Totales</p>
-                  <p className="text-2xl font-bold text-emerald-700 mt-1">
+                <div className="p-5 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-200 text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <TrendingUp className="h-5 w-5 text-emerald-600" />
+                    <p className="text-xs text-emerald-600 font-bold uppercase tracking-wide">Ingresos</p>
+                  </div>
+                  <p className="text-3xl font-black text-emerald-700">
                     €{(itemProfitData.total_revenue || 0).toLocaleString()}
                   </p>
+                  <p className="text-xs text-emerald-500 mt-1">acumulados</p>
                 </div>
                 
                 {/* Beneficio Neto */}
-                <div className={`p-4 rounded-xl border text-center ${
+                <div className={`p-5 rounded-xl border-2 text-center ${
                   itemProfitData.net_profit >= 0 
-                    ? 'bg-green-50 border-green-200' 
-                    : 'bg-red-50 border-red-200'
+                    ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-200' 
+                    : 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200'
                 }`}>
-                  <p className={`text-xs font-medium uppercase tracking-wide ${
-                    itemProfitData.net_profit >= 0 ? 'text-green-600' : 'text-red-600'
-                  }`}>Beneficio Neto</p>
-                  <p className={`text-2xl font-bold mt-1 ${
-                    itemProfitData.net_profit >= 0 ? 'text-green-700' : 'text-red-700'
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    {itemProfitData.net_profit >= 0 ? (
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                    ) : (
+                      <AlertCircle className="h-5 w-5 text-orange-600" />
+                    )}
+                    <p className={`text-xs font-bold uppercase tracking-wide ${
+                      itemProfitData.net_profit >= 0 ? 'text-green-600' : 'text-orange-600'
+                    }`}>Beneficio</p>
+                  </div>
+                  <p className={`text-3xl font-black ${
+                    itemProfitData.net_profit >= 0 ? 'text-green-700' : 'text-orange-700'
                   }`}>
-                    {itemProfitData.net_profit >= 0 ? '+' : ''}€{(itemProfitData.net_profit || 0).toLocaleString()}
+                    {itemProfitData.net_profit >= 0 ? '+' : ''}€{Math.abs(itemProfitData.net_profit || 0).toLocaleString()}
                   </p>
+                  <p className={`text-xs mt-1 ${
+                    itemProfitData.net_profit >= 0 ? 'text-green-500' : 'text-orange-500'
+                  }`}>{itemProfitData.net_profit >= 0 ? 'beneficio neto' : 'pendiente'}</p>
                 </div>
               </div>
               
-              {/* Amortization Progress Bar */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-slate-700">Amortización</span>
-                  <span className={`text-sm font-bold ${
-                    itemProfitData.amortization_percent >= 100 ? 'text-emerald-600' : 'text-slate-600'
-                  }`}>
-                    {Math.min(itemProfitData.amortization_percent || 0, 100).toFixed(1)}%
-                  </span>
+              {/* ========== AMORTIZATION CHART ========== */}
+              <div className="p-5 rounded-xl bg-white border-2 border-slate-200 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-blue-600" />
+                    Curva de Amortización
+                  </h3>
+                  {itemProfitData.is_amortized && (
+                    <Badge className="bg-emerald-500 text-white px-3 py-1 text-sm">
+                      ✓ AMORTIZADO
+                    </Badge>
+                  )}
                 </div>
                 
-                <Progress 
-                  value={Math.min(itemProfitData.amortization_percent || 0, 100)} 
-                  className="h-4"
-                />
+                {/* Generate chart data from rental history */}
+                {(() => {
+                  const purchasePrice = itemProfitData.purchase_price || 0;
+                  const rentals = itemProfitData.rental_history || [];
+                  
+                  // Build cumulative data
+                  let chartData = [];
+                  let cumulativeRevenue = 0;
+                  
+                  // Start point (purchase)
+                  const purchaseDate = selectedItemForProfit?.purchase_date || 
+                    (rentals.length > 0 ? rentals[rentals.length - 1]?.date : new Date().toISOString().split('T')[0]);
+                  
+                  chartData.push({
+                    date: 'Compra',
+                    ingresos: 0,
+                    coste: purchasePrice,
+                    label: 'Inicio'
+                  });
+                  
+                  // Add rental points (sorted by date, oldest first)
+                  const sortedRentals = [...rentals].reverse();
+                  sortedRentals.forEach((rental, idx) => {
+                    cumulativeRevenue += (rental.revenue || 0);
+                    chartData.push({
+                      date: rental.date ? rental.date.substring(5) : `Alq ${idx + 1}`, // MM-DD format
+                      ingresos: Math.round(cumulativeRevenue * 100) / 100,
+                      coste: purchasePrice,
+                      label: rental.customer?.substring(0, 10) || `Alquiler ${idx + 1}`
+                    });
+                  });
+                  
+                  // If no rentals, add a "today" point
+                  if (rentals.length === 0) {
+                    chartData.push({
+                      date: 'Hoy',
+                      ingresos: 0,
+                      coste: purchasePrice,
+                      label: 'Sin alquileres'
+                    });
+                  }
+                  
+                  // Find break-even point
+                  const breakEvenIndex = chartData.findIndex(d => d.ingresos >= purchasePrice);
+                  
+                  return (
+                    <div className="h-[280px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 30 }}>
+                          <defs>
+                            <linearGradient id="colorIngresos" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                          <XAxis 
+                            dataKey="date" 
+                            tick={{ fontSize: 11, fill: '#64748b' }}
+                            axisLine={{ stroke: '#cbd5e1' }}
+                          />
+                          <YAxis 
+                            tick={{ fontSize: 11, fill: '#64748b' }}
+                            axisLine={{ stroke: '#cbd5e1' }}
+                            tickFormatter={(value) => `€${value}`}
+                          />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: '#1e293b', 
+                              border: 'none', 
+                              borderRadius: '8px',
+                              color: 'white'
+                            }}
+                            formatter={(value, name) => [
+                              `€${value.toFixed(2)}`, 
+                              name === 'ingresos' ? '📈 Ingresos Acumulados' : '🎯 Coste Inversión'
+                            ]}
+                            labelFormatter={(label) => `📅 ${label}`}
+                          />
+                          <Legend 
+                            verticalAlign="top" 
+                            height={36}
+                            formatter={(value) => value === 'ingresos' ? 'Ingresos Acumulados' : 'Coste de Inversión'}
+                          />
+                          
+                          {/* Reference line for break-even */}
+                          {purchasePrice > 0 && (
+                            <ReferenceLine 
+                              y={purchasePrice} 
+                              stroke="#ef4444" 
+                              strokeWidth={2}
+                              strokeDasharray="5 5"
+                              label={{ 
+                                value: `Punto de Equilibrio: €${purchasePrice}`, 
+                                position: 'right',
+                                fill: '#ef4444',
+                                fontSize: 11
+                              }}
+                            />
+                          )}
+                          
+                          {/* Cost line (horizontal) */}
+                          <Line 
+                            type="monotone" 
+                            dataKey="coste" 
+                            stroke="#ef4444" 
+                            strokeWidth={3}
+                            dot={false}
+                            name="coste"
+                          />
+                          
+                          {/* Revenue area (ascending) */}
+                          <Area
+                            type="monotone"
+                            dataKey="ingresos"
+                            stroke="#10b981"
+                            strokeWidth={3}
+                            fill="url(#colorIngresos)"
+                            name="ingresos"
+                            dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                            activeDot={{ r: 6, stroke: '#10b981', strokeWidth: 2 }}
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  );
+                })()}
                 
-                {/* Status message below progress bar */}
-                <div className="mt-3 text-center">
+                {/* Break-even status message */}
+                <div className="mt-4 text-center p-3 rounded-lg bg-slate-50">
                   {itemProfitData.is_amortized ? (
                     <div className="flex items-center justify-center gap-2 text-emerald-600">
-                      <CheckCircle className="h-5 w-5" />
-                      <span className="font-bold">¡AMORTIZADO! Generando beneficios puros</span>
+                      <CheckCircle className="h-6 w-6" />
+                      <span className="text-lg font-bold">¡AMORTIZADO! Generando beneficios puros 🎉</span>
+                    </div>
+                  ) : itemProfitData.purchase_price > 0 ? (
+                    <div className="text-slate-600">
+                      <p className="text-sm">Progreso hacia el punto de equilibrio:</p>
+                      <div className="flex items-center justify-center gap-4 mt-2">
+                        <Progress 
+                          value={Math.min(itemProfitData.amortization_percent || 0, 100)} 
+                          className="h-3 w-64"
+                        />
+                        <span className="font-bold text-lg">
+                          {Math.min(itemProfitData.amortization_percent || 0, 100).toFixed(1)}%
+                        </span>
+                      </div>
+                      <p className="text-sm mt-2">
+                        Faltan <span className="font-bold text-red-600">
+                          €{Math.max(0, (itemProfitData.purchase_price - itemProfitData.total_revenue)).toFixed(2)}
+                        </span> para recuperar la inversión
+                      </p>
                     </div>
                   ) : (
-                    <p className="text-sm text-slate-500">
-                      {itemProfitData.purchase_price > 0 ? (
-                        <>Faltan <span className="font-bold text-slate-700">
-                          €{(itemProfitData.purchase_price - itemProfitData.total_revenue).toFixed(2)}
-                        </span> para amortizar</>
-                      ) : (
-                        'Añade el coste de compra para ver el progreso'
-                      )}
+                    <p className="text-sm text-amber-600">
+                      ⚠️ Añade el coste de compra para ver el punto de equilibrio
                     </p>
                   )}
                 </div>
               </div>
               
-              {/* Rental Stats */}
-              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <span className="text-sm text-blue-700">Total de alquileres</span>
-                <span className="text-lg font-bold text-blue-800">{itemProfitData.rental_count || 0}</span>
+              {/* ========== USAGE RATIO ========== */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Rental Stats */}
+                <div className="p-4 rounded-xl bg-blue-50 border-2 border-blue-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-blue-600" />
+                      <span className="text-sm font-semibold text-blue-700">Total Alquileres</span>
+                    </div>
+                    <span className="text-3xl font-black text-blue-800">{itemProfitData.rental_count || 0}</span>
+                  </div>
+                </div>
+                
+                {/* Usage ratio */}
+                <div className="p-4 rounded-xl bg-indigo-50 border-2 border-indigo-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Activity className="h-5 w-5 text-indigo-600" />
+                      <span className="text-sm font-semibold text-indigo-700">Días Alquilado</span>
+                    </div>
+                    <span className="text-3xl font-black text-indigo-800">
+                      {selectedItemForProfit?.days_used || 0}
+                    </span>
+                  </div>
+                </div>
               </div>
               
-              {/* Rental History (if available) */}
+              {/* ========== RENTAL HISTORY TABLE ========== */}
               {itemProfitData.rental_history && itemProfitData.rental_history.length > 0 && (
-                <div className="border rounded-lg overflow-hidden">
-                  <div className="bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-600 uppercase">
-                    Últimos Alquileres
+                <div className="border-2 rounded-xl overflow-hidden">
+                  <div className="bg-slate-800 px-4 py-3 text-sm font-bold text-white uppercase tracking-wide flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Historial de Alquileres (Últimos 10)
                   </div>
-                  <div className="max-h-32 overflow-y-auto">
-                    {itemProfitData.rental_history.map((rental, idx) => (
-                      <div key={idx} className="flex justify-between items-center px-3 py-2 border-t text-sm">
-                        <div>
-                          <span className="text-slate-600">{rental.date}</span>
-                          <span className="mx-2 text-slate-400">•</span>
-                          <span className="text-slate-700">{rental.customer}</span>
-                        </div>
-                        <span className="font-medium text-emerald-600">+€{rental.revenue?.toFixed(2)}</span>
-                      </div>
-                    ))}
+                  <div className="max-h-48 overflow-y-auto">
+                    <table className="w-full">
+                      <thead className="bg-slate-100 sticky top-0">
+                        <tr>
+                          <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600">Fecha</th>
+                          <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600">Cliente</th>
+                          <th className="px-4 py-2 text-center text-xs font-semibold text-slate-600">Días</th>
+                          <th className="px-4 py-2 text-right text-xs font-semibold text-slate-600">Ingreso</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {itemProfitData.rental_history.map((rental, idx) => (
+                          <tr key={idx} className="border-t hover:bg-slate-50">
+                            <td className="px-4 py-2 text-sm text-slate-600">{rental.date || '-'}</td>
+                            <td className="px-4 py-2 text-sm font-medium text-slate-800">{rental.customer || '-'}</td>
+                            <td className="px-4 py-2 text-sm text-center text-slate-600">{rental.days || '-'}</td>
+                            <td className="px-4 py-2 text-sm text-right font-bold text-emerald-600">
+                              +€{(rental.revenue || 0).toFixed(2)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
             </div>
           ) : (
-            <div className="py-8 text-center text-slate-500">
-              No se pudieron cargar los datos de rentabilidad
+            <div className="py-12 text-center">
+              <XCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+              <p className="text-slate-500">No se pudieron cargar los datos de rentabilidad</p>
             </div>
           )}
           
-          <DialogFooter>
+          <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setShowProfitModal(false)}>
               Cerrar
             </Button>
@@ -2564,7 +2768,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
               <Button onClick={() => {
                 setShowProfitModal(false);
                 openEditDialog(selectedItemForProfit);
-              }}>
+              }} className="bg-emerald-600 hover:bg-emerald-700">
                 <Edit2 className="h-4 w-4 mr-2" />
                 Editar Producto
               </Button>
