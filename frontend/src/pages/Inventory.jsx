@@ -431,6 +431,7 @@ export default function Inventory() {
     setNewItem({
       internal_code: "",
       barcode: "",
+      barcode_2: "",
       serial_number: "",
       item_type: "",
       brand: "",
