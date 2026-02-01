@@ -478,20 +478,58 @@ export default function Returns() {
   };
 
   const quickReturn = async (rentalId, customerName) => {
-    // Acción RÁPIDA - Ejecutar inmediatamente sin confirmación
+    // NUEVO FLUJO: Cargar contrato en el "Mostrador de Recepción" para check-in
     setLoading(true);
     try {
-      await axios.post(`${API}/rentals/${rentalId}/quick-return`, {}, {
+      // Cargar el alquiler completo para mostrarlo en la zona activa
+      const response = await axios.get(`${API}/rentals/${rentalId}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       
-      toast.success(`✅ Devolución procesada con éxito - ${customerName}`);
+      const rentalData = response.data;
+      setRental(rentalData);
+      setScannedBarcodes([]); // Reset escaneados
+      
+      toast.info(`📋 Contrato cargado: ${customerName}`, {
+        description: `${rentalData.items?.filter(i => !i.returned).length || 0} artículos pendientes de escanear`
+      });
+      
+      // Focus en el campo de escaneo
+      if (barcodeRef.current) {
+        barcodeRef.current.focus();
+        barcodeRef.current.select();
+      }
+      
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al cargar el contrato");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Procesar la devolución de los items escaneados (en verde)
+  const processQuickReturn = async () => {
+    if (!rental || toReturnItems.length === 0) return;
+    
+    setProcessing(true);
+    try {
+      // Devolver solo los items que están en verde (escaneados)
+      for (const item of toReturnItems) {
+        await axios.post(`${API}/rentals/${rental.id}/return-item`, {
+          barcode: item.barcode
+        }, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+      }
+      
+      toast.success(`✅ Devolución procesada - ${toReturnItems.length} artículo(s) devuelto(s)`);
+      resetForm();
       loadPendingReturns();
       
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Error en devolución rápida");
+      toast.error(error.response?.data?.detail || "Error al procesar devolución");
     } finally {
-      setLoading(false);
+      setProcessing(false);
     }
   };
 
