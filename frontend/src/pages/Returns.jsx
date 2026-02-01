@@ -1036,8 +1036,17 @@ export default function Returns() {
                       </div>
                     </div>
                     
+                    {/* Encabezado de Columnas */}
+                    <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      <div className="w-10 flex-shrink-0"></div>
+                      <div className="flex-1">Producto</div>
+                      <div className="w-32 text-center flex-shrink-0">Código</div>
+                      <div className="w-20 text-center flex-shrink-0">Talla</div>
+                      <div className="w-28 text-right flex-shrink-0">Estado</div>
+                    </div>
+                    
                     {/* Lista Vertical de Artículos (Row Layout) */}
-                    <div className="divide-y divide-slate-100 max-h-[320px] overflow-y-auto">
+                    <div className="divide-y divide-slate-100 max-h-[280px] overflow-y-auto">
                       {rental.items.filter(i => !i.returned).map((item, idx) => {
                         const isScanned = scannedBarcodes.includes(item.barcode);
                         
