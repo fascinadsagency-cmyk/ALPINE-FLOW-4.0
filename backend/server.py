@@ -1108,6 +1108,88 @@ async def get_items_with_profitability(
         }
     }
 
+@api_router.get("/items/{item_id}/profitability")
+async def get_item_profitability(item_id: str, current_user: dict = Depends(get_current_user)):
+    """
+    Get detailed profitability data for a specific item.
+    
+    Calculates:
+    - Total revenue from all rentals
+    - Net profit (revenue - purchase price)
+    - Amortization percentage
+    - Rental history summary
+    """
+    # Get the item
+    item = await db.items.find_one({"id": item_id}, {"_id": 0})
+    if not item:
+        raise HTTPException(status_code=404, detail="Artículo no encontrado")
+    
+    # Get purchase price (cost of investment)
+    purchase_price = item.get("acquisition_cost") or item.get("purchase_price", 0)
+    
+    # Find ALL rentals that include this item (by barcode or internal_code)
+    item_barcode = item.get("barcode")
+    item_internal_code = item.get("internal_code")
+    
+    # Build query to find rentals with this item
+    rental_query = {"$or": []}
+    if item_barcode:
+        rental_query["$or"].append({"items.barcode": item_barcode})
+    if item_internal_code:
+        rental_query["$or"].append({"items.internal_code": item_internal_code})
+    
+    # If no identifiers, try item_id directly
+    if not rental_query["$or"]:
+        rental_query = {"items.item_id": item_id}
+    
+    # Get all rentals containing this item
+    rentals = await db.rentals.find(rental_query).to_list(1000)
+    
+    # Calculate total revenue from this specific item
+    total_revenue = 0
+    rental_count = 0
+    rental_history = []
+    
+    for rental in rentals:
+        for rental_item in rental.get("items", []):
+            # Check if this is our item
+            item_match = (
+                (item_barcode and rental_item.get("barcode") == item_barcode) or
+                (item_internal_code and rental_item.get("internal_code") == item_internal_code) or
+                (rental_item.get("item_id") == item_id)
+            )
+            if item_match:
+                item_revenue = rental_item.get("subtotal", 0)
+                total_revenue += item_revenue
+                rental_count += 1
+                rental_history.append({
+                    "rental_id": rental.get("id"),
+                    "date": rental.get("start_date"),
+                    "customer": rental.get("customer_name"),
+                    "days": rental.get("days", 1),
+                    "revenue": item_revenue,
+                    "status": rental.get("status")
+                })
+    
+    # Calculate metrics
+    net_profit = total_revenue - purchase_price
+    amortization_percent = (total_revenue / purchase_price * 100) if purchase_price > 0 else (100 if total_revenue > 0 else 0)
+    is_amortized = amortization_percent >= 100
+    
+    return {
+        "item_id": item_id,
+        "item_name": f"{item.get('brand', '')} {item.get('model', '')}".strip() or item.get('name', 'Artículo'),
+        "internal_code": item_internal_code,
+        "purchase_price": round(purchase_price, 2),
+        "total_revenue": round(total_revenue, 2),
+        "net_profit": round(net_profit, 2),
+        "amortization_percent": round(min(amortization_percent, 999), 1),  # Cap at 999%
+        "rental_count": rental_count,
+        "is_amortized": is_amortized,
+        "rental_history": rental_history[-10:],  # Last 10 rentals
+        "has_purchase_price": purchase_price > 0
+    }
+
 @api_router.get("/items/barcode/{barcode}", response_model=ItemResponse)
 async def get_item_by_barcode(barcode: str, current_user: dict = Depends(get_current_user)):
     # Try internal_code first, then barcode
