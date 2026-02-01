@@ -554,6 +554,18 @@ export default function Returns() {
     return () => clearInterval(interval);
   }, []);
 
+  // ============ AUTO-FOCUS FOR SCANNER IN CHANGE MODAL ============
+  // When activeSwapIndex changes (user clicks "Sustituir" on an item), focus the input
+  useEffect(() => {
+    if (activeSwapIndex !== null && changeInputRef.current) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        changeInputRef.current?.focus();
+        changeInputRef.current?.select();
+      }, 50);
+    }
+  }, [activeSwapIndex]);
+
   const loadItemTypes = async () => {
     try {
       const response = await axios.get(`${API}/item-types`, {
