@@ -1217,7 +1217,7 @@ export default function Returns() {
               <SelectValue placeholder="Filtrar por tipo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos los tipos</SelectItem>
+              <SelectItem value="all">Todos los tipos</SelectItem>
               {itemTypes.map(type => (
                 <SelectItem key={type} value={type}>{type}</SelectItem>
               ))}
