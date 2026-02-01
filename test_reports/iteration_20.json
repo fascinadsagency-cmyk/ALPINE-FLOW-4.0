@@ -1,0 +1,121 @@
+{
+  "summary": "Iteration 20 - Complete testing of barcode scanner bug fixes in Returns module. Both bugs verified as FIXED: 1) Backend search by barcode/internal_code/item_id works correctly, 2) Frontend swap modal auto-focus and Enter key submission work correctly.",
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  
+  "passed_tests": [
+    "1. Backend: Search rental by barcode (BOOTS-ALTA-001) - PASSED",
+    "2. Backend: Search rental by barcode case-insensitive - PASSED",
+    "3. Backend: Search rental by second barcode (BC-SKI-190610) - PASSED",
+    "4. Backend: Search rental by item_id (UUID) - PASSED",
+    "5. Backend: Non-existent code returns 404 - PASSED",
+    "6. Backend: Search by internal_code endpoint works - PASSED",
+    "7. Frontend: Barcode scan loads rental correctly - PASSED",
+    "8. Frontend: Swap modal opens with 'Cambio/Sustitución' button - PASSED",
+    "9. Frontend: Auto-focus on input when clicking 'Sustituir' - PASSED",
+    "10. Frontend: Enter key triggers search and swap - PASSED",
+    "11. Frontend: Swap shows correct delta pricing (+€21.00 for upgrade) - PASSED"
+  ],
+  
+  "backend_tests": {
+    "file": "/app/backend/tests/test_barcode_search.py",
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "tests": [
+      "test_search_by_barcode - PASSED",
+      "test_search_by_barcode_case_insensitive - PASSED",
+      "test_search_by_second_barcode - PASSED",
+      "test_search_by_item_id_uuid - PASSED",
+      "test_search_nonexistent_code - PASSED",
+      "test_search_by_internal_code - PASSED",
+      "test_erika_rental_exists - PASSED",
+      "test_pending_returns_endpoint - PASSED"
+    ]
+  },
+  
+  "bug_fixes_verified": {
+    "bug_1_barcode_search": {
+      "description": "Búsqueda debe funcionar por barcode, internal_code e item_id",
+      "status": "FIXED",
+      "evidence": [
+        "Backend endpoint /api/rentals/barcode/{code} uses regex case-insensitive search for barcode and internal_code",
+        "Backend also searches by exact item_id match for UUID format",
+        "Frontend handleBarcodeScan compares by barcode, internal_code, and item_id",
+        "All 8 backend tests pass including UUID search"
+      ]
+    },
+    "bug_2_swap_modal_autofocus": {
+      "description": "Modal de sustitución necesita auto-foco y auto-submit con Enter",
+      "status": "FIXED",
+      "evidence": [
+        "useEffect at line 559-567 focuses input when activeSwapIndex changes",
+        "Input has autoFocus attribute at line 1722",
+        "onKeyDown handler at line 1710-1719 handles Enter key to trigger searchSwapItem",
+        "UI test confirmed: typed 'TEST123' without clicking input (auto-focus works)",
+        "UI test confirmed: Enter key triggered search for 'J002' and swap was applied"
+      ]
+    }
+  },
+  
+  "ui_verification": {
+    "returns_page": {
+      "barcode_input": "Working - scans and loads rental",
+      "rental_display": "Shows customer info, items, and status correctly",
+      "swap_modal": "Opens with 'Cambio/Sustitución' button"
+    },
+    "swap_modal": {
+      "auto_focus": "WORKING - input receives focus when 'Sustituir' clicked",
+      "enter_key": "WORKING - triggers searchSwapItem function",
+      "swap_result": "Shows upgrade/downgrade with delta pricing"
+    }
+  },
+  
+  "test_report_links": [
+    "/app/backend/tests/test_barcode_search.py",
+    "/app/test_reports/pytest/pytest_barcode_search.xml"
+  ],
+  
+  "action_items": [],
+  
+  "critical_code_review_comments": [],
+  
+  "updated_files": [
+    "/app/backend/tests/test_barcode_search.py"
+  ],
+  
+  "success_rate": {
+    "backend": "100% (8/8 tests passed)",
+    "frontend": "100% (4/4 UI tests passed)"
+  },
+  
+  "test_credentials": {
+    "username": "testcaja",
+    "password": "test1234"
+  },
+  
+  "seed_data_creation": "None - used existing rental data (Erika Quijano Guerrero with BOOTS-ALTA-001 and BC-SKI-190610)",
+  
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  
+  "context_for_next_testing_agent": "Barcode scanner bugs in Returns module have been fixed and verified. Key implementation: 1) Backend /api/rentals/barcode/{code} searches by barcode, internal_code (case-insensitive regex), and item_id (exact match for UUIDs). 2) Frontend handleBarcodeScan compares scanned codes against item.barcode, item.internal_code, and item.item_id. 3) Swap modal has useEffect that focuses input when activeSwapIndex changes, plus autoFocus attribute. 4) Enter key in swap input triggers searchSwapItem function. Test user: testcaja/test1234. Active rental: Erika Quijano Guerrero with items BOOTS-ALTA-001 and BC-SKI-190610.",
+  
+  "screenshots": [
+    ".screenshots/02_returns_page.png - Returns page with barcode input",
+    ".screenshots/03_after_barcode_scan.png - Rental loaded after scanning BOOTS-ALTA-001",
+    ".screenshots/04_swap_modal.png - Swap modal opened",
+    ".screenshots/05_swap_input_focused.png - Input with TEST123 typed (auto-focus proof)",
+    ".screenshots/06_swap_input_typed.png - Input ready for code",
+    ".screenshots/07_after_enter.png - Swap completed with J002 showing +€21.00 delta"
+  ]
+}
