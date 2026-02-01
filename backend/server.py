@@ -1224,6 +1224,7 @@ async def update_item(item_id: str, item: ItemCreate, current_user: dict = Depen
     
     update_doc = {
         "barcode": item.barcode,
+        "barcode_2": item.barcode_2 or "",  # Secondary barcode
         "internal_code": item.internal_code,
         "serial_number": item.serial_number or "",
         "item_type": item.item_type,
