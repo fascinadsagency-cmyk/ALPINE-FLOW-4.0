@@ -982,7 +982,13 @@ export default function Returns() {
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <h3 className="font-bold text-lg text-slate-900">{rental.customer_name}</h3>
+                        <h3 
+                          onClick={() => openCustomerModal(rental)}
+                          className="font-bold text-lg text-emerald-700 hover:text-emerald-900 cursor-pointer hover:underline transition-colors"
+                          title="Ver ficha completa del cliente"
+                        >
+                          {rental.customer_name}
+                        </h3>
                         <p className="text-sm text-slate-500 font-mono">{rental.customer_dni}</p>
                         <Badge variant="outline" className="mt-2 bg-emerald-50 text-emerald-700 border-emerald-200">
                           Contrato #{rental.id?.substring(0, 8)}
@@ -990,10 +996,29 @@ export default function Returns() {
                       </div>
                     </div>
                     
+                    {/* Fechas del Contrato */}
+                    <div className="mt-4 p-3 rounded-lg bg-blue-50 border border-blue-100">
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-blue-500" />
+                          <span className="text-slate-600">Inicio:</span>
+                          <span className="font-semibold text-slate-800">
+                            {rental.start_date ? new Date(rental.start_date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-600">Fin:</span>
+                          <span className="font-semibold text-slate-800">
+                            {rental.end_date ? new Date(rental.end_date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
                     {/* Info Rápida del Contrato */}
-                    <div className="grid grid-cols-2 gap-3 mt-4">
+                    <div className="grid grid-cols-2 gap-3 mt-3">
                       <div className="p-3 rounded-lg bg-slate-50 text-center">
-                        <Calendar className="h-4 w-4 mx-auto text-slate-400 mb-1" />
+                        <Clock className="h-4 w-4 mx-auto text-slate-400 mb-1" />
                         <p className="text-xs text-slate-500">Período</p>
                         <p className="font-bold text-slate-800">{rental.days} días</p>
                       </div>
