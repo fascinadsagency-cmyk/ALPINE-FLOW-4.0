@@ -305,6 +305,41 @@ export default function Inventory() {
     loadItems();
   }, [filterStatus, filterType, filterCategory, showProfitability, sortBy]);
 
+  // Load individual item profitability data
+  const loadItemProfitability = async (item) => {
+    setSelectedItemForProfit(item);
+    setShowProfitModal(true);
+    setLoadingProfit(true);
+    setItemProfitData(null);
+    
+    try {
+      // Get profitability data for this specific item
+      const response = await axios.get(`${API}/items/${item.id}/profitability`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      setItemProfitData(response.data);
+    } catch (error) {
+      console.error('Error loading profitability:', error);
+      // If endpoint doesn't exist, calculate from item data
+      const purchasePrice = item.purchase_price || item.acquisition_cost || 0;
+      const revenue = item.total_revenue || 0;
+      const profit = revenue - purchasePrice;
+      const amortizationPercent = purchasePrice > 0 ? Math.min(100, (revenue / purchasePrice) * 100) : (revenue > 0 ? 100 : 0);
+      
+      setItemProfitData({
+        item_id: item.id,
+        purchase_price: purchasePrice,
+        total_revenue: revenue,
+        net_profit: profit,
+        amortization_percent: amortizationPercent,
+        rental_count: item.rental_count || 0,
+        is_amortized: amortizationPercent >= 100
+      });
+    } finally {
+      setLoadingProfit(false);
+    }
+  };
+
   const handleSearch = (e) => {
     e.preventDefault();
     loadItems();
