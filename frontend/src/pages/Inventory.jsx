@@ -393,6 +393,7 @@ export default function Inventory() {
         is_generic: newItem.is_generic || false,
         name: newItem.name?.trim() || "",
         barcode: newItem.is_generic ? "" : (newItem.barcode || `BC-${newItem.internal_code}`),
+        barcode_2: newItem.is_generic ? "" : (newItem.barcode_2 || ""),
         internal_code: newItem.internal_code || "",
         serial_number: newItem.serial_number || "",
         brand: newItem.brand || "",
