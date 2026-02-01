@@ -202,7 +202,19 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
 ### 7. Soporte y Personalizaciones
 - 🔲 Pestaña para tickets de soporte (pendiente)
 
-### 7. Integraciones Futuras
+### 7. Módulo de Mantenimiento y Taller
+- ✅ **Mi Flota**: Lista de equipos que requieren puesta a punto
+- ✅ **Taller Externo**: Gestión de reparaciones de clientes
+- ✅ **CORRECCIÓN DE LÓGICA COMPLETADA (2026-02-01):**
+  - Nuevo endpoint `POST /items/{item_id}/complete-maintenance`
+  - Al completar puesta a punto:
+    1. `days_used` se resetea a **0**
+    2. `status` cambia a **"available"**
+    3. Se guarda `last_maintenance_date` y `last_maintenance_by`
+  - UI se actualiza inmediatamente (item desaparece de la lista)
+  - Toast muestra: "Contadores reseteados (X → 0 días)"
+
+### 8. Integraciones Futuras
 - ⏳ VeriFactu, WhatsApp, TPV, Email, Google Calendar
 
 ---
