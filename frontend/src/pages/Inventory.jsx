@@ -146,6 +146,12 @@ export default function Inventory() {
   // Delete type confirmation modal
   const [deleteTypeData, setDeleteTypeData] = useState(null); // { typeId, typeName }
   
+  // Individual Item Profitability Modal
+  const [selectedItemForProfit, setSelectedItemForProfit] = useState(null);
+  const [showProfitModal, setShowProfitModal] = useState(false);
+  const [loadingProfit, setLoadingProfit] = useState(false);
+  const [itemProfitData, setItemProfitData] = useState(null);
+  
   // DnD sensors
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
