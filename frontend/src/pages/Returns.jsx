@@ -522,29 +522,174 @@ export default function Returns() {
     }
   };
   
-  // Procesar la devolución de los items escaneados (en verde)
+  // ============ SETTLEMENT CALCULATION (Liquidación) ============
+  const calculateSettlement = () => {
+    if (!rental || toReturnItems.length === 0) return null;
+    
+    // Calcular días realmente usados
+    const startDate = new Date(rental.start_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    startDate.setHours(0, 0, 0, 0);
+    
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const daysUsed = Math.max(1, Math.ceil((today - startDate) / msPerDay) + 1);
+    const daysPaid = rental.days || 1;
+    
+    // Precio por día (aproximado)
+    const pricePerDay = rental.total_amount / daysPaid;
+    
+    // Solo calculamos para los items que se están devolviendo
+    const itemsBeingReturned = toReturnItems.length;
+    const totalItems = rental.items.filter(i => !i.returned).length;
+    const returnRatio = itemsBeingReturned / totalItems;
+    
+    // Servicio usado = (días usados * precio por día) * ratio de items devueltos
+    // Si devuelve antes, paga menos. Si devuelve después, paga más.
+    let serviceUsed = daysUsed * pricePerDay * returnRatio;
+    
+    // Total pagado proporcionalmente
+    const totalPaidForItems = rental.paid_amount * returnRatio;
+    
+    // Ajustar por devolución anticipada vs tardía
+    let balance = 0;
+    let balanceReason = "";
+    
+    if (daysUsed < daysPaid) {
+      // DEVOLUCIÓN ANTICIPADA - El cliente usó menos días de los pagados
+      const unusedDays = daysPaid - daysUsed;
+      const refundAmount = unusedDays * pricePerDay * returnRatio;
+      balance = -refundAmount; // Negativo = hay que devolver
+      balanceReason = `Devolución anticipada (${unusedDays} días no usados)`;
+    } else if (daysUsed > daysPaid) {
+      // DEVOLUCIÓN TARDÍA - El cliente usó más días de los pagados
+      const extraDays = daysUsed - daysPaid;
+      const chargeAmount = extraDays * pricePerDay * returnRatio;
+      balance = chargeAmount; // Positivo = cliente debe
+      balanceReason = `Devolución tardía (+${extraDays} días extra)`;
+    } else {
+      balanceReason = "Devolución en fecha";
+    }
+    
+    // Añadir el pending_amount del rental si existe (saldos anteriores no pagados)
+    if (rental.pending_amount > 0) {
+      balance += rental.pending_amount * returnRatio;
+      if (balanceReason) balanceReason += " + ";
+      balanceReason += `Saldo pendiente anterior`;
+    }
+    
+    return {
+      balance: Math.round(balance * 100) / 100,
+      daysUsed,
+      daysPaid,
+      pricePerDay: Math.round(pricePerDay * 100) / 100,
+      serviceUsed: Math.round(serviceUsed * 100) / 100,
+      totalPaid: Math.round(totalPaidForItems * 100) / 100,
+      itemsToReturn: toReturnItems.map(i => i.barcode),
+      balanceReason,
+      originalPaymentMethod: rental.payment_method || "cash"
+    };
+  };
+  
+  // Procesar la devolución - PRIMERO verifica si hay saldo pendiente
   const processQuickReturn = async () => {
     if (!rental || toReturnItems.length === 0) return;
     
-    setProcessing(true);
     try {
-      // Devolver solo los items que están en verde (escaneados)
-      for (const item of toReturnItems) {
-        await axios.post(`${API}/rentals/${rental.id}/return-item`, {
-          barcode: item.barcode
-        }, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+      // Calcular si hay diferencias económicas
+      const settlement = calculateSettlement();
+      
+      if (!settlement) {
+        toast.error("Error al calcular la liquidación");
+        return;
       }
       
-      toast.success(`✅ Devolución procesada - ${toReturnItems.length} artículo(s) devuelto(s)`);
+      // CASO A: Saldo 0 - Proceder directamente
+      if (Math.abs(settlement.balance) < 0.01) {
+        await executeReturn(settlement.itemsToReturn);
+        return;
+      }
+      
+      // CASO B o C: Hay saldo pendiente - Mostrar modal de liquidación
+      setSettlementData({
+        ...settlement,
+        paymentMethod: settlement.originalPaymentMethod
+      });
+      setShowSettlementModal(true);
+      
+    } catch (error) {
+      console.error("Error en processQuickReturn:", error);
+      toast.error(error.response?.data?.detail || error.message || "Error al procesar devolución");
+    }
+  };
+  
+  // Ejecutar la devolución real en el backend
+  const executeReturn = async (barcodes) => {
+    setProcessing(true);
+    try {
+      // Usar el endpoint correcto: POST /rentals/{id}/return con { barcodes: [...] }
+      const response = await axios.post(`${API}/rentals/${rental.id}/return`, {
+        barcodes: barcodes
+      }, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      toast.success(`✅ Devolución procesada - ${barcodes.length} artículo(s) devuelto(s)`);
+      setShowSettlementModal(false);
       resetForm();
       loadPendingReturns();
       
+      return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Error al procesar devolución");
+      console.error("Error en executeReturn:", error);
+      const errorMsg = error.response?.data?.detail || error.message || "Error al procesar devolución";
+      toast.error(errorMsg);
+      throw error;
     } finally {
       setProcessing(false);
+    }
+  };
+  
+  // Confirmar liquidación con cobro/abono
+  const confirmSettlement = async () => {
+    setSettlementProcessing(true);
+    try {
+      const { balance, itemsToReturn, paymentMethod } = settlementData;
+      
+      if (balance > 0) {
+        // CASO B: Cobrar al cliente
+        await axios.post(`${API}/rentals/${rental.id}/payment`, {
+          amount: balance,
+          payment_method: paymentMethod
+        }, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        toast.success(`💰 Cobro de €${balance.toFixed(2)} registrado`);
+      } else if (balance < 0) {
+        // CASO C: Devolver dinero al cliente
+        const refundAmount = Math.abs(balance);
+        await axios.post(`${API}/cash/movements`, {
+          type: "expense",
+          category: "refund",
+          amount: refundAmount,
+          payment_method: paymentMethod,
+          description: `Devolución anticipada - ${rental.customer_name}`,
+          reference_id: rental.id,
+          reference_type: "rental"
+        }, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        toast.success(`💸 Reembolso de €${refundAmount.toFixed(2)} registrado`);
+      }
+      
+      // Ahora ejecutar la devolución física
+      await executeReturn(itemsToReturn);
+      
+    } catch (error) {
+      console.error("Error en confirmSettlement:", error);
+      toast.error(error.response?.data?.detail || "Error al procesar la liquidación");
+    } finally {
+      setSettlementProcessing(false);
     }
   };
 
