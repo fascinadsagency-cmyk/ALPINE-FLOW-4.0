@@ -823,6 +823,7 @@ async def create_item(item: ItemCreate, current_user: dict = Depends(get_current
     doc = {
         "id": item_id,
         "barcode": item.barcode,
+        "barcode_2": item.barcode_2 or "",  # Secondary barcode
         "internal_code": item.internal_code,
         "serial_number": item.serial_number or "",
         "item_type": item.item_type,
