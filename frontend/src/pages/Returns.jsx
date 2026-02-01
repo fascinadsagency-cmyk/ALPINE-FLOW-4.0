@@ -524,7 +524,15 @@ export default function Returns() {
   
   // ============ SETTLEMENT CALCULATION (Liquidación) ============
   const calculateSettlement = () => {
-    if (!rental || toReturnItems.length === 0) return null;
+    // DEBUG: Log inicial
+    console.log('=== CALCULANDO LIQUIDACIÓN ===');
+    console.log('rental:', rental?.id);
+    console.log('toReturnItems:', toReturnItems?.length);
+    
+    if (!rental || toReturnItems.length === 0) {
+      console.log('ERROR: No hay rental o items para devolver');
+      return null;
+    }
     
     // Calcular días realmente usados
     const startDate = new Date(rental.start_date);
@@ -545,7 +553,6 @@ export default function Returns() {
     const returnRatio = itemsBeingReturned / totalItems;
     
     // Servicio usado = (días usados * precio por día) * ratio de items devueltos
-    // Si devuelve antes, paga menos. Si devuelve después, paga más.
     let serviceUsed = daysUsed * pricePerDay * returnRatio;
     
     // Total pagado proporcionalmente
@@ -578,7 +585,7 @@ export default function Returns() {
       balanceReason += `Saldo pendiente anterior`;
     }
     
-    return {
+    const result = {
       balance: Math.round(balance * 100) / 100,
       daysUsed,
       daysPaid,
@@ -589,14 +596,34 @@ export default function Returns() {
       balanceReason,
       originalPaymentMethod: rental.payment_method || "cash"
     };
+    
+    console.log('Resultado liquidación:', result);
+    return result;
   };
   
-  // Procesar la devolución - PRIMERO verifica si hay saldo pendiente
+  // ============ PASO 1-4: PROCESAR DEVOLUCIÓN ============
   const processQuickReturn = async () => {
-    if (!rental || toReturnItems.length === 0) return;
+    // PASO 1: Validación de Datos
+    console.log('=== PROCESANDO DEVOLUCIÓN ===');
+    console.log('contractId:', rental?.id);
+    console.log('selectedItems:', toReturnItems?.map(i => i.barcode));
+    
+    // Verificar items seleccionados
+    if (!toReturnItems || toReturnItems.length === 0) {
+      toast.error('⚠️ Selecciona al menos un artículo para devolver');
+      console.log('ERROR: No hay items seleccionados');
+      return;
+    }
+    
+    // Verificar ID del contrato
+    if (!rental || !rental.id) {
+      toast.error('⚠️ No hay contrato activo seleccionado');
+      console.log('ERROR: No hay contrato activo');
+      return;
+    }
     
     try {
-      // Calcular si hay diferencias económicas
+      // PASO 2: Cálculo financiero
       const settlement = calculateSettlement();
       
       if (!settlement) {
@@ -604,13 +631,17 @@ export default function Returns() {
         return;
       }
       
+      console.log('Balance calculado:', settlement.balance);
+      
       // CASO A: Saldo 0 - Proceder directamente
       if (Math.abs(settlement.balance) < 0.01) {
+        console.log('CASO A: Saldo 0 - Procesando directamente');
         await executeReturn(settlement.itemsToReturn);
         return;
       }
       
       // CASO B o C: Hay saldo pendiente - Mostrar modal de liquidación
+      console.log('CASO B/C: Saldo pendiente - Mostrando modal');
       setSettlementData({
         ...settlement,
         paymentMethod: settlement.originalPaymentMethod
@@ -618,22 +649,27 @@ export default function Returns() {
       setShowSettlementModal(true);
       
     } catch (error) {
+      // PASO 4: Manejo de errores
       console.error("Error en processQuickReturn:", error);
-      toast.error(error.response?.data?.detail || error.message || "Error al procesar devolución");
+      const errorMsg = error.response?.data?.detail || error.message || "Error desconocido al procesar devolución";
+      toast.error(`❌ Error: ${errorMsg}`);
     }
   };
   
-  // Ejecutar la devolución real en el backend
+  // PASO 3: Ejecutar la transacción en el backend
   const executeReturn = async (barcodes) => {
+    console.log('=== EJECUTANDO DEVOLUCIÓN EN BACKEND ===');
+    console.log('Barcodes a devolver:', barcodes);
+    
     setProcessing(true);
     try {
-      // Usar el endpoint correcto: POST /rentals/{id}/return con { barcodes: [...] }
       const response = await axios.post(`${API}/rentals/${rental.id}/return`, {
         barcodes: barcodes
       }, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       
+      console.log('Respuesta del backend:', response.data);
       toast.success(`✅ Devolución procesada - ${barcodes.length} artículo(s) devuelto(s)`);
       setShowSettlementModal(false);
       resetForm();
@@ -643,7 +679,7 @@ export default function Returns() {
     } catch (error) {
       console.error("Error en executeReturn:", error);
       const errorMsg = error.response?.data?.detail || error.message || "Error al procesar devolución";
-      toast.error(errorMsg);
+      toast.error(`❌ ${errorMsg}`);
       throw error;
     } finally {
       setProcessing(false);
@@ -652,12 +688,16 @@ export default function Returns() {
   
   // Confirmar liquidación con cobro/abono
   const confirmSettlement = async () => {
+    console.log('=== CONFIRMANDO LIQUIDACIÓN ===');
+    console.log('settlementData:', settlementData);
+    
     setSettlementProcessing(true);
     try {
       const { balance, itemsToReturn, paymentMethod } = settlementData;
       
       if (balance > 0) {
         // CASO B: Cobrar al cliente
+        console.log('Registrando cobro:', balance);
         await axios.post(`${API}/rentals/${rental.id}/payment`, {
           amount: balance,
           payment_method: paymentMethod
@@ -668,6 +708,7 @@ export default function Returns() {
       } else if (balance < 0) {
         // CASO C: Devolver dinero al cliente
         const refundAmount = Math.abs(balance);
+        console.log('Registrando reembolso:', refundAmount);
         await axios.post(`${API}/cash/movements`, {
           type: "expense",
           category: "refund",
@@ -687,7 +728,7 @@ export default function Returns() {
       
     } catch (error) {
       console.error("Error en confirmSettlement:", error);
-      toast.error(error.response?.data?.detail || "Error al procesar la liquidación");
+      toast.error(`❌ ${error.response?.data?.detail || "Error al procesar la liquidación"}`);
     } finally {
       setSettlementProcessing(false);
     }
