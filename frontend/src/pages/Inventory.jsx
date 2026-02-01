@@ -2110,6 +2110,16 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                   />
                   <p className="text-xs text-slate-500 mt-1">Para escaneo con lector</p>
                 </div>
+                <div>
+                  <Label>Código de Barras 2</Label>
+                  <Input
+                    value={editingItem.barcode_2 || ""}
+                    onChange={(e) => setEditingItem({ ...editingItem, barcode_2: e.target.value })}
+                    placeholder="Escanear código secundario..."
+                    className="h-11 mt-1 font-mono"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Segunda etiqueta (opcional)</p>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
