@@ -842,120 +842,395 @@ export default function Returns() {
     return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
   };
 
-  return (
-    <div className="p-6 lg:p-8" data-testid="returns-page">
-      <h1 className="text-3xl font-bold text-slate-900 mb-6" style={{ fontFamily: 'Plus Jakarta Sans' }}>
-        Devoluciones
-      </h1>
+  // Marcar TODOS los items pendientes como listos para devolver
+  const markAllForReturn = () => {
+    if (!rental) return;
+    const allPendingBarcodes = rental.items
+      .filter(i => !i.returned)
+      .map(i => i.barcode);
+    setScannedBarcodes(allPendingBarcodes);
+    toast.success(`${allPendingBarcodes.length} artículos marcados para devolver`);
+  };
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Scanner Input */}
-        <div className="lg:col-span-12">
-          <Card className="border-slate-200">
-            <CardContent className="pt-6">
-              <div className="flex gap-4 items-center">
-                <div className="relative flex-1">
-                  <Barcode className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-400" />
-                  <Input
-                    ref={barcodeRef}
-                    placeholder="Escanear o introducir código manualmente y presionar Enter..."
-                    value={barcodeInput}
-                    onChange={(e) => setBarcodeInput(e.target.value)}
-                    onKeyDown={handleBarcodeScan}
-                    className="h-14 pl-12 text-xl font-mono"
-                    data-testid="return-barcode-input"
-                  />
-                </div>
-                {rental && (
-                  <Button variant="outline" onClick={resetForm} className="h-14 px-6">
-                    <X className="h-5 w-5 mr-2" />
-                    Cancelar
-                  </Button>
-                )}
-              </div>
-              <p className="text-sm text-slate-500 mt-2 ml-12">
-                Puedes escanear o escribir el código manualmente
-              </p>
+  // Calcular si todos están listos
+  const allItemsReady = rental && toReturnItems.length > 0 && pendingItems.length === 0;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100" data-testid="returns-page">
+      
+      {/* ============================================== */}
+      {/* ZONA SUPERIOR: MOSTRADOR DE RECEPCIÓN         */}
+      {/* ============================================== */}
+      <div className="bg-white border-b-2 border-slate-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          
+          {/* TÍTULO Y CAMPO DE BÚSQUEDA CENTRAL */}
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-black text-slate-900 mb-2 flex items-center justify-center gap-3" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+              <ArrowDownToLine className="h-8 w-8 text-emerald-600" />
+              Mostrador de Recepción
+            </h1>
+            <p className="text-slate-500">Escanea cualquier código de barras para cargar el contrato</p>
+          </div>
+          
+          {/* CAMPO DE ESCANEO GRANDE Y CENTRADO */}
+          <div className="max-w-2xl mx-auto mb-6">
+            <div className="relative">
+              <Scan className="absolute left-5 top-1/2 -translate-y-1/2 h-7 w-7 text-emerald-500" />
+              <Input
+                ref={barcodeRef}
+                placeholder="🔫 Escanear código de barras..."
+                value={barcodeInput}
+                onChange={(e) => setBarcodeInput(e.target.value)}
+                onKeyDown={handleBarcodeScan}
+                className="h-16 pl-14 pr-6 text-xl font-mono text-center bg-emerald-50 border-2 border-emerald-200 focus:border-emerald-500 focus:ring-emerald-200 rounded-2xl shadow-inner"
+                data-testid="return-barcode-input"
+                autoFocus
+              />
               {loading && (
-                <div className="flex items-center justify-center py-4">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <Loader2 className="absolute right-5 top-1/2 -translate-y-1/2 h-6 w-6 animate-spin text-emerald-600" />
+              )}
+            </div>
+            <p className="text-center text-sm text-slate-400 mt-2">
+              Escanea o escribe el código y presiona Enter
+            </p>
+          </div>
+
+          {/* ======= ÁREA DE CONTRATO ACTIVO ======= */}
+          {rental && (
+            <div className="bg-slate-50 rounded-2xl p-6 border-2 border-slate-200 shadow-inner">
+              <div className="grid grid-cols-12 gap-6">
+                
+                {/* COLUMNA IZQUIERDA: FICHA DEL CLIENTE */}
+                <div className="col-span-4">
+                  <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm h-full">
+                    <div className="flex items-start gap-4">
+                      <Avatar className="h-16 w-16 border-2 border-emerald-200">
+                        <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xl font-bold">
+                          {rental.customer_name?.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg text-slate-900">{rental.customer_name}</h3>
+                        <p className="text-sm text-slate-500 font-mono">{rental.customer_dni}</p>
+                        <Badge variant="outline" className="mt-2 bg-emerald-50 text-emerald-700 border-emerald-200">
+                          Contrato #{rental.id?.substring(0, 8)}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    {/* Info Rápida del Contrato */}
+                    <div className="grid grid-cols-2 gap-3 mt-4">
+                      <div className="p-3 rounded-lg bg-slate-50 text-center">
+                        <Calendar className="h-4 w-4 mx-auto text-slate-400 mb-1" />
+                        <p className="text-xs text-slate-500">Período</p>
+                        <p className="font-bold text-slate-800">{rental.days} días</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-slate-50 text-center">
+                        <DollarSign className="h-4 w-4 mx-auto text-slate-400 mb-1" />
+                        <p className="text-xs text-slate-500">Total</p>
+                        <p className="font-bold text-slate-800">€{rental.total_amount?.toFixed(2)}</p>
+                      </div>
+                    </div>
+                    
+                    {/* Alerta de pago pendiente */}
+                    {rental.pending_amount > 0 && (
+                      <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
+                        <AlertTriangle className="h-5 w-5 text-red-500" />
+                        <span className="text-sm font-medium text-red-700">
+                          Pendiente: €{rental.pending_amount?.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* COLUMNA DERECHA: LISTADO DE ARTÍCULOS */}
+                <div className="col-span-8">
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    
+                    {/* Header con contador */}
+                    <div className="bg-slate-800 text-white px-5 py-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Package className="h-5 w-5" />
+                        <span className="font-bold">Artículos del Contrato</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Badge className="bg-emerald-500">
+                          {toReturnItems.length} listos
+                        </Badge>
+                        <Badge className="bg-slate-600">
+                          {pendingItems.length} pendientes
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    {/* Grid de Artículos */}
+                    <div className="p-4 grid grid-cols-2 gap-3 max-h-[280px] overflow-y-auto">
+                      {rental.items.filter(i => !i.returned).map((item, idx) => {
+                        const isScanned = scannedBarcodes.includes(item.barcode);
+                        return (
+                          <div 
+                            key={idx}
+                            onClick={() => {
+                              if (!isScanned) {
+                                setScannedBarcodes(prev => [...prev, item.barcode]);
+                                toast.success(`${item.item_type} marcado ✓`);
+                              }
+                            }}
+                            className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                              isScanned 
+                                ? 'bg-emerald-50 border-emerald-400 shadow-md ring-2 ring-emerald-200' 
+                                : 'bg-slate-50 border-slate-200 hover:border-slate-300 hover:bg-slate-100'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <p className={`font-bold ${isScanned ? 'text-emerald-800' : 'text-slate-700'}`}>
+                                  {item.item_type || 'Artículo'}
+                                </p>
+                                <p className="text-xs font-mono text-slate-500 mt-1">
+                                  {item.internal_code || item.barcode}
+                                </p>
+                                {item.brand && (
+                                  <p className="text-xs text-slate-400 mt-1">{item.brand} {item.model}</p>
+                                )}
+                              </div>
+                              <div className={`p-2 rounded-full ${
+                                isScanned 
+                                  ? 'bg-emerald-500 text-white' 
+                                  : 'bg-slate-200 text-slate-400'
+                              }`}>
+                                {isScanned ? <Check className="h-5 w-5" /> : <Package className="h-5 w-5" />}
+                              </div>
+                            </div>
+                            {isScanned && (
+                              <div className="mt-2 flex items-center gap-1 text-emerald-600">
+                                <CheckCircle className="h-4 w-4" />
+                                <span className="text-xs font-semibold">LISTO PARA DEVOLVER</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* ======= BOTONERA DE ACCIÓN RÁPIDA ======= */}
+              <div className="flex items-center justify-center gap-4 mt-6 pt-6 border-t border-slate-300">
+                {/* Devolución Masiva */}
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={markAllForReturn}
+                  className="h-14 px-6 border-2 border-blue-300 text-blue-700 hover:bg-blue-50 font-semibold"
+                  disabled={pendingItems.length === 0}
+                >
+                  <CheckCheck className="h-5 w-5 mr-2" />
+                  Marcar TODO ({rental.items.filter(i => !i.returned).length})
+                </Button>
+                
+                {/* Cambio/Sustitución */}
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={() => openChangeModal(rental)}
+                  className="h-14 px-6 border-2 border-orange-300 text-orange-700 hover:bg-orange-50 font-semibold"
+                >
+                  <ArrowLeftRight className="h-5 w-5 mr-2" />
+                  Cambio/Sustitución
+                </Button>
+                
+                {/* Procesar Devolución */}
+                <Button 
+                  size="lg"
+                  onClick={processQuickReturn}
+                  disabled={toReturnItems.length === 0 || processing}
+                  className={`h-14 px-8 font-bold text-lg ${
+                    allItemsReady 
+                      ? 'bg-emerald-600 hover:bg-emerald-700 animate-pulse' 
+                      : 'bg-emerald-600 hover:bg-emerald-700'
+                  }`}
+                >
+                  {processing ? (
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  ) : (
+                    <PackageCheck className="h-5 w-5 mr-2" />
+                  )}
+                  PROCESAR DEVOLUCIÓN ({toReturnItems.length})
+                </Button>
+                
+                {/* Cancelar */}
+                <Button 
+                  variant="ghost" 
+                  size="lg"
+                  onClick={resetForm}
+                  className="h-14 px-6 text-slate-500 hover:text-slate-700"
+                >
+                  <X className="h-5 w-5 mr-2" />
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ============================================== */}
+      {/* ZONA INFERIOR: COLAS DE TRABAJO               */}
+      {/* ============================================== */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* TABLA 1: PENDIENTES DE HOY (Prioridad Alta) */}
+          <Card className="border-2 border-red-200 shadow-lg overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-red-500 to-red-600 text-white py-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  PENDIENTES DE HOY
+                </CardTitle>
+                <Badge className="bg-white text-red-600 font-bold text-lg px-3">
+                  {pendingReturns.today?.length || 0}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              {pendingReturns.today?.length > 0 ? (
+                <div className="divide-y divide-slate-100 max-h-[400px] overflow-y-auto">
+                  {pendingReturns.today.map((r, idx) => (
+                    <div 
+                      key={r.id || idx}
+                      onClick={() => quickReturn(r.id, r.customer_name)}
+                      className="p-4 hover:bg-red-50 cursor-pointer transition-colors flex items-center justify-between group"
+                    >
+                      <div className="flex items-center gap-4">
+                        <Avatar className="h-12 w-12 border-2 border-red-200">
+                          <AvatarFallback className="bg-red-100 text-red-700 font-bold">
+                            {r.customer_name?.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-bold text-slate-900">{r.customer_name}</p>
+                          <div className="flex items-center gap-2 text-sm text-slate-500">
+                            <Package className="h-3 w-3" />
+                            <span>{r.pending_items?.length || r.items?.filter(i => !i.returned).length || '?'} artículos</span>
+                            <span className="text-slate-300">•</span>
+                            <span>€{r.total_amount?.toFixed(2)}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                          HOY
+                        </Badge>
+                        <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-red-500 transition-colors" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 text-center text-slate-400">
+                  <CheckCircle className="h-12 w-12 mx-auto mb-3 text-emerald-300" />
+                  <p className="font-medium">¡Sin devoluciones pendientes hoy!</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          
+          {/* TABLA 2: RESTO DE DEVOLUCIONES (Futuras y Atrasadas) */}
+          <Card className="border-2 border-slate-200 shadow-lg overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-slate-700 to-slate-800 text-white py-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  OTRAS DEVOLUCIONES
+                </CardTitle>
+                <Badge className="bg-white text-slate-700 font-bold text-lg px-3">
+                  {pendingReturns.other_days?.length || 0}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              {pendingReturns.other_days?.length > 0 ? (
+                <div className="divide-y divide-slate-100 max-h-[400px] overflow-y-auto">
+                  {pendingReturns.other_days.map((r, idx) => {
+                    const endDate = new Date(r.end_date);
+                    const today = new Date();
+                    today.setHours(0,0,0,0);
+                    endDate.setHours(0,0,0,0);
+                    const isOverdue = endDate < today;
+                    
+                    return (
+                      <div 
+                        key={r.id || idx}
+                        onClick={() => quickReturn(r.id, r.customer_name)}
+                        className={`p-4 cursor-pointer transition-colors flex items-center justify-between group ${
+                          isOverdue ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-slate-50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <Avatar className={`h-12 w-12 border-2 ${isOverdue ? 'border-red-300' : 'border-slate-200'}`}>
+                            <AvatarFallback className={`font-bold ${isOverdue ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600'}`}>
+                              {r.customer_name?.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-bold text-slate-900">{r.customer_name}</p>
+                            <div className="flex items-center gap-2 text-sm text-slate-500">
+                              <Package className="h-3 w-3" />
+                              <span>{r.pending_items?.length || r.items?.filter(i => !i.returned).length || '?'} artículos</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Badge variant="outline" className={`${
+                            isOverdue 
+                              ? 'bg-red-100 text-red-700 border-red-300' 
+                              : 'bg-blue-50 text-blue-700 border-blue-200'
+                          }`}>
+                            {isOverdue ? '⚠️ ATRASADO' : formatDate(r.end_date)}
+                          </Badge>
+                          <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-slate-500 transition-colors" />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="p-8 text-center text-slate-400">
+                  <Calendar className="h-12 w-12 mx-auto mb-3 text-slate-300" />
+                  <p className="font-medium">Sin otras devoluciones programadas</p>
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
-
-        {rental && (
-          <>
-            {/* Customer Info */}
-            <div className="lg:col-span-4">
-              <Card className="border-slate-200 h-full">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <User className="h-5 w-5 text-slate-500" />
-                    Cliente
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-4 rounded-xl bg-slate-50">
-                    <p className="font-semibold text-lg text-slate-900">{rental.customer_name}</p>
-                    <p className="text-slate-500 font-mono">{rental.customer_dni}</p>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 rounded-lg bg-slate-50">
-                      <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
-                        <Calendar className="h-4 w-4" />
-                        Período
-                      </div>
-                      <p className="font-medium text-slate-900">
-                        {rental.days} {rental.days === 1 ? 'día' : 'días'}
-                      </p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-50">
-                      <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
-                        <DollarSign className="h-4 w-4" />
-                        Pendiente
-                      </div>
-                      <p className={`font-medium ${rental.pending_amount > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-                        €{rental.pending_amount.toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Rental Info Summary */}
-                  <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-blue-700 font-medium">Total alquiler</span>
-                      <span className="font-bold text-blue-900">€{rental.total_amount.toFixed(2)}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-blue-700">Pagado</span>
-                      <span className="font-semibold text-blue-800">€{rental.paid_amount.toFixed(2)}</span>
-                    </div>
-                  </div>
-
-                  {rental.pending_amount > 0 && (
-                    <div className="p-3 rounded-lg bg-red-50 flex items-center gap-2">
-                      <AlertTriangle className="h-5 w-5 text-red-500" />
-                      <span className="text-red-700 font-medium">Pago pendiente</span>
-                    </div>
-                  )}
-
-                  {/* Refund Button */}
-                  {rental.status !== 'returned' && maxRefundDays > 0 && rental.paid_amount > 0 && (
-                    <Button 
-                      variant="outline" 
-                      className="w-full border-orange-300 text-orange-700 hover:bg-orange-50"
-                      onClick={openRefundDialog}
-                      data-testid="refund-btn"
-                    >
-                      <Banknote className="h-4 w-4 mr-2" />
-                      Reembolso Parcial ({maxRefundDays} día{maxRefundDays !== 1 ? 's' : ''} disponible{maxRefundDays !== 1 ? 's' : ''})
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
+        
+        {/* Filtro por tipo */}
+        <div className="mt-6 flex items-center gap-4">
+          <Filter className="h-5 w-5 text-slate-400" />
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Filtrar por tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Todos los tipos</SelectItem>
+              {itemTypes.map(type => (
+                <SelectItem key={type} value={type}>{type}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {typeFilter && (
+            <Button variant="ghost" size="sm" onClick={() => setTypeFilter("")}>
+              <X className="h-4 w-4 mr-1" />
+              Limpiar filtro
+            </Button>
+          )}
+        </div>
+      </div>
             </div>
 
             {/* Items Status */}
