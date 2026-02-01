@@ -1557,6 +1557,16 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                       />
                     </div>
                     <div>
+                      <Label className="text-sm">Cód. Barras 2</Label>
+                      <Input
+                        value={newItem.barcode_2}
+                        onChange={(e) => setNewItem({ ...newItem, barcode_2: e.target.value })}
+                        placeholder="Escanear código secundario..."
+                        className="h-10 mt-1 font-mono text-sm"
+                        data-testid="new-item-barcode-2"
+                      />
+                    </div>
+                    <div>
                       <Label className="text-sm">Nº Serie</Label>
                       <Input
                         value={newItem.serial_number}
