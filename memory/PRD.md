@@ -233,6 +233,23 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - Historial de últimos 10 alquileres en tabla
   - Advertencia si falta coste de compra
 
+### 10. Módulo de Devoluciones (REDISEÑO TOTAL 2026-02-01)
+- ✅ **NUEVO DISEÑO: "Mostrador de Recepción"**
+- ✅ **Zona Superior - Área Activa:**
+  - Campo de escaneo grande y centrado con fondo verde esmeralda
+  - Al escanear/seleccionar contrato se carga:
+    - Ficha del Cliente (izquierda): Avatar, nombre, DNI, período, total
+    - Listado de Artículos (derecha): Grid de tarjetas clicables
+  - Estados visuales: GRIS (pendiente) → VERDE (escaneado/listo)
+  - Botonera: "Marcar TODO", "Cambio/Sustitución", "PROCESAR DEVOLUCIÓN", "Cancelar"
+- ✅ **Zona Inferior - Colas de Trabajo:**
+  - TABLA 1: PENDIENTES DE HOY (rojo, prioridad alta)
+  - TABLA 2: OTRAS DEVOLUCIONES (gris, con badges ATRASADO en rojo)
+  - Click en cliente carga contrato en zona activa (no procesa directamente)
+- ✅ **Flujo UX optimizado:**
+  - Escanear → ¡Pum! Aparece cliente y artículos
+  - Click/escanear items → Se ponen verdes
+  - Click "Procesar Devolución" → Finaliza
 ---
 
 ## Arquitectura Técnica
