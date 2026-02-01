@@ -1307,6 +1307,55 @@ async def update_item_status(item_id: str, status: str = Query(...), current_use
         raise HTTPException(status_code=404, detail="Item not found")
     return {"message": "Status updated"}
 
+@api_router.post("/items/{item_id}/complete-maintenance")
+async def complete_item_maintenance(item_id: str, current_user: dict = Depends(get_current_user)):
+    """
+    Complete maintenance for an item - RESETS ALL USAGE COUNTERS
+    
+    This endpoint:
+    1. Resets days_used to 0
+    2. Sets status to 'available'
+    3. Records the maintenance completion
+    
+    Returns the updated item data.
+    """
+    # Find the item
+    item = await db.items.find_one({"id": item_id})
+    if not item:
+        raise HTTPException(status_code=404, detail="Artículo no encontrado")
+    
+    # Get current values for logging
+    old_days_used = item.get("days_used", 0)
+    old_status = item.get("status", "unknown")
+    
+    # Update the item: RESET ALL COUNTERS
+    update_doc = {
+        "days_used": 0,  # CRITICAL: Reset usage counter to 0
+        "status": "available",  # Set status to available
+        "last_maintenance_date": datetime.now(timezone.utc).isoformat(),
+        "last_maintenance_by": current_user.get("username", "system")
+    }
+    
+    result = await db.items.update_one({"id": item_id}, {"$set": update_doc})
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=500, detail="Error al actualizar el artículo")
+    
+    # Get the updated item
+    updated_item = await db.items.find_one({"id": item_id}, {"_id": 0})
+    
+    return {
+        "success": True,
+        "message": f"Mantenimiento completado. Contadores reseteados a 0.",
+        "item": updated_item,
+        "reset_info": {
+            "previous_days_used": old_days_used,
+            "previous_status": old_status,
+            "new_days_used": 0,
+            "new_status": "available"
+        }
+    }
+
 @api_router.post("/items/bulk")
 async def create_items_bulk(data: BulkItemCreate, current_user: dict = Depends(get_current_user)):
     """Create multiple items at once"""
