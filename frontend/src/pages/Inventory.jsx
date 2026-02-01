@@ -43,6 +43,7 @@ const CATEGORY_OPTIONS = [
 const ALL_COLUMNS = [
   { id: "internal_code", label: "Código/Nombre", width: "w-32", required: true },
   { id: "barcode", label: "Cód. Barras", width: "w-28" },
+  { id: "barcode_2", label: "C. Barras 2", width: "w-28" },
   { id: "serial_number", label: "Nº Serie", width: "w-28" },
   { id: "item_type", label: "Tipo", width: "w-24" },
   { id: "brand_model", label: "Marca / Modelo", width: "w-40" },
@@ -59,7 +60,7 @@ const ALL_COLUMNS = [
   { id: "purchase_date", label: "F. Compra", width: "w-24" },
 ];
 
-const DEFAULT_VISIBLE_COLUMNS = ["internal_code", "barcode", "item_type", "brand_model", "size", "status", "stock", "days_used", "maintenance"];
+const DEFAULT_VISIBLE_COLUMNS = ["internal_code", "barcode", "barcode_2", "item_type", "brand_model", "size", "status", "stock", "days_used", "maintenance"];
 const DEFAULT_COLUMN_ORDER = ALL_COLUMNS.map(c => c.id);
 
 // Sortable Header Component
