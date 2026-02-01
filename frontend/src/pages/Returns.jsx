@@ -1219,7 +1219,7 @@ export default function Returns() {
             <SelectContent>
               <SelectItem value="all">Todos los tipos</SelectItem>
               {itemTypes.map(type => (
-                <SelectItem key={type} value={type}>{type}</SelectItem>
+                <SelectItem key={type.id || type.value} value={type.value}>{type.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
