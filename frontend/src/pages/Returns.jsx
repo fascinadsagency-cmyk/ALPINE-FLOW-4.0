@@ -2270,6 +2270,148 @@ export default function Returns() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ============ MODAL DE LIQUIDACIÓN (Settlement) ============ */}
+      <Dialog open={showSettlementModal} onOpenChange={setShowSettlementModal}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              {settlementData.balance > 0 ? (
+                <>
+                  <AlertTriangle className="h-6 w-6 text-orange-500" />
+                  Saldo Pendiente a Cobrar
+                </>
+              ) : settlementData.balance < 0 ? (
+                <>
+                  <ArrowDownToLine className="h-6 w-6 text-emerald-500" />
+                  Reembolso al Cliente
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-6 w-6 text-blue-500" />
+                  Confirmar Devolución
+                </>
+              )}
+            </DialogTitle>
+            <DialogDescription>
+              {settlementData.balanceReason}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Resumen del Cálculo */}
+            <div className="bg-slate-50 rounded-lg p-4 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-600">Días contratados:</span>
+                <span className="font-medium">{settlementData.daysPaid} días</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-600">Días usados:</span>
+                <span className={`font-medium ${settlementData.daysUsed > settlementData.daysPaid ? 'text-orange-600' : settlementData.daysUsed < settlementData.daysPaid ? 'text-emerald-600' : ''}`}>
+                  {settlementData.daysUsed} días
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-600">Precio/día:</span>
+                <span className="font-medium">€{settlementData.pricePerDay?.toFixed(2)}</span>
+              </div>
+              <Separator className="my-2" />
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-600">Pagado inicialmente:</span>
+                <span className="font-medium">€{settlementData.totalPaid?.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-600">Valor servicio usado:</span>
+                <span className="font-medium">€{settlementData.serviceUsed?.toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* Resultado Final */}
+            <div className={`rounded-lg p-4 text-center ${
+              settlementData.balance > 0 ? 'bg-orange-50 border-2 border-orange-200' :
+              settlementData.balance < 0 ? 'bg-emerald-50 border-2 border-emerald-200' :
+              'bg-blue-50 border-2 border-blue-200'
+            }`}>
+              <p className="text-sm text-slate-600 mb-1">
+                {settlementData.balance > 0 ? 'El cliente debe pagar:' :
+                 settlementData.balance < 0 ? 'Importe a devolver:' : 'Saldo:'}
+              </p>
+              <p className={`text-3xl font-bold ${
+                settlementData.balance > 0 ? 'text-orange-600' :
+                settlementData.balance < 0 ? 'text-emerald-600' :
+                'text-blue-600'
+              }`}>
+                {settlementData.balance > 0 ? '+' : ''}€{Math.abs(settlementData.balance).toFixed(2)}
+              </p>
+            </div>
+
+            {/* Selector de Método de Pago */}
+            {settlementData.balance !== 0 && (
+              <div className="space-y-2">
+                <Label>Método de {settlementData.balance > 0 ? 'cobro' : 'reembolso'}</Label>
+                <div className="flex gap-2">
+                  <Button
+                    variant={settlementData.paymentMethod === 'cash' ? 'default' : 'outline'}
+                    className={`flex-1 ${settlementData.paymentMethod === 'cash' ? 'bg-emerald-600' : ''}`}
+                    onClick={() => setSettlementData(prev => ({ ...prev, paymentMethod: 'cash' }))}
+                  >
+                    <Banknote className="h-4 w-4 mr-2" />
+                    Efectivo
+                  </Button>
+                  <Button
+                    variant={settlementData.paymentMethod === 'card' ? 'default' : 'outline'}
+                    className={`flex-1 ${settlementData.paymentMethod === 'card' ? 'bg-blue-600' : ''}`}
+                    onClick={() => setSettlementData(prev => ({ ...prev, paymentMethod: 'card' }))}
+                    disabled={settlementData.balance < 0 && settlementData.originalPaymentMethod !== 'card'}
+                  >
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Tarjeta
+                  </Button>
+                </div>
+                {settlementData.balance < 0 && settlementData.originalPaymentMethod === 'cash' && (
+                  <p className="text-xs text-amber-600 flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3" />
+                    El pago original fue en efectivo - el reembolso debe ser en efectivo
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Items a devolver */}
+            <div className="text-sm text-slate-500">
+              <span className="font-medium">{settlementData.itemsToReturn?.length || 0} artículo(s)</span> serán marcados como devueltos
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowSettlementModal(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={confirmSettlement}
+              disabled={settlementProcessing}
+              className={`min-w-[160px] ${
+                settlementData.balance > 0 ? 'bg-orange-600 hover:bg-orange-700' :
+                settlementData.balance < 0 ? 'bg-emerald-600 hover:bg-emerald-700' :
+                'bg-blue-600 hover:bg-blue-700'
+              }`}
+            >
+              {settlementProcessing ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : settlementData.balance > 0 ? (
+                <CreditCard className="h-4 w-4 mr-2" />
+              ) : settlementData.balance < 0 ? (
+                <Banknote className="h-4 w-4 mr-2" />
+              ) : (
+                <Check className="h-4 w-4 mr-2" />
+              )}
+              {settlementData.balance > 0 ? `Cobrar €${settlementData.balance.toFixed(2)}` :
+               settlementData.balance < 0 ? `Devolver €${Math.abs(settlementData.balance).toFixed(2)}` :
+               'Confirmar Devolución'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
