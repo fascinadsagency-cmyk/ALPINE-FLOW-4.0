@@ -257,18 +257,26 @@ export default function Maintenance() {
   const markMaintenanceComplete = async (item) => {
     setProcessingItem(item.id);
     try {
-      // Reset days_used to 0
-      await axios.put(`${API}/items/${item.id}`, {
-        ...item,
-        days_used: 0
-      }, {
+      // Call the new complete-maintenance endpoint that resets all counters
+      const response = await axios.post(`${API}/items/${item.id}/complete-maintenance`, {}, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       
-      toast.success(`${item.brand} ${item.model} - Puesta a punto completada`);
-      loadData();
+      // IMMEDIATELY remove the item from the local lists (visual update)
+      setAlertItems(prev => prev.filter(i => i.id !== item.id));
+      setUpcomingItems(prev => prev.filter(i => i.id !== item.id));
+      
+      // Show success message with reset info
+      const resetInfo = response.data.reset_info;
+      toast.success(
+        `✅ ${item.brand} ${item.model} - Puesta a punto completada. ` +
+        `Contadores reseteados (${resetInfo.previous_days_used} → 0 días)`
+      );
+      
     } catch (error) {
-      toast.error("Error al actualizar el artículo");
+      toast.error(error.response?.data?.detail || "Error al completar mantenimiento");
+      // Reload data in case of error to sync UI with backend
+      loadData();
     } finally {
       setProcessingItem(null);
     }
