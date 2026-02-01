@@ -1224,7 +1224,7 @@ export default function Returns() {
             </SelectContent>
           </Select>
           {typeFilter && (
-            <Button variant="ghost" size="sm" onClick={() => setTypeFilter("")}>
+            <Button variant="ghost" size="sm" onClick={() => setTypeFilter("all")}>
               <X className="h-4 w-4 mr-1" />
               Limpiar filtro
             </Button>
