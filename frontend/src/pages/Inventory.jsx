@@ -1284,6 +1284,8 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                           );
                         case 'barcode':
                           return item.is_generic ? <span className="text-xs text-slate-400">N/A</span> : <span className="font-mono text-xs text-slate-500">{item.barcode || '-'}</span>;
+                        case 'barcode_2':
+                          return item.is_generic ? <span className="text-xs text-slate-400">N/A</span> : <span className="font-mono text-xs text-slate-500">{item.barcode_2 || '-'}</span>;
                         case 'serial_number':
                           return item.is_generic ? <span className="text-xs text-slate-400">N/A</span> : <span className="font-mono text-xs text-slate-500">{item.serial_number || '-'}</span>;
                         case 'item_type':
