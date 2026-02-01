@@ -90,6 +90,7 @@ class CustomerResponse(BaseModel):
 
 class ItemCreate(BaseModel):
     barcode: Optional[str] = ""  # Optional for generic items
+    barcode_2: Optional[str] = ""  # Secondary barcode
     internal_code: Optional[str] = ""  # Optional for generic items
     serial_number: Optional[str] = ""  # Manufacturer serial number
     item_type: str  # Required - type from custom types
@@ -120,6 +121,7 @@ class ItemResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
     barcode: str = ""
+    barcode_2: str = ""  # Secondary barcode
     internal_code: str = ""  # Internal shop code (main identifier)
     serial_number: str = ""  # Manufacturer serial number
     item_type: str
