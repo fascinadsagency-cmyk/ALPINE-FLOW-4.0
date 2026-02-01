@@ -217,19 +217,21 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
 ### 8. Integraciones Futuras
 - ⏳ VeriFactu, WhatsApp, TPV, Email, Google Calendar
 
-### 9. Inventario y Rentabilidad (NUEVO 2026-02-01)
+### 9. Inventario y Rentabilidad (ACTUALIZADO 2026-02-01)
 - ✅ **Gestión de Inventario**: CRUD completo de artículos
 - ✅ **Modo Rentabilidad Global**: Toggle que muestra métricas de todos los productos
-- ✅ **MODAL DE RENTABILIDAD INDIVIDUAL:**
-  - Nuevo endpoint `GET /items/{item_id}/profitability`
-  - Botón de gráfica (BarChart3) en cada fila del inventario
-  - 3 KPIs: Coste Inversión (rojo), Ingresos Totales (verde), Beneficio Neto (+/-)
-  - Barra de progreso de amortización con mensaje:
-    - Si < 100%: "Faltan €X para amortizar"
-    - Si >= 100%: "¡AMORTIZADO! Generando beneficios puros"
-  - Historial de últimos 10 alquileres del producto
-  - Advertencia si no tiene coste de compra registrado
-  - Cálculo: ROI = (Ingresos / Coste) × 100
+- ✅ **DASHBOARD VISUAL DE RENTABILIDAD (RECHARTS):**
+  - Modal grande (`max-w-4xl`) con gráficos interactivos
+  - **4 KPIs en tarjetas**: ROI Actual, Inversión, Ingresos, Beneficio Neto
+  - **GRÁFICO DE LÍNEA (Curva de Amortización)**:
+    - Línea ROJA horizontal: Coste de Inversión (punto de equilibrio)
+    - Línea VERDE ascendente + área: Ingresos Acumulados
+    - Tooltip interactivo con valores
+    - Leyenda y ejes etiquetados
+  - Barra de progreso hacia el punto de equilibrio
+  - Mensaje dinámico: "¡AMORTIZADO!" o "Faltan €X para recuperar"
+  - Historial de últimos 10 alquileres en tabla
+  - Advertencia si falta coste de compra
 
 ---
 
