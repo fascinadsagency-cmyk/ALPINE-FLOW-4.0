@@ -1316,22 +1316,167 @@ async def create_item_type(item_type: ItemTypeCreate, current_user: dict = Depen
     return ItemTypeResponse(**doc)
 
 @api_router.delete("/item-types/{type_id}")
-async def delete_item_type(type_id: str, current_user: dict = Depends(get_current_user)):
-    """Delete a custom item type"""
+async def delete_item_type(
+    type_id: str, 
+    force: bool = Query(False, description="Forzar eliminación incluyendo artículos archivados/retirados"),
+    reassign_to: str = Query(None, description="Reasignar artículos activos a este tipo antes de eliminar"),
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete a custom item type with smart handling of linked items"""
     item_type = await db.item_types.find_one({"id": type_id})
     if not item_type:
         raise HTTPException(status_code=404, detail="Tipo de artículo no encontrado")
     
-    # Check if any items use this type
-    items_count = await db.items.count_documents({"item_type": item_type["value"]})
-    if items_count > 0:
+    type_value = item_type["value"]
+    
+    # Count items by status
+    total_items = await db.items.count_documents({"item_type": type_value})
+    active_items = await db.items.count_documents({
+        "item_type": type_value,
+        "status": {"$in": ["available", "rented", "maintenance"]}
+    })
+    ghost_items = await db.items.count_documents({
+        "item_type": type_value,
+        "status": {"$in": ["retired", "deleted", "archived"]},
+    })
+    soft_deleted = await db.items.count_documents({
+        "item_type": type_value,
+        "deleted_at": {"$exists": True, "$ne": None}
+    })
+    
+    # Case 1: No items at all - delete directly
+    if total_items == 0:
+        await db.item_types.delete_one({"id": type_id})
+        # Also delete associated tariff
+        await db.tariffs.delete_one({"item_type": type_value})
+        return {"message": "Tipo eliminado correctamente", "deleted_tariff": True}
+    
+    # Case 2: Only ghost/retired items and force=True - clean them up
+    if force and active_items == 0 and ghost_items > 0:
+        # Delete ghost items permanently
+        await db.items.delete_many({
+            "item_type": type_value,
+            "status": {"$in": ["retired", "deleted", "archived"]}
+        })
+        # Delete soft-deleted items
+        await db.items.delete_many({
+            "item_type": type_value,
+            "deleted_at": {"$exists": True, "$ne": None}
+        })
+        # Now delete the type
+        await db.item_types.delete_one({"id": type_id})
+        await db.tariffs.delete_one({"item_type": type_value})
+        return {
+            "message": f"Tipo eliminado. Se eliminaron {ghost_items + soft_deleted} artículos fantasma.",
+            "deleted_ghost_items": ghost_items + soft_deleted
+        }
+    
+    # Case 3: Active items exist but reassign_to is provided
+    if active_items > 0 and reassign_to:
+        # Verify target type exists
+        target_type = await db.item_types.find_one({"value": reassign_to})
+        if not target_type:
+            raise HTTPException(status_code=400, detail=f"El tipo de destino '{reassign_to}' no existe")
+        
+        # Reassign active items
+        await db.items.update_many(
+            {"item_type": type_value, "status": {"$in": ["available", "rented", "maintenance"]}},
+            {"$set": {"item_type": reassign_to}}
+        )
+        
+        # Delete ghost items if force=True
+        if force:
+            await db.items.delete_many({
+                "item_type": type_value,
+                "status": {"$in": ["retired", "deleted", "archived"]}
+            })
+        
+        # Delete the type
+        await db.item_types.delete_one({"id": type_id})
+        await db.tariffs.delete_one({"item_type": type_value})
+        return {
+            "message": f"Tipo eliminado. {active_items} artículos reasignados a '{reassign_to}'.",
+            "reassigned": active_items
+        }
+    
+    # Case 4: Active items exist and no reassignment - block with detailed info
+    if active_items > 0:
         raise HTTPException(
             status_code=400,
-            detail=f"No se puede eliminar este tipo porque {items_count} artículos lo están usando. Reasígnalos primero."
+            detail={
+                "error": f"No se puede eliminar: hay {active_items} artículos activos usando este tipo.",
+                "total_items": total_items,
+                "active_items": active_items,
+                "ghost_items": ghost_items,
+                "soft_deleted": soft_deleted,
+                "suggestion": "Usa ?force=true para eliminar artículos fantasma, o ?reassign_to=OTRO_TIPO para reasignar los activos."
+            }
         )
     
-    await db.item_types.delete_one({"id": type_id})
-    return {"message": "Tipo eliminado correctamente"}
+    # Case 5: Only ghost items but force=False - require confirmation
+    raise HTTPException(
+        status_code=400,
+        detail={
+            "error": f"Hay {ghost_items + soft_deleted} artículos archivados/eliminados usando este tipo.",
+            "ghost_items": ghost_items,
+            "soft_deleted": soft_deleted,
+            "suggestion": "Usa ?force=true para eliminarlos automáticamente."
+        }
+    )
+
+@api_router.post("/item-types/{type_id}/cleanup")
+async def cleanup_item_type(type_id: str, current_user: dict = Depends(get_current_user)):
+    """Clean up ghost items for a type (retired, deleted, archived, soft-deleted)"""
+    item_type = await db.item_types.find_one({"id": type_id})
+    if not item_type:
+        raise HTTPException(status_code=404, detail="Tipo de artículo no encontrado")
+    
+    type_value = item_type["value"]
+    
+    # Delete ghost items
+    result1 = await db.items.delete_many({
+        "item_type": type_value,
+        "status": {"$in": ["retired", "deleted", "archived"]}
+    })
+    
+    # Delete soft-deleted items
+    result2 = await db.items.delete_many({
+        "item_type": type_value,
+        "deleted_at": {"$exists": True, "$ne": None}
+    })
+    
+    total_deleted = result1.deleted_count + result2.deleted_count
+    
+    return {
+        "message": f"Limpieza completada. {total_deleted} artículos fantasma eliminados.",
+        "deleted_retired": result1.deleted_count,
+        "deleted_soft": result2.deleted_count
+    }
+
+@api_router.post("/items/cleanup-orphans")
+async def cleanup_orphan_items(current_user: dict = Depends(get_current_user)):
+    """Find and clean up items with types that no longer exist"""
+    # Get all valid type values
+    valid_types = await db.item_types.distinct("value")
+    
+    # Find items with invalid types
+    orphan_items = await db.items.find(
+        {"item_type": {"$nin": valid_types}},
+        {"_id": 0, "id": 1, "item_type": 1, "barcode": 1, "status": 1}
+    ).to_list(1000)
+    
+    if not orphan_items:
+        return {"message": "No se encontraron artículos huérfanos.", "orphans": []}
+    
+    # Get unique orphan types
+    orphan_types = list(set(i["item_type"] for i in orphan_items if i.get("item_type")))
+    
+    return {
+        "message": f"Encontrados {len(orphan_items)} artículos huérfanos con {len(orphan_types)} tipos inválidos.",
+        "orphan_types": orphan_types,
+        "orphan_count": len(orphan_items),
+        "sample_items": orphan_items[:10]
+    }
 
 @api_router.post("/item-types/migrate-legacy")
 async def migrate_legacy_types(current_user: dict = Depends(get_current_user)):
