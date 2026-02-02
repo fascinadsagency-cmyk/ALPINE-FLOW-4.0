@@ -76,6 +76,29 @@ export default function CashRegister() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   
+  // Privacy masking state - all hidden by default
+  const [visibleMetrics, setVisibleMetrics] = useState({
+    ingresos: false,
+    gastos: false,
+    balance: false,
+    efectivo: false,
+    tarjeta: false,
+    fondo: false
+  });
+  
+  // Toggle visibility of a specific metric
+  const toggleMetricVisibility = (metric) => {
+    setVisibleMetrics(prev => ({ ...prev, [metric]: !prev[metric] }));
+  };
+  
+  // Mask value helper
+  const maskValue = (value, isVisible) => {
+    if (isVisible) {
+      return typeof value === 'number' ? `€${value.toFixed(2)}` : value;
+    }
+    return '•••••';
+  };
+  
   // Dialog states
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showCloseDialog, setShowCloseDialog] = useState(false);
