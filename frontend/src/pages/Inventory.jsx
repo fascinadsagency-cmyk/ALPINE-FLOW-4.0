@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { itemApi } from "@/lib/api";
-import { Package, Plus, Search, Loader2, Upload, Download, Barcode, Copy, Check, AlertCircle, AlertTriangle, Edit2, Trash2, Printer, Tag, Zap, TrendingUp, TrendingDown, DollarSign, ArrowUpDown, BarChart3, FileSpreadsheet, CheckCircle, XCircle, ArrowRight, Settings2, GripVertical, Eye, EyeOff, RotateCcw, Calendar, Target, Activity } from "lucide-react";
+import { Package, Plus, Search, Loader2, Upload, Download, Barcode, Copy, Check, AlertCircle, AlertTriangle, Edit2, Trash2, Printer, Tag, Zap, TrendingUp, TrendingDown, DollarSign, ArrowUpDown, BarChart3, FileSpreadsheet, CheckCircle, XCircle, ArrowRight, Settings2, GripVertical, Eye, EyeOff, RotateCcw, Calendar, Target, Activity, Radio } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import JsBarcode from 'jsbarcode';
@@ -21,6 +21,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area, AreaChart } from 'recharts';
+import { useScannerListener } from "@/hooks/useScannerListener";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
