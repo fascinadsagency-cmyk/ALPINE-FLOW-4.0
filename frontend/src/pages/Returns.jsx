@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { rentalApi } from "@/lib/api";
 import { printTicket } from "@/lib/ticketGenerator";
 import axios from "axios";
+import { useScannerListener } from "@/hooks/useScannerListener";
 import { 
   RotateCcw, 
   Check, 
