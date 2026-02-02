@@ -180,8 +180,24 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - Fallback: Si movimiento antiguo no tiene items, se recuperan del alquiler original
   - Tickets de historial ahora idénticos a tickets nuevos
   - Campos: name, size, internal_code, days, subtotal
-
-### 5. Gestión de Datos
+- ✅ **PRINT SERVICE GLOBAL (NUEVO 2026-02-02):**
+  - **Archivo:** `/app/frontend/src/lib/printService.js`
+  - **Abstracción universal** invocable desde cualquier componente
+  - **Non-blocking:** El proceso de impresión no bloquea el hilo principal
+  - **Cola de impresión:** Múltiples tickets se encolan y procesan secuencialmente
+  - **Callbacks:** `onComplete` y `onError` para gestionar flujo post-impresión
+  - **Estilos @media print en App.css:** Garantizan formato 80mm desde cualquier ruta
+  - **Métodos disponibles:**
+    - `PrintService.print(options)` - Impresión genérica
+    - `PrintService.printRental(data)` - Ticket de alquiler
+    - `PrintService.printReturn(data)` - Ticket de devolución
+    - `PrintService.printSwap(data)` - Ticket de cambio
+    - `PrintService.printMovement(data)` - Movimiento de caja
+    - `PrintService.printClosing(data)` - Cierre de caja
+    - `PrintService.isPrinting()` - Verificar impresión activa
+    - `PrintService.clearQueue()` - Limpiar cola
+  - **Hook React:** `usePrintService()` para uso en componentes funcionales
+  - **Integrado en:** NewRental.jsx, Returns.jsx
 - ✅ **Importador Universal (CSV/Excel):** Para clientes e inventario
 
 ### 6. Configuración del Sistema (NUEVO 2026-01-30)
