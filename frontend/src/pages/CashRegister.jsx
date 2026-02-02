@@ -138,6 +138,23 @@ export default function CashRegister() {
   const [closureHistory, setClosureHistory] = useState([]);
   const [historicLoading, setHistoricLoading] = useState(false);
   const [revertClosureId, setRevertClosureId] = useState(null);
+  
+  // ============ HISTORIAL / BUSCADOR STATE ============
+  const [historySearch, setHistorySearch] = useState({
+    dateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days ago
+    dateTo: new Date().toISOString().split('T')[0],
+    query: "",
+    paymentMethod: "all"
+  });
+  const [historyResults, setHistoryResults] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historyTotal, setHistoryTotal] = useState(0);
+  const HISTORY_PAGE_SIZE = 20;
+  
+  // Detail modal for history
+  const [showHistoryDetailDialog, setShowHistoryDetailDialog] = useState(false);
+  const [selectedHistoryMovement, setSelectedHistoryMovement] = useState(null);
 
   useEffect(() => {
     loadData();
