@@ -384,9 +384,21 @@ export default function Tariffs() {
                 </p>
               </CardHeader>
               <CardContent>
+                {/* Tarifas de tipos existentes */}
                 {itemTypes.map((type) => (
-                  <div key={type.value} className="mb-6 last:mb-0">
-                    <h3 className="font-semibold text-slate-900 mb-3">{type.label}</h3>
+                  <div key={type.value} className="mb-6 last:mb-0 p-4 bg-slate-50 rounded-lg">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold text-slate-900">{type.label}</h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteTariff(type.value)}
+                        className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                        title="Eliminar tarifa"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((day) => (
                         <div key={day}>
@@ -417,6 +429,47 @@ export default function Tariffs() {
                     </div>
                   </div>
                 ))}
+                
+                {/* Tarifas huérfanas (sin tipo de item correspondiente) */}
+                {Object.keys(tariffs).filter(key => isOrphanedTariff(key)).length > 0 && (
+                  <div className="mt-8 border-t pt-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <AlertTriangle className="h-5 w-5 text-amber-500" />
+                      <h3 className="font-semibold text-amber-700">Tarifas Obsoletas (sin tipo de artículo)</h3>
+                    </div>
+                    <p className="text-sm text-amber-600 mb-4">
+                      Estas tarifas pertenecen a tipos de artículos que ya no existen. Puedes eliminarlas.
+                    </p>
+                    {Object.keys(tariffs).filter(key => isOrphanedTariff(key)).map((tariffKey) => (
+                      <div key={tariffKey} className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
+                              OBSOLETA
+                            </Badge>
+                            <h4 className="font-semibold text-amber-900">{tariffKey}</h4>
+                          </div>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => deleteTariff(tariffKey)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Eliminar
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-6 gap-2 text-sm text-amber-700">
+                          {[1, 2, 3, 4, 5, 6].map((day) => (
+                            <div key={day}>
+                              Día {day}: €{tariffs[tariffKey]?.[`day_${day}`] || 0}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
