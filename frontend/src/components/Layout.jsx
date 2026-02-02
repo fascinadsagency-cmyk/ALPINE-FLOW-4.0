@@ -64,13 +64,14 @@ export default function Layout() {
             </span>
           </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 space-y-1 p-4 overflow-y-auto">
+          {/* Navigation - tabindex=-1 to prevent Tab jumping to sidebar during form editing */}
+          <nav className="flex-1 space-y-1 p-4 overflow-y-auto" role="navigation" aria-label="Main navigation">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.to === "/"}
+                tabIndex={-1}
                 className={({ isActive }) =>
                   cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
@@ -82,7 +83,7 @@ export default function Layout() {
                   )
                 }
               >
-                <item.icon className="h-5 w-5" />
+                <item.icon className="h-5 w-5" aria-hidden="true" tabIndex={-1} />
                 {item.label}
               </NavLink>
             ))}
