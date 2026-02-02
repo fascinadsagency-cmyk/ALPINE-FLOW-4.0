@@ -1236,23 +1236,32 @@ export default function Returns() {
           {/* CAMPO DE ESCANEO GRANDE Y CENTRADO */}
           <div className="max-w-2xl mx-auto mb-6">
             <div className="relative">
-              <Scan className="absolute left-5 top-1/2 -translate-y-1/2 h-7 w-7 text-emerald-500" />
+              <Scan className={`absolute left-5 top-1/2 -translate-y-1/2 h-7 w-7 ${globalScannerActive ? 'text-emerald-600 animate-pulse' : 'text-emerald-500'}`} />
               <Input
                 ref={barcodeRef}
                 placeholder="🔫 Escanear código de barras..."
                 value={barcodeInput}
                 onChange={(e) => setBarcodeInput(e.target.value)}
                 onKeyDown={handleBarcodeScan}
-                className="h-16 pl-14 pr-6 text-xl font-mono text-center bg-emerald-50 border-2 border-emerald-200 focus:border-emerald-500 focus:ring-emerald-200 rounded-2xl shadow-inner"
+                className={`h-16 pl-14 pr-14 text-xl font-mono text-center bg-emerald-50 border-2 focus:ring-emerald-200 rounded-2xl shadow-inner transition-all ${
+                  globalScannerActive 
+                    ? 'border-emerald-500 ring-2 ring-emerald-300 bg-emerald-100' 
+                    : 'border-emerald-200 focus:border-emerald-500'
+                }`}
                 data-testid="return-barcode-input"
                 autoFocus
               />
               {loading && (
                 <Loader2 className="absolute right-5 top-1/2 -translate-y-1/2 h-6 w-6 animate-spin text-emerald-600" />
               )}
+              {globalScannerActive && !loading && (
+                <Radio className="absolute right-5 top-1/2 -translate-y-1/2 h-6 w-6 text-emerald-600 animate-pulse" />
+              )}
             </div>
-            <p className="text-center text-sm text-slate-400 mt-2">
-              Escanea o escribe el código y presiona Enter
+            <p className={`text-center text-sm mt-2 transition-colors ${globalScannerActive ? 'text-emerald-600 font-medium' : 'text-slate-400'}`}>
+              {globalScannerActive 
+                ? '📡 Escáner detectado - Listo para recibir códigos' 
+                : 'Escanea o escribe el código y presiona Enter'}
             </p>
           </div>
 
