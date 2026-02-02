@@ -2119,14 +2119,25 @@ export default function NewRental() {
                                 <Input
                                   type="number"
                                   min="1"
+                                  step="1"
                                   defaultValue={days}
-                                  className="h-7 w-16 text-center text-sm font-bold mx-auto"
+                                  className="h-7 w-16 text-center text-sm font-bold mx-auto border-2 border-blue-500 bg-blue-50"
                                   autoFocus
+                                  onClick={(e) => e.stopPropagation()}
                                   onKeyDown={(e) => {
-                                    if (e.key === 'Enter') updateItemDays(item.id || item.barcode, e.target.value);
-                                    if (e.key === 'Escape') setEditingItemDays(null);
+                                    e.stopPropagation(); // Prevent scanner from capturing
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      updateItemDays(item.id || item.barcode, e.target.value);
+                                    }
+                                    if (e.key === 'Escape') {
+                                      e.preventDefault();
+                                      setEditingItemDays(null);
+                                    }
                                   }}
                                   onBlur={(e) => updateItemDays(item.id || item.barcode, e.target.value)}
+                                  data-testid={`edit-days-${item.id || item.barcode}`}
+                                />
                                 />
                               ) : (
                                 <Badge 
