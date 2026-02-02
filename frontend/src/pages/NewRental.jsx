@@ -1603,16 +1603,34 @@ export default function NewRental() {
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <Input
-                      ref={searchRef}
+                      ref={(el) => {
+                        searchRef.current = el;
+                        customerSearchRef.current = el;
+                      }}
                       placeholder="Busca por nombre o DNI (mínimo 2 caracteres)..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      onKeyDown={handleKeyDown}
+                      onKeyDown={(e) => {
+                        // Tab navigation
+                        if (e.key === 'Tab' && !isEditingCartItem && !showSuggestions) {
+                          e.preventDefault();
+                          if (e.shiftKey) {
+                            focusPrevField('customer');
+                          } else {
+                            focusNextField('customer');
+                          }
+                          return;
+                        }
+                        // Normal handling (suggestions navigation)
+                        handleKeyDown(e);
+                      }}
                       onFocus={() => searchTerm.length >= 2 && setShowSuggestions(true)}
+                      tabIndex={2}
                       className="h-11 pr-10"
                       data-testid="customer-search-input"
                       autoFocus
                       disabled={!!customer}
+                      autoComplete="off"
                     />
                     {searchTerm && !customer && (
                       <button
@@ -1622,8 +1640,9 @@ export default function NewRental() {
                           searchRef.current?.focus();
                         }}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                        tabIndex={-1}
                       >
-                        <X className="h-4 w-4" />
+                        <X className="h-4 w-4" tabIndex={-1} aria-hidden="true" />
                       </button>
                     )}
                   </div>
@@ -1633,8 +1652,9 @@ export default function NewRental() {
                       disabled={searchLoading}
                       className="h-11 px-4"
                       data-testid="customer-search-btn"
+                      tabIndex={-1}
                     >
-                      {searchLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                      {searchLoading ? <Loader2 className="h-4 w-4 animate-spin" tabIndex={-1} aria-hidden="true" /> : <Search className="h-4 w-4" tabIndex={-1} aria-hidden="true" />}
                     </Button>
                   )}
                 </div>
@@ -1643,13 +1663,14 @@ export default function NewRental() {
                 {showSuggestions && customerSuggestions.length > 0 && !customer && (
                   <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-80 overflow-y-auto">
                     <div className="p-2">
-                      <p className="text-xs text-slate-500 px-2 py-1 mb-1">
+                      <p className="text-xs text-slate-500 px-2 py-1 mb-1" tabIndex={-1}>
                         {customerSuggestions.length} cliente(s) encontrado(s)
                       </p>
                       {customerSuggestions.map((suggestion, index) => (
                         <button
                           key={suggestion.id}
                           onClick={() => selectCustomer(suggestion)}
+                          tabIndex={-1}
                           className={`w-full text-left px-3 py-2.5 rounded-md transition-colors ${
                             index === selectedIndex 
                               ? 'bg-primary text-white' 
