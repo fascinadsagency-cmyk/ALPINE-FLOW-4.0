@@ -1887,7 +1887,7 @@ export default function NewRental() {
           <Card className="border-slate-200 border-primary/50">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-primary" />
+                <Calendar className="h-5 w-5 text-primary" tabIndex={-1} aria-hidden="true" />
                 Duración del Alquiler
               </CardTitle>
             </CardHeader>
@@ -1901,14 +1901,29 @@ export default function NewRental() {
                     min="1"
                     value={numDays}
                     onChange={(e) => handleNumDaysChange(e.target.value)}
-                    onKeyDown={handleDaysKeyDown}
+                    onKeyDown={(e) => {
+                      // Tab navigation
+                      if (e.key === 'Tab' && !isEditingCartItem) {
+                        e.preventDefault();
+                        if (e.shiftKey) {
+                          focusPrevField('days');
+                        } else {
+                          focusNextField('days');
+                        }
+                        return;
+                      }
+                      // Normal days handling
+                      handleDaysKeyDown(e);
+                    }}
+                    tabIndex={3}
                     className="h-14 text-3xl font-bold text-center w-24 border-primary/30"
                     data-testid="num-days-input"
+                    autoComplete="off"
                   />
-                  <div className="flex-1 text-center">
+                  <div className="flex-1 text-center" tabIndex={-1}>
                     <div className="flex items-center justify-center gap-2 text-lg font-medium text-slate-700">
                       <span>{formatDateDisplay(startDate)}</span>
-                      <ArrowRight className="h-4 w-4 text-primary" />
+                      <ArrowRight className="h-4 w-4 text-primary" tabIndex={-1} aria-hidden="true" />
                       <span>{formatDateDisplay(endDate)}</span>
                     </div>
                     <p className="text-sm text-slate-500 mt-1">
@@ -1919,8 +1934,8 @@ export default function NewRental() {
               </div>
 
               {showTimeHint && (
-                <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 p-2 rounded-lg animate-fade-in">
-                  <Clock className="h-3 w-3" />
+                <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 p-2 rounded-lg animate-fade-in" tabIndex={-1}>
+                  <Clock className="h-3 w-3" tabIndex={-1} aria-hidden="true" />
                   <span>{getTimeHintMessage()}</span>
                 </div>
               )}
@@ -1934,6 +1949,7 @@ export default function NewRental() {
                     onChange={(e) => handleStartDateChange(e.target.value)}
                     className="h-10 mt-1 text-sm"
                     data-testid="start-date-input"
+                    tabIndex={-1}
                   />
                 </div>
                 <div>
