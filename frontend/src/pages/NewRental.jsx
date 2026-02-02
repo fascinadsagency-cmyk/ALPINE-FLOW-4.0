@@ -2050,14 +2050,15 @@ export default function NewRental() {
                   : 'Tab: siguiente campo | Escanea el código o pulsa F3 para buscar'}
               </p>
 
-              <div className="min-h-[200px] max-h-[400px] overflow-y-auto">
+              {/* LISTA DE ARTÍCULOS - Altura expandida para mostrar más items */}
+              <div className="min-h-[200px] max-h-[580px] overflow-y-auto">
                 {items.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-48 text-slate-400">
                     <Package className="h-12 w-12 mb-2" />
                     <p>Escanea artículos para añadirlos</p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {/* GROUPED CART ITEMS - Solo PADRES (packs) e items sueltos */}
                     {/* Los HIJOS ya fueron filtrados en getGroupedCartItems() */}
                     {getGroupedCartItems().map((group, groupIndex) => {
@@ -2068,7 +2069,7 @@ export default function NewRental() {
                         return (
                           <div 
                             key={group.packId}
-                            className="grid grid-cols-12 gap-2 items-center p-4 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-400 animate-fade-in"
+                            className="grid grid-cols-12 gap-2 items-center py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-400 animate-fade-in"
                           >
                             {/* Nombre FUSIONADO: "Pack Gama Media (SKI-001 / BOT-204)" */}
                             <div className="col-span-5">
