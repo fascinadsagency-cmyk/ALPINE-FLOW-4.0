@@ -1207,7 +1207,13 @@ export default function NewRental() {
 
   // Actualizar precio de un pack completo (se guarda en el primer item del pack)
   const updatePackPrice = (packItems, newPrice) => {
+    // Validate: only non-negative numbers allowed
     const price = parseFloat(newPrice);
+    if (isNaN(price) || price < 0) {
+      toast.error("El precio del pack debe ser un número positivo o cero");
+      setEditingPackPrice(null);
+      return;
+    }
     const packItemIds = new Set(packItems.map(i => i.id || i.barcode));
     
     // Guardamos el precio del pack en el primer item como customPackPrice
