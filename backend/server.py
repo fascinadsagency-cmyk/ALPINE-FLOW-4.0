@@ -4950,6 +4950,70 @@ async def get_cash_closings(current_user: dict = Depends(get_current_user)):
     closings = await db.cash_closings.find({}, {"_id": 0}).sort("date", -1).to_list(100)
     return [CashClosingResponse(**c) for c in closings]
 
+@api_router.get("/cash/movements/search")
+async def search_cash_movements(
+    date_from: str = Query(..., description="Fecha inicio YYYY-MM-DD"),
+    date_to: str = Query(..., description="Fecha fin YYYY-MM-DD"),
+    search: Optional[str] = Query(None, description="Buscar por cliente, ticket ID o concepto"),
+    payment_method: Optional[str] = Query(None, description="Filtrar por método de pago"),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Advanced search for cash movements with pagination.
+    Searches across all historical data without session restrictions.
+    """
+    query = {
+        "created_at": {
+            "$gte": date_from + "T00:00:00",
+            "$lte": date_to + "T23:59:59"
+        }
+    }
+    
+    # Payment method filter
+    if payment_method and payment_method != "all":
+        query["payment_method"] = payment_method
+    
+    # Text search - search in multiple fields
+    if search and search.strip():
+        search_term = search.strip()
+        query["$or"] = [
+            {"concept": {"$regex": search_term, "$options": "i"}},
+            {"description": {"$regex": search_term, "$options": "i"}},
+            {"customer_name": {"$regex": search_term, "$options": "i"}},
+            {"operation_number": {"$regex": search_term, "$options": "i"}},
+            {"reference_id": {"$regex": search_term, "$options": "i"}},
+            {"notes": {"$regex": search_term, "$options": "i"}}
+        ]
+    
+    # Get total count
+    total = await db.cash_movements.count_documents(query)
+    
+    # Get paginated results
+    movements = await db.cash_movements.find(
+        query, 
+        {"_id": 0}
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    # Enrich with rental/customer data if available
+    for mov in movements:
+        if mov.get("reference_id") and mov.get("reference_type") == "rental":
+            rental = await db.rentals.find_one({"id": mov["reference_id"]}, {"_id": 0, "customer_name": 1, "customer_dni": 1, "items": 1})
+            if rental:
+                mov["customer_name"] = rental.get("customer_name", mov.get("customer_name"))
+                mov["customer_dni"] = rental.get("customer_dni", "")
+                if not mov.get("items"):
+                    mov["items"] = rental.get("items", [])
+    
+    return {
+        "results": movements,
+        "total": total,
+        "page": (skip // limit) + 1,
+        "pages": (total + limit - 1) // limit,
+        "has_more": skip + limit < total
+    }
+
 @api_router.get("/cash/movements/history")
 async def get_cash_movements_history(
     date_from: Optional[str] = None,
