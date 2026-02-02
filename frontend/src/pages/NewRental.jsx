@@ -2184,28 +2184,28 @@ export default function NewRental() {
                         return (
                           <div 
                             key={item.id || item.barcode}
-                            className={`grid grid-cols-12 gap-2 items-center p-3 rounded-xl transition-colors animate-fade-in ${
+                            className={`grid grid-cols-12 gap-2 items-center py-2 px-3 rounded-xl transition-colors animate-fade-in ${
                               item.is_generic ? 'bg-emerald-50 hover:bg-emerald-100' : 'bg-slate-50 hover:bg-slate-100'
                             }`}
                           >
                             {/* Nombre/Código */}
                             <div className="col-span-4">
-                              <p className="text-xs text-slate-500 font-medium uppercase">
+                              <p className="text-[10px] text-slate-500 font-medium uppercase">
                                 {item.is_generic ? 'Artículo' : 'Código'}
                               </p>
                               {item.is_generic ? (
-                                <p className="font-bold text-emerald-700 truncate">{item.name}</p>
+                                <p className="font-bold text-emerald-700 truncate text-sm">{item.name}</p>
                               ) : (
                                 <>
-                                  <p className="font-mono font-bold text-slate-900">{item.internal_code || item.barcode}</p>
-                                  <p className="text-xs text-slate-500">{item.brand} {item.model} {item.size && `(${item.size})`}</p>
+                                  <p className="font-mono font-bold text-slate-900 text-sm">{item.internal_code || item.barcode}</p>
+                                  <p className="text-[10px] text-slate-500 leading-tight">{item.brand} {item.model} {item.size && `(${item.size})`}</p>
                                 </>
                               )}
                             </div>
                             
                             {/* Tipo */}
                             <div className="col-span-2">
-                              <p className="text-xs text-slate-500 font-medium uppercase">Tipo</p>
+                              <p className="text-[10px] text-slate-500 font-medium uppercase">Tipo</p>
                               <Badge variant="outline" className="font-semibold text-xs">
                                 {itemTypes.find(t => t.value === item.item_type)?.label || item.item_type}
                               </Badge>
