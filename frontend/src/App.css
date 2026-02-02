@@ -32,3 +32,220 @@
         transform: rotate(360deg);
     }
 }
+
+/* ============================================================================
+ * ESTILOS GLOBALES @MEDIA PRINT - IMPRESIÓN TÉRMICA 80mm
+ * ============================================================================
+ * Estos estilos garantizan que la impresora térmica funcione correctamente
+ * desde cualquier vista de la aplicación (Ventas, Devoluciones, Inventario, etc.)
+ * ============================================================================ */
+
+@media print {
+    /* Reset para impresión */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+
+    /* Configuración de página para rollo térmico 80mm */
+    @page {
+        size: 80mm auto;
+        margin: 0;
+    }
+
+    /* Ocultar elementos no imprimibles */
+    .no-print,
+    .print-hidden,
+    [data-print="hide"],
+    header,
+    footer,
+    nav,
+    aside,
+    .sidebar,
+    .navbar,
+    .navigation,
+    .toast,
+    .toaster,
+    .sonner-toast,
+    .modal-backdrop,
+    button:not(.print-btn),
+    .btn:not(.print-btn),
+    input:not([type="hidden"]),
+    select,
+    textarea,
+    .print-service-container {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    /* Forzar visibilidad de elementos de impresión */
+    .print-only,
+    .print-visible,
+    [data-print="show"] {
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    /* Estilos base para el documento impreso */
+    html {
+        background: #ffffff !important;
+        font-size: 11px !important;
+    }
+
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: 'Consolas', 'Courier New', 'Monaco', monospace !important;
+        font-size: 11px !important;
+        line-height: 1.4 !important;
+        width: 80mm !important;
+        max-width: 80mm !important;
+        margin: 0 auto !important;
+        padding: 2mm !important;
+    }
+
+    /* Prevenir cortes de página en elementos importantes */
+    .ticket-container,
+    .print-section,
+    .print-row,
+    .print-item,
+    table,
+    tr,
+    td,
+    th,
+    thead,
+    tbody,
+    .section,
+    .block,
+    .item-row,
+    .info-row,
+    .total-row,
+    .result-box,
+    .amount-box {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    /* Forzar colores para impresoras térmicas monocromo */
+    .text-primary,
+    .text-secondary,
+    .text-muted,
+    .text-slate-500,
+    .text-slate-600,
+    .text-gray-500,
+    .text-gray-600 {
+        color: #000000 !important;
+    }
+
+    /* Eliminar sombras y efectos visuales */
+    .shadow,
+    .shadow-sm,
+    .shadow-md,
+    .shadow-lg,
+    .shadow-xl,
+    [class*="shadow"] {
+        box-shadow: none !important;
+    }
+
+    /* Bordes para impresión */
+    .border,
+    [class*="border"] {
+        border-color: #000000 !important;
+    }
+
+    /* Fondos transparentes para térmicas */
+    .bg-primary,
+    .bg-secondary,
+    .bg-slate-50,
+    .bg-slate-100,
+    .bg-gray-50,
+    .bg-gray-100,
+    .bg-emerald-50,
+    .bg-emerald-100 {
+        background-color: transparent !important;
+    }
+
+    /* Links sin decoración de color */
+    a {
+        color: #000000 !important;
+        text-decoration: none !important;
+    }
+
+    /* Tablas para impresión */
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+    }
+
+    th, td {
+        padding: 4px 2px !important;
+        text-align: left !important;
+        border-bottom: 1px dashed #000000 !important;
+    }
+
+    /* Encabezados de sección */
+    h1, h2, h3, h4, h5, h6 {
+        color: #000000 !important;
+        page-break-after: avoid !important;
+    }
+
+    /* Imágenes */
+    img {
+        max-width: 60mm !important;
+        height: auto !important;
+    }
+
+    /* Códigos de barras */
+    .barcode-container,
+    .barcode-image {
+        text-align: center !important;
+        margin: 8px auto !important;
+    }
+
+    /* Separadores */
+    hr {
+        border: none !important;
+        border-top: 1px dashed #000000 !important;
+        margin: 8px 0 !important;
+    }
+
+    /* Contenedor principal de ticket */
+    #print-service-container {
+        position: static !important;
+        left: auto !important;
+        top: auto !important;
+        visibility: visible !important;
+        width: 80mm !important;
+        max-width: 80mm !important;
+    }
+}
+
+/* Clase utilitaria para forzar impresión */
+.print-force-show {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Clase para elementos solo visibles en impresión */
+.print-only {
+    display: none;
+}
+
+@media print {
+    .print-only {
+        display: block !important;
+    }
+}
+
+/* Clase para ocultar en impresión */
+.print-hide {
+    display: block;
+}
+
+@media print {
+    .print-hide {
+        display: none !important;
+    }
+}
+
