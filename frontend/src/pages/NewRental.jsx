@@ -1978,22 +1978,37 @@ export default function NewRental() {
               {/* Barcode + Manual Search */}
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Barcode className={`absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors ${globalScannerActive ? 'text-emerald-500 animate-pulse' : 'text-slate-400'}`} />
+                  <Barcode className={`absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors ${globalScannerActive ? 'text-emerald-500 animate-pulse' : 'text-slate-400'}`} tabIndex={-1} aria-hidden="true" />
                   <Input
                     ref={barcodeRef}
                     placeholder={globalScannerActive ? "📡 Escáner listo..." : "Escanear código de barras..."}
                     value={barcodeInput}
                     onChange={(e) => setBarcodeInput(e.target.value)}
-                    onKeyDown={addItemByBarcode}
+                    onKeyDown={(e) => {
+                      // Tab navigation
+                      if (e.key === 'Tab' && !isEditingCartItem) {
+                        e.preventDefault();
+                        if (e.shiftKey) {
+                          focusPrevField('barcode');
+                        } else {
+                          focusNextField('barcode');
+                        }
+                        return;
+                      }
+                      // Normal barcode processing
+                      addItemByBarcode(e);
+                    }}
+                    tabIndex={1}
                     className={`h-12 pl-10 pr-10 text-lg font-mono transition-all ${
                       globalScannerActive 
                         ? 'border-emerald-400 ring-2 ring-emerald-200 bg-emerald-50' 
                         : ''
                     }`}
                     data-testid="barcode-input"
+                    autoComplete="off"
                   />
                   {globalScannerActive && (
-                    <Radio className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500 animate-pulse" />
+                    <Radio className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500 animate-pulse" tabIndex={-1} aria-hidden="true" />
                   )}
                 </div>
                 <Button 
@@ -2001,15 +2016,16 @@ export default function NewRental() {
                   onClick={() => setShowItemSearch(true)}
                   className="h-12 px-4"
                   data-testid="manual-search-btn"
+                  tabIndex={-1}
                 >
-                  <Search className="h-4 w-4 mr-2" />
+                  <Search className="h-4 w-4 mr-2" tabIndex={-1} aria-hidden="true" />
                   Buscar
                 </Button>
               </div>
-              <p className={`text-xs transition-colors ${globalScannerActive ? 'text-emerald-600 font-medium' : 'text-slate-500'}`}>
+              <p className={`text-xs transition-colors ${globalScannerActive ? 'text-emerald-600 font-medium' : 'text-slate-500'}`} tabIndex={-1}>
                 {globalScannerActive 
                   ? '📡 Escáner HID detectado - Escanea para añadir artículos automáticamente' 
-                  : 'Escanea el código o pulsa F3 / Alt+B para buscar manualmente'}
+                  : 'Tab: siguiente campo | Escanea el código o pulsa F3 para buscar'}
               </p>
 
               <div className="min-h-[200px] max-h-[400px] overflow-y-auto">
