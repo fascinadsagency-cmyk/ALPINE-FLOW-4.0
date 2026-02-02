@@ -2590,13 +2590,14 @@ export default function NewRental() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewCustomer(false)}>
+            <Button variant="outline" onClick={() => setShowNewCustomer(false)} tabIndex={10}>
               Cancelar
             </Button>
-            <Button onClick={createNewCustomer} data-testid="save-new-customer-btn">
+            <Button onClick={createNewCustomer} data-testid="save-new-customer-btn" tabIndex={11}>
               Guardar Cliente
             </Button>
           </DialogFooter>
+          </FocusTrap>
         </DialogContent>
       </Dialog>
 
