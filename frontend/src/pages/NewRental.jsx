@@ -160,6 +160,7 @@ export default function NewRental() {
   const [discountReason, setDiscountReason] = useState("");
   const [editingItemPrice, setEditingItemPrice] = useState(null);
   const [editingItemDays, setEditingItemDays] = useState(null);
+  const [editingPackPrice, setEditingPackPrice] = useState(null); // Moved here for scanner disable check
   
   // Customer technical data visibility toggle
   const [showCustomerTechData, setShowCustomerTechData] = useState(false);
