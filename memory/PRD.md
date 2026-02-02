@@ -1,8 +1,8 @@
 # AlpineFlow - Sistema de Gestión de Alquiler de Equipos de Esquí
 
 ## Estado del Proyecto
-**Última actualización:** 2026-01-30
-**Estado:** Operativo - CSS de impresión térmica OPTIMIZADO para 80mm
+**Última actualización:** 2026-02-02
+**Estado:** Operativo - Modo Entrada Rápida por Escáner IMPLEMENTADO
 
 ---
 
