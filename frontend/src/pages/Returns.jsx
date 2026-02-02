@@ -760,6 +760,47 @@ export default function Returns() {
       
       console.log('Respuesta del backend:', response.data);
       toast.success(`✅ Devolución procesada - ${barcodes.length} artículo(s) devuelto(s)`);
+      
+      // ============ IMPRESIÓN DEL TICKET DE DEVOLUCIÓN (Non-blocking) ============
+      // Mapear datos de artículos devueltos para el ticket
+      const returnedItemsData = barcodes.map(barcode => {
+        const item = rental.items.find(i => 
+          (i.barcode && i.barcode.toUpperCase() === barcode.toUpperCase()) ||
+          (i.internal_code && i.internal_code.toUpperCase() === barcode.toUpperCase()) ||
+          i.item_id === barcode
+        );
+        return {
+          name: item?.item_type || item?.brand || 'Artículo',
+          internal_code: item?.internal_code || barcode,
+          size: item?.size,
+          days: item?.days || rental.days || 1,
+          barcode: item?.barcode || barcode
+        };
+      });
+      
+      // Calcular importe de liquidación (si hay)
+      const refundAmount = settlementData.balance || 0;
+      
+      // Usar PrintService para impresión no bloqueante
+      PrintService.printReturn({
+        operationNumber: response.data.operation_number || rental.id.substring(0, 8).toUpperCase(),
+        date: new Date().toISOString(),
+        customer: rental.customer_name,
+        dni: rental.customer_dni,
+        returnedItems: returnedItemsData,
+        refundAmount: refundAmount,
+        paymentMethod: settlementData.paymentMethod || 'cash'
+      }, {
+        onComplete: () => {
+          console.log('[PrintService] Ticket de devolución impreso');
+        },
+        onError: (err) => {
+          console.error('[PrintService] Error al imprimir ticket:', err);
+          // No bloquear el flujo por error de impresión
+        }
+      });
+      // ============ FIN IMPRESIÓN ============
+      
       setShowSettlementModal(false);
       resetForm();
       loadPendingReturns();
