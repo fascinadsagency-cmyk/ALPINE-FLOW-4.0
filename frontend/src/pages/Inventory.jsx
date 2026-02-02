@@ -2099,13 +2099,33 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
               </>
             )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddDialog(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={createItem} data-testid="save-item-btn">
-              {newItem.is_generic ? "Guardar Artículo Genérico" : "Guardar Artículo"}
-            </Button>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            {/* Scanner mode info */}
+            {scannerMode && savedCount > 0 && (
+              <div className="flex-1 text-left">
+                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300">
+                  <Check className="h-3 w-3 mr-1" />
+                  {savedCount} artículo{savedCount !== 1 ? 's' : ''} guardado{savedCount !== 1 ? 's' : ''} en esta sesión
+                </Badge>
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowAddDialog(false);
+                  setScannerMode(false);
+                  setSavedCount(0);
+                }}
+              >
+                {scannerMode ? "Terminar" : "Cancelar"}
+              </Button>
+              {!scannerMode && (
+                <Button onClick={createItem} data-testid="save-item-btn" disabled={scannerSaving}>
+                  {newItem.is_generic ? "Guardar Artículo Genérico" : "Guardar Artículo"}
+                </Button>
+              )}
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
