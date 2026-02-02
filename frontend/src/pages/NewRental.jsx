@@ -172,9 +172,56 @@ export default function NewRental() {
   // Item types from API
   const [itemTypes, setItemTypes] = useState([]);
   
-  const barcodeRef = useRef(null);
-  const searchRef = useRef(null);
-  const daysRef = useRef(null);
+  // ============ REFS PARA NAVEGACIÓN POR TECLADO ============
+  const barcodeRef = useRef(null);      // Campo de código de barras
+  const searchRef = useRef(null);       // Buscador de cliente
+  const daysRef = useRef(null);         // Selector de días
+  const customerSearchRef = useRef(null); // Input de búsqueda de cliente
+  const submitRef = useRef(null);       // Botón de cobrar
+
+  // Secuencia de navegación: Código -> Cliente -> Días -> Cobrar
+  const focusNextField = useCallback((currentField) => {
+    const sequence = {
+      'barcode': customerSearchRef,
+      'customer': daysRef,
+      'days': submitRef,
+      'submit': barcodeRef
+    };
+    const nextRef = sequence[currentField];
+    if (nextRef?.current) {
+      nextRef.current.focus();
+      if (nextRef.current.select) nextRef.current.select();
+    }
+  }, []);
+
+  const focusPrevField = useCallback((currentField) => {
+    const sequence = {
+      'customer': barcodeRef,
+      'days': customerSearchRef,
+      'submit': daysRef,
+      'barcode': submitRef
+    };
+    const prevRef = sequence[currentField];
+    if (prevRef?.current) {
+      prevRef.current.focus();
+      if (prevRef.current.select) prevRef.current.select();
+    }
+  }, []);
+
+  // Handler para navegación con Tab en campos del formulario
+  const handleFormKeyDown = useCallback((e, fieldName) => {
+    // No interceptar si está editando un item del carrito
+    if (isEditingCartItem) return;
+
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      if (e.shiftKey) {
+        focusPrevField(fieldName);
+      } else {
+        focusNextField(fieldName);
+      }
+    }
+  }, [isEditingCartItem, focusNextField, focusPrevField]);
 
   // ============ GLOBAL SCANNER LISTENER (HID BARCODE READER) ============
   // Captura entrada de lectores HID como Netum NT-1698W cuando el cursor no está en un input
