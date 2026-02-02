@@ -2163,19 +2163,24 @@ export default function NewRental() {
                                   step="0.01"
                                   min="0"
                                   defaultValue={totalItemPrice.toFixed(2)}
-                                  className="h-8 w-24 text-right text-lg font-bold ml-auto"
+                                  className="h-8 w-24 text-right text-lg font-bold ml-auto border-2 border-orange-500 bg-orange-50"
                                   autoFocus
+                                  onClick={(e) => e.stopPropagation()}
                                   onKeyDown={(e) => {
+                                    e.stopPropagation(); // Prevent scanner from capturing
                                     if (e.key === 'Enter') {
+                                      e.preventDefault();
                                       updateItemPrice(item.id || item.barcode, e.target.value);
+                                    }
+                                    if (e.key === 'Escape') {
+                                      e.preventDefault();
                                       setEditingItemPrice(null);
                                     }
-                                    if (e.key === 'Escape') setEditingItemPrice(null);
                                   }}
                                   onBlur={(e) => {
                                     updateItemPrice(item.id || item.barcode, e.target.value);
-                                    setEditingItemPrice(null);
                                   }}
+                                  data-testid={`edit-price-${item.id || item.barcode}`}
                                 />
                               ) : (
                                 <div 
