@@ -459,6 +459,222 @@ export default function Inventory() {
     });
   };
 
+  // ============== SCANNER QUICK-ENTRY FUNCTIONS ==============
+  
+  // Check if barcode/code exists and return item if found
+  const checkBarcodeExists = async (code) => {
+    if (!code || code.trim() === "") return null;
+    try {
+      const response = await axios.get(`${API}/items/check-barcode/${encodeURIComponent(code.trim())}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (response.data.exists && response.data.item) {
+        return response.data.item;
+      }
+      return null;
+    } catch (error) {
+      console.error("Error checking barcode:", error);
+      return null;
+    }
+  };
+
+  // Reset form for next scan but preserve certain fields (type, category)
+  const resetForNextScan = () => {
+    setNewItem(prev => ({
+      ...prev,
+      internal_code: "",
+      barcode: "",
+      barcode_2: "",
+      serial_number: "",
+      brand: "",
+      model: "",
+      size: "",
+      binding: "",
+      purchase_price: "",
+      location: "",
+      name: "",
+      stock_total: ""
+      // Keep: item_type, category, maintenance_interval, purchase_date, is_generic, rental_price
+    }));
+  };
+
+  // Show visual feedback for scanner operations
+  const showScannerFeedback = (type) => {
+    setScannerFeedback(type);
+    // Auto-clear feedback after delay
+    setTimeout(() => setScannerFeedback(null), 1500);
+  };
+
+  // Handle scanner input (Enter key press) for barcode fields
+  const handleScannerEnter = async (e, fieldType) => {
+    // Only trigger on Enter key
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    
+    // If not in scanner mode, don't auto-save
+    if (!scannerMode) return;
+    
+    const scannedCode = e.target.value.trim();
+    if (!scannedCode) return;
+    
+    setScannerSaving(true);
+    
+    try {
+      // First check if code already exists
+      const existingItem = await checkBarcodeExists(scannedCode);
+      
+      if (existingItem) {
+        // CODE EXISTS - Open edit dialog for existing item
+        showScannerFeedback('duplicate');
+        toast.info(`Código "${scannedCode}" ya existe. Abriendo ficha...`, { duration: 2000 });
+        
+        // Close add dialog and open edit dialog with existing item
+        setShowAddDialog(false);
+        setEditingItem({
+          ...existingItem,
+          serial_number: existingItem.serial_number || "",
+          binding: existingItem.binding || "",
+          purchase_price: (existingItem.purchase_price || 0).toString(),
+          maintenance_interval: (existingItem.maintenance_interval || 30).toString()
+        });
+        setShowEditDialog(true);
+        setScannerSaving(false);
+        return;
+      }
+      
+      // CODE DOESN'T EXIST - Set it in the appropriate field and try to save
+      let itemToSave = { ...newItem };
+      
+      if (fieldType === 'barcode') {
+        itemToSave.barcode = scannedCode;
+        // If internal_code is empty, use barcode as internal_code
+        if (!itemToSave.internal_code) {
+          itemToSave.internal_code = scannedCode.toUpperCase();
+        }
+      } else if (fieldType === 'barcode_2') {
+        itemToSave.barcode_2 = scannedCode;
+      } else if (fieldType === 'internal_code') {
+        itemToSave.internal_code = scannedCode.toUpperCase();
+        // If barcode is empty, use internal_code as barcode
+        if (!itemToSave.barcode) {
+          itemToSave.barcode = scannedCode;
+        }
+      }
+      
+      // Update state for visual feedback
+      setNewItem(itemToSave);
+      
+      // Validate minimum required fields
+      if (!itemToSave.item_type) {
+        toast.error("Selecciona un tipo de artículo antes de escanear", { duration: 3000 });
+        setScannerSaving(false);
+        return;
+      }
+      
+      // Try to save the item
+      await createItemQuick(itemToSave);
+      
+    } catch (error) {
+      console.error("Scanner error:", error);
+      showScannerFeedback('error');
+      toast.error("Error al procesar el código escaneado");
+    } finally {
+      setScannerSaving(false);
+    }
+  };
+
+  // Quick create item for scanner mode (simplified version of createItem)
+  const createItemQuick = async (itemData) => {
+    try {
+      // Clean numeric fields
+      const cleanNumber = (val, defaultVal = 0) => {
+        const num = parseFloat(val);
+        return isNaN(num) ? defaultVal : num;
+      };
+      const cleanInt = (val, defaultVal = 0) => {
+        const num = parseInt(val);
+        return isNaN(num) ? defaultVal : num;
+      };
+
+      const itemToCreate = {
+        item_type: itemData.item_type,
+        is_generic: itemData.is_generic || false,
+        name: itemData.name?.trim() || "",
+        barcode: itemData.is_generic ? "" : (itemData.barcode || `BC-${itemData.internal_code}`),
+        barcode_2: itemData.is_generic ? "" : (itemData.barcode_2 || ""),
+        internal_code: itemData.internal_code || "",
+        serial_number: itemData.serial_number || "",
+        brand: itemData.brand || "",
+        model: itemData.model || "",
+        size: itemData.size || "",
+        binding: itemData.binding || "",
+        location: itemData.location || "",
+        category: itemData.category || "MEDIA",
+        purchase_price: cleanNumber(itemData.purchase_price, 0),
+        purchase_date: itemData.purchase_date || "",
+        maintenance_interval: cleanInt(itemData.maintenance_interval, 30),
+        stock_total: cleanInt(itemData.stock_total, 0),
+        rental_price: cleanNumber(itemData.rental_price, 0)
+      };
+      
+      await itemApi.create(itemToCreate);
+      
+      // SUCCESS!
+      showScannerFeedback('success');
+      setSavedCount(prev => prev + 1);
+      toast.success(`✓ Artículo guardado: ${itemData.internal_code || itemData.barcode}`, { duration: 1500 });
+      
+      // Reset form for next scan
+      resetForNextScan();
+      
+      // Refocus on barcode field for next scan
+      setTimeout(() => {
+        if (barcodeInputRef.current) {
+          barcodeInputRef.current.focus();
+        } else if (internalCodeInputRef.current) {
+          internalCodeInputRef.current.focus();
+        }
+      }, 100);
+      
+      // Reload items list in background
+      loadItems();
+      
+    } catch (error) {
+      showScannerFeedback('error');
+      const detail = error.response?.data?.detail;
+      let errorMsg = "Error al crear artículo";
+      if (typeof detail === 'string') {
+        errorMsg = detail;
+      } else if (Array.isArray(detail) && detail.length > 0) {
+        errorMsg = detail.map(e => e.msg || e.message || JSON.stringify(e)).join(', ');
+      }
+      toast.error(errorMsg);
+      throw error;
+    }
+  };
+
+  // Toggle scanner mode and reset counter
+  const toggleScannerMode = () => {
+    const newMode = !scannerMode;
+    setScannerMode(newMode);
+    if (newMode) {
+      setSavedCount(0);
+      toast.success("🔊 Modo Escáner ACTIVADO - Los artículos se guardarán automáticamente al escanear", { duration: 3000 });
+      // Focus on barcode input
+      setTimeout(() => {
+        if (barcodeInputRef.current) {
+          barcodeInputRef.current.focus();
+        } else if (internalCodeInputRef.current) {
+          internalCodeInputRef.current.focus();
+        }
+      }, 100);
+    } else {
+      toast.info(`Modo Escáner desactivado. ${savedCount} artículos guardados.`, { duration: 2000 });
+    }
+  };
+
+  // ============== END SCANNER FUNCTIONS ==============
+
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
