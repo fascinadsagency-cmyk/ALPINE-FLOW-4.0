@@ -62,6 +62,16 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
 - ✅ **Tipos de Artículo Personalizados:** Usuario crea y gestiona categorías
 - ✅ **Artículos Genéricos:** Gestión por stock (Cascos, Bastones, etc.)
 - ✅ **Botonera de Añadido Rápido:** Cascos, Bastones, Máscara
+- ✅ **SISTEMA DE CAPTURA GLOBAL DE ESCÁNER HID (NUEVO 2026-02-02):**
+  - **Hook `useScannerListener`:** Escucha global de teclas a nivel de window
+  - **Detección Automática de Escáner:** Entrada rápida (< 50ms entre teclas) = escáner HID
+  - **Auto-Foco Permanente:** Campo de código de barras recupera foco al hacer clic en el fondo
+  - **Buffer de Acumulación:** Captura caracteres incluso cuando el cursor no está en un input
+  - **Limpieza Automática al Enter:** Procesa código y limpia buffer
+  - **Prevención de Acciones No Deseadas:** `e.preventDefault()` evita cierre de modales/submit
+  - **Indicadores Visuales:** Campo pulsa en verde cuando escáner detectado, icono Radio animado
+  - **Compatibilidad:** Netum NT-1698W y otros lectores HID
+  - **Implementado en:** Inventario, Devoluciones, Nuevo Alquiler
 - ✅ **Sistema de Cambios Centralizado (SWAP):**
   - Botón "CAMBIOS" a nivel de cliente (no por artículo)
   - Modal con auto-foco para escáner de códigos de barras
