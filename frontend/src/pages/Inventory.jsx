@@ -163,6 +163,69 @@ export default function Inventory() {
   const barcodeInputRef = useRef(null);
   const barcode2InputRef = useRef(null);
   const internalCodeInputRef = useRef(null);
+  const mainSearchRef = useRef(null); // Ref for main search input (global scanner target)
+  
+  // GLOBAL SCANNER LISTENER - Captures HID barcode scanner input
+  const handleGlobalScan = useCallback(async (scannedCode) => {
+    console.log('[SCANNER] Global scan detected:', scannedCode);
+    
+    // If add dialog is open and scanner mode is active, handle differently
+    if (showAddDialog && scannerMode) {
+      // The dialog's own handler will manage this
+      return;
+    }
+    
+    // Search for the scanned code in inventory
+    setSearchTerm(scannedCode);
+    
+    // Check if item exists
+    try {
+      const existingItem = await checkBarcodeExists(scannedCode);
+      if (existingItem) {
+        // Open edit dialog for existing item
+        toast.info(`Artículo encontrado: ${existingItem.internal_code || scannedCode}`, { duration: 2000 });
+        setEditingItem({
+          ...existingItem,
+          serial_number: existingItem.serial_number || "",
+          binding: existingItem.binding || "",
+          purchase_price: (existingItem.purchase_price || 0).toString(),
+          maintenance_interval: (existingItem.maintenance_interval || 30).toString()
+        });
+        setShowEditDialog(true);
+      } else {
+        // Item not found - offer to create
+        toast.info(`Código "${scannedCode}" no encontrado. ¿Crear nuevo artículo?`, {
+          duration: 4000,
+          action: {
+            label: "Crear",
+            onClick: () => {
+              setNewItem(prev => ({
+                ...prev,
+                barcode: scannedCode,
+                internal_code: scannedCode.toUpperCase()
+              }));
+              setShowAddDialog(true);
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.error('[SCANNER] Error processing scan:', error);
+    }
+    
+    // Trigger search
+    loadItems();
+  }, [showAddDialog, scannerMode]);
+  
+  const { isScanning: globalScannerActive, forceFocus: focusMainSearch } = useScannerListener({
+    onScan: handleGlobalScan,
+    inputRef: mainSearchRef,
+    enabled: !showAddDialog && !showEditDialog, // Disable when dialogs are open
+    minLength: 3,
+    maxTimeBetweenKeys: 50,
+    scannerDetectionThreshold: 4,
+    autoFocus: false, // Don't auto-focus main search, only capture
+  });
   
   // DnD sensors
   const sensors = useSensors(
