@@ -11,6 +11,7 @@ import { printTicket, getStoredSettings } from "@/lib/ticketGenerator";
 import { PrintService } from "@/lib/printService";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useScannerListener } from "@/hooks/useScannerListener";
+import { FocusTrap } from "@/components/FocusTrap";
 import { 
   Search, 
   User, 
