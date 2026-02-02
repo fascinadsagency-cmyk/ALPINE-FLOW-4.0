@@ -1632,6 +1632,105 @@ export default function CashRegister() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Detalle de Movimiento Histórico */}
+      <Dialog open={showHistoryDetailDialog} onOpenChange={setShowHistoryDetailDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Detalle del Movimiento
+            </DialogTitle>
+            <DialogDescription>
+              {selectedHistoryMovement?.operation_number || `#${selectedHistoryMovement?.id?.substring(0, 8)}`}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedHistoryMovement && (
+            <div className="space-y-4">
+              {/* Info Principal */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 rounded-lg bg-slate-50">
+                  <p className="text-xs text-slate-500">Fecha y Hora</p>
+                  <p className="font-semibold">
+                    {new Date(selectedHistoryMovement.created_at).toLocaleDateString('es-ES', { 
+                      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+                    })}
+                  </p>
+                  <p className="text-sm text-slate-600">
+                    {new Date(selectedHistoryMovement.created_at).toLocaleTimeString('es-ES')}
+                  </p>
+                </div>
+                <div className={`p-3 rounded-lg ${selectedHistoryMovement.type === 'expense' ? 'bg-red-50' : 'bg-emerald-50'}`}>
+                  <p className="text-xs text-slate-500">Importe</p>
+                  <p className={`text-2xl font-bold ${selectedHistoryMovement.type === 'expense' ? 'text-red-600' : 'text-emerald-600'}`}>
+                    {selectedHistoryMovement.type === 'expense' ? '-' : '+'}€{(selectedHistoryMovement.amount || 0).toFixed(2)}
+                  </p>
+                  <Badge className={selectedHistoryMovement.payment_method === 'cash' ? 'bg-emerald-100 text-emerald-700' : 'bg-purple-100 text-purple-700'}>
+                    {selectedHistoryMovement.payment_method === 'cash' ? 'Efectivo' : 'Tarjeta'}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Cliente */}
+              {selectedHistoryMovement.customer_name && (
+                <div className="p-3 rounded-lg bg-blue-50 border border-blue-100">
+                  <p className="text-xs text-blue-600 font-medium">Cliente</p>
+                  <p className="font-bold text-blue-900">{selectedHistoryMovement.customer_name}</p>
+                  {selectedHistoryMovement.customer_dni && (
+                    <p className="text-sm text-blue-700">DNI: {selectedHistoryMovement.customer_dni}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Concepto */}
+              <div className="p-3 rounded-lg bg-slate-100">
+                <p className="text-xs text-slate-500">Concepto</p>
+                <p className="font-medium">{selectedHistoryMovement.concept || selectedHistoryMovement.description || '-'}</p>
+              </div>
+
+              {/* Items si existen */}
+              {selectedHistoryMovement.items && selectedHistoryMovement.items.length > 0 && (
+                <div className="p-3 rounded-lg border">
+                  <p className="text-xs text-slate-500 mb-2">Artículos</p>
+                  <div className="space-y-1">
+                    {selectedHistoryMovement.items.map((item, idx) => (
+                      <div key={idx} className="flex justify-between text-sm">
+                        <span>{item.item_type || item.name || 'Artículo'} {item.size && `(${item.size})`}</span>
+                        <span className="font-medium">€{(item.subtotal || item.unit_price || 0).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Notas */}
+              {selectedHistoryMovement.notes && (
+                <div className="p-3 rounded-lg bg-amber-50 border border-amber-100">
+                  <p className="text-xs text-amber-600">Notas</p>
+                  <p className="text-sm">{selectedHistoryMovement.notes}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowHistoryDetailDialog(false)}>
+              Cerrar
+            </Button>
+            <Button 
+              onClick={() => {
+                reprintHistoryTicket(selectedHistoryMovement);
+                setShowHistoryDetailDialog(false);
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              <Printer className="h-4 w-4 mr-2" />
+              Reimprimir Ticket
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
