@@ -221,6 +221,78 @@ export default function CashRegister() {
     }
   };
 
+  // ============ BÚSQUEDA HISTÓRICA ============
+  const searchHistory = async (page = 1) => {
+    setHistoryLoading(true);
+    setHistoryPage(page);
+    try {
+      const params = new URLSearchParams({
+        date_from: historySearch.dateFrom,
+        date_to: historySearch.dateTo,
+        skip: ((page - 1) * HISTORY_PAGE_SIZE).toString(),
+        limit: HISTORY_PAGE_SIZE.toString()
+      });
+      
+      if (historySearch.query.trim()) {
+        params.append('search', historySearch.query.trim());
+      }
+      if (historySearch.paymentMethod !== 'all') {
+        params.append('payment_method', historySearch.paymentMethod);
+      }
+      
+      const res = await axios.get(`${API}/cash/movements/search?${params.toString()}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      setHistoryResults(res.data.results || []);
+      setHistoryTotal(res.data.total || 0);
+    } catch (error) {
+      console.error("Error searching history:", error);
+      toast.error("Error al buscar en el historial");
+      setHistoryResults([]);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  const openHistoryDetail = (movement) => {
+    setSelectedHistoryMovement(movement);
+    setShowHistoryDetailDialog(true);
+  };
+
+  const reprintHistoryTicket = async (movement) => {
+    try {
+      // Get settings for ticket
+      const settings = getStoredSettings();
+      
+      // Prepare ticket data
+      const ticketData = {
+        type: movement.type === 'income' ? 'sale' : 'refund',
+        operationNumber: movement.operation_number || `M-${movement.id?.substring(0,8)}`,
+        date: movement.created_at,
+        customerName: movement.customer_name || 'Cliente',
+        customerDni: movement.customer_dni || '-',
+        items: movement.items || [{ 
+          name: movement.concept || movement.description || 'Movimiento',
+          subtotal: movement.amount,
+          days: 1
+        }],
+        subtotal: movement.amount,
+        total: movement.amount,
+        paymentMethod: movement.payment_method,
+        paidAmount: movement.amount,
+        notes: movement.notes,
+        isReprint: true
+      };
+      
+      await printTicket(ticketData, settings);
+      toast.success("Ticket reimpreso correctamente");
+    } catch (error) {
+      console.error("Error reprinting ticket:", error);
+      toast.error("Error al reimprimir ticket");
+    }
+  };
+
   const createMovement = async () => {
     if (!newMovement.amount || !newMovement.concept || !newMovement.category) {
       toast.error("Completa todos los campos obligatorios");
