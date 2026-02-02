@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { rentalApi } from "@/lib/api";
 import { printTicket } from "@/lib/ticketGenerator";
+import { PrintService } from "@/lib/printService";
 import axios from "axios";
 import { useScannerListener } from "@/hooks/useScannerListener";
 import { 
