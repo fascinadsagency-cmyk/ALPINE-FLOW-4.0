@@ -1659,11 +1659,82 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
       </Card>
 
       {/* Add Item Dialog */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+      <Dialog open={showAddDialog} onOpenChange={(open) => {
+        setShowAddDialog(open);
+        if (!open) {
+          // Reset scanner mode when closing dialog
+          setScannerMode(false);
+          setSavedCount(0);
+        }
+      }}>
+        <DialogContent className={`sm:max-w-lg max-h-[90vh] overflow-y-auto transition-all duration-300 ${
+          scannerFeedback === 'success' ? 'ring-4 ring-emerald-400 bg-emerald-50/50' : 
+          scannerFeedback === 'duplicate' ? 'ring-4 ring-amber-400 bg-amber-50/50' : 
+          scannerFeedback === 'error' ? 'ring-4 ring-red-400 bg-red-50/50' : ''
+        }`}>
           <DialogHeader>
-            <DialogTitle>Añadir Artículo</DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle>Añadir Artículo</DialogTitle>
+              {/* SCANNER MODE BADGE */}
+              {scannerMode && (
+                <Badge className="bg-emerald-600 text-white animate-pulse gap-1">
+                  <Zap className="h-3 w-3" />
+                  ESCÁNER: {savedCount} guardados
+                </Badge>
+              )}
+            </div>
           </DialogHeader>
+          
+          {/* SCANNER MODE TOGGLE - Only for regular items */}
+          {!newItem.is_generic && (
+            <div className={`p-3 rounded-lg border transition-all duration-200 ${
+              scannerMode 
+                ? 'bg-emerald-100 border-emerald-400' 
+                : 'bg-slate-50 border-slate-200'
+            }`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Barcode className={`h-5 w-5 ${scannerMode ? 'text-emerald-600' : 'text-slate-500'}`} />
+                  <div>
+                    <Label className="text-sm font-semibold cursor-pointer">
+                      Modo Entrada Rápida por Escáner
+                    </Label>
+                    <p className="text-xs text-slate-600">
+                      {scannerMode 
+                        ? "✓ Al escanear se guardará automáticamente y limpiará el formulario" 
+                        : "Activa para añadir artículos en serie sin usar el ratón"}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant={scannerMode ? "default" : "outline"}
+                  size="sm"
+                  onClick={toggleScannerMode}
+                  className={scannerMode ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+                  data-testid="scanner-mode-toggle"
+                >
+                  {scannerMode ? (
+                    <>
+                      <Check className="h-4 w-4 mr-1" />
+                      ACTIVO
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="h-4 w-4 mr-1" />
+                      Activar
+                    </>
+                  )}
+                </Button>
+              </div>
+              {scannerMode && scannerSaving && (
+                <div className="mt-2 flex items-center gap-2 text-emerald-700">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm">Guardando...</span>
+                </div>
+              )}
+            </div>
+          )}
+          
           <div className="space-y-4 py-4">
             {/* Toggle: Generic vs Traceable */}
             <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
