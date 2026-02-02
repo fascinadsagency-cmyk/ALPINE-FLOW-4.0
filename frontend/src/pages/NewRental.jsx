@@ -208,14 +208,18 @@ export default function NewRental() {
     }
   }, [items, numDays]);
   
+  // Check if any cart item is being edited (to disable global scanner)
+  const isEditingCartItem = editingItemDays !== null || editingItemPrice !== null || editingPackPrice !== null;
+  
   const { isScanning: globalScannerActive, forceFocus: focusBarcodeField } = useScannerListener({
     onScan: handleGlobalScan,
     inputRef: barcodeRef,
-    enabled: !showItemSearch && !showNewCustomer && !showPaymentDialog && !showSuccessDialog,
+    // IMPORTANT: Disable scanner when editing cart items to prevent interference
+    enabled: !showItemSearch && !showNewCustomer && !showPaymentDialog && !showSuccessDialog && !isEditingCartItem,
     minLength: 3,
     maxTimeBetweenKeys: 50,
     scannerDetectionThreshold: 4,
-    autoFocus: true, // Auto-focus on barcode input
+    autoFocus: !isEditingCartItem, // Don't auto-focus when editing
   });
 
   useEffect(() => {
