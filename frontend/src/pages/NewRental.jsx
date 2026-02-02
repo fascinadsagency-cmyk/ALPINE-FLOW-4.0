@@ -883,8 +883,13 @@ export default function NewRental() {
 
   // Update item days (marks as manually edited)
   const updateItemDays = (itemId, newDays) => {
-    const days = parseInt(newDays) || 1;
-    if (days < 1) return;
+    // Validate: only positive integers allowed
+    const days = parseInt(newDays);
+    if (isNaN(days) || days < 1) {
+      toast.error("Los días deben ser un número positivo");
+      setEditingItemDays(null);
+      return;
+    }
     setItems(items.map(item => 
       (item.id || item.barcode) === itemId 
         ? { ...item, itemDays: days, manualDaysEdit: true }
