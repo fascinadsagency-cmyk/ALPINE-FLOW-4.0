@@ -1706,6 +1706,14 @@ async def get_tariff(item_type: str, current_user: dict = Depends(get_current_us
         raise HTTPException(status_code=404, detail="Tariff not found")
     return TariffResponse(**tariff)
 
+@api_router.delete("/tariffs/{item_type}")
+async def delete_tariff(item_type: str, current_user: dict = Depends(get_current_user)):
+    """Delete a tariff by item_type"""
+    result = await db.tariffs.delete_one({"item_type": item_type})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Tariff not found")
+    return {"status": "success", "deleted": item_type}
+
 # ==================== PACK ROUTES ====================
 
 class PackCreate(BaseModel):
