@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { tariffApi } from "@/lib/api";
-import { DollarSign, Save, Loader2, Plus, Package, Trash2, X, Edit2 } from "lucide-react";
+import { DollarSign, Save, Loader2, Plus, Package, Trash2, X, Edit2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 
