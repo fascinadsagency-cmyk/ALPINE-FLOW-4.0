@@ -154,6 +154,15 @@ export default function Inventory() {
   const [loadingProfit, setLoadingProfit] = useState(false);
   const [itemProfitData, setItemProfitData] = useState(null);
   
+  // SCANNER QUICK-ENTRY MODE STATES
+  const [scannerMode, setScannerMode] = useState(false); // Toggle for auto-save mode
+  const [scannerSaving, setScannerSaving] = useState(false); // Loading state during auto-save
+  const [scannerFeedback, setScannerFeedback] = useState(null); // 'success' | 'duplicate' | 'error' | null
+  const [savedCount, setSavedCount] = useState(0); // Count of items saved in current session
+  const barcodeInputRef = useRef(null);
+  const barcode2InputRef = useRef(null);
+  const internalCodeInputRef = useRef(null);
+  
   // DnD sensors
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
