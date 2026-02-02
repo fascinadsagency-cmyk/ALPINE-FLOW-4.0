@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { customerApi, itemApi, tariffApi, rentalApi } from "@/lib/api";
 import { printTicket, getStoredSettings } from "@/lib/ticketGenerator";
+import { PrintService } from "@/lib/printService";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useScannerListener } from "@/hooks/useScannerListener";
 import { 
