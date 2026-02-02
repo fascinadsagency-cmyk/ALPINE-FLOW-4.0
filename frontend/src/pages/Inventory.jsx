@@ -977,30 +977,71 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
 
   const confirmDeleteItemType = async () => {
     if (!deleteTypeData) return;
-    const { typeId, typeName } = deleteTypeData;
+    const { typeId, typeName, forceDelete, reassignTo } = deleteTypeData;
 
     try {
-      await axios.delete(`${API}/item-types/${typeId}`, {
+      // Build URL with query params if needed
+      let url = `${API}/item-types/${typeId}`;
+      const params = new URLSearchParams();
+      if (forceDelete) params.append('force', 'true');
+      if (reassignTo) params.append('reassign_to', reassignTo);
+      if (params.toString()) url += `?${params.toString()}`;
+      
+      const response = await axios.delete(url, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
 
-      toast.success(`✅ Tipo "${typeName}" eliminado correctamente`);
+      const data = response.data;
+      if (data.deleted_ghost_items) {
+        toast.success(`✅ Tipo "${typeName}" eliminado. ${data.deleted_ghost_items} artículos fantasma eliminados.`);
+      } else if (data.reassigned) {
+        toast.success(`✅ Tipo "${typeName}" eliminado. ${data.reassigned} artículos reasignados.`);
+      } else {
+        toast.success(`✅ Tipo "${typeName}" eliminado correctamente`);
+      }
       
       // Reload types to update all dropdowns
       await loadItemTypes();
+      await loadItems();
       
     } catch (error) {
-      const errorMessage = error.response?.data?.detail || "Error al eliminar tipo";
+      const errorDetail = error.response?.data?.detail;
       
-      // Check if error is about items using the type
-      if (errorMessage.includes("items are using it") || errorMessage.includes("productos asociados")) {
-        const itemsCount = errorMessage.match(/\d+/)?.[0] || "algunos";
-        toast.error(
-          `No se puede eliminar este tipo porque ${itemsCount} artículos lo están usando. Cambia el tipo de esos productos primero.`,
-          { duration: 5000 }
-        );
+      // Handle structured error response
+      if (typeof errorDetail === 'object' && errorDetail.error) {
+        const { error: errorMsg, ghost_items, soft_deleted, active_items, suggestion } = errorDetail;
+        
+        if (ghost_items > 0 || soft_deleted > 0) {
+          // Artículos fantasma detectados - ofrecer eliminar con force
+          const total = (ghost_items || 0) + (soft_deleted || 0);
+          const confirmForce = window.confirm(
+            `⚠️ ${errorMsg}\n\n` +
+            `Se encontraron ${total} artículos fantasma (archivados/eliminados).\n\n` +
+            `¿Deseas eliminarlos automáticamente junto con este tipo?`
+          );
+          if (confirmForce) {
+            setDeleteTypeData({ ...deleteTypeData, forceDelete: true });
+            // Re-trigger delete with force
+            setTimeout(() => confirmDeleteItemType(), 100);
+            return;
+          }
+        } else if (active_items > 0) {
+          // Artículos activos - ofrecer reasignar
+          const reassignType = window.prompt(
+            `⚠️ ${errorMsg}\n\n` +
+            `Escribe el VALOR del tipo al que quieres reasignar estos artículos\n` +
+            `(ej: "esquí_gama_media_", "bota_esqui_"):\n\n` +
+            `Deja vacío para cancelar.`
+          );
+          if (reassignType && reassignType.trim()) {
+            setDeleteTypeData({ ...deleteTypeData, reassignTo: reassignType.trim(), forceDelete: true });
+            setTimeout(() => confirmDeleteItemType(), 100);
+            return;
+          }
+        }
+        toast.error(errorMsg, { duration: 6000 });
       } else {
-        toast.error(errorMessage);
+        toast.error(typeof errorDetail === 'string' ? errorDetail : "Error al eliminar tipo");
       }
     } finally {
       setDeleteTypeData(null);
