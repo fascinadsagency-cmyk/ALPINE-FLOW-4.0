@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { customerApi, itemApi, tariffApi, rentalApi } from "@/lib/api";
 import { printTicket, getStoredSettings } from "@/lib/ticketGenerator";
 import { useSettings } from "@/contexts/SettingsContext";
+import { useScannerListener } from "@/hooks/useScannerListener";
 import { 
   Search, 
   User, 
@@ -34,7 +35,8 @@ import {
   ChevronDown,
   Ruler,
   Scale,
-  Mountain
+  Mountain,
+  Radio
 } from "lucide-react";
 import { toast } from "sonner";
 
