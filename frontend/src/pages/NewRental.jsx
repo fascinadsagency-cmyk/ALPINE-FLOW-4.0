@@ -173,6 +173,50 @@ export default function NewRental() {
   const searchRef = useRef(null);
   const daysRef = useRef(null);
 
+  // ============ GLOBAL SCANNER LISTENER (HID BARCODE READER) ============
+  // Captura entrada de lectores HID como Netum NT-1698W cuando el cursor no está en un input
+  const handleGlobalScan = useCallback(async (scannedCode) => {
+    console.log('[SCANNER] Global scan detected in NewRental:', scannedCode);
+    
+    // Set the barcode input for visual feedback
+    setBarcodeInput(scannedCode);
+    
+    // Process the scanned code (add item to rental)
+    try {
+      const response = await itemApi.getByBarcode(scannedCode);
+      const item = response.data;
+      
+      if (item.status !== 'available') {
+        toast.error(`Artículo no disponible (${item.status})`);
+        setBarcodeInput("");
+        return;
+      }
+      
+      if (items.find(i => i.barcode === item.barcode)) {
+        toast.error("Artículo ya añadido");
+        setBarcodeInput("");
+        return;
+      }
+      
+      setItems(prev => [...prev, { ...item, customPrice: null, itemDays: numDays }]);
+      toast.success(`${item.brand} ${item.model} añadido`);
+      setBarcodeInput("");
+    } catch (error) {
+      toast.error("Artículo no encontrado");
+      setBarcodeInput("");
+    }
+  }, [items, numDays]);
+  
+  const { isScanning: globalScannerActive, forceFocus: focusBarcodeField } = useScannerListener({
+    onScan: handleGlobalScan,
+    inputRef: barcodeRef,
+    enabled: !showItemSearch && !showNewCustomer && !showPaymentDialog && !showSuccessDialog,
+    minLength: 3,
+    maxTimeBetweenKeys: 50,
+    scannerDetectionThreshold: 4,
+    autoFocus: true, // Auto-focus on barcode input
+  });
+
   useEffect(() => {
     loadTariffs();
     loadSources();
