@@ -532,26 +532,35 @@ export default function CashRegister() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="today" className="space-y-6">
-          {/* ============ PANEL SUPERIOR: 3 KPIs ============ */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <TabsContent value="today" className="space-y-3">
+          {/* ============ PANEL SUPERIOR: 3 KPIs (Compacto) ============ */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* KPI 1: Ingresos Brutos */}
             <Card className={`${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`} data-testid="kpi-ingresos">
-              <CardContent className="pt-6">
+              <CardContent className="py-4 px-5">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Ingresos Brutos
-                    </p>
-                    <p className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        Ingresos
+                      </p>
+                      <button 
+                        onClick={() => toggleMetricVisibility('ingresos')}
+                        className={`p-1 rounded hover:bg-slate-200 transition-colors ${darkMode ? 'hover:bg-slate-700' : ''}`}
+                      >
+                        {visibleMetrics.ingresos ? (
+                          <Eye className="h-3.5 w-3.5 text-slate-400" />
+                        ) : (
+                          <EyeOff className="h-3.5 w-3.5 text-slate-400" />
+                        )}
+                      </button>
+                    </div>
+                    <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'} ${!visibleMetrics.ingresos ? 'blur-sm select-none' : ''}`}>
                       €{(summary?.ingresos_brutos || 0).toFixed(2)}
                     </p>
-                    <p className={`text-xs mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                      Ventas y suplementos
-                    </p>
                   </div>
-                  <div className={`h-14 w-14 rounded-xl flex items-center justify-center ${darkMode ? 'bg-emerald-900/30' : 'bg-emerald-100'}`}>
-                    <TrendingUp className={`h-7 w-7 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                  <div className={`h-11 w-11 rounded-lg flex items-center justify-center ${darkMode ? 'bg-emerald-900/30' : 'bg-emerald-100'}`}>
+                    <TrendingUp className={`h-5 w-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
                   </div>
                 </div>
               </CardContent>
@@ -559,21 +568,30 @@ export default function CashRegister() {
 
             {/* KPI 2: Salidas y Devoluciones */}
             <Card className={`${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`} data-testid="kpi-salidas">
-              <CardContent className="pt-6">
+              <CardContent className="py-4 px-5">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Devoluciones y Salidas
-                    </p>
-                    <p className="text-3xl font-bold text-red-600">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        Salidas
+                      </p>
+                      <button 
+                        onClick={() => toggleMetricVisibility('gastos')}
+                        className={`p-1 rounded hover:bg-slate-200 transition-colors ${darkMode ? 'hover:bg-slate-700' : ''}`}
+                      >
+                        {visibleMetrics.gastos ? (
+                          <Eye className="h-3.5 w-3.5 text-slate-400" />
+                        ) : (
+                          <EyeOff className="h-3.5 w-3.5 text-slate-400" />
+                        )}
+                      </button>
+                    </div>
+                    <p className={`text-2xl font-bold text-red-600 ${!visibleMetrics.gastos ? 'blur-sm select-none' : ''}`}>
                       -€{(summary?.total_salidas || 0).toFixed(2)}
                     </p>
-                    <p className={`text-xs mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                      Devoluciones, ajustes y gastos
-                    </p>
                   </div>
-                  <div className={`h-14 w-14 rounded-xl flex items-center justify-center ${darkMode ? 'bg-red-900/30' : 'bg-red-100'}`}>
-                    <TrendingDown className={`h-7 w-7 ${darkMode ? 'text-red-400' : 'text-red-600'}`} />
+                  <div className={`h-11 w-11 rounded-lg flex items-center justify-center ${darkMode ? 'bg-red-900/30' : 'bg-red-100'}`}>
+                    <TrendingDown className={`h-5 w-5 ${darkMode ? 'text-red-400' : 'text-red-600'}`} />
                   </div>
                 </div>
               </CardContent>
@@ -581,43 +599,63 @@ export default function CashRegister() {
 
             {/* KPI 3: Balance Neto del Día */}
             <Card className={`border-2 ${(summary?.balance_neto_dia || 0) >= 0 ? 'border-emerald-300 bg-emerald-50' : 'border-red-300 bg-red-50'} ${darkMode ? 'bg-opacity-10' : ''}`} data-testid="kpi-balance">
-              <CardContent className="pt-6">
+              <CardContent className="py-4 px-5">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className={`text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                      Balance Neto del Día
-                    </p>
-                    <p className={`text-3xl font-bold ${(summary?.balance_neto_dia || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className={`text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                        Balance Neto
+                      </p>
+                      <button 
+                        onClick={() => toggleMetricVisibility('balance')}
+                        className={`p-1 rounded hover:bg-white/50 transition-colors`}
+                      >
+                        {visibleMetrics.balance ? (
+                          <Eye className="h-3.5 w-3.5 text-slate-500" />
+                        ) : (
+                          <EyeOff className="h-3.5 w-3.5 text-slate-500" />
+                        )}
+                      </button>
+                    </div>
+                    <p className={`text-2xl font-bold ${(summary?.balance_neto_dia || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'} ${!visibleMetrics.balance ? 'blur-sm select-none' : ''}`}>
                       €{(summary?.balance_neto_dia || 0).toFixed(2)}
                     </p>
-                    <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Lo que has ganado/perdido hoy
-                    </p>
                   </div>
-                  <div className={`h-14 w-14 rounded-xl flex items-center justify-center ${(summary?.balance_neto_dia || 0) >= 0 ? 'bg-emerald-200' : 'bg-red-200'}`}>
-                    <Scale className={`h-7 w-7 ${(summary?.balance_neto_dia || 0) >= 0 ? 'text-emerald-700' : 'text-red-700'}`} />
+                  <div className={`h-11 w-11 rounded-lg flex items-center justify-center ${(summary?.balance_neto_dia || 0) >= 0 ? 'bg-emerald-200' : 'bg-red-200'}`}>
+                    <Scale className={`h-5 w-5 ${(summary?.balance_neto_dia || 0) >= 0 ? 'text-emerald-700' : 'text-red-700'}`} />
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* ============ PANEL SECUNDARIO: ARQUEO ============ */}
+          {/* ============ PANEL SECUNDARIO: ARQUEO (Compacto) ============ */}
           <Card className={`${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`} data-testid="arqueo-panel">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Banknote className="h-5 w-5" />
+            <CardHeader className="py-3 px-5">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Banknote className="h-4 w-4" />
                 Desglose para Arqueo
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <CardContent className="pt-0 px-5 pb-4">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {/* Fondo Inicial */}
-                <div className={`p-4 rounded-xl ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                  <p className={`text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Fondo Inicial (Apertura)
+                <div className={`p-3 rounded-lg ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                  <div className="flex items-center gap-1.5">
+                    <p className={`text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      Fondo Inicial
+                    </p>
+                    <button 
+                      onClick={() => toggleMetricVisibility('fondo')}
+                      className="p-0.5 rounded hover:bg-slate-200/50"
+                    >
+                      {visibleMetrics.fondo ? <Eye className="h-3 w-3 text-slate-400" /> : <EyeOff className="h-3 w-3 text-slate-400" />}
+                    </button>
+                  </div>
+                  <p className={`text-lg font-bold mt-0.5 ${darkMode ? 'text-slate-200' : 'text-slate-700'} ${!visibleMetrics.fondo ? 'blur-sm select-none' : ''}`}>
+                    €{(summary?.opening_balance || 0).toFixed(2)}
                   </p>
-                  <p className={`text-2xl font-bold mt-1 ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+                </div>
                     €{(summary?.opening_balance || 0).toFixed(2)}
                   </p>
                 </div>
