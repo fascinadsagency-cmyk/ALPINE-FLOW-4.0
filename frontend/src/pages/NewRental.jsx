@@ -245,9 +245,6 @@ export default function NewRental() {
     }
   }, [items, numDays]);
   
-  // Check if any cart item is being edited (to disable global scanner)
-  const isEditingCartItem = editingItemDays !== null || editingItemPrice !== null || editingPackPrice !== null;
-  
   const { isScanning: globalScannerActive, forceFocus: focusBarcodeField } = useScannerListener({
     onScan: handleGlobalScan,
     inputRef: barcodeRef,
