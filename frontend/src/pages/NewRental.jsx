@@ -1142,8 +1142,13 @@ export default function NewRental() {
 
   // Update days for all items in a pack
   const updatePackDays = (packItems, newDays) => {
-    const days = parseInt(newDays) || 1;
-    if (days < 1) return;
+    // Validate: only positive integers allowed
+    const days = parseInt(newDays);
+    if (isNaN(days) || days < 1) {
+      toast.error("Los días del pack deben ser un número positivo");
+      setEditingItemDays(null);
+      return;
+    }
     
     const packItemIds = new Set(packItems.map(i => i.id || i.barcode));
     setItems(items.map(item => {
