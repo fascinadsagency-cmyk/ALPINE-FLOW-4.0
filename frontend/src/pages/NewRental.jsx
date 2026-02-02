@@ -1189,13 +1189,20 @@ export default function NewRental() {
 
   // Actualizar precio personalizado de un item individual
   const updateItemPrice = (itemId, newPrice) => {
+    // Validate: only non-negative numbers allowed
     const price = parseFloat(newPrice);
+    if (isNaN(price) || price < 0) {
+      toast.error("El precio debe ser un número positivo o cero");
+      setEditingItemPrice(null);
+      return;
+    }
     setItems(items.map(item => {
       if ((item.id || item.barcode) === itemId) {
-        return { ...item, customPrice: isNaN(price) ? null : price };
+        return { ...item, customPrice: price };
       }
       return item;
     }));
+    setEditingItemPrice(null);
   };
 
   // Actualizar precio de un pack completo (se guarda en el primer item del pack)
