@@ -179,6 +179,9 @@ export default function NewRental() {
   const customerSearchRef = useRef(null); // Input de búsqueda de cliente
   const submitRef = useRef(null);       // Botón de cobrar
 
+  // Check if any cart item is being edited (to disable global scanner and Tab navigation)
+  const isEditingCartItem = editingItemDays !== null || editingItemPrice !== null || editingPackPrice !== null;
+
   // Secuencia de navegación: Código -> Cliente -> Días -> Cobrar
   const focusNextField = useCallback((currentField) => {
     const sequence = {
@@ -207,21 +210,6 @@ export default function NewRental() {
       if (prevRef.current.select) prevRef.current.select();
     }
   }, []);
-
-  // Handler para navegación con Tab en campos del formulario
-  const handleFormKeyDown = useCallback((e, fieldName) => {
-    // No interceptar si está editando un item del carrito
-    if (isEditingCartItem) return;
-
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      if (e.shiftKey) {
-        focusPrevField(fieldName);
-      } else {
-        focusNextField(fieldName);
-      }
-    }
-  }, [isEditingCartItem, focusNextField, focusPrevField]);
 
   // ============ GLOBAL SCANNER LISTENER (HID BARCODE READER) ============
   // Captura entrada de lectores HID como Netum NT-1698W cuando el cursor no está en un input
