@@ -782,12 +782,20 @@ export default function CashRegister() {
 
           {/* Movements Table */}
           <Card className={`${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`}>
-            <CardHeader className="pb-3">
-              <CardTitle className={`text-lg ${darkMode ? 'text-white' : ''}`}>
-                Movimientos del Día ({movements.length})
+            <CardHeader className="py-3 px-5">
+              <CardTitle className={`text-base flex items-center justify-between ${darkMode ? 'text-white' : ''}`}>
+                <span className="flex items-center gap-2">
+                  <History className="h-4 w-4" />
+                  Movimientos del Día ({movements.length})
+                </span>
+                {movements.length > 0 && (
+                  <Badge variant="outline" className="text-xs">
+                    Últimos registros
+                  </Badge>
+                )}
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0 px-5 pb-4">
               {movements.length === 0 ? (
                 <div className={`text-center py-8 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                   <Wallet className="h-12 w-12 mx-auto mb-3 opacity-50" />
