@@ -2000,14 +2000,24 @@ export default function NewRental() {
                                 <Input
                                   type="number"
                                   min="1"
+                                  step="1"
                                   defaultValue={group.days}
-                                  className="h-8 w-20 text-center text-sm font-bold mx-auto"
+                                  className="h-8 w-20 text-center text-sm font-bold mx-auto border-2 border-amber-500 bg-amber-50"
                                   autoFocus
+                                  onClick={(e) => e.stopPropagation()}
                                   onKeyDown={(e) => {
-                                    if (e.key === 'Enter') updatePackDays(group.items, e.target.value);
-                                    if (e.key === 'Escape') setEditingItemDays(null);
+                                    e.stopPropagation(); // Prevent scanner
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      updatePackDays(group.items, e.target.value);
+                                    }
+                                    if (e.key === 'Escape') {
+                                      e.preventDefault();
+                                      setEditingItemDays(null);
+                                    }
                                   }}
                                   onBlur={(e) => updatePackDays(group.items, e.target.value)}
+                                  data-testid={`edit-pack-days-${group.packId}`}
                                 />
                               ) : (
                                 <Badge 
@@ -2028,19 +2038,24 @@ export default function NewRental() {
                                   step="0.01"
                                   min="0"
                                   defaultValue={packTotal.toFixed(2)}
-                                  className="h-8 w-24 text-right text-lg font-bold ml-auto"
+                                  className="h-8 w-24 text-right text-lg font-bold ml-auto border-2 border-orange-500 bg-orange-50"
                                   autoFocus
+                                  onClick={(e) => e.stopPropagation()}
                                   onKeyDown={(e) => {
+                                    e.stopPropagation(); // Prevent scanner
                                     if (e.key === 'Enter') {
+                                      e.preventDefault();
                                       updatePackPrice(group.items, e.target.value);
+                                    }
+                                    if (e.key === 'Escape') {
+                                      e.preventDefault();
                                       setEditingPackPrice(null);
                                     }
-                                    if (e.key === 'Escape') setEditingPackPrice(null);
                                   }}
                                   onBlur={(e) => {
                                     updatePackPrice(group.items, e.target.value);
-                                    setEditingPackPrice(null);
                                   }}
+                                  data-testid={`edit-pack-price-${group.packId}`}
                                 />
                               ) : (
                                 <div 
