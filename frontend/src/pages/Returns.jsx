@@ -136,6 +136,91 @@ export default function Returns() {
   
   const barcodeRef = useRef(null);
 
+  // ============ GLOBAL SCANNER LISTENER (HID BARCODE READER) ============
+  // Captura entrada de lectores HID como Netum NT-1698W cuando el cursor no está en un input
+  const handleGlobalScan = useCallback(async (scannedCode) => {
+    console.log('[SCANNER] Global scan detected in Returns:', scannedCode);
+    
+    // If change modal is open, let its own handler manage the scan
+    if (changeModal) {
+      setChangeNewBarcode(scannedCode);
+      // Trigger the change modal's barcode handler
+      return;
+    }
+    
+    // Set the barcode input and trigger search
+    setBarcodeInput(scannedCode);
+    
+    // Simulate the barcode scan logic
+    if (!rental) {
+      // No rental loaded - search for rental by barcode
+      setLoading(true);
+      try {
+        const response = await rentalApi.getByBarcode(scannedCode);
+        setRental(response.data);
+        setScannedBarcodes([scannedCode]);
+        toast.success(`Alquiler encontrado: ${response.data.customer_name}`);
+        setBarcodeInput("");
+      } catch (error) {
+        toast.error("No se encontró alquiler activo para este artículo");
+        setBarcodeInput("");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Rental loaded - mark item for return
+      const codeUpper = scannedCode.toUpperCase();
+      const item = rental.items.find(i => 
+        (i.barcode && i.barcode.toUpperCase() === codeUpper) ||
+        (i.internal_code && i.internal_code.toUpperCase() === codeUpper) ||
+        (i.item_id && i.item_id === scannedCode)
+      );
+      
+      if (!item) {
+        toast.error("Este artículo no pertenece a este alquiler");
+        setBarcodeInput("");
+        return;
+      }
+      
+      if (item.returned) {
+        toast.info("Este artículo ya fue devuelto");
+        setBarcodeInput("");
+        return;
+      }
+      
+      // Toggle logic
+      const itemBarcode = item.barcode || scannedCode;
+      const isAlreadyScanned = scannedBarcodes.some(code => 
+        code.toUpperCase() === (item.barcode || "").toUpperCase() ||
+        code.toUpperCase() === (item.internal_code || "").toUpperCase() ||
+        code === item.item_id
+      );
+      
+      if (isAlreadyScanned) {
+        setScannedBarcodes(prev => prev.filter(code => 
+          code.toUpperCase() !== (item.barcode || "").toUpperCase() &&
+          code.toUpperCase() !== (item.internal_code || "").toUpperCase() &&
+          code !== item.item_id
+        ));
+        toast.info(`${item.item_type || item.brand} desmarcado`);
+      } else {
+        setScannedBarcodes(prev => [...prev, itemBarcode]);
+        toast.success(`${item.item_type || item.brand} marcado ✓`);
+      }
+      setBarcodeInput("");
+    }
+  }, [rental, scannedBarcodes, changeModal]);
+  
+  const { isScanning: globalScannerActive, forceFocus: focusBarcodeInput } = useScannerListener({
+    onScan: handleGlobalScan,
+    inputRef: barcodeRef,
+    enabled: !changeModal && !showCustomerModal && !showSettlementModal && !showRefundDialog,
+    minLength: 3,
+    maxTimeBetweenKeys: 50,
+    scannerDetectionThreshold: 4,
+    autoFocus: true, // Auto-focus on barcode input
+  });
+
   // ============ GESTIONAR CAMBIO FUNCTIONS ============
   
   const openChangeModal = async (rental) => {
