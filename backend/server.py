@@ -1201,8 +1201,33 @@ async def get_item_by_barcode(barcode: str, current_user: dict = Depends(get_cur
     if not item:
         item = await db.items.find_one({"barcode": barcode}, {"_id": 0})
     if not item:
+        item = await db.items.find_one({"barcode_2": barcode}, {"_id": 0})
+    if not item:
         raise HTTPException(status_code=404, detail="Item not found")
     return ItemResponse(**item)
+
+
+@api_router.get("/items/check-barcode/{barcode}")
+async def check_barcode_exists(barcode: str, current_user: dict = Depends(get_current_user)):
+    """
+    Check if a barcode/internal_code already exists. Returns the item if found, or null if not.
+    Used for scanner quick-entry mode to avoid duplicates and open existing items.
+    """
+    barcode = barcode.strip()
+    if not barcode:
+        return {"exists": False, "item": None}
+    
+    # Search in all barcode fields
+    item = await db.items.find_one({"internal_code": barcode}, {"_id": 0})
+    if not item:
+        item = await db.items.find_one({"barcode": barcode}, {"_id": 0})
+    if not item:
+        item = await db.items.find_one({"barcode_2": barcode}, {"_id": 0})
+    
+    if item:
+        return {"exists": True, "item": ItemResponse(**item)}
+    return {"exists": False, "item": None}
+
 
 @api_router.put("/items/{item_id}", response_model=ItemResponse)
 async def update_item(item_id: str, item: ItemCreate, current_user: dict = Depends(get_current_user)):
