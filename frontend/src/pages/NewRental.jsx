@@ -2216,14 +2216,14 @@ export default function NewRental() {
                             
                             {/* Días - Editable */}
                             <div className="col-span-2 text-center">
-                              <p className="text-xs text-slate-500 font-medium uppercase">Días</p>
+                              <p className="text-[10px] text-slate-500 font-medium uppercase">Días</p>
                               {editingItemDays === (item.id || item.barcode) ? (
                                 <Input
                                   type="number"
                                   min="1"
                                   step="1"
                                   defaultValue={days}
-                                  className="h-7 w-16 text-center text-sm font-bold mx-auto border-2 border-blue-500 bg-blue-50"
+                                  className="h-6 w-14 text-center text-sm font-bold mx-auto border-2 border-blue-500 bg-blue-50"
                                   autoFocus
                                   onClick={(e) => e.stopPropagation()}
                                   onKeyDown={(e) => {
@@ -2243,17 +2243,17 @@ export default function NewRental() {
                               ) : (
                                 <Badge 
                                   variant="outline" 
-                                  className="cursor-pointer hover:bg-blue-100 font-bold text-blue-700 border-blue-300"
+                                  className="cursor-pointer hover:bg-blue-100 font-bold text-blue-700 border-blue-300 text-xs"
                                   onClick={() => setEditingItemDays(item.id || item.barcode)}
                                 >
-                                  {days}d <Edit2 className="h-3 w-3 ml-1 inline" />
+                                  {days}d <Edit2 className="h-2.5 w-2.5 ml-0.5 inline" />
                                 </Badge>
                               )}
                             </div>
                             
                             {/* Precio Total (IVA incluido) - EDITABLE */}
                             <div className="col-span-3 text-right">
-                              <p className="text-xs text-slate-500 font-medium uppercase">Total (IVA inc.)</p>
+                              <p className="text-[10px] text-slate-500 font-medium uppercase">Total</p>
                               {group.price === 0 && !item.is_generic ? (
                                 <Badge variant="destructive" className="text-xs">
                                   <AlertCircle className="h-3 w-3 mr-1" /> Sin tarifa
