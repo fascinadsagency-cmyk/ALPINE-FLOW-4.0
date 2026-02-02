@@ -63,29 +63,79 @@ export default function Tariffs() {
       const [tariffsRes, packsRes, itemTypesRes] = await Promise.all([
         tariffApi.getAll(),
         axios.get(`${API}/packs`).catch(() => ({ data: [] })),
-        axios.get(`${API}/item-types`).catch(() => ({ data: DEFAULT_ITEM_TYPES }))
+        axios.get(`${API}/item-types`).catch(() => ({ data: [] }))
       ]);
       
       // Load dynamic item types
-      const loadedTypes = itemTypesRes.data || DEFAULT_ITEM_TYPES;
+      const loadedTypes = itemTypesRes.data || [];
       setItemTypes(loadedTypes);
       
+      // Get valid type values for orphan detection
+      const validTypeValues = new Set(loadedTypes.map(t => t.value));
+      
+      // Build tariff map - ONLY from database, no auto-creation
       const tariffMap = {};
+      const orphanedTariffs = [];
+      
       tariffsRes.data.forEach(t => {
         tariffMap[t.item_type] = t;
-      });
-      loadedTypes.forEach(type => {
-        if (!tariffMap[type.value]) {
-          tariffMap[type.value] = { ...DEFAULT_TARIFF, item_type: type.value };
+        // Check if this tariff's item_type still exists
+        if (!validTypeValues.has(t.item_type)) {
+          orphanedTariffs.push(t.item_type);
         }
       });
+      
+      // Create empty tariffs for types that don't have one yet
+      loadedTypes.forEach(type => {
+        if (!tariffMap[type.value]) {
+          tariffMap[type.value] = { ...DEFAULT_TARIFF, item_type: type.value, isNew: true };
+        }
+      });
+      
       setTariffs(tariffMap);
       setPacks(packsRes.data || []);
+      
+      // Log orphaned tariffs for cleanup
+      if (orphanedTariffs.length > 0) {
+        console.log('Tarifas huérfanas detectadas:', orphanedTariffs);
+      }
     } catch (error) {
       toast.error("Error al cargar tarifas");
     } finally {
       setLoading(false);
     }
+  };
+
+  // Delete a tariff from the database
+  const deleteTariff = async (itemType) => {
+    try {
+      await axios.delete(`${API}/tariffs/${encodeURIComponent(itemType)}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      // Remove from local state
+      const newTariffs = { ...tariffs };
+      delete newTariffs[itemType];
+      setTariffs(newTariffs);
+      
+      toast.success(`Tarifa "${itemType}" eliminada`);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al eliminar tarifa");
+    }
+  };
+
+  // Get all tariff keys (including orphaned ones)
+  const getAllTariffTypes = () => {
+    const allTypes = new Set([
+      ...itemTypes.map(t => t.value),
+      ...Object.keys(tariffs)
+    ]);
+    return Array.from(allTypes);
+  };
+
+  // Check if a tariff type is orphaned (no matching item type)
+  const isOrphanedTariff = (tariffType) => {
+    return !itemTypes.some(t => t.value === tariffType);
   };
 
   const updateTariff = (itemType, field, value) => {
