@@ -1446,8 +1446,19 @@ export default function NewRental() {
       });
     });
 
-    // Use centralized ticket generator with settings
-    printTicket({
+    // Use PrintService for non-blocking print (allows scanning while printing)
+    PrintService.printRental({
+      operationNumber: completedRental.operation_number || `A${String(Date.now()).slice(-6)}`,
+      date: new Date().toLocaleDateString('es-ES'),
+      customer: customer?.name || completedRental.customer_name || '',
+      dni: customer?.dni || completedRental.customer_dni || '',
+      startDate: startDate,
+      endDate: endDate,
+      days: numDays,
+      items: ticketItems,
+      total: completedRental.total_amount || 0,
+      paymentMethod: completedRental.payment_method || paymentMethod
+    }, {
       settings: {
         companyLogo: settings.companyLogo,
         ticketHeader: settings.ticketHeader,
@@ -1459,18 +1470,11 @@ export default function NewRental() {
         vatIncludedInPrices: settings.vatIncludedInPrices,
         language: settings.language
       },
-      ticketType: 'rental',
-      data: {
-        operationNumber: completedRental.operation_number || `A${String(Date.now()).slice(-6)}`,
-        date: new Date().toLocaleDateString('es-ES'),
-        customer: customer?.name || completedRental.customer_name || '',
-        dni: customer?.dni || completedRental.customer_dni || '',
-        startDate: startDate,
-        endDate: endDate,
-        days: numDays,
-        items: ticketItems,
-        total: completedRental.total_amount || 0,
-        paymentMethod: completedRental.payment_method || paymentMethod
+      onComplete: () => {
+        console.log('[PrintService] Ticket de alquiler impreso');
+      },
+      onError: (err) => {
+        console.error('[PrintService] Error al imprimir:', err);
       }
     });
   };
