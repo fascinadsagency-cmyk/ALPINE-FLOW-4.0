@@ -217,7 +217,7 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
 ### 8. Integraciones Futuras
 - ⏳ VeriFactu, WhatsApp, TPV, Email, Google Calendar
 
-### 9. Inventario y Rentabilidad (ACTUALIZADO 2026-02-01)
+### 9. Inventario y Rentabilidad (ACTUALIZADO 2026-02-02)
 - ✅ **Gestión de Inventario**: CRUD completo de artículos
 - ✅ **Modo Rentabilidad Global**: Toggle que muestra métricas de todos los productos
 - ✅ **DASHBOARD VISUAL DE RENTABILIDAD (RECHARTS):**
@@ -232,6 +232,16 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - Mensaje dinámico: "¡AMORTIZADO!" o "Faltan €X para recuperar"
   - Historial de últimos 10 alquileres en tabla
   - Advertencia si falta coste de compra
+- ✅ **MODO ENTRADA RÁPIDA POR ESCÁNER (NUEVO 2026-02-02):**
+  - **Toggle "Modo Entrada Rápida por Escáner"** en formulario de Añadir Artículo
+  - **Activación visual**: Fondo verde, badge "ESCÁNER: X guardados", iconos ⚡ en campos
+  - **Auto-guardado al escanear**: Al pulsar Enter en campo de código de barras, el artículo se guarda automáticamente
+  - **Limpieza inteligente del formulario**: Después de guardar, limpia campos pero MANTIENE el tipo de artículo seleccionado
+  - **Contador de sesión**: Muestra cuántos artículos se han guardado en la sesión actual
+  - **Detección de duplicados**: Si el código escaneado ya existe, abre automáticamente el modal de EDICIÓN con la ficha del artículo existente (evita duplicados)
+  - **Feedback visual**: Destello verde al guardar, naranja al detectar duplicado
+  - **Validación previa**: Requiere seleccionar tipo de artículo antes de escanear
+  - **Endpoint backend**: `GET /api/items/check-barcode/{barcode}` busca en internal_code, barcode y barcode_2
 
 ### 10. Módulo de Devoluciones (REDISEÑO TOTAL 2026-02-01)
 - ✅ **NUEVO DISEÑO: "Mostrador de Recepción"**
