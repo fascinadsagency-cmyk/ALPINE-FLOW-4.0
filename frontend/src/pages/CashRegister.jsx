@@ -962,7 +962,235 @@ export default function CashRegister() {
           </Card>
         </TabsContent>
 
-        {/* TAB 2: Cierres Pasados */}
+        {/* TAB 2: HISTORIAL / BUSCADOR */}
+        <TabsContent value="history" className="space-y-4">
+          {/* Panel de Filtros */}
+          <Card className={`${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`}>
+            <CardHeader className="py-4">
+              <CardTitle className={`text-lg flex items-center gap-2 ${darkMode ? 'text-white' : ''}`}>
+                <Search className="h-5 w-5" />
+                Buscador de Tickets y Movimientos
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                {/* Fecha Desde */}
+                <div>
+                  <Label className="text-sm">Desde</Label>
+                  <Input
+                    type="date"
+                    value={historySearch.dateFrom}
+                    onChange={(e) => setHistorySearch(prev => ({ ...prev, dateFrom: e.target.value }))}
+                    className="mt-1"
+                  />
+                </div>
+                
+                {/* Fecha Hasta */}
+                <div>
+                  <Label className="text-sm">Hasta</Label>
+                  <Input
+                    type="date"
+                    value={historySearch.dateTo}
+                    onChange={(e) => setHistorySearch(prev => ({ ...prev, dateTo: e.target.value }))}
+                    className="mt-1"
+                  />
+                </div>
+                
+                {/* Búsqueda de Texto */}
+                <div className="md:col-span-2">
+                  <Label className="text-sm">Buscar (Cliente, Ticket, Concepto)</Label>
+                  <Input
+                    placeholder="Ej: Juan García, A000123, Alquiler..."
+                    value={historySearch.query}
+                    onChange={(e) => setHistorySearch(prev => ({ ...prev, query: e.target.value }))}
+                    onKeyDown={(e) => e.key === 'Enter' && searchHistory(1)}
+                    className="mt-1"
+                  />
+                </div>
+                
+                {/* Botón Buscar */}
+                <div>
+                  <Button 
+                    onClick={() => searchHistory(1)}
+                    disabled={historyLoading}
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                  >
+                    {historyLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <Search className="h-4 w-4 mr-2" />
+                    )}
+                    Buscar
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Filtro de Método de Pago */}
+              <div className="flex gap-2 mt-4">
+                <Button 
+                  variant={historySearch.paymentMethod === 'all' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setHistorySearch(prev => ({ ...prev, paymentMethod: 'all' }))}
+                >
+                  Todos
+                </Button>
+                <Button 
+                  variant={historySearch.paymentMethod === 'cash' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setHistorySearch(prev => ({ ...prev, paymentMethod: 'cash' }))}
+                  className={historySearch.paymentMethod === 'cash' ? 'bg-emerald-600' : ''}
+                >
+                  <Banknote className="h-4 w-4 mr-1" />
+                  Efectivo
+                </Button>
+                <Button 
+                  variant={historySearch.paymentMethod === 'card' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setHistorySearch(prev => ({ ...prev, paymentMethod: 'card' }))}
+                  className={historySearch.paymentMethod === 'card' ? 'bg-purple-600' : ''}
+                >
+                  <CreditCard className="h-4 w-4 mr-1" />
+                  Tarjeta
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Resultados */}
+          <Card className={`${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`}>
+            <CardHeader className="py-3 px-5">
+              <CardTitle className={`text-base flex items-center justify-between ${darkMode ? 'text-white' : ''}`}>
+                <span className="flex items-center gap-2">
+                  <History className="h-4 w-4" />
+                  Resultados
+                  {historyTotal > 0 && (
+                    <Badge variant="secondary">{historyTotal} encontrados</Badge>
+                  )}
+                </span>
+                {historyResults.length > 0 && (
+                  <span className="text-sm font-normal text-slate-500">
+                    Página {historyPage} de {Math.ceil(historyTotal / HISTORY_PAGE_SIZE)}
+                  </span>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              {historyLoading ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : historyResults.length === 0 ? (
+                <div className={`text-center py-12 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <Search className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p>Usa los filtros y pulsa "Buscar" para encontrar movimientos</p>
+                  <p className="text-sm mt-1">Puedes buscar por nombre de cliente, número de ticket o concepto</p>
+                </div>
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[140px]">Fecha/Hora</TableHead>
+                          <TableHead className="w-[100px]">ID Ticket</TableHead>
+                          <TableHead>Cliente</TableHead>
+                          <TableHead>Concepto</TableHead>
+                          <TableHead className="w-[80px]">Método</TableHead>
+                          <TableHead className="w-[100px] text-right">Importe</TableHead>
+                          <TableHead className="w-[80px]">Acciones</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {historyResults.map((mov) => (
+                          <TableRow 
+                            key={mov.id} 
+                            className="cursor-pointer hover:bg-slate-50"
+                            onClick={() => openHistoryDetail(mov)}
+                          >
+                            <TableCell className="font-mono text-xs">
+                              {new Date(mov.created_at).toLocaleDateString('es-ES')}
+                              <br />
+                              <span className="text-slate-400">
+                                {new Date(mov.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </TableCell>
+                            <TableCell className="font-mono text-xs font-bold text-blue-600">
+                              {mov.operation_number || `#${mov.id?.substring(0, 8)}`}
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {mov.customer_name || '-'}
+                              {mov.customer_dni && (
+                                <span className="text-xs text-slate-400 ml-2">({mov.customer_dni})</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-sm">
+                              {mov.concept || mov.description || '-'}
+                            </TableCell>
+                            <TableCell>
+                              {mov.payment_method === 'cash' ? (
+                                <Badge className="bg-emerald-100 text-emerald-700">
+                                  <Banknote className="h-3 w-3 mr-1" />
+                                  Efectivo
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-purple-100 text-purple-700">
+                                  <CreditCard className="h-3 w-3 mr-1" />
+                                  Tarjeta
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className={`text-right font-bold ${mov.type === 'expense' ? 'text-red-600' : 'text-emerald-600'}`}>
+                              {mov.type === 'expense' ? '-' : '+'}€{(mov.amount || 0).toFixed(2)}
+                            </TableCell>
+                            <TableCell onClick={(e) => e.stopPropagation()}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => reprintHistoryTicket(mov)}
+                                title="Reimprimir ticket"
+                              >
+                                <Printer className="h-4 w-4 text-slate-500 hover:text-emerald-600" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Paginación */}
+                  {historyTotal > HISTORY_PAGE_SIZE && (
+                    <div className="flex justify-center gap-2 mt-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={historyPage <= 1}
+                        onClick={() => searchHistory(historyPage - 1)}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Anterior
+                      </Button>
+                      <span className="flex items-center px-4 text-sm text-slate-600">
+                        {historyPage} / {Math.ceil(historyTotal / HISTORY_PAGE_SIZE)}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={historyPage >= Math.ceil(historyTotal / HISTORY_PAGE_SIZE)}
+                        onClick={() => searchHistory(historyPage + 1)}
+                      >
+                        Siguiente
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* TAB 3: Cierres Pasados */}
         <TabsContent value="closures">
           <Card className={`${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`}>
             <CardHeader>
