@@ -610,14 +610,18 @@ export default function CashRegister() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <TabsList className="grid w-full grid-cols-3 max-w-lg">
           <TabsTrigger value="today" className="flex items-center gap-2">
             <Wallet className="h-4 w-4" />
-            Hoy
+            Caja Diaria
+          </TabsTrigger>
+          <TabsTrigger value="history" className="flex items-center gap-2">
+            <Search className="h-4 w-4" />
+            Historial
           </TabsTrigger>
           <TabsTrigger value="closures" className="flex items-center gap-2">
             <History className="h-4 w-4" />
-            Cierres Pasados
+            Cierres
           </TabsTrigger>
         </TabsList>
 
