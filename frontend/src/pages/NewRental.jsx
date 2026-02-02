@@ -2153,7 +2153,6 @@ export default function NewRental() {
                                   onBlur={(e) => updateItemDays(item.id || item.barcode, e.target.value)}
                                   data-testid={`edit-days-${item.id || item.barcode}`}
                                 />
-                                />
                               ) : (
                                 <Badge 
                                   variant="outline" 
