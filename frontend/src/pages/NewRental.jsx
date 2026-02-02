@@ -1900,16 +1900,23 @@ export default function NewRental() {
               {/* Barcode + Manual Search */}
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Barcode className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <Barcode className={`absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors ${globalScannerActive ? 'text-emerald-500 animate-pulse' : 'text-slate-400'}`} />
                   <Input
                     ref={barcodeRef}
-                    placeholder="Escanear código de barras..."
+                    placeholder={globalScannerActive ? "📡 Escáner listo..." : "Escanear código de barras..."}
                     value={barcodeInput}
                     onChange={(e) => setBarcodeInput(e.target.value)}
                     onKeyDown={addItemByBarcode}
-                    className="h-12 pl-10 text-lg font-mono"
+                    className={`h-12 pl-10 pr-10 text-lg font-mono transition-all ${
+                      globalScannerActive 
+                        ? 'border-emerald-400 ring-2 ring-emerald-200 bg-emerald-50' 
+                        : ''
+                    }`}
                     data-testid="barcode-input"
                   />
+                  {globalScannerActive && (
+                    <Radio className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500 animate-pulse" />
+                  )}
                 </div>
                 <Button 
                   variant="outline" 
@@ -1921,7 +1928,11 @@ export default function NewRental() {
                   Buscar
                 </Button>
               </div>
-              <p className="text-xs text-slate-500">Escanea el código o pulsa F3 / Alt+B para buscar manualmente</p>
+              <p className={`text-xs transition-colors ${globalScannerActive ? 'text-emerald-600 font-medium' : 'text-slate-500'}`}>
+                {globalScannerActive 
+                  ? '📡 Escáner HID detectado - Escanea para añadir artículos automáticamente' 
+                  : 'Escanea el código o pulsa F3 / Alt+B para buscar manualmente'}
+              </p>
 
               <div className="min-h-[200px] max-h-[400px] overflow-y-auto">
                 {items.length === 0 ? (
