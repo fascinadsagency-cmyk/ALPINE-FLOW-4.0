@@ -1212,9 +1212,6 @@ export default function NewRental() {
     }));
   };
 
-  // Estado para edición de precios de packs
-  const [editingPackPrice, setEditingPackPrice] = useState(null);
-
   const calculateTotal = () => {
     const subtotal = calculateSubtotal();
     let total = subtotal;
