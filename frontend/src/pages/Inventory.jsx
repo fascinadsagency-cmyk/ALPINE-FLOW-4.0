@@ -1429,13 +1429,21 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
             {/* Standard Filters */}
             <div className="flex flex-wrap gap-4">
               <form onSubmit={handleSearch} className="flex gap-2 flex-1 min-w-[200px]">
-                <Input
-                  placeholder="Buscar por código, marca o modelo..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="h-11"
-                  data-testid="inventory-search"
-                />
+                <div className="relative flex-1">
+                  <Input
+                    ref={mainSearchRef}
+                    placeholder="Buscar por código, marca o modelo..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className={`h-11 pr-10 ${globalScannerActive ? 'ring-2 ring-emerald-400 bg-emerald-50' : ''}`}
+                    data-testid="inventory-search"
+                  />
+                  {globalScannerActive && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Radio className="h-4 w-4 text-emerald-500 animate-pulse" />
+                    </div>
+                  )}
+                </div>
                 <Button type="submit" className="h-11">
                   <Search className="h-4 w-4" />
                 </Button>
