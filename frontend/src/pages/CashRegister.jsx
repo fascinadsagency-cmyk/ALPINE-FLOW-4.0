@@ -656,39 +656,62 @@ export default function CashRegister() {
                     €{(summary?.opening_balance || 0).toFixed(2)}
                   </p>
                 </div>
-                    €{(summary?.opening_balance || 0).toFixed(2)}
-                  </p>
-                </div>
 
                 {/* Efectivo Esperado en Cajón */}
-                <div className={`p-4 rounded-xl border-2 ${darkMode ? 'bg-blue-900/20 border-blue-700' : 'bg-blue-50 border-blue-200'}`}>
-                  <div className="flex items-center gap-2 mb-1">
-                    <Banknote className={`h-4 w-4 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                <div className={`p-3 rounded-lg border-2 ${darkMode ? 'bg-blue-900/20 border-blue-700' : 'bg-blue-50 border-blue-200'}`}>
+                  <div className="flex items-center gap-1.5">
+                    <Banknote className={`h-3.5 w-3.5 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                     <p className={`text-xs font-bold ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
-                      EFECTIVO EN CAJÓN
+                      EFECTIVO
                     </p>
+                    <button 
+                      onClick={() => toggleMetricVisibility('efectivo')}
+                      className="p-0.5 rounded hover:bg-blue-200/50"
+                    >
+                      {visibleMetrics.efectivo ? <Eye className="h-3 w-3 text-blue-400" /> : <EyeOff className="h-3 w-3 text-blue-400" />}
+                    </button>
                   </div>
-                  <p className={`text-2xl font-bold ${darkMode ? 'text-blue-300' : 'text-blue-800'}`}>
+                  <p className={`text-lg font-bold ${darkMode ? 'text-blue-300' : 'text-blue-800'} ${!visibleMetrics.efectivo ? 'blur-sm select-none' : ''}`}>
                     €{(summary?.efectivo_esperado || 0).toFixed(2)}
-                  </p>
-                  <p className={`text-xs mt-1 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                    Fondo + (Entradas - Salidas) efectivo
                   </p>
                 </div>
 
                 {/* Total Tarjeta */}
-                <div className={`p-4 rounded-xl border-2 ${darkMode ? 'bg-purple-900/20 border-purple-700' : 'bg-purple-50 border-purple-200'}`}>
-                  <div className="flex items-center gap-2 mb-1">
-                    <CreditCard className={`h-4 w-4 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
+                <div className={`p-3 rounded-lg border-2 ${darkMode ? 'bg-purple-900/20 border-purple-700' : 'bg-purple-50 border-purple-200'}`}>
+                  <div className="flex items-center gap-1.5">
+                    <CreditCard className={`h-3.5 w-3.5 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                     <p className={`text-xs font-bold ${darkMode ? 'text-purple-300' : 'text-purple-700'}`}>
-                      TOTAL TARJETA
+                      TARJETA
                     </p>
+                    <button 
+                      onClick={() => toggleMetricVisibility('tarjeta')}
+                      className="p-0.5 rounded hover:bg-purple-200/50"
+                    >
+                      {visibleMetrics.tarjeta ? <Eye className="h-3 w-3 text-purple-400" /> : <EyeOff className="h-3 w-3 text-purple-400" />}
+                    </button>
                   </div>
-                  <p className={`text-2xl font-bold ${(summary?.tarjeta_esperada || 0) >= 0 ? (darkMode ? 'text-purple-300' : 'text-purple-800') : 'text-red-600'}`}>
+                  <p className={`text-lg font-bold ${(summary?.tarjeta_esperada || 0) >= 0 ? (darkMode ? 'text-purple-300' : 'text-purple-800') : 'text-red-600'} ${!visibleMetrics.tarjeta ? 'blur-sm select-none' : ''}`}>
                     {(summary?.tarjeta_esperada || 0) < 0 ? '-' : ''}€{Math.abs(summary?.tarjeta_esperada || 0).toFixed(2)}
                   </p>
-                  <p className={`text-xs mt-1 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
-                    Entradas - Salidas tarjeta
+                </div>
+
+                {/* Movimientos count */}
+                <div className={`p-3 rounded-lg ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                  <p className={`text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Movimientos
+                  </p>
+                  <p className={`text-lg font-bold mt-0.5 ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+                    {summary?.movements_count || 0}
+                  </p>
+                </div>
+
+                {/* Session status */}
+                <div className={`p-3 rounded-lg ${activeSession ? 'bg-emerald-100 border border-emerald-300' : 'bg-amber-100 border border-amber-300'}`}>
+                  <p className={`text-xs font-medium ${activeSession ? 'text-emerald-700' : 'text-amber-700'}`}>
+                    Estado
+                  </p>
+                  <p className={`text-lg font-bold mt-0.5 ${activeSession ? 'text-emerald-800' : 'text-amber-800'}`}>
+                    {activeSession ? '✓ Abierta' : '⚠ Cerrada'}
                   </p>
                 </div>
               </div>
@@ -698,23 +721,24 @@ export default function CashRegister() {
           {/* Session Status + Actions */}
           {!activeSession ? (
             <Card className="border-2 border-amber-300 bg-amber-50">
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="h-6 w-6 text-amber-600 flex-shrink-0" />
+              <CardContent className="py-4">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0" />
                   <div className="flex-1">
-                    <p className="font-bold text-amber-900">⚠️ No hay caja abierta</p>
-                    <p className="text-sm text-amber-800 mt-1">
-                      Debes abrir la caja para registrar movimientos. Los cobros sin caja abierta no se registrarán.
+                    <p className="font-bold text-amber-900 text-sm">No hay caja abierta</p>
+                    <p className="text-xs text-amber-800">
+                      Los cobros sin caja abierta no se registrarán.
                     </p>
-                    <Button 
-                      onClick={() => setShowOpenSessionDialog(true)}
-                      className="mt-3 bg-amber-600 hover:bg-amber-700"
-                      data-testid="open-cash-btn"
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Abrir Caja Ahora
-                    </Button>
                   </div>
+                  <Button 
+                    onClick={() => setShowOpenSessionDialog(true)}
+                    className="bg-amber-600 hover:bg-amber-700"
+                    size="sm"
+                    data-testid="open-cash-btn"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Abrir Caja
+                  </Button>
                 </div>
               </CardContent>
             </Card>
