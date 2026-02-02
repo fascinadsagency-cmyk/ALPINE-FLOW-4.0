@@ -137,13 +137,14 @@ export default function Layout() {
         <div className={`fixed inset-0 z-40 pt-14 lg:hidden transition-colors duration-300 ${
           darkMode ? 'bg-slate-800' : 'bg-white'
         }`}>
-          <nav className="space-y-1 p-4 max-h-[calc(100vh-8rem)] overflow-y-auto">
+          <nav className="space-y-1 p-4 max-h-[calc(100vh-8rem)] overflow-y-auto" role="navigation" aria-label="Mobile navigation">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.to === "/"}
                 onClick={() => setMobileMenuOpen(false)}
+                tabIndex={-1}
                 className={({ isActive }) =>
                   cn(
                     "flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium transition-colors",
@@ -155,7 +156,7 @@ export default function Layout() {
                   )
                 }
               >
-                <item.icon className="h-5 w-5" />
+                <item.icon className="h-5 w-5" aria-hidden="true" tabIndex={-1} />
                 {item.label}
               </NavLink>
             ))}
