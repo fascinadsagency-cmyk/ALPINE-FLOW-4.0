@@ -2448,7 +2448,7 @@ export default function NewRental() {
               )}
 
               <div className="flex items-center justify-between p-4 rounded-xl bg-primary/5 mt-4">
-                <div className="flex-1">
+                <div className="flex-1" tabIndex={-1}>
                   {(hasDiscount || getProviderDiscount() > 0) && (
                     <p className="text-sm text-slate-500 line-through">€{subtotal.toFixed(2)}</p>
                   )}
@@ -2465,23 +2465,37 @@ export default function NewRental() {
                       )}
                     </div>
                     {(hasDiscount || getProviderDiscount() > 0) && (
-                      <Badge className="bg-emerald-100 text-emerald-700">
+                      <Badge className="bg-emerald-100 text-emerald-700" tabIndex={-1}>
                         -€{(subtotal - total).toFixed(2)}
                       </Badge>
                     )}
                   </div>
                 </div>
                 <Button
+                  ref={submitRef}
                   size="lg"
                   onClick={completeRental}
                   disabled={loading || !customer || items.length === 0}
+                  tabIndex={4}
+                  onKeyDown={(e) => {
+                    // Tab navigation
+                    if (e.key === 'Tab' && !isEditingCartItem) {
+                      e.preventDefault();
+                      if (e.shiftKey) {
+                        focusPrevField('submit');
+                      } else {
+                        focusNextField('submit');
+                      }
+                      return;
+                    }
+                  }}
                   className="h-14 px-8 text-lg font-semibold"
                   data-testid="complete-rental-btn"
                 >
                   {loading ? (
-                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" tabIndex={-1} aria-hidden="true" />
                   ) : (
-                    <Check className="h-5 w-5 mr-2" />
+                    <Check className="h-5 w-5 mr-2" tabIndex={-1} aria-hidden="true" />
                   )}
                   Completar Alquiler
                 </Button>
@@ -2491,33 +2505,39 @@ export default function NewRental() {
         </div>
       </div>
 
-      {/* New Customer Dialog */}
+      {/* New Customer Dialog - With Focus Trap */}
       <Dialog open={showNewCustomer} onOpenChange={setShowNewCustomer}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Nuevo Cliente</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>DNI/Pasaporte *</Label>
-                <Input
-                  value={newCustomer.dni}
-                  onChange={(e) => setNewCustomer({ ...newCustomer, dni: e.target.value.toUpperCase() })}
-                  className="h-11 mt-1"
-                  data-testid="new-customer-dni"
-                />
+          <FocusTrap active={showNewCustomer} onEscape={() => setShowNewCustomer(false)}>
+            <DialogHeader>
+              <DialogTitle>Nuevo Cliente</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>DNI/Pasaporte *</Label>
+                  <Input
+                    value={newCustomer.dni}
+                    onChange={(e) => setNewCustomer({ ...newCustomer, dni: e.target.value.toUpperCase() })}
+                    className="h-11 mt-1"
+                    data-testid="new-customer-dni"
+                    tabIndex={1}
+                    autoFocus
+                    autoComplete="off"
+                  />
+                </div>
+                <div>
+                  <Label>Teléfono</Label>
+                  <Input
+                    value={newCustomer.phone}
+                    onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
+                    className="h-11 mt-1"
+                    data-testid="new-customer-phone"
+                    tabIndex={2}
+                    autoComplete="off"
+                  />
+                </div>
               </div>
-              <div>
-                <Label>Teléfono</Label>
-                <Input
-                  value={newCustomer.phone}
-                  onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
-                  className="h-11 mt-1"
-                  data-testid="new-customer-phone"
-                />
-              </div>
-            </div>
             <div>
               <Label>Nombre Completo *</Label>
               <Input
