@@ -1872,38 +1872,69 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
             ) : (
               <>
                 {/* Regular Item Fields (with traceability) */}
-                <div className="p-3 bg-slate-50 rounded-lg border">
-                  <p className="text-xs font-semibold text-slate-500 uppercase mb-3">Identificación</p>
+                <div className={`p-3 rounded-lg border transition-all duration-200 ${
+                  scannerMode ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-slate-200'
+                }`}>
+                  <p className="text-xs font-semibold text-slate-500 uppercase mb-3 flex items-center gap-2">
+                    Identificación
+                    {scannerMode && (
+                      <span className="text-emerald-600 text-[10px] font-normal">
+                        (Escanea y pulsa Enter para guardar automáticamente)
+                      </span>
+                    )}
+                  </p>
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <Label className="text-sm font-semibold">Código Interno *</Label>
                       <Input
+                        ref={internalCodeInputRef}
                         value={newItem.internal_code}
                         onChange={(e) => setNewItem({ ...newItem, internal_code: e.target.value.toUpperCase() })}
-                        placeholder="SKI-001"
-                        className="h-10 mt-1 font-mono font-semibold text-sm border-2 border-primary/50 focus:border-primary"
+                        onKeyDown={(e) => handleScannerEnter(e, 'internal_code')}
+                        placeholder={scannerMode ? "Escanea aquí..." : "SKI-001"}
+                        className={`h-10 mt-1 font-mono font-semibold text-sm border-2 ${
+                          scannerMode 
+                            ? 'border-emerald-400 focus:border-emerald-600 bg-white' 
+                            : 'border-primary/50 focus:border-primary'
+                        }`}
                         data-testid="new-item-internal-code"
-                        autoFocus
+                        autoFocus={!scannerMode}
+                        disabled={scannerSaving}
                       />
                     </div>
                     <div>
-                      <Label className="text-sm">Cód. Barras</Label>
+                      <Label className="text-sm">Cód. Barras {scannerMode && <span className="text-emerald-600">⚡</span>}</Label>
                       <Input
+                        ref={barcodeInputRef}
                         value={newItem.barcode}
                         onChange={(e) => setNewItem({ ...newItem, barcode: e.target.value })}
-                        placeholder="Auto-genera"
-                        className="h-10 mt-1 font-mono text-sm"
+                        onKeyDown={(e) => handleScannerEnter(e, 'barcode')}
+                        placeholder={scannerMode ? "📡 Escanea aquí..." : "Auto-genera"}
+                        className={`h-10 mt-1 font-mono text-sm ${
+                          scannerMode 
+                            ? 'border-2 border-emerald-400 focus:border-emerald-600 bg-white' 
+                            : ''
+                        }`}
                         data-testid="new-item-barcode"
+                        autoFocus={scannerMode}
+                        disabled={scannerSaving}
                       />
                     </div>
                     <div>
-                      <Label className="text-sm">Cód. Barras 2</Label>
+                      <Label className="text-sm">Cód. Barras 2 {scannerMode && <span className="text-emerald-600">⚡</span>}</Label>
                       <Input
+                        ref={barcode2InputRef}
                         value={newItem.barcode_2}
                         onChange={(e) => setNewItem({ ...newItem, barcode_2: e.target.value })}
-                        placeholder="Escanear código secundario..."
-                        className="h-10 mt-1 font-mono text-sm"
+                        onKeyDown={(e) => handleScannerEnter(e, 'barcode_2')}
+                        placeholder={scannerMode ? "📡 Escanea aquí..." : "Escanear código secundario..."}
+                        className={`h-10 mt-1 font-mono text-sm ${
+                          scannerMode 
+                            ? 'border-2 border-emerald-400 focus:border-emerald-600 bg-white' 
+                            : ''
+                        }`}
                         data-testid="new-item-barcode-2"
+                        disabled={scannerSaving}
                       />
                     </div>
                     <div>
@@ -1914,6 +1945,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                         placeholder="Fabricante"
                         className="h-10 mt-1 font-mono text-sm"
                         data-testid="new-item-serial"
+                        disabled={scannerSaving}
                       />
                     </div>
                   </div>
