@@ -3037,7 +3037,11 @@ async def update_rental_payment_method(
     # Get current active cash session
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     active_session = await db.cash_sessions.find_one({"date": today, "status": "open"})
-    session_id = active_session["id"] if active_session else None
+    
+    if not active_session:
+        raise HTTPException(status_code=400, detail="No active cash session. Please open the cash register first.")
+    
+    session_id = active_session["id"]
     
     # ========== CASE 1: Income -> Income (Move between cash registers) ==========
     if old_is_paid and new_is_paid:
