@@ -2639,22 +2639,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                     className="h-11 mt-1"
                   />
                 </div>
-                <div>
-                  <Label>Categoría</Label>
-                  <Select 
-                    value={editingItem.category} 
-                    onValueChange={(v) => setEditingItem({ ...editingItem, category: v })}
-                  >
-                    <SelectTrigger className="h-11 mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="SUPERIOR">Gama Superior</SelectItem>
-                      <SelectItem value="ALTA">Gama Alta</SelectItem>
-                      <SelectItem value="MEDIA">Gama Media</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* CAMPO CATEGORÍA/GAMA ELIMINADO del formulario de edición */}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
