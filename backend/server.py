@@ -3045,7 +3045,7 @@ async def update_rental_payment_method(
         
         # Remove from old cash register
         await db.cash_movements.insert_one({
-            "id": str(uuid4()),
+            "id": str(uuid.uuid4()),
             "session_id": session_id,  # CRITICAL: Link to cash session
             "date": datetime.now(timezone.utc).isoformat(),
             "movement_type": "adjustment",  # Use movement_type for consistency
@@ -3060,7 +3060,7 @@ async def update_rental_payment_method(
         
         # Add to new cash register
         await db.cash_movements.insert_one({
-            "id": str(uuid4()),
+            "id": str(uuid.uuid4()),
             "session_id": session_id,  # CRITICAL: Link to cash session
             "date": datetime.now(timezone.utc).isoformat(),
             "movement_type": "income",  # Use movement_type for consistency
@@ -3079,7 +3079,7 @@ async def update_rental_payment_method(
         
         # Remove from cash register (negative adjustment)
         await db.cash_movements.insert_one({
-            "id": str(uuid4()),
+            "id": str(uuid.uuid4()),
             "session_id": session_id,  # CRITICAL: Link to cash session
             "date": datetime.now(timezone.utc).isoformat(),
             "movement_type": "adjustment",  # Use movement_type for consistency
@@ -3104,7 +3104,7 @@ async def update_rental_payment_method(
         
         # Add to cash register
         await db.cash_movements.insert_one({
-            "id": str(uuid4()),
+            "id": str(uuid.uuid4()),
             "session_id": session_id,  # CRITICAL: Link to cash session
             "date": datetime.now(timezone.utc).isoformat(),
             "movement_type": "income",  # Use movement_type for consistency
