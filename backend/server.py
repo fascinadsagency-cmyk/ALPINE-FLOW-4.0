@@ -685,6 +685,70 @@ async def delete_customer(customer_id: str, current_user: dict = Depends(get_cur
     await db.customers.delete_one({"id": customer_id})
     return {"message": "Customer deleted successfully"}
 
+# ========== BULK OPERATIONS ==========
+
+class BulkCustomerIdsRequest(BaseModel):
+    customer_ids: List[str]
+
+@api_router.post("/customers/check-active-rentals")
+async def check_customers_active_rentals(request: BulkCustomerIdsRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Verifica qué clientes tienen alquileres activos.
+    Devuelve lista de clientes que NO pueden ser eliminados.
+    """
+    customers_with_rentals = []
+    
+    for customer_id in request.customer_ids:
+        active_count = await db.rentals.count_documents({
+            "customer_id": customer_id,
+            "status": {"$in": ["active", "partial"]}
+        })
+        
+        if active_count > 0:
+            customer = await db.customers.find_one({"id": customer_id}, {"_id": 0, "id": 1, "name": 1, "dni": 1})
+            if customer:
+                customer["active_rentals"] = active_count
+                customers_with_rentals.append(customer)
+    
+    return {"customers_with_rentals": customers_with_rentals}
+
+@api_router.post("/customers/bulk-delete")
+async def bulk_delete_customers(request: BulkCustomerIdsRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Elimina múltiples clientes a la vez.
+    Solo elimina clientes SIN alquileres activos.
+    """
+    deleted = 0
+    failed = 0
+    failed_customers = []
+    
+    for customer_id in request.customer_ids:
+        # Check if customer has active rentals
+        active_count = await db.rentals.count_documents({
+            "customer_id": customer_id,
+            "status": {"$in": ["active", "partial"]}
+        })
+        
+        if active_count > 0:
+            failed += 1
+            customer = await db.customers.find_one({"id": customer_id}, {"_id": 0, "id": 1, "name": 1, "dni": 1})
+            if customer:
+                failed_customers.append(customer)
+            continue
+        
+        # Safe to delete
+        result = await db.customers.delete_one({"id": customer_id})
+        if result.deleted_count > 0:
+            deleted += 1
+        else:
+            failed += 1
+    
+    return {
+        "deleted": deleted,
+        "failed": failed,
+        "failed_customers": failed_customers
+    }
+
 # Import customers endpoint
 class CustomerImportItem(BaseModel):
     dni: str
