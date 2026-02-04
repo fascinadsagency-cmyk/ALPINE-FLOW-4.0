@@ -1949,6 +1949,96 @@ export default function Customers() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Dialog de confirmación de borrado masivo */}
+      <Dialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="h-5 w-5" />
+              Eliminar Clientes
+            </DialogTitle>
+            <DialogDescription>
+              Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4 space-y-4">
+            {/* Resumen de selección */}
+            <div className="p-3 bg-slate-50 rounded-lg">
+              <p className="text-sm font-medium text-slate-700">
+                ¿Estás seguro de que quieres eliminar{' '}
+                <span className="text-red-600 font-bold">{selectedCustomers.size}</span>{' '}
+                cliente{selectedCustomers.size !== 1 ? 's' : ''}?
+              </p>
+            </div>
+            
+            {/* Advertencia de clientes con alquileres activos */}
+            {customersWithActiveRentals.length > 0 && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-amber-800">
+                      {customersWithActiveRentals.length} cliente{customersWithActiveRentals.length !== 1 ? 's' : ''} tiene{customersWithActiveRentals.length === 1 ? '' : 'n'} alquileres activos
+                    </p>
+                    <p className="text-xs text-amber-600 mt-1">
+                      Estos clientes NO serán eliminados:
+                    </p>
+                    <ul className="text-xs text-amber-700 mt-1 list-disc list-inside">
+                      {customersWithActiveRentals.slice(0, 5).map(c => (
+                        <li key={c.id}>{c.name} - {c.dni}</li>
+                      ))}
+                      {customersWithActiveRentals.length > 5 && (
+                        <li>y {customersWithActiveRentals.length - 5} más...</li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Contador de clientes que SÍ se eliminarán */}
+            {customersWithActiveRentals.length > 0 && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-700">
+                  <span className="font-bold">{selectedCustomers.size - customersWithActiveRentals.length}</span>{' '}
+                  cliente{(selectedCustomers.size - customersWithActiveRentals.length) !== 1 ? 's' : ''}{' '}
+                  será{(selectedCustomers.size - customersWithActiveRentals.length) !== 1 ? 'n' : ''} eliminado{(selectedCustomers.size - customersWithActiveRentals.length) !== 1 ? 's' : ''}.
+                </p>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowBulkDeleteDialog(false)}
+              disabled={bulkDeleteLoading}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={bulkDeleteCustomers}
+              disabled={bulkDeleteLoading || (selectedCustomers.size === customersWithActiveRentals.length)}
+              data-testid="confirm-bulk-delete-btn"
+            >
+              {bulkDeleteLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Eliminando...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Eliminar {selectedCustomers.size - customersWithActiveRentals.length} Cliente{(selectedCustomers.size - customersWithActiveRentals.length) !== 1 ? 's' : ''}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
