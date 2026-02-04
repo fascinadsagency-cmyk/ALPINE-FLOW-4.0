@@ -2972,9 +2972,6 @@ async def update_rental_days(rental_id: str, update_data: UpdateRentalDaysReques
     updated = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
     return RentalResponse(**updated)
 
-# Refund request model
-class RefundRequest(BaseModel):
-
 # ============ PAYMENT METHOD CONSTANTS ============
 # Classification of payment methods for accounting
 PAID_METHODS = ["cash", "card", "online", "deposit", "other"]  # GRUPO A: Real income
@@ -3133,6 +3130,8 @@ async def update_rental_payment_method(
         }
     }
 
+# Refund request model
+class RefundRequest(BaseModel):
     days_to_refund: int
     refund_amount: float
     payment_method: str = "cash"
