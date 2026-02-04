@@ -5083,6 +5083,7 @@ class CashMovementResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
     operation_number: Optional[str] = None  # Format: AXXXXXX
+    session_id: Optional[str] = None  # Cash session ID
     movement_type: str
     amount: float
     payment_method: str
