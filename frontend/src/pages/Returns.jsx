@@ -1333,7 +1333,10 @@ export default function Returns() {
       .filter(i => !i.returned)
       .map(i => i.barcode);
     setScannedBarcodes(allPendingBarcodes);
-    toast.success(`${allPendingBarcodes.length} artículos marcados para devolver`);
+    const totalUnits = rental.items
+      .filter(i => !i.returned)
+      .reduce((sum, i) => sum + (i.quantity || 1), 0);
+    toast.success(`${totalUnits} unidades marcadas para devolver`);
   };
 
   // Calcular si todos están listos
@@ -1728,7 +1731,7 @@ export default function Returns() {
                           <p className="font-bold text-slate-900">{r.customer_name}</p>
                           <div className="flex items-center gap-2 text-sm text-slate-500">
                             <Package className="h-3 w-3" />
-                            <span>{r.pending_items?.length || r.items?.filter(i => !i.returned).length || '?'} artículos</span>
+                            <span>{r.pending_items?.reduce((sum, i) => sum + (i.quantity || 1), 0) || r.items?.filter(i => !i.returned).reduce((sum, i) => sum + (i.quantity || 1), 0) || '?'} unidades</span>
                             <span className="text-slate-300">•</span>
                             <span>€{r.total_amount?.toFixed(2)}</span>
                           </div>
@@ -2654,7 +2657,10 @@ export default function Returns() {
 
             {/* Items a devolver */}
             <div className="text-sm text-slate-500">
-              <span className="font-medium">{settlementData.itemsToReturn?.length || 0} artículo(s)</span> serán marcados como devueltos
+              <span className="font-medium">{settlementData.itemsToReturn?.reduce((sum, barcode) => {
+                const item = rental?.items.find(i => i.barcode === barcode);
+                return sum + (item?.quantity || 1);
+              }, 0) || 0} unidad(es)</span> serán marcados como devueltos
             </div>
           </div>
 
