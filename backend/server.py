@@ -3330,6 +3330,243 @@ async def get_external_services(current_user: dict = Depends(get_current_user)):
     """Returns available services and their default prices"""
     return EXTERNAL_SERVICES
 
+# ==================== FINANCIAL CALCULATOR SERVICE (SINGLE SOURCE OF TRUTH) ====================
+
+class FinancialCalculatorService:
+    """
+    Servicio centralizado de cálculo financiero.
+    
+    REGLA FUNDAMENTAL: Ambas vistas (Caja y Reportes) DEBEN usar este servicio
+    para garantizar que los totales SIEMPRE coincidan.
+    
+    FUENTE DE DATOS: cash_movements (única fuente de verdad)
+    - Todos los cobros de alquileres crean un cash_movement
+    - Todos los ajustes, devoluciones, gastos crean cash_movements
+    - Los reportes NUNCA deben leer de rentals.paid_amount directamente
+    
+    MANEJO DE DEVOLUCIONES:
+    - Las devoluciones se restan del día en que OCURREN (flujo de caja real)
+    - No se modifican los días anteriores
+    
+    TIMEZONE: Todas las fechas usan el formato ISO local (YYYY-MM-DDT00:00:00)
+    """
+    
+    @staticmethod
+    async def get_financial_summary(
+        start_date: str,
+        end_date: str,
+        session_id: str = None,
+        include_manual_movements: bool = True,
+        include_deposits: bool = True
+    ) -> dict:
+        """
+        Calcula el resumen financiero para un rango de fechas.
+        
+        Args:
+            start_date: Fecha inicio (YYYY-MM-DD)
+            end_date: Fecha fin (YYYY-MM-DD)
+            session_id: Si se proporciona, filtra por sesión específica
+            include_manual_movements: Incluir entradas/salidas manuales de caja
+            include_deposits: Incluir fianzas
+            
+        Returns:
+            dict con totales por método de pago y tipo de movimiento
+        """
+        start_dt = f"{start_date}T00:00:00"
+        end_dt = f"{end_date}T23:59:59"
+        
+        # Construir filtro base
+        match_filter = {
+            "created_at": {"$gte": start_dt, "$lte": end_dt}
+        }
+        
+        # Filtrar por sesión si se proporciona
+        if session_id:
+            match_filter["session_id"] = session_id
+        
+        # Excluir tipos de movimiento según configuración
+        exclude_types = []
+        if not include_manual_movements:
+            exclude_types.extend(["manual_entry", "manual_withdrawal", "adjustment"])
+        if not include_deposits:
+            exclude_types.extend(["deposit", "deposit_return"])
+        
+        if exclude_types:
+            match_filter["type"] = {"$nin": exclude_types}
+        
+        # Pipeline de agregación unificado
+        pipeline = [
+            {"$match": match_filter},
+            {"$group": {
+                "_id": {
+                    "movement_type": "$movement_type",
+                    "payment_method": {"$ifNull": ["$payment_method", "cash"]},
+                    "category": {"$ifNull": ["$category", "other"]}
+                },
+                "total": {"$sum": "$amount"},
+                "count": {"$sum": 1}
+            }}
+        ]
+        
+        results = await db.cash_movements.aggregate(pipeline).to_list(200)
+        
+        # Inicializar estructura de resultados
+        summary = {
+            "period": {"start": start_date, "end": end_date},
+            "by_payment_method": {
+                "cash": {"income": 0, "expense": 0, "refund": 0, "neto": 0, "count": 0},
+                "card": {"income": 0, "expense": 0, "refund": 0, "neto": 0, "count": 0}
+            },
+            "by_category": {
+                "rental": {"total": 0, "count": 0},
+                "rental_adjustment": {"total": 0, "count": 0},
+                "swap_supplement": {"total": 0, "count": 0},
+                "swap_refund": {"total": 0, "count": 0},
+                "return": {"total": 0, "count": 0},
+                "external_repair": {"total": 0, "count": 0},
+                "manual": {"total": 0, "count": 0},
+                "other": {"total": 0, "count": 0}
+            },
+            "totals": {
+                "gross_income": 0,
+                "total_expenses": 0,
+                "total_refunds": 0,
+                "net_balance": 0,
+                "cash_neto": 0,
+                "card_neto": 0
+            },
+            "movements_count": 0
+        }
+        
+        # Procesar resultados
+        for r in results:
+            movement_type = r["_id"]["movement_type"]
+            payment_method = r["_id"]["payment_method"]
+            category = r["_id"]["category"]
+            amount = r["total"]
+            count = r["count"]
+            
+            summary["movements_count"] += count
+            
+            # Asegurar que el método existe
+            if payment_method not in summary["by_payment_method"]:
+                summary["by_payment_method"][payment_method] = {
+                    "income": 0, "expense": 0, "refund": 0, "neto": 0, "count": 0
+                }
+            
+            # Acumular por tipo de movimiento
+            if movement_type == "income":
+                summary["by_payment_method"][payment_method]["income"] += amount
+                summary["by_payment_method"][payment_method]["count"] += count
+                summary["totals"]["gross_income"] += amount
+            elif movement_type == "expense":
+                summary["by_payment_method"][payment_method]["expense"] += amount
+                summary["totals"]["total_expenses"] += amount
+            elif movement_type == "refund":
+                summary["by_payment_method"][payment_method]["refund"] += amount
+                summary["totals"]["total_refunds"] += amount
+            
+            # Acumular por categoría
+            if category in summary["by_category"]:
+                if movement_type == "income":
+                    summary["by_category"][category]["total"] += amount
+                elif movement_type == "refund":
+                    summary["by_category"][category]["total"] -= amount
+                summary["by_category"][category]["count"] += count
+        
+        # Calcular netos por método de pago
+        for method in summary["by_payment_method"]:
+            m = summary["by_payment_method"][method]
+            m["neto"] = m["income"] - m["expense"] - m["refund"]
+        
+        summary["totals"]["cash_neto"] = summary["by_payment_method"]["cash"]["neto"]
+        summary["totals"]["card_neto"] = summary["by_payment_method"]["card"]["neto"]
+        summary["totals"]["net_balance"] = (
+            summary["totals"]["gross_income"] - 
+            summary["totals"]["total_expenses"] - 
+            summary["totals"]["total_refunds"]
+        )
+        
+        return summary
+    
+    @staticmethod
+    async def get_reconciliation_data(start_date: str, end_date: str) -> dict:
+        """
+        Genera datos de reconciliación para depurar discrepancias.
+        
+        Compara:
+        1. Lo que dice cash_movements
+        2. Lo que dice rentals.paid_amount
+        3. Identifica transacciones huérfanas
+        """
+        start_dt = f"{start_date}T00:00:00"
+        end_dt = f"{end_date}T23:59:59"
+        
+        # 1. Obtener todos los cash_movements del período
+        movements = await db.cash_movements.find({
+            "created_at": {"$gte": start_dt, "$lte": end_dt}
+        }, {"_id": 0}).to_list(5000)
+        
+        # 2. Obtener todos los rentals del período
+        rentals = await db.rentals.find({
+            "created_at": {"$gte": start_dt, "$lte": end_dt}
+        }, {"_id": 0, "id": 1, "paid_amount": 1, "payment_method": 1, "customer_name": 1}).to_list(5000)
+        
+        # 3. Calcular totales de cada fuente
+        movements_total = {
+            "cash": sum(m["amount"] for m in movements if m.get("payment_method") == "cash" and m.get("movement_type") == "income"),
+            "card": sum(m["amount"] for m in movements if m.get("payment_method") == "card" and m.get("movement_type") == "income")
+        }
+        
+        rentals_total = {
+            "cash": sum(r.get("paid_amount", 0) for r in rentals if r.get("payment_method") == "cash"),
+            "card": sum(r.get("paid_amount", 0) for r in rentals if r.get("payment_method") == "card")
+        }
+        
+        # 4. Identificar discrepancias
+        # Rentals sin movimiento de caja correspondiente
+        rental_ids_with_movement = set(
+            m.get("rental_id") for m in movements 
+            if m.get("rental_id") and m.get("category") == "rental"
+        )
+        orphan_rentals = [
+            {"id": r["id"], "amount": r.get("paid_amount", 0), "customer": r.get("customer_name")}
+            for r in rentals 
+            if r["id"] not in rental_ids_with_movement and r.get("paid_amount", 0) > 0
+        ]
+        
+        # Movimientos sin rental correspondiente
+        rental_ids = set(r["id"] for r in rentals)
+        orphan_movements = [
+            {"id": m.get("id"), "rental_id": m.get("rental_id"), "amount": m.get("amount")}
+            for m in movements 
+            if m.get("rental_id") and m.get("rental_id") not in rental_ids and m.get("category") == "rental"
+        ]
+        
+        # 5. Calcular diferencias
+        discrepancy = {
+            "cash": movements_total["cash"] - rentals_total["cash"],
+            "card": movements_total["card"] - rentals_total["card"]
+        }
+        
+        return {
+            "period": {"start": start_date, "end": end_date},
+            "cash_movements_totals": movements_total,
+            "rentals_totals": rentals_total,
+            "discrepancy": discrepancy,
+            "orphan_rentals": orphan_rentals[:50],  # Limitar a 50
+            "orphan_movements": orphan_movements[:50],
+            "explanation": {
+                "positive_discrepancy": "cash_movements tiene más → puede incluir ajustes, reparaciones, etc.",
+                "negative_discrepancy": "rentals tiene más → hay alquileres sin registro en caja",
+                "expected": "Normalmente cash_movements >= rentals porque incluye más tipos de transacciones"
+            }
+        }
+
+
+# Instancia global del servicio
+financial_service = FinancialCalculatorService()
+
 # ==================== REPORTS ROUTES ====================
 
 @api_router.get("/reports/daily", response_model=DailyReportResponse)
