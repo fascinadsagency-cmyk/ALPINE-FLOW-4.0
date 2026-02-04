@@ -263,8 +263,13 @@ class PaymentMethodTester:
                                     f"{len(recent_movements)} movements with session_id")
                         return True
                     else:
+                        # Debug: show what movements we found
+                        movement_details = []
+                        for m in recent_movements:
+                            movement_details.append(f"Type: {m.get('movement_type')}, Amount: {m.get('amount')}, Method: {m.get('payment_method')}, Session: {m.get('session_id') is not None}")
+                        
                         self.log_test("TEST 1 - Cash to Card Change", False, 
-                                    f"Movements missing session_id or insufficient count: {len(recent_movements)}")
+                                    f"Movements issue - Count: {len(recent_movements)}, Session linked: {session_linked}. Details: {movement_details}")
                         return False
                 else:
                     self.log_test("TEST 1 - Cash to Card Change", False, "Could not verify movements")
