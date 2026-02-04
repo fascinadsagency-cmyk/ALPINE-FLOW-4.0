@@ -62,6 +62,7 @@ const ALL_COLUMNS = [
 ];
 
 const DEFAULT_VISIBLE_COLUMNS = ["internal_code", "barcode", "barcode_2", "item_type", "brand_model", "size", "status", "stock", "days_used", "maintenance"];
+// "category" (Gama) ELIMINADA de las columnas visibles por defecto
 const DEFAULT_COLUMN_ORDER = ALL_COLUMNS.map(c => c.id);
 
 // Sortable Header Component
