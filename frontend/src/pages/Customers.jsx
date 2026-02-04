@@ -781,6 +781,14 @@ export default function Customers() {
         <div className="flex gap-2">
           <Button 
             variant="outline" 
+            onClick={() => exportCustomers()}
+            data-testid="export-customers-btn"
+          >
+            <Download className="h-5 w-5 mr-2" />
+            Exportar
+          </Button>
+          <Button 
+            variant="outline" 
             onClick={() => setShowImportDialog(true)}
             data-testid="import-customers-btn"
           >
