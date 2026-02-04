@@ -62,6 +62,37 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
 - ✅ **Reportes Flexibles:** Filtro por rango, botones de selección rápida
 - ✅ **Rentabilidad de Inventario:** Trackear coste, ingresos, amortización
 
+### 2b. PWA Offline-First (NUEVO 2026-02-04)
+- ✅ **Base de Datos Local (Dexie.js/IndexedDB):**
+  - Tablas replicadas: customers, items, rentals, tariffs, packs, sources, itemTypes
+  - Tabla syncQueue para operaciones pendientes
+  - Tabla tempIdMappings para gestión de IDs temporales
+  - Archivo: `/app/frontend/src/lib/offlineDb.js`
+- ✅ **Servicio de Sincronización:**
+  - Descarga inicial de datos del servidor a IndexedDB
+  - Cola de operaciones (create, update, delete) para modo offline
+  - Re-sincronización automática al recuperar conexión (`window.addEventListener('online')`)
+  - Gestión de IDs temporales (`temp_xxxx`) → sustituidos por IDs reales del servidor
+  - Archivo: `/app/frontend/src/lib/syncService.js`
+- ✅ **Service Worker (Cache de App):**
+  - Cachea archivos estáticos (HTML, CSS, JS)
+  - Estrategia Cache-First para assets, Network-First para API
+  - Soporte para instalación como app nativa
+  - Archivo: `/app/frontend/public/sw.js`
+- ✅ **Indicador de Estado Offline:**
+  - Icono Wifi/WifiOff en la barra superior
+  - Badge con contador de operaciones pendientes
+  - Popover con estadísticas de BD local
+  - Botones "Descargar datos" y "Sincronizar"
+  - Componente: `/app/frontend/src/components/OfflineIndicator.jsx`
+- ✅ **Contexto React para Offline:**
+  - `useOffline()` hook para acceder al estado
+  - Funciones CRUD con soporte offline automático
+  - Archivo: `/app/frontend/src/contexts/OfflineContext.jsx`
+- ✅ **Manifest PWA:**
+  - Instalable como app nativa en móvil/desktop
+  - Archivo: `/app/frontend/public/manifest.json`
+
 ### 3. Flujos de Trabajo Optimizados
 - ✅ **Apertura de Caja Manual:** La caja se abre desde su módulo
 - ✅ **Pasarela de Pago:** Modal de pago (Efectivo/Tarjeta)
