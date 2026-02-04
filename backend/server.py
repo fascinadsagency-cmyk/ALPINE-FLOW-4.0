@@ -1326,7 +1326,7 @@ async def update_item(item_id: str, item: ItemCreate, current_user: dict = Depen
         "rental_price": item.rental_price,  # Rental price per day
         "purchase_date": item.purchase_date,
         "location": item.location or "",
-        "category": item.category or "MEDIA",
+        "category": "STANDARD",  # All individual items are STANDARD
         "maintenance_interval": item.maintenance_interval or 30
     }
     await db.items.update_one({"id": item_id}, {"$set": update_doc})
