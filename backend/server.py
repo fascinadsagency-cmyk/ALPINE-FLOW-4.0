@@ -234,6 +234,7 @@ class RentalResponse(BaseModel):
 
 class ReturnInput(BaseModel):
     barcodes: List[str]
+    quantities: Optional[Dict[str, int]] = {}  # Map barcode -> quantity for partial returns
 
 class MaintenanceCreate(BaseModel):
     item_id: str
@@ -2390,28 +2391,54 @@ async def process_return(rental_id: str, return_input: ReturnInput, current_user
     returned_items = []
     pending_items = []
     days = rental["days"]
+    quantities_map = return_input.quantities or {}
     
     for item in rental["items"]:
         if item["barcode"] in return_input.barcodes:
-            item["returned"] = True
-            returned_items.append(item)
-            
             # Get the item document to check if it's generic
             item_doc = await db.items.find_one({"id": item["item_id"]})
             
             if item_doc and item_doc.get("is_generic"):
-                # GENERIC ITEM: Return stock instead of changing status
-                quantity_to_return = item.get("quantity", 1)
+                # GENERIC ITEM with PARTIAL RETURN support
+                total_qty = item.get("quantity", 1)
+                already_returned = item.get("returned_quantity", 0)
+                pending_qty = total_qty - already_returned
+                
+                # Get quantity to return from request (default to pending qty = full return)
+                qty_to_return = quantities_map.get(item["barcode"], pending_qty)
+                qty_to_return = min(qty_to_return, pending_qty)  # Can't return more than pending
+                
+                if qty_to_return <= 0:
+                    # Skip if no quantity to return
+                    continue
+                
+                # Update returned quantity tracking
+                new_returned_qty = already_returned + qty_to_return
+                item["returned_quantity"] = new_returned_qty
+                
+                # Mark as fully returned only if all units are returned
+                if new_returned_qty >= total_qty:
+                    item["returned"] = True
+                    returned_items.append(item)
+                else:
+                    # Partial return - item stays in pending
+                    pending_items.append(item)
+                
+                # Return stock to inventory
                 current_available = item_doc.get("stock_available", 0)
                 total_stock = item_doc.get("stock_total", 0)
-                new_available = min(current_available + quantity_to_return, total_stock)
+                new_available = min(current_available + qty_to_return, total_stock)
                 
                 await db.items.update_one(
                     {"id": item["item_id"]},
                     {"$set": {"stock_available": new_available}}
                 )
             else:
-                # REGULAR ITEM: Update status and days used
+                # REGULAR ITEM: Full return only (no partial)
+                item["returned"] = True
+                returned_items.append(item)
+                
+                # Update status and days used
                 await db.items.update_one(
                     {"id": item["item_id"]},
                     {"$set": {"status": "available"}, "$inc": {"days_used": days}}
@@ -2420,7 +2447,7 @@ async def process_return(rental_id: str, return_input: ReturnInput, current_user
                 if item_doc:
                     tariff = await db.tariffs.find_one({"item_type": item_doc.get("item_type")})
                     if tariff:
-                        daily_rate = tariff.get("days_1", 0)
+                        daily_rate = tariff.get("day_1", 0) or tariff.get("days_1", 0)
                         amortization = item_doc.get("days_used", 0) * daily_rate
                         await db.items.update_one(
                             {"id": item["item_id"]},
