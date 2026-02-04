@@ -125,6 +125,13 @@ export default function Inventory() {
   const [showProfitability, setShowProfitability] = useState(false);
   const [profitabilitySummary, setProfitabilitySummary] = useState(null);
   const [sortBy, setSortBy] = useState("");
+  
+  // Date range filter for profitability
+  const [profitabilityDateRange, setProfitabilityDateRange] = useState({
+    start: "",
+    end: ""
+  });
+  
   const fileInputRef = useRef(null);
   const importFileRef = useRef(null);
   
