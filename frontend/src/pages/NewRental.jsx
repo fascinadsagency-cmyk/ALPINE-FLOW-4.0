@@ -2023,10 +2023,38 @@ export default function NewRental() {
         <div className="lg:col-span-8 space-y-4">
           <Card className="border-slate-200">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Package className="h-5 w-5 text-slate-500" />
-                Artículos
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Package className="h-5 w-5 text-slate-500" />
+                  Artículos
+                  {items.length > 0 && (
+                    <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-700">
+                      {items.length}
+                    </Badge>
+                  )}
+                </CardTitle>
+                {/* Indicador de persistencia + Botón vaciar carrito */}
+                <div className="flex items-center gap-2">
+                  {hasCartData && (
+                    <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-300 bg-emerald-50">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Guardado
+                    </Badge>
+                  )}
+                  {(items.length > 0 || customer) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleClearCart}
+                      className="text-slate-500 hover:text-red-600 hover:bg-red-50"
+                      data-testid="clear-cart-btn"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Vaciar
+                    </Button>
+                  )}
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Barcode + Manual Search */}
