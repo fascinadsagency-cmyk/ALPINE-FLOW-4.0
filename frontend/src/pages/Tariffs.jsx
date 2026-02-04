@@ -608,6 +608,7 @@ export default function Tariffs() {
                     <SelectItem value="SUPERIOR">🟣 Gama Superior</SelectItem>
                     <SelectItem value="ALTA">🔵 Gama Alta</SelectItem>
                     <SelectItem value="MEDIA">🟢 Gama Media</SelectItem>
+                    <SelectItem value="OTRO">⚪ Otro</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
