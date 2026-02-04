@@ -66,6 +66,8 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem("token");
+    // Limpiar el carrito persistido al cerrar sesión
+    clearPersistedCart();
     delete axios.defaults.headers.common["Authorization"];
     setToken(null);
     setUser(null);
