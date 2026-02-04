@@ -641,10 +641,33 @@ export default function CashRegister() {
         </TabsList>
 
         <TabsContent value="today" className="space-y-3">
-          {/* ============ PANEL SUPERIOR: 3 KPIs (Compacto) ============ */}
+          {/* ============ BOTÓN MAESTRO DE VISIBILIDAD ============ */}
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleAllVisibility}
+              className={`gap-2 ${allVisible ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100' : ''}`}
+              data-testid="toggle-all-visibility"
+            >
+              {allVisible ? (
+                <>
+                  <EyeOff className="h-4 w-4" />
+                  Ocultar Todo
+                </>
+              ) : (
+                <>
+                  <Eye className="h-4 w-4" />
+                  Mostrar Todo
+                </>
+              )}
+            </Button>
+          </div>
+
+          {/* ============ PANEL SUPERIOR: 3 KPIs (Sin Blur - Sistema Acordeón) ============ */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* KPI 1: Ingresos Brutos */}
-            <Card className={`${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`} data-testid="kpi-ingresos">
+            <Card className={`${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'} transition-all duration-200`} data-testid="kpi-ingresos">
               <CardContent className="py-4 px-5">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
@@ -654,17 +677,26 @@ export default function CashRegister() {
                       </p>
                       <button 
                         onClick={() => toggleMetricVisibility('ingresos')}
-                        className={`p-1 rounded hover:bg-slate-200 transition-colors ${darkMode ? 'hover:bg-slate-700' : ''}`}
+                        className={`p-1.5 rounded-md transition-all duration-200 ${
+                          visibleMetrics.ingresos 
+                            ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200' 
+                            : `${darkMode ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-slate-200 text-slate-400'}`
+                        }`}
+                        title={visibleMetrics.ingresos ? 'Ocultar' : 'Mostrar'}
                       >
                         {visibleMetrics.ingresos ? (
-                          <Eye className="h-3.5 w-3.5 text-slate-400" />
+                          <Eye className="h-3.5 w-3.5" />
                         ) : (
-                          <EyeOff className="h-3.5 w-3.5 text-slate-400" />
+                          <EyeOff className="h-3.5 w-3.5" />
                         )}
                       </button>
                     </div>
-                    <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'} ${!visibleMetrics.ingresos ? 'blur-sm select-none' : ''}`}>
-                      €{(summary?.ingresos_brutos || 0).toFixed(2)}
+                    <p className={`text-2xl font-bold transition-all duration-300 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                      {visibleMetrics.ingresos ? (
+                        `€${(summary?.ingresos_brutos || 0).toFixed(2)}`
+                      ) : (
+                        <span className="text-slate-400 tracking-wider">••••••</span>
+                      )}
                     </p>
                   </div>
                   <div className={`h-11 w-11 rounded-lg flex items-center justify-center ${darkMode ? 'bg-emerald-900/30' : 'bg-emerald-100'}`}>
@@ -675,7 +707,7 @@ export default function CashRegister() {
             </Card>
 
             {/* KPI 2: Salidas y Devoluciones */}
-            <Card className={`${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`} data-testid="kpi-salidas">
+            <Card className={`${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'} transition-all duration-200`} data-testid="kpi-salidas">
               <CardContent className="py-4 px-5">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
@@ -685,17 +717,26 @@ export default function CashRegister() {
                       </p>
                       <button 
                         onClick={() => toggleMetricVisibility('gastos')}
-                        className={`p-1 rounded hover:bg-slate-200 transition-colors ${darkMode ? 'hover:bg-slate-700' : ''}`}
+                        className={`p-1.5 rounded-md transition-all duration-200 ${
+                          visibleMetrics.gastos 
+                            ? 'bg-red-100 text-red-600 hover:bg-red-200' 
+                            : `${darkMode ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-slate-200 text-slate-400'}`
+                        }`}
+                        title={visibleMetrics.gastos ? 'Ocultar' : 'Mostrar'}
                       >
                         {visibleMetrics.gastos ? (
-                          <Eye className="h-3.5 w-3.5 text-slate-400" />
+                          <Eye className="h-3.5 w-3.5" />
                         ) : (
-                          <EyeOff className="h-3.5 w-3.5 text-slate-400" />
+                          <EyeOff className="h-3.5 w-3.5" />
                         )}
                       </button>
                     </div>
-                    <p className={`text-2xl font-bold text-red-600 ${!visibleMetrics.gastos ? 'blur-sm select-none' : ''}`}>
-                      -€{(summary?.total_salidas || 0).toFixed(2)}
+                    <p className={`text-2xl font-bold text-red-600 transition-all duration-300`}>
+                      {visibleMetrics.gastos ? (
+                        `-€${(summary?.total_salidas || 0).toFixed(2)}`
+                      ) : (
+                        <span className="text-slate-400 tracking-wider">••••••</span>
+                      )}
                     </p>
                   </div>
                   <div className={`h-11 w-11 rounded-lg flex items-center justify-center ${darkMode ? 'bg-red-900/30' : 'bg-red-100'}`}>
@@ -706,7 +747,7 @@ export default function CashRegister() {
             </Card>
 
             {/* KPI 3: Balance Neto del Día */}
-            <Card className={`border-2 ${(summary?.balance_neto_dia || 0) >= 0 ? 'border-emerald-300 bg-emerald-50' : 'border-red-300 bg-red-50'} ${darkMode ? 'bg-opacity-10' : ''}`} data-testid="kpi-balance">
+            <Card className={`border-2 ${(summary?.balance_neto_dia || 0) >= 0 ? 'border-emerald-300 bg-emerald-50' : 'border-red-300 bg-red-50'} ${darkMode ? 'bg-opacity-10' : ''} transition-all duration-200`} data-testid="kpi-balance">
               <CardContent className="py-4 px-5">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
@@ -716,17 +757,26 @@ export default function CashRegister() {
                       </p>
                       <button 
                         onClick={() => toggleMetricVisibility('balance')}
-                        className={`p-1 rounded hover:bg-white/50 transition-colors`}
+                        className={`p-1.5 rounded-md transition-all duration-200 ${
+                          visibleMetrics.balance 
+                            ? `${(summary?.balance_neto_dia || 0) >= 0 ? 'bg-emerald-200 text-emerald-700' : 'bg-red-200 text-red-700'} hover:opacity-80` 
+                            : 'hover:bg-white/50 text-slate-500'
+                        }`}
+                        title={visibleMetrics.balance ? 'Ocultar' : 'Mostrar'}
                       >
                         {visibleMetrics.balance ? (
-                          <Eye className="h-3.5 w-3.5 text-slate-500" />
+                          <Eye className="h-3.5 w-3.5" />
                         ) : (
-                          <EyeOff className="h-3.5 w-3.5 text-slate-500" />
+                          <EyeOff className="h-3.5 w-3.5" />
                         )}
                       </button>
                     </div>
-                    <p className={`text-2xl font-bold ${(summary?.balance_neto_dia || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'} ${!visibleMetrics.balance ? 'blur-sm select-none' : ''}`}>
-                      €{(summary?.balance_neto_dia || 0).toFixed(2)}
+                    <p className={`text-2xl font-bold transition-all duration-300 ${(summary?.balance_neto_dia || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                      {visibleMetrics.balance ? (
+                        `€${(summary?.balance_neto_dia || 0).toFixed(2)}`
+                      ) : (
+                        <span className="text-slate-400 tracking-wider">••••••</span>
+                      )}
                     </p>
                   </div>
                   <div className={`h-11 w-11 rounded-lg flex items-center justify-center ${(summary?.balance_neto_dia || 0) >= 0 ? 'bg-emerald-200' : 'bg-red-200'}`}>
