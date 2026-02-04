@@ -373,60 +373,50 @@ export default function NewRental() {
     // Create a copy of items to track which ones are used
     const availableItems = [...currentItems];
     
-    // Group items by category
-    const itemsByCategory = currentItems.reduce((acc, item) => {
-      const cat = item.category || 'MEDIA';
-      if (!acc[cat]) acc[cat] = [];
-      acc[cat].push(item);
-      return acc;
-    }, {});
-
-    // For each category, detect ALL possible pack instances
-    Object.entries(itemsByCategory).forEach(([category, categoryItems]) => {
-      // Get packs for this category
-      const categoryPacks = packs.filter(p => p.category === category);
+    // Try to detect packs with current items
+    // Since all individual items are now "STANDARD", we detect packs regardless of item category
+    // The pack itself has the category (MEDIA, ALTA, SUPERIOR, OTRO)
+    const detectedPackInstances = [];
+    const usedBarcodes = new Set();
+    
+    // Keep trying to form packs until no more can be formed
+    let foundPack = true;
+    while (foundPack) {
+      foundPack = false;
       
-      // Track which items have been assigned to packs
-      const usedBarcodes = new Set();
-      
-      // Keep trying to form packs until no more can be formed
-      let foundPack = true;
-      while (foundPack) {
-        foundPack = false;
+      // Try each pack definition
+      for (const pack of packs) {
+        // Get available items (not yet used in a pack)
+        const availableItems = currentItems.filter(
+          item => !usedBarcodes.has(item.barcode)
+        );
         
-        // Try each pack definition
-        for (const pack of categoryPacks) {
-          // Get available items (not yet used in a pack)
-          const availableCategoryItems = categoryItems.filter(
-            item => !usedBarcodes.has(item.barcode)
-          );
-          
-          // Count available item types
-          const availableTypeCounts = availableCategoryItems.reduce((acc, item) => {
-            acc[item.item_type] = (acc[item.item_type] || 0) + 1;
-            return acc;
-          }, {});
-          
-          // Count required components for this pack
-          const requiredComponents = pack.items.reduce((acc, itemType) => {
-            acc[itemType] = (acc[itemType] || 0) + 1;
-            return acc;
-          }, {});
+        // Count available item types
+        const availableTypeCounts = availableItems.reduce((acc, item) => {
+          acc[item.item_type] = (acc[item.item_type] || 0) + 1;
+          return acc;
+        }, {});
+        
+        // Count required components for this pack
+        const requiredComponents = pack.items.reduce((acc, itemType) => {
+          acc[itemType] = (acc[itemType] || 0) + 1;
+          return acc;
+        }, {});
 
-          // Check if we have all components available
-          let canFormPack = true;
-          for (const [type, count] of Object.entries(requiredComponents)) {
-            if ((availableTypeCounts[type] || 0) < count) {
-              canFormPack = false;
-              break;
-            }
+        // Check if we have all components available
+        let canFormPack = true;
+        for (const [type, count] of Object.entries(requiredComponents)) {
+          if ((availableTypeCounts[type] || 0) < count) {
+            canFormPack = false;
+            break;
           }
+        }
 
-          if (canFormPack) {
-            // Find the specific items that will form THIS instance of the pack
-            const packInstanceItems = [];
-            
-            for (const requiredType of pack.items) {
+        if (canFormPack) {
+          // Find the specific items that will form THIS instance of the pack
+          const packInstanceItems = [];
+          
+          for (const requiredType of pack.items) {
               const item = availableCategoryItems.find(i => 
                 i.item_type === requiredType && 
                 !packInstanceItems.includes(i.barcode) &&
