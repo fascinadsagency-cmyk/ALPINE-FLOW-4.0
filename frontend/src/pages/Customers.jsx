@@ -79,6 +79,12 @@ export default function Customers() {
   const [importResult, setImportResult] = useState(null);
   const fileInputRef = useRef(null);
 
+  // ========== BULK SELECTION STATES ==========
+  const [selectedCustomers, setSelectedCustomers] = useState(new Set());
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [bulkDeleteLoading, setBulkDeleteLoading] = useState(false);
+  const [customersWithActiveRentals, setCustomersWithActiveRentals] = useState([]);
+
   // System fields for mapping
   const systemFields = [
     { value: "dni", label: "DNI/Pasaporte *", required: true },
