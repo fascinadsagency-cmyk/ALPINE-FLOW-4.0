@@ -797,6 +797,40 @@ export default function Customers() {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Barra de acciones masivas - solo visible cuando hay selección */}
+          {selectedCustomers.size > 0 && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between animate-in slide-in-from-top-2 duration-200">
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  checked={selectedCustomers.size === customers.length}
+                  onCheckedChange={toggleSelectAll}
+                />
+                <span className="text-sm font-medium text-blue-700">
+                  {selectedCustomers.size} cliente{selectedCustomers.size !== 1 ? 's' : ''} seleccionado{selectedCustomers.size !== 1 ? 's' : ''}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearSelections}
+                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-100"
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Deseleccionar
+                </Button>
+              </div>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={openBulkDeleteDialog}
+                className="gap-2"
+                data-testid="bulk-delete-customers-btn"
+              >
+                <Trash2 className="h-4 w-4" />
+                Eliminar Seleccionados
+              </Button>
+            </div>
+          )}
+          
           {loading ? (
             <div className="flex justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
