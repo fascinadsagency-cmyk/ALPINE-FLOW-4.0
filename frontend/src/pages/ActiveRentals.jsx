@@ -815,8 +815,6 @@ export default function ActiveRentals() {
     return 'bg-slate-100 text-slate-700 border-slate-300';
   };
 
-          };
-          
           // Load full customer history (includes financials and detailed rentals)
           const historyResponse = await axios.get(`${API}/customers/${rental.customer_id}/history`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
