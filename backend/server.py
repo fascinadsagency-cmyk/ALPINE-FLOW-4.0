@@ -1824,7 +1824,7 @@ async def import_items(request: ItemImportRequest, current_user: dict = Depends(
                 "model": item.model.strip() if item.model else "",
                 "size": str(item.size).strip(),
                 "binding": item.binding.strip() if item.binding else "",
-                "category": item.category if item.category in ["SUPERIOR", "ALTA", "MEDIA"] else "MEDIA",
+                "category": "STANDARD",  # All individual items are STANDARD
                 "status": "available",
                 "purchase_price": float(item.purchase_price) if item.purchase_price else 0,
                 "purchase_date": item.purchase_date.strip() if item.purchase_date else datetime.now().strftime('%Y-%m-%d'),
