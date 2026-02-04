@@ -2,7 +2,7 @@
 
 ## Estado del Proyecto
 **Última actualización:** 2026-02-04
-**Estado:** Operativo - Auditoría de Métricas del Dashboard COMPLETADA
+**Estado:** Operativo - Persistencia de Carrito + Rediseño Privacidad en Caja COMPLETADOS
 
 ---
 
