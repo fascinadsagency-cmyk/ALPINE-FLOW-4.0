@@ -1071,14 +1071,33 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
   };
 
   const openEditDialog = (item) => {
+    // Get the current price from tariffs for this item type
+    const tariff = tariffs.find(t => t.item_type === item.item_type);
+    const suggestedPrice = tariff?.day_1 || tariff?.days_1 || 0;
+    
     setEditingItem({
       ...item,
       serial_number: item.serial_number || "",
       binding: item.binding || "",
       purchase_price: item.purchase_price.toString(),
-      maintenance_interval: item.maintenance_interval.toString()
+      maintenance_interval: item.maintenance_interval.toString(),
+      rental_price: item.rental_price?.toString() || suggestedPrice.toString()
     });
     setShowEditDialog(true);
+  };
+
+  // Function to automatically update price when type changes
+  const handleTypeChangeInEdit = (newType) => {
+    // Find the tariff for this type
+    const tariff = tariffs.find(t => t.item_type === newType);
+    const suggestedPrice = tariff?.day_1 || tariff?.days_1 || 0;
+    
+    // Update both type and price automatically (no confirmation)
+    setEditingItem({ 
+      ...editingItem, 
+      item_type: newType,
+      rental_price: suggestedPrice.toString()
+    });
   };
 
   const updateItem = async () => {
