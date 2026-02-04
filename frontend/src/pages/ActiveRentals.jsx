@@ -735,7 +735,7 @@ export default function ActiveRentals() {
       }
       
       setSelectedCustomer(customerData);
-      setTechnicalData({
+      setTechnicalDataForm({
         height: customerData.height || '',
         weight: customerData.weight || '',
         boot_size: customerData.boot_size || '',
