@@ -817,7 +817,17 @@ export default function Returns() {
       });
       
       console.log('Respuesta del backend:', response.data);
-      toast.success(`✅ Devolución procesada - ${barcodes.length} artículo(s) devuelto(s)`);
+      
+      // Calcular total de unidades devueltas
+      const totalUnitsReturned = barcodes.reduce((sum, barcode) => {
+        const item = rental.items.find(i => i.barcode === barcode);
+        if (item && isPartialReturnItem(item)) {
+          return sum + getReturnQuantity(item);
+        }
+        return sum + (item?.quantity || 1);
+      }, 0);
+      
+      toast.success(`✅ Devolución procesada - ${totalUnitsReturned} unidad(es) devuelta(s)`);
       
       // ============ IMPRESIÓN DEL TICKET DE DEVOLUCIÓN (Non-blocking) ============
       // Mapear datos de artículos devueltos para el ticket
