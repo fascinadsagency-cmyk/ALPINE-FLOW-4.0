@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "🎯 TESTING MÓDULO DE GESTIÓN DE CAJA - DESGLOSE DETALLADO POR MÉTODO DE PAGO: Validate that the Cash Management module correctly shows detailed breakdown by payment method (cash and card) both in the closing dialog and in the printed cash count ticket. Test backend endpoints /api/cash/summary, /api/cash/close, /api/cash/closings with by_payment_method structure containing cash: {income, expense, refund}, card: {income, expense, refund}, total_income, total_expense, total_refunds, movements_count."
+user_problem_statement: "Test Completo de Edición de Métodos de Pago y Reconciliación de Caja: Testing payment method editing system with automatic cash register reconciliation. Each payment method change should reflect correctly in Cash Register (Arqueo de Caja) with cash_movements created with session_id. Test scenarios: 1) Cash→Card, 2) Cash→Pending, 3) Pending→Card, 4) Integrity verification."
 
 backend:
   - task: "Inventory Internal Code Flow"
