@@ -1118,6 +1118,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
         size: editingItem.size,
         binding: editingItem.binding || "",
         purchase_price: parseFloat(editingItem.purchase_price) || 0,
+        rental_price: parseFloat(editingItem.rental_price) || 0,
         purchase_date: editingItem.purchase_date,
         location: editingItem.location || "",
         maintenance_interval: parseInt(editingItem.maintenance_interval) || 30,
