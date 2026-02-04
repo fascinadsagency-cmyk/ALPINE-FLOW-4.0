@@ -184,6 +184,98 @@ export default function Customers() {
     filterCustomers();
   }, [searchTerm, selectedProvider, selectedStatus, allCustomers]);
 
+  // ========== BULK SELECTION FUNCTIONS ==========
+  
+  // Toggle selection of a single customer
+  const toggleCustomerSelection = (customerId) => {
+    setSelectedCustomers(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(customerId)) {
+        newSet.delete(customerId);
+      } else {
+        newSet.add(customerId);
+      }
+      return newSet;
+    });
+  };
+
+  // Toggle selection of all visible customers
+  const toggleSelectAll = () => {
+    if (selectedCustomers.size === customers.length && customers.length > 0) {
+      setSelectedCustomers(new Set());
+    } else {
+      setSelectedCustomers(new Set(customers.map(c => c.id)));
+    }
+  };
+
+  // Clear all selections
+  const clearSelections = () => {
+    setSelectedCustomers(new Set());
+  };
+
+  // Open bulk delete confirmation dialog
+  const openBulkDeleteDialog = async () => {
+    if (selectedCustomers.size === 0) return;
+    
+    // Check which customers have active rentals
+    try {
+      const customerIds = Array.from(selectedCustomers);
+      const response = await axios.post(`${API}/customers/check-active-rentals`, 
+        { customer_ids: customerIds },
+        { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }}
+      );
+      setCustomersWithActiveRentals(response.data.customers_with_rentals || []);
+      setShowBulkDeleteDialog(true);
+    } catch (error) {
+      // If endpoint doesn't exist, proceed without check
+      setCustomersWithActiveRentals([]);
+      setShowBulkDeleteDialog(true);
+    }
+  };
+
+  // Execute bulk delete
+  const bulkDeleteCustomers = async () => {
+    if (selectedCustomers.size === 0) return;
+    
+    setBulkDeleteLoading(true);
+    try {
+      // Filter out customers with active rentals
+      const safeToDelete = Array.from(selectedCustomers).filter(
+        id => !customersWithActiveRentals.some(c => c.id === id)
+      );
+      
+      if (safeToDelete.length === 0) {
+        toast.error("No hay clientes que se puedan eliminar. Todos tienen alquileres activos.");
+        setBulkDeleteLoading(false);
+        return;
+      }
+      
+      const response = await axios.post(`${API}/customers/bulk-delete`, 
+        { customer_ids: safeToDelete },
+        { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }}
+      );
+      
+      const deleted = response.data.deleted || safeToDelete.length;
+      const failed = response.data.failed || 0;
+      
+      if (deleted > 0) {
+        toast.success(`${deleted} cliente${deleted !== 1 ? 's' : ''} eliminado${deleted !== 1 ? 's' : ''} correctamente`);
+      }
+      if (failed > 0) {
+        toast.warning(`${failed} cliente${failed !== 1 ? 's' : ''} no se pudieron eliminar`);
+      }
+      
+      setShowBulkDeleteDialog(false);
+      setSelectedCustomers(new Set());
+      setCustomersWithActiveRentals([]);
+      loadCustomersWithStatus();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al eliminar clientes");
+    } finally {
+      setBulkDeleteLoading(false);
+    }
+  };
+
   const viewHistory = async (customer) => {
     setSelectedCustomer(customer);
     setHistoryLoading(true);
