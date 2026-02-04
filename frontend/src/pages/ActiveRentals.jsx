@@ -952,7 +952,8 @@ export default function ActiveRentals() {
                 <TableBody>
                   {filteredRentals.map((rental) => {
                     const activeItems = rental.items.filter(i => !i.returned);
-                    const itemCount = activeItems.length;
+                    // Calcular UNIDADES totales, no líneas
+                    const itemCount = activeItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
                     
                     return (
                       <TableRow key={rental.id} className="hover:bg-slate-50">
