@@ -1340,7 +1340,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
           const reassignType = window.prompt(
             `⚠️ ${errorMsg}\n\n` +
             `Escribe el VALOR del tipo al que quieres reasignar estos artículos\n` +
-            `(ej: "esquí_gama_media_", "bota_esqui_"):\n\n` +
+            `(ej: "esqui_salomon_", "bota_atomic_"):\n\n` +
             `Deja vacío para cancelar.`
           );
           if (reassignType && reassignType.trim()) {
