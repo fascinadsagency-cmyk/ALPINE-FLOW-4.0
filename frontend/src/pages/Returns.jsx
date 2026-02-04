@@ -76,6 +76,10 @@ export default function Returns() {
   const [typeFilter, setTypeFilter] = useState(searchParams.get('filter') || "");
   const [itemTypes, setItemTypes] = useState([]);
   
+  // ============ PARTIAL RETURN STATE (for generic items with quantity > 1) ============
+  // Map: barcode -> quantity to return
+  const [returnQuantities, setReturnQuantities] = useState({});
+  
   // Refund dialog state
   const [showRefundDialog, setShowRefundDialog] = useState(false);
   const [refundDays, setRefundDays] = useState(1);
