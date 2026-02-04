@@ -471,15 +471,18 @@ test_plan:
 
   - task: "Automatic Price Update on Type Change in Inventory Edit"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/pages/Inventory.jsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "testing"
           comment: "Need to test automatic price update functionality when changing item type in inventory edit dialog. Test flow: login with testcaja/test1234, navigate to inventory, open edit dialog for first item, verify initial price, change type dropdown, verify automatic price update without confirmation, test manual price editing, save changes and verify success."
+        - working: false
+          agent: "testing"
+          comment: "❌ TESTING INCOMPLETE DUE TO TECHNICAL ISSUES: Successfully logged in with testcaja/test1234 and navigated to inventory page. Found inventory table with items (J002, B001, J003, etc.) and action buttons in 'Acciones' column. However, encountered multiple issues: 1) Session timeouts causing redirects to login page during testing, 2) Clicking action buttons opened profitability dashboard instead of edit dialog, 3) Unable to locate correct edit button (pencil icon) for opening item edit dialog, 4) Could not complete the automatic price update testing flow due to inability to access edit functionality. CRITICAL ISSUE: The edit functionality appears to be either not working correctly or the UI selectors have changed. Main agent needs to investigate the edit dialog implementation and ensure proper session management."
 
 agent_communication:
     - agent: "testing"
