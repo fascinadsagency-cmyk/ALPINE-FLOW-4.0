@@ -741,10 +741,11 @@ export default function ActiveRentals() {
         boot_size: customerData.boot_size || '',
         ski_level: customerData.ski_level || ''
       });
-      setShowCustomerModal(true);
     } catch (error) {
       console.error("Error opening customer modal:", error);
       toast.error("Error al cargar datos del cliente");
+    } finally {
+      setCustomerLoading(false);
     }
   };
 
