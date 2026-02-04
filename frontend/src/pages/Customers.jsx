@@ -685,6 +685,90 @@ export default function Customers() {
     resetImport();
   };
 
+  // ========== EXPORT FUNCTIONALITY ==========
+  const exportCustomers = (customersToExport = null) => {
+    try {
+      // Determine which customers to export
+      let dataToExport;
+      let fileName;
+      
+      if (customersToExport) {
+        // Export selected customers
+        dataToExport = allCustomers.filter(c => customersToExport.includes(c.id));
+        fileName = `clientes_seleccionados_${new Date().toISOString().split('T')[0]}.xlsx`;
+      } else {
+        // Export all filtered customers
+        dataToExport = customers;
+        fileName = `clientes_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+      }
+
+      if (dataToExport.length === 0) {
+        toast.error("No hay clientes para exportar");
+        return;
+      }
+
+      // Format data for Excel
+      const excelData = dataToExport.map(customer => ({
+        'Nombre Completo': customer.name || '',
+        'DNI/Pasaporte': customer.dni || '',
+        'Email': customer.email || '',
+        'Teléfono': customer.phone || '',
+        'Dirección': customer.address || '',
+        'Ciudad': customer.city || '',
+        'País': 'España', // Default o agregar campo si existe
+        'Número de Pie': customer.boot_size || '',
+        'Altura (cm)': customer.height || '',
+        'Peso (kg)': customer.weight || '',
+        'Nivel de Esquí': customer.ski_level ? SKI_LEVELS.find(l => l.value === customer.ski_level)?.label : '',
+        'Proveedor/Fuente': customer.source || '',
+        'Fecha de Registro': customer.created_at ? new Date(customer.created_at).toLocaleDateString('es-ES') : '',
+        'Notas': customer.notes || ''
+      }));
+
+      // Create worksheet
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      
+      // Set column widths
+      const columnWidths = [
+        { wch: 25 }, // Nombre
+        { wch: 15 }, // DNI
+        { wch: 25 }, // Email
+        { wch: 15 }, // Teléfono
+        { wch: 30 }, // Dirección
+        { wch: 15 }, // Ciudad
+        { wch: 12 }, // País
+        { wch: 12 }, // Pie
+        { wch: 12 }, // Altura
+        { wch: 10 }, // Peso
+        { wch: 15 }, // Nivel
+        { wch: 20 }, // Proveedor
+        { wch: 15 }, // Fecha
+        { wch: 40 }  // Notas
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // Create workbook
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Clientes');
+
+      // Generate and download file
+      XLSX.writeFile(workbook, fileName);
+      
+      toast.success(`✅ ${dataToExport.length} cliente${dataToExport.length !== 1 ? 's' : ''} exportado${dataToExport.length !== 1 ? 's' : ''}`);
+    } catch (error) {
+      console.error('Error exporting customers:', error);
+      toast.error('Error al exportar clientes');
+    }
+  };
+
+  const exportSelectedCustomers = () => {
+    if (selectedCustomers.size === 0) {
+      toast.error("No hay clientes seleccionados");
+      return;
+    }
+    exportCustomers(Array.from(selectedCustomers));
+  };
+
   return (
     <div className="p-6 lg:p-8" data-testid="customers-page">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
