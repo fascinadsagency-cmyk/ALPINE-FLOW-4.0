@@ -134,10 +134,11 @@ class PaymentMethodTester:
                 items = items_response.json()
                 available_items = [item for item in items if item.get("status") == "available"]
                 
-                if len(available_items) >= 2:
+                if len(available_items) >= 3:  # Need at least 3 items for all tests
                     self.test_barcode_1 = available_items[0]["barcode"]
                     self.test_barcode_2 = available_items[1]["barcode"]
-                    print(f"   Using existing items: {self.test_barcode_1}, {self.test_barcode_2}")
+                    self.test_barcode_3 = available_items[2]["barcode"]
+                    print(f"   Using existing items: {self.test_barcode_1}, {self.test_barcode_2}, {self.test_barcode_3}")
                 else:
                     self.log_test("Setup Test Items", False, f"Not enough available items: {len(available_items)}")
                     return False
