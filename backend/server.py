@@ -3034,6 +3034,11 @@ async def update_rental_payment_method(
     
     reconciliation_action = ""
     
+    # Get current active cash session
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    active_session = await db.cash_sessions.find_one({"date": today, "status": "open"})
+    session_id = active_session["id"] if active_session else None
+    
     # ========== CASE 1: Income -> Income (Move between cash registers) ==========
     if old_is_paid and new_is_paid:
         reconciliation_action = "moved_between_registers"
@@ -3041,7 +3046,9 @@ async def update_rental_payment_method(
         # Remove from old cash register
         await db.cash_movements.insert_one({
             "id": str(uuid4()),
+            "session_id": session_id,  # CRITICAL: Link to cash session
             "date": datetime.now(timezone.utc).isoformat(),
+            "movement_type": "adjustment",  # Use movement_type for consistency
             "type": "adjustment",
             "amount": -amount,  # Negative = removal
             "payment_method": old_method,
@@ -3054,7 +3061,9 @@ async def update_rental_payment_method(
         # Add to new cash register
         await db.cash_movements.insert_one({
             "id": str(uuid4()),
+            "session_id": session_id,  # CRITICAL: Link to cash session
             "date": datetime.now(timezone.utc).isoformat(),
+            "movement_type": "income",  # Use movement_type for consistency
             "type": "income",
             "amount": amount,
             "payment_method": new_method,
@@ -3071,7 +3080,9 @@ async def update_rental_payment_method(
         # Remove from cash register (negative adjustment)
         await db.cash_movements.insert_one({
             "id": str(uuid4()),
+            "session_id": session_id,  # CRITICAL: Link to cash session
             "date": datetime.now(timezone.utc).isoformat(),
+            "movement_type": "adjustment",  # Use movement_type for consistency
             "type": "adjustment",
             "amount": -amount,  # Negative = removal
             "payment_method": old_method,
@@ -3094,7 +3105,9 @@ async def update_rental_payment_method(
         # Add to cash register
         await db.cash_movements.insert_one({
             "id": str(uuid4()),
+            "session_id": session_id,  # CRITICAL: Link to cash session
             "date": datetime.now(timezone.utc).isoformat(),
+            "movement_type": "income",  # Use movement_type for consistency
             "type": "income",
             "amount": amount,
             "payment_method": new_method,
