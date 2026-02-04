@@ -1583,7 +1583,84 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                   </Button>
                 </div>
               )}
-              
+              {/* ============ MODO RENTABILIDAD: TABLA SIMPLIFICADA ============ */}
+              {showProfitability ? (
+                <div className="overflow-x-auto border rounded-lg">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-slate-50">
+                        <TableHead className="font-bold">Artículo</TableHead>
+                        <TableHead className="text-right font-bold">Coste Adquisición</TableHead>
+                        <TableHead className="text-right font-bold">Total Generado</TableHead>
+                        <TableHead className="text-right font-bold">Beneficio Neto</TableHead>
+                        <TableHead className="text-right font-bold">ROI (%)</TableHead>
+                        <TableHead className="text-center font-bold">Días de Uso</TableHead>
+                        <TableHead className="text-center font-bold">Estado ROI</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredItems.map((item) => {
+                        const cost = item.purchase_price || 0;
+                        const revenue = item.total_revenue || 0;
+                        const profit = revenue - cost;
+                        const roi = cost > 0 ? ((profit / cost) * 100) : 0;
+                        const isRentable = profit > 0;
+                        
+                        return (
+                          <TableRow key={item.id} className="hover:bg-slate-50">
+                            {/* ARTÍCULO */}
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="font-semibold text-slate-900">
+                                  {item.is_generic ? item.name : `${item.brand} ${item.model}`}
+                                </span>
+                                <span className="text-xs text-slate-500 font-mono">
+                                  {item.internal_code || item.barcode || item.id.substring(0, 8)}
+                                </span>
+                              </div>
+                            </TableCell>
+                            
+                            {/* COSTE ADQUISICIÓN */}
+                            <TableCell className="text-right font-mono">
+                              €{cost.toFixed(2)}
+                            </TableCell>
+                            
+                            {/* TOTAL GENERADO */}
+                            <TableCell className="text-right font-mono font-bold text-emerald-600">
+                              €{revenue.toFixed(2)}
+                            </TableCell>
+                            
+                            {/* BENEFICIO NETO */}
+                            <TableCell className={`text-right font-mono font-bold ${profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                              €{profit.toFixed(2)}
+                            </TableCell>
+                            
+                            {/* ROI % */}
+                            <TableCell className={`text-right font-bold text-lg ${roi >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                              {roi.toFixed(1)}%
+                            </TableCell>
+                            
+                            {/* DÍAS DE USO */}
+                            <TableCell className="text-center">
+                              <Badge variant="outline" className="font-mono">
+                                {item.days_used || 0} días
+                              </Badge>
+                            </TableCell>
+                            
+                            {/* ESTADO ROI */}
+                            <TableCell className="text-center">
+                              <Badge className={isRentable ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-red-100 text-red-700 border-red-300'}>
+                                {isRentable ? '✓ Rentable' : '⏳ Amortizando'}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                /* ============ MODO NORMAL: TABLA ESTÁNDAR ============ */
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <Table>
                   <TableHeader>
