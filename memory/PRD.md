@@ -416,6 +416,22 @@ POST /api/cash/close            - Cerrar caja con arqueo
   - **Una sola línea por pack:** Sin desglose de componentes en el carrito ni ticket
   - **Etiqueta clara:** "Tarifa 3d" en vez de "€27/día"
 
+### 2c. Recálculo Dinámico de Precios de Packs - CORREGIDO 2026-02-04
+- **Problema:** Al cambiar los días del pack, el precio NO se recalculaba. Quedaba anclado al precio de 1 día.
+- **Solución Técnica:**
+  - **`getPackPrice(pack, days)`:** Busca `pack[day_${days}]` en la tarifa escalonada
+  - **`updatePackDays(packItems, newDays)`:** Al cambiar días, limpia `customPackPrice` para forzar recálculo
+  - **`manualPriceEdit` flag:** Distingue precio editado manualmente vs calculado automáticamente
+  - **Si precio fue editado manualmente:** Se preserva al cambiar días (toast informa al usuario)
+  - **Si precio NO fue editado:** Se recalcula automáticamente desde tarifa escalonada
+  - **`resetPackPrice(packItems)`:** Nueva función para restaurar precio de tarifa (elimina edición manual)
+  - **Botón de reset:** Icono ↺ junto a badge "EDITADO" permite volver a tarifa original
+- **Ejemplo verificado:**
+  - 1 día = €27.00 ✓
+  - 3 días = €65.00 (NO €81 = 27×3) ✓
+  - 6 días = €95.00 (NO €162 = 27×6) ✓
+- **Testing:** 7/7 tests passed (iteration_24.json)
+
 ### 3. Corrección del Bug Crítico de Contabilidad
 - **Problema:** Los cobros de alquileres no se registraban en la caja
 - **Solución:**
