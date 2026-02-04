@@ -2,7 +2,7 @@
 
 ## Estado del Proyecto
 **Última actualización:** 2026-02-04
-**Estado:** Operativo - PWA Offline-First IMPLEMENTADA
+**Estado:** Operativo - Selección y Borrado Masivo en Clientes IMPLEMENTADO
 
 ---
 
