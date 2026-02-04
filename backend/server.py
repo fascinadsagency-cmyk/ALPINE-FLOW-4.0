@@ -3052,8 +3052,11 @@ async def update_rental_payment_method(
             "type": "adjustment",
             "amount": -amount,  # Negative = removal
             "payment_method": old_method,
+            "category": "rental",  # Required field
             "concept": f"Corrección método de pago (Alquiler #{rental_id[:8]}) - De {PAYMENT_METHOD_LABELS.get(old_method, old_method)} a {PAYMENT_METHOD_LABELS.get(new_method, new_method)}",
-            "rental_id": rental_id,
+            "reference_id": rental_id,  # Use reference_id instead of rental_id
+            "notes": f"Cambio de método de pago: {old_method} → {new_method}",  # Required field
+            "created_by": current_user.get("username", "system"),  # Required field
             "user": current_user.get("username", "system"),
             "created_at": datetime.now(timezone.utc).isoformat()
         })
