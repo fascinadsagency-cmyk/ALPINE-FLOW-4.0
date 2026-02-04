@@ -1298,6 +1298,28 @@ export default function Returns() {
   const returnedItems = rental?.items.filter(i => i.returned) || [];
   const toReturnItems = rental?.items.filter(i => !i.returned && scannedBarcodes.includes(i.barcode)) || [];
   const maxRefundDays = getMaxRefundDays();
+  
+  // ============ HELPER: CALCULAR CANTIDAD TOTAL DE UNIDADES (NO LÍNEAS) ============
+  const getTotalUnits = (items) => {
+    return items.reduce((total, item) => {
+      if (isPartialReturnItem(item)) {
+        // Para items genéricos con devolución parcial, usar la cantidad seleccionada
+        return total + getReturnQuantity(item);
+      }
+      // Para items regulares, contar como 1 unidad
+      return total + (item.quantity || 1);
+    }, 0);
+  };
+  
+  const getTotalUnitsSimple = (items) => {
+    // Versión simple que suma todas las cantidades sin considerar selección parcial
+    return items.reduce((total, item) => total + (item.quantity || 1), 0);
+  };
+  
+  // Calcular totales de UNIDADES (no líneas)
+  const pendingUnitsCount = getTotalUnitsSimple(pendingItems);
+  const toReturnUnitsCount = getTotalUnits(toReturnItems);
+  const totalPendingUnits = getTotalUnitsSimple(rental?.items.filter(i => !i.returned) || []);
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -1453,10 +1475,10 @@ export default function Returns() {
                       </div>
                       <div className="flex items-center gap-3">
                         <Badge className="bg-emerald-500">
-                          {toReturnItems.length} listos
+                          {toReturnUnitsCount} unidades listas
                         </Badge>
                         <Badge className="bg-slate-600">
-                          {pendingItems.length} pendientes
+                          {pendingUnitsCount} unidades pendientes
                         </Badge>
                       </div>
                     </div>
@@ -1614,7 +1636,7 @@ export default function Returns() {
                   disabled={pendingItems.length === 0}
                 >
                   <CheckCheck className="h-5 w-5 mr-2" />
-                  Marcar TODO ({rental.items.filter(i => !i.returned).length})
+                  Marcar TODO ({totalPendingUnits} unidades)
                 </Button>
                 
                 {/* Cambio/Sustitución */}
@@ -1644,7 +1666,7 @@ export default function Returns() {
                   ) : (
                     <PackageCheck className="h-5 w-5 mr-2" />
                   )}
-                  PROCESAR DEVOLUCIÓN ({toReturnItems.length})
+                  PROCESAR DEVOLUCIÓN ({toReturnUnitsCount} unidades)
                 </Button>
                 
                 {/* Cancelar */}
