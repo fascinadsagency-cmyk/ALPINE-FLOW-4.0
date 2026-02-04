@@ -1147,6 +1147,31 @@ export default function NewRental() {
     return tariff[dayField] || tariff.day_1 || 0;
   };
 
+  // Handle item type change - automatically update price from tariff
+  const handleItemTypeChange = (itemId, newType) => {
+    const updatedItems = items.map(item => {
+      if ((item.id || item.barcode) === itemId) {
+        // Find tariff for new type
+        const tariff = tariffs.find(t => t.item_type === newType);
+        const days = item.itemDays || numDays;
+        const dayField = days <= 10 ? `day_${days}` : 'day_11_plus';
+        const newPrice = tariff ? (tariff[dayField] || tariff.day_1 || 0) : 0;
+        
+        // Update both type and clear custom price (so it uses tariff price)
+        return {
+          ...item,
+          item_type: newType,
+          customPrice: null  // Clear custom price to use tariff
+        };
+      }
+      return item;
+    });
+    
+    setItems(updatedItems);
+    setEditingItemType(null);
+    toast.success("Tipo actualizado - Precio ajustado automáticamente");
+  };
+
   // Update days for all items in a pack - RECALCULATE pack price using scaled tariff
   const updatePackDays = (packItems, newDays, keepCustomPrice = false) => {
     // Validate: only positive integers allowed
