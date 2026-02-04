@@ -80,42 +80,51 @@ const DataInitializer = ({ children }) => {
 
 function AppRoutes() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<Dashboard />} />
-        <Route path="nuevo-alquiler" element={<NewRental />} />
-        <Route path="alquileres-activos" element={<ActiveRentals />} />
-        <Route path="devoluciones" element={<Returns />} />
-        <Route path="clientes" element={<Customers />} />
-        <Route path="proveedores" element={<Providers />} />
-        <Route path="inventario" element={<Inventory />} />
-        <Route path="tarifas" element={<Tariffs />} />
-        <Route path="reportes" element={<Reports />} />
-        <Route path="mantenimiento" element={<Maintenance />} />
-        <Route path="caja" element={<CashRegister />} />
-        <Route path="integraciones" element={<Integrations />} />
-        <Route path="configuracion" element={<Settings />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <DataInitializer>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Dashboard />} />
+          <Route path="nuevo-alquiler" element={<NewRental />} />
+          <Route path="alquileres-activos" element={<ActiveRentals />} />
+          <Route path="devoluciones" element={<Returns />} />
+          <Route path="clientes" element={<Customers />} />
+          <Route path="proveedores" element={<Providers />} />
+          <Route path="inventario" element={<Inventory />} />
+          <Route path="tarifas" element={<Tariffs />} />
+          <Route path="reportes" element={<Reports />} />
+          <Route path="mantenimiento" element={<Maintenance />} />
+          <Route path="caja" element={<CashRegister />} />
+          <Route path="integraciones" element={<Integrations />} />
+          <Route path="configuracion" element={<Settings />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </DataInitializer>
   );
 }
 
 function App() {
+  // Registrar Service Worker al montar
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
+
   return (
     <BrowserRouter>
       <SettingsProvider>
         <AuthProvider>
-          <AppRoutes />
-          <Toaster position="top-right" richColors closeButton />
+          <OfflineProvider>
+            <AppRoutes />
+            <Toaster position="top-right" richColors closeButton />
+          </OfflineProvider>
         </AuthProvider>
       </SettingsProvider>
     </BrowserRouter>
