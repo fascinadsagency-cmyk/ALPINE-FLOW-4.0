@@ -298,7 +298,6 @@ export default function Inventory() {
     { value: "model", label: "Modelo", required: false },
     { value: "size", label: "Talla *", required: true },
     { value: "binding", label: "Fijación", required: false },
-    { value: "category", label: "Gama (MEDIA/ALTA/SUPERIOR)", required: false },
     { value: "purchase_price", label: "Precio de Compra", required: false },
     { value: "purchase_date", label: "Fecha de Compra", required: false },
     { value: "location", label: "Ubicación", required: false }
