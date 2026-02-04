@@ -815,35 +815,6 @@ export default function ActiveRentals() {
     return 'bg-slate-100 text-slate-700 border-slate-300';
   };
 
-          // Load full customer history (includes financials and detailed rentals)
-          const historyResponse = await axios.get(`${API}/customers/${rental.customer_id}/history`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-          });
-          customerData.customerHistory = historyResponse.data || null;
-          customerData.rental_history = historyResponse.data?.rentals || [];
-        } catch (e) {
-          // Customer might not exist in database, use rental data
-          console.log("Customer lookup failed, using rental data");
-          // Fallback: try to load just rental history
-          try {
-            const rentalsRes = await axios.get(`${API}/rentals?customer_id=${rental.customer_id}`, {
-              headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            });
-            customerData.rental_history = rentalsRes.data || [];
-          } catch (e2) {
-            console.log("Rental history fallback also failed");
-          }
-        }
-      }
-      
-      setSelectedCustomer(customerData);
-    } catch (error) {
-      toast.error("Error al cargar datos del cliente");
-    } finally {
-      setCustomerLoading(false);
-    }
-  };
-
   const sendWhatsAppMessage = (phone, customerName) => {
     if (!phone) {
       toast.error("No hay teléfono registrado para este cliente");
