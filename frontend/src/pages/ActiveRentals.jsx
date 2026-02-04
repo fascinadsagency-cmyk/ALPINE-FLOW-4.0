@@ -55,6 +55,7 @@ import {
   Scale,
   Mountain,
   Edit3,
+  Edit2,
   Save,
   Lock
 } from "lucide-react";
