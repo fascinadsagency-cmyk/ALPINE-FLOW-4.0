@@ -1833,19 +1833,50 @@ async def export_items_csv(current_user: dict = Depends(get_current_user)):
 
 @api_router.get("/items/stats")
 async def get_inventory_stats(current_user: dict = Depends(get_current_user)):
+    """
+    Calculate inventory stats with proper business logic:
+    - Excludes 'retired', 'deleted', 'lost' (baja/perdido) from rentable total
+    - Calculates occupancy_percent based on rentable inventory only
+    - Does NOT double-count Pack components (counts real physical units)
+    """
     pipeline = [
         {"$group": {
             "_id": "$status",
             "count": {"$sum": 1}
         }}
     ]
-    stats = await db.items.aggregate(pipeline).to_list(10)
+    stats = await db.items.aggregate(pipeline).to_list(20)
     
-    result = {"available": 0, "rented": 0, "maintenance": 0, "retired": 0, "total": 0}
+    result = {
+        "available": 0, 
+        "rented": 0, 
+        "maintenance": 0, 
+        "retired": 0,
+        "lost": 0,
+        "deleted": 0,
+        "total": 0,           # Total bruto (todos los items)
+        "rentable_total": 0,  # Total apto para alquilar (excluye retired/lost/deleted)
+        "occupancy_percent": 0  # Porcentaje de ocupación sobre el inventario rentable
+    }
+    
     for s in stats:
-        if s["_id"] in result:
-            result[s["_id"]] = s["count"]
-        result["total"] += s["count"]
+        status = s["_id"] or "available"
+        count = s["count"]
+        
+        if status in result:
+            result[status] = count
+        result["total"] += count
+        
+        # Rentable = available + rented + maintenance (excluye retired, lost, deleted)
+        if status in ["available", "rented", "maintenance"]:
+            result["rentable_total"] += count
+    
+    # Calculate occupancy percentage over RENTABLE inventory only
+    # Formula: Stock_Ocupado = rented / (available + rented + maintenance) * 100
+    if result["rentable_total"] > 0:
+        result["occupancy_percent"] = round(
+            (result["rented"] / result["rentable_total"]) * 100, 1
+        )
     
     return result
 
