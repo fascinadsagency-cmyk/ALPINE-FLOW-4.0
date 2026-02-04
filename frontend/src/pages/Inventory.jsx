@@ -121,6 +121,7 @@ export default function Inventory() {
   const [barcodePrefix, setBarcodePrefix] = useState("SKI");
   const [barcodeCount, setBarcodeCount] = useState(5);
   const [itemTypes, setItemTypes] = useState([]);
+  const [tariffs, setTariffs] = useState([]); // Store all tariffs for price lookup
   const [newTypeName, setNewTypeName] = useState("");
   const [showProfitability, setShowProfitability] = useState(false);
   const [profitabilitySummary, setProfitabilitySummary] = useState(null);
