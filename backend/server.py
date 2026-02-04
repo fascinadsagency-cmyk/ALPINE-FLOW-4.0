@@ -4853,7 +4853,7 @@ async def get_dashboard_analytics(
                         "model": item.get("model", ""),
                         "item_type": item.get("item_type", ""),
                         "size": item.get("size", ""),
-                        "category": item.get("category", "MEDIA"),
+                        "category": item.get("category", "STANDARD"),
                         "rental_count": 0,
                         "total_revenue": 0
                     }
