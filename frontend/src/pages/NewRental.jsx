@@ -1297,6 +1297,7 @@ export default function NewRental() {
   };
 
   // Actualizar precio de un pack completo (se guarda en el primer item del pack)
+  // Marca manualPriceEdit = true para que updatePackDays no resetee el precio
   const updatePackPrice = (packItems, newPrice) => {
     // Validate: only non-negative numbers allowed
     const price = parseFloat(newPrice);
@@ -1308,17 +1309,25 @@ export default function NewRental() {
     const packItemIds = new Set(packItems.map(i => i.id || i.barcode));
     
     // Guardamos el precio del pack en el primer item como customPackPrice
+    // Y marcamos manualPriceEdit = true para preservar en cambios de días
     setItems(items.map((item, idx) => {
       const itemId = item.id || item.barcode;
       if (packItemIds.has(itemId)) {
         // Solo el primer item del pack guarda el precio personalizado
         const isFirstPackItem = items.findIndex(i => packItemIds.has(i.id || i.barcode)) === idx;
         if (isFirstPackItem) {
-          return { ...item, customPackPrice: isNaN(price) ? null : price };
+          return { 
+            ...item, 
+            customPackPrice: isNaN(price) ? null : price,
+            manualPriceEdit: true  // Mark as manually edited to preserve on days change
+          };
         }
       }
       return item;
     }));
+    
+    setEditingPackPrice(null);
+    toast.success("Precio del pack actualizado manualmente");
   };
 
   const calculateTotal = () => {
