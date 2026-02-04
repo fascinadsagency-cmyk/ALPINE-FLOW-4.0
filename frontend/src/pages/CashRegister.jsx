@@ -787,7 +787,7 @@ export default function CashRegister() {
             </Card>
           </div>
 
-          {/* ============ PANEL SECUNDARIO: ARQUEO (Compacto) ============ */}
+          {/* ============ PANEL SECUNDARIO: ARQUEO (Sin Blur - Sistema Acordeón) ============ */}
           <Card className={`${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`} data-testid="arqueo-panel">
             <CardHeader className="py-3 px-5">
               <CardTitle className="text-base flex items-center gap-2">
@@ -798,25 +798,33 @@ export default function CashRegister() {
             <CardContent className="pt-0 px-5 pb-4">
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {/* Fondo Inicial */}
-                <div className={`p-3 rounded-lg ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                <div className={`p-3 rounded-lg transition-all duration-200 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                   <div className="flex items-center gap-1.5">
                     <p className={`text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                       Fondo Inicial
                     </p>
                     <button 
                       onClick={() => toggleMetricVisibility('fondo')}
-                      className="p-0.5 rounded hover:bg-slate-200/50"
+                      className={`p-1 rounded-md transition-all duration-200 ${
+                        visibleMetrics.fondo 
+                          ? 'bg-slate-200 text-slate-600' 
+                          : 'hover:bg-slate-200/50 text-slate-400'
+                      }`}
                     >
-                      {visibleMetrics.fondo ? <Eye className="h-3 w-3 text-slate-400" /> : <EyeOff className="h-3 w-3 text-slate-400" />}
+                      {visibleMetrics.fondo ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
                     </button>
                   </div>
-                  <p className={`text-lg font-bold mt-0.5 ${darkMode ? 'text-slate-200' : 'text-slate-700'} ${!visibleMetrics.fondo ? 'blur-sm select-none' : ''}`}>
-                    €{(summary?.opening_balance || 0).toFixed(2)}
+                  <p className={`text-lg font-bold mt-0.5 transition-all duration-300 ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+                    {visibleMetrics.fondo ? (
+                      `€${(summary?.opening_balance || 0).toFixed(2)}`
+                    ) : (
+                      <span className="text-slate-400 tracking-wider text-base">••••</span>
+                    )}
                   </p>
                 </div>
 
                 {/* Efectivo Esperado en Cajón */}
-                <div className={`p-3 rounded-lg border-2 ${darkMode ? 'bg-blue-900/20 border-blue-700' : 'bg-blue-50 border-blue-200'}`}>
+                <div className={`p-3 rounded-lg border-2 transition-all duration-200 ${darkMode ? 'bg-blue-900/20 border-blue-700' : 'bg-blue-50 border-blue-200'}`}>
                   <div className="flex items-center gap-1.5">
                     <Banknote className={`h-3.5 w-3.5 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                     <p className={`text-xs font-bold ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
@@ -824,18 +832,26 @@ export default function CashRegister() {
                     </p>
                     <button 
                       onClick={() => toggleMetricVisibility('efectivo')}
-                      className="p-0.5 rounded hover:bg-blue-200/50"
+                      className={`p-1 rounded-md transition-all duration-200 ${
+                        visibleMetrics.efectivo 
+                          ? 'bg-blue-200 text-blue-600' 
+                          : 'hover:bg-blue-200/50 text-blue-400'
+                      }`}
                     >
-                      {visibleMetrics.efectivo ? <Eye className="h-3 w-3 text-blue-400" /> : <EyeOff className="h-3 w-3 text-blue-400" />}
+                      {visibleMetrics.efectivo ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
                     </button>
                   </div>
-                  <p className={`text-lg font-bold ${darkMode ? 'text-blue-300' : 'text-blue-800'} ${!visibleMetrics.efectivo ? 'blur-sm select-none' : ''}`}>
-                    €{(summary?.efectivo_esperado || 0).toFixed(2)}
+                  <p className={`text-lg font-bold transition-all duration-300 ${darkMode ? 'text-blue-300' : 'text-blue-800'}`}>
+                    {visibleMetrics.efectivo ? (
+                      `€${(summary?.efectivo_esperado || 0).toFixed(2)}`
+                    ) : (
+                      <span className="text-blue-300 tracking-wider text-base">••••</span>
+                    )}
                   </p>
                 </div>
 
                 {/* Total Tarjeta */}
-                <div className={`p-3 rounded-lg border-2 ${darkMode ? 'bg-purple-900/20 border-purple-700' : 'bg-purple-50 border-purple-200'}`}>
+                <div className={`p-3 rounded-lg border-2 transition-all duration-200 ${darkMode ? 'bg-purple-900/20 border-purple-700' : 'bg-purple-50 border-purple-200'}`}>
                   <div className="flex items-center gap-1.5">
                     <CreditCard className={`h-3.5 w-3.5 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                     <p className={`text-xs font-bold ${darkMode ? 'text-purple-300' : 'text-purple-700'}`}>
@@ -843,13 +859,21 @@ export default function CashRegister() {
                     </p>
                     <button 
                       onClick={() => toggleMetricVisibility('tarjeta')}
-                      className="p-0.5 rounded hover:bg-purple-200/50"
+                      className={`p-1 rounded-md transition-all duration-200 ${
+                        visibleMetrics.tarjeta 
+                          ? 'bg-purple-200 text-purple-600' 
+                          : 'hover:bg-purple-200/50 text-purple-400'
+                      }`}
                     >
-                      {visibleMetrics.tarjeta ? <Eye className="h-3 w-3 text-purple-400" /> : <EyeOff className="h-3 w-3 text-purple-400" />}
+                      {visibleMetrics.tarjeta ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
                     </button>
                   </div>
-                  <p className={`text-lg font-bold ${(summary?.tarjeta_esperada || 0) >= 0 ? (darkMode ? 'text-purple-300' : 'text-purple-800') : 'text-red-600'} ${!visibleMetrics.tarjeta ? 'blur-sm select-none' : ''}`}>
-                    {(summary?.tarjeta_esperada || 0) < 0 ? '-' : ''}€{Math.abs(summary?.tarjeta_esperada || 0).toFixed(2)}
+                  <p className={`text-lg font-bold transition-all duration-300 ${(summary?.tarjeta_esperada || 0) >= 0 ? (darkMode ? 'text-purple-300' : 'text-purple-800') : 'text-red-600'}`}>
+                    {visibleMetrics.tarjeta ? (
+                      `${(summary?.tarjeta_esperada || 0) < 0 ? '-' : ''}€${Math.abs(summary?.tarjeta_esperada || 0).toFixed(2)}`
+                    ) : (
+                      <span className="text-purple-300 tracking-wider text-base">••••</span>
+                    )}
                   </p>
                 </div>
 
