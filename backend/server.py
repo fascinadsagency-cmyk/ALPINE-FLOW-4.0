@@ -4240,7 +4240,8 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
     
     return {
         "today_rentals": today_rentals,
-        "revenue_today": today_revenue,  # Unified with cash register
+        "revenue_today": today_revenue,  # Unified with cash register - EXCLUDES unpaid
+        "unpaid_amount": unpaid_amount,  # NEW: Separate tracking of unpaid (pending + reservations)
         "returns_today": returns_today,  # COUNT UNITS returned today (not lines)
         "customers_today": customers_today,  # COUNT DISTINCT customers served today
         "active_rentals": active_rentals,
