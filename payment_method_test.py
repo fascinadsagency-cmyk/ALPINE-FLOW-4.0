@@ -297,7 +297,7 @@ class PaymentMethodTester:
             print("\n🔄 TEST 2: Cambio Efectivo → Pendiente")
             
             # 1. Create rental with cash payment
-            rental_id = self.create_test_rental("cash", 75.0)
+            rental_id = self.create_test_rental("cash", 75.0, 1)  # Use second item
             if not rental_id:
                 self.log_test("TEST 2 - Create Cash Rental", False, "Could not create cash rental")
                 return False
