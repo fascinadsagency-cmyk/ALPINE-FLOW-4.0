@@ -201,7 +201,7 @@ class PaymentMethodTester:
                 "customer_id": self.customer_id,
                 "start_date": TEST_DATE,
                 "end_date": "2026-02-06",
-                "items": [{"barcode": "PAY-TEST-001", "person_name": ""}],
+                "items": [{"barcode": self.test_barcode_1, "person_name": ""}],
                 "payment_method": payment_method,
                 "total_amount": amount,
                 "paid_amount": amount if payment_method != "pending" else 0,
