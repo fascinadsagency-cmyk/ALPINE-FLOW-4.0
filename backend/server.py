@@ -3631,16 +3631,37 @@ async def get_daily_report(date: Optional[str] = None, current_user: dict = Depe
     
     pending_list = []
     for r in pending_returns:
-        pending_items = [i for i in r["items"] if not i.get("returned", False)]
+        pending_items = [i for i in r.get("items", []) if not i.get("returned", False)]
         if pending_items:
             pending_list.append({
                 "rental_id": r["id"],
-                "customer_name": r["customer_name"],
-                "customer_dni": r["customer_dni"],
-                "end_date": r["end_date"],
+                "customer_name": r.get("customer_name", ""),
+                "customer_dni": r.get("customer_dni", ""),
+                "end_date": r.get("end_date", ""),
                 "pending_items": len(pending_items),
                 "pending_amount": r.get("pending_amount", 0)
             })
+    
+    # Calculate inventory usage (percentage of items rented)
+    total_items = await db.items.count_documents({"status": {"$nin": ["deleted", "retired"]}})
+    rented_items = await db.items.count_documents({"status": "rented"})
+    inventory_usage = (rented_items / total_items * 100) if total_items > 0 else 0
+    
+    total_revenue = cash_revenue + card_revenue + online_revenue + other_revenue
+    
+    return DailyReportResponse(
+        date=date,
+        total_revenue=total_revenue,
+        cash_revenue=cash_revenue,
+        card_revenue=card_revenue,
+        online_revenue=online_revenue,
+        other_revenue=other_revenue,
+        new_rentals=rentals_count,
+        returns=returns_count,
+        active_rentals=active_rentals,
+        pending_returns=pending_list,
+        inventory_usage=round(inventory_usage, 1)
+    )
 
 @api_router.get("/reports/range", response_model=RangeReportResponse)
 async def get_range_report(
