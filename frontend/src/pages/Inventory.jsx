@@ -363,7 +363,6 @@ export default function Inventory() {
       const params = {};
       if (filterStatus && filterStatus !== "all") params.status = filterStatus;
       if (filterType && filterType !== "all") params.item_type = filterType;
-      if (filterCategory && filterCategory !== "all") params.category = filterCategory;
       if (searchTerm) params.search = searchTerm;
       if (sortBy) params.sort_by = sortBy;
       
@@ -389,7 +388,7 @@ export default function Inventory() {
 
   useEffect(() => {
     loadItems();
-  }, [filterStatus, filterType, filterCategory, showProfitability, sortBy]);
+  }, [filterStatus, filterType, showProfitability, sortBy]);
 
   // Load individual item profitability data
   const loadItemProfitability = async (item) => {
