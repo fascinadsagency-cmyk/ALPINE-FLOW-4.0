@@ -483,7 +483,7 @@ export default function Inventory() {
         size: newItem.size || "",
         binding: newItem.binding || "",
         location: newItem.location || "",
-        category: newItem.category || "MEDIA",
+        category: "STANDARD",  // Always STANDARD for individual items
         purchase_price: cleanNumber(newItem.purchase_price, 0),
         purchase_date: newItem.purchase_date || "",
         maintenance_interval: cleanInt(newItem.maintenance_interval, 30),
