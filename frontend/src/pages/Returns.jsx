@@ -1466,7 +1466,7 @@ export default function Returns() {
                       <div className="w-10 flex-shrink-0"></div>
                       <div className="flex-1">Producto</div>
                       <div className="w-32 text-center flex-shrink-0">Código</div>
-                      <div className="w-20 text-center flex-shrink-0">Talla</div>
+                      <div className="w-32 text-center flex-shrink-0">Talla/Cantidad</div>
                       <div className="w-28 text-right flex-shrink-0">Estado</div>
                     </div>
                     
