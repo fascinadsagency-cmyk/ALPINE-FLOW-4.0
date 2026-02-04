@@ -3015,7 +3015,14 @@ async def update_rental_payment_method(
     
     old_method = rental.get("payment_method", "cash")
     new_method = data.new_payment_method
-    amount = rental.get("paid_amount", rental.get("total_amount", 0))
+    
+    # Calculate amount based on the payment method change scenario
+    if is_unpaid_method(old_method) and is_paid_method(new_method):
+        # Pending -> Paid: Use total_amount (the amount being paid)
+        amount = rental.get("total_amount", 0)
+    else:
+        # Paid -> Paid or Paid -> Pending: Use paid_amount
+        amount = rental.get("paid_amount", rental.get("total_amount", 0))
     
     # Validate new payment method
     if new_method not in PAID_METHODS and new_method not in UNPAID_METHODS:
