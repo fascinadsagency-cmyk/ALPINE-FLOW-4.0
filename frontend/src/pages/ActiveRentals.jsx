@@ -2246,3 +2246,6 @@ export default function ActiveRentals() {
         </DialogContent>
       </Dialog>
 
+    </div>
+  );
+}
