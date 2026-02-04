@@ -2,7 +2,7 @@
 
 ## Estado del Proyecto
 **Última actualización:** 2026-02-04
-**Estado:** Operativo - Single Source of Truth Financiero IMPLEMENTADO
+**Estado:** Operativo - PWA Offline-First IMPLEMENTADA
 
 ---
 
