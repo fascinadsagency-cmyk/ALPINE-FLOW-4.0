@@ -167,6 +167,7 @@ export default function NewRental() {
   const [editingItemPrice, setEditingItemPrice] = useState(null);
   const [editingItemDays, setEditingItemDays] = useState(null);
   const [editingPackPrice, setEditingPackPrice] = useState(null); // Moved here for scanner disable check
+  const [editingItemType, setEditingItemType] = useState(null); // Track which item is editing its type
   
   // Customer technical data visibility toggle
   const [showCustomerTechData, setShowCustomerTechData] = useState(false);
