@@ -2004,7 +2004,7 @@ class PackResponse(BaseModel):
     id: str
     name: str
     description: str
-    category: str = "MEDIA"
+    category: str = "MEDIA"  # SUPERIOR, ALTA, MEDIA, OTRO
     items: List[str]
     day_1: float = 0
     day_2: float = 0
