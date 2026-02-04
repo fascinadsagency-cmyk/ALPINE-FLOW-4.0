@@ -1409,6 +1409,40 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                   </SelectContent>
                 </Select>
               )}
+              
+              {/* Date Range Filter for Profitability Mode */}
+              {showProfitability && (
+                <div className="flex gap-2 items-center">
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs text-slate-500">Desde</Label>
+                    <Input
+                      type="date"
+                      value={profitabilityDateRange.start}
+                      onChange={(e) => setProfitabilityDateRange({...profitabilityDateRange, start: e.target.value})}
+                      className="h-10 w-40"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-xs text-slate-500">Hasta</Label>
+                    <Input
+                      type="date"
+                      value={profitabilityDateRange.end}
+                      onChange={(e) => setProfitabilityDateRange({...profitabilityDateRange, end: e.target.value})}
+                      className="h-10 w-40"
+                    />
+                  </div>
+                  {(profitabilityDateRange.start || profitabilityDateRange.end) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setProfitabilityDateRange({start: "", end: ""})}
+                      className="mt-5"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Profitability Summary */}
