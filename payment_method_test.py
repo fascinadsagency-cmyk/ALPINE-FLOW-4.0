@@ -126,11 +126,14 @@ class PaymentMethodTester:
                 self.log_test("Setup Test Customer", False, f"Could not create/get customer: {customer_response.text}")
                 return False
             
-            # 4. Create test items
+            # 4. Create test items with unique barcodes
+            import time
+            timestamp = str(int(time.time()))[-6:]  # Last 6 digits of timestamp
+            
             test_items = [
                 {
-                    "barcode": "PAY-TEST-001",
-                    "internal_code": "PAY-TEST-001",
+                    "barcode": f"PAY-TEST-{timestamp}-1",
+                    "internal_code": f"PAY-TEST-{timestamp}-1",
                     "item_type": "ski",
                     "brand": "Test Brand",
                     "model": "Payment Test",
@@ -140,8 +143,8 @@ class PaymentMethodTester:
                     "category": "MEDIA"
                 },
                 {
-                    "barcode": "PAY-TEST-002", 
-                    "internal_code": "PAY-TEST-002",
+                    "barcode": f"PAY-TEST-{timestamp}-2", 
+                    "internal_code": f"PAY-TEST-{timestamp}-2",
                     "item_type": "boots",
                     "brand": "Test Brand",
                     "model": "Payment Test",
@@ -151,6 +154,9 @@ class PaymentMethodTester:
                     "category": "MEDIA"
                 }
             ]
+            
+            self.test_barcode_1 = f"PAY-TEST-{timestamp}-1"
+            self.test_barcode_2 = f"PAY-TEST-{timestamp}-2"
             
             for item in test_items:
                 item_response = requests.post(f"{BACKEND_URL}/items", json=item, headers=self.headers)
