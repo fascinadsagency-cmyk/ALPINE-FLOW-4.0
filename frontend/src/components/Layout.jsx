@@ -2,6 +2,7 @@ import { Outlet, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { Button } from "@/components/ui/button";
+import OfflineIndicator from "@/components/OfflineIndicator";
 import {
   LayoutDashboard,
   ShoppingCart,
