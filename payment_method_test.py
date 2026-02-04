@@ -359,7 +359,7 @@ class PaymentMethodTester:
             print("\n🔄 TEST 3: Cambio Pendiente → Tarjeta")
             
             # 1. Create rental with pending payment
-            rental_id = self.create_test_rental("pending", 60.0, 0)  # Reuse first item (should be returned by now)
+            rental_id = self.create_test_rental("pending", 60.0, 2)  # Use third item
             if not rental_id:
                 self.log_test("TEST 3 - Create Pending Rental", False, "Could not create pending rental")
                 return False
