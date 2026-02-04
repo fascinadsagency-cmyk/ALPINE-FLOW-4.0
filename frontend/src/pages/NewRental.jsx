@@ -2319,12 +2319,35 @@ export default function NewRental() {
                               )}
                             </div>
                             
-                            {/* Tipo */}
+                            {/* Tipo - Editable */}
                             <div className="col-span-2">
                               <p className="text-[10px] text-slate-500 font-medium uppercase">Tipo</p>
-                              <Badge variant="outline" className="font-semibold text-xs">
-                                {itemTypes.find(t => t.value === item.item_type)?.label || item.item_type}
-                              </Badge>
+                              {editingItemType === (item.id || item.barcode) ? (
+                                <Select
+                                  value={item.item_type}
+                                  onValueChange={(newType) => handleItemTypeChange((item.id || item.barcode), newType)}
+                                  onOpenChange={(open) => !open && setEditingItemType(null)}
+                                >
+                                  <SelectTrigger className="h-8 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {itemTypes.map(type => (
+                                      <SelectItem key={type.value} value={type.value}>
+                                        {type.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              ) : (
+                                <Badge 
+                                  variant="outline" 
+                                  className="font-semibold text-xs cursor-pointer hover:bg-slate-100"
+                                  onClick={() => setEditingItemType(item.id || item.barcode)}
+                                >
+                                  {itemTypes.find(t => t.value === item.item_type)?.label || item.item_type}
+                                </Badge>
+                              )}
                               {item.is_generic && qty > 1 && (
                                 <Badge className="ml-1 bg-emerald-600 text-white font-bold text-xs">x{qty}</Badge>
                               )}
