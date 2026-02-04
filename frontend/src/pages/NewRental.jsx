@@ -521,10 +521,9 @@ export default function NewRental() {
           });
         }
       }
-      });
     });
 
-    // Return only the best suggestion per category (highest savings)
+    // Return only the best suggestion per pack category (highest savings)
     const bestByCategory = {};
     suggestions.forEach(s => {
       if (!bestByCategory[s.category] || s.potentialSavings > bestByCategory[s.category].potentialSavings) {
