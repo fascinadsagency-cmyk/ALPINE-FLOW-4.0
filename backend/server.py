@@ -4387,7 +4387,7 @@ async def global_lookup(code: str, current_user: dict = Depends(get_current_user
                     "brand": item.get("brand"),
                     "model": item.get("model"),
                     "size": item.get("size"),
-                    "category": item.get("category", "MEDIA"),
+                    "category": item.get("category", "STANDARD"),
                     "rental_item_data": rented_item
                 }
                 results["message"] = f"Artículo alquilado por {rental.get('customer_name')}"
@@ -4405,7 +4405,7 @@ async def global_lookup(code: str, current_user: dict = Depends(get_current_user
             "model": item.get("model"),
             "size": item.get("size"),
             "status": item.get("status"),
-            "category": item.get("category", "MEDIA")
+            "category": item.get("category", "STANDARD")
         }
         results["message"] = f"Artículo disponible ({item.get('status')})"
         return results
