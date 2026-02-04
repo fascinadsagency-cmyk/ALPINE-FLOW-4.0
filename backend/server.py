@@ -3649,9 +3649,12 @@ async def get_range_report(
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Get comprehensive report for a date range including:
-    - Revenue breakdown by payment method
-    - Rentals and returns
+    Reporte por rango de fechas usando el servicio financiero centralizado.
+    GARANTIZA coincidencia con la vista de Caja.
+    
+    Incluye:
+    - Revenue breakdown by payment method (desde cash_movements)
+    - Rentals and returns counts
     - External repairs revenue
     - Commission summary by provider
     - Pending returns
@@ -3659,29 +3662,47 @@ async def get_range_report(
     start_dt = f"{start_date}T00:00:00"
     end_dt = f"{end_date}T23:59:59"
     
-    # Get rentals in the range
+    # ===== USAR SERVICIO CENTRALIZADO (Single Source of Truth) =====
+    financial_summary = await financial_service.get_financial_summary(start_date, end_date)
+    
+    # Extraer totales por método de pago desde cash_movements
+    cash_revenue = financial_summary["by_payment_method"]["cash"]["income"]
+    card_revenue = financial_summary["by_payment_method"]["card"]["income"]
+    
+    # Para online y other, buscar en cash_movements
+    other_methods = await db.cash_movements.aggregate([
+        {"$match": {
+            "created_at": {"$gte": start_dt, "$lte": end_dt},
+            "movement_type": "income",
+            "payment_method": {"$nin": ["cash", "card"]}
+        }},
+        {"$group": {
+            "_id": "$payment_method",
+            "total": {"$sum": "$amount"}
+        }}
+    ]).to_list(10)
+    
+    online_revenue = 0
+    other_revenue = 0
+    for m in other_methods:
+        if m["_id"] in ["online", "pago_online"]:
+            online_revenue += m["total"]
+        else:
+            other_revenue += m["total"]
+    
+    # Get rentals count in the range (operational data, not financial)
     rentals = await db.rentals.find({
         "created_at": {"$gte": start_dt, "$lte": end_dt}
-    }, {"_id": 0}).to_list(5000)
-    
-    # Calculate revenue by payment method
-    cash_revenue = sum(r.get("paid_amount", 0) for r in rentals if r.get("payment_method") == "cash")
-    card_revenue = sum(r.get("paid_amount", 0) for r in rentals if r.get("payment_method") == "card")
-    online_revenue = sum(r.get("paid_amount", 0) for r in rentals if r.get("payment_method") in ["online", "pago_online"])
-    other_revenue = sum(r.get("paid_amount", 0) for r in rentals if r.get("payment_method") in ["pending", "other"])
+    }, {"_id": 0, "id": 1, "customer_id": 1, "paid_amount": 1}).to_list(5000)
     
     # Get returns in the range
     returns_count = await db.rentals.count_documents({
         "status": "returned",
-        "created_at": {"$gte": start_dt, "$lte": end_dt}
+        "actual_return_date": {"$gte": start_dt, "$lte": end_dt}
     })
     
-    # Get external repairs revenue
-    repairs = await db.external_repairs.find({
-        "created_at": {"$gte": start_dt, "$lte": end_dt},
-        "status": {"$in": ["completed", "delivered"]}
-    }, {"_id": 0, "price": 1}).to_list(1000)
-    repairs_revenue = sum(r.get("price", 0) for r in repairs)
+    # Get external repairs revenue (ya está en cash_movements pero también lo mostramos)
+    repairs_revenue = financial_summary["by_category"].get("external_repair", {}).get("total", 0)
     
     # Calculate commissions by provider
     sources = await db.sources.find({}, {"_id": 0}).to_list(100)
