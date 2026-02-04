@@ -319,7 +319,7 @@ export default function Inventory() {
     purchase_date: new Date().toISOString().split('T')[0],
     location: "",
     maintenance_interval: "30",
-    category: "MEDIA",
+    category: "STANDARD",  // Default category for all items (hidden from user)
     // Generic item fields
     is_generic: false,
     name: "",
