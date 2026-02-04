@@ -1133,6 +1133,24 @@ export default function ActiveRentals() {
                           </span>
                         </TableCell>
                         
+                        {/* PAYMENT METHOD with Edit Button */}
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Badge className={getPaymentMethodBadge(rental.payment_method)}>
+                              {getPaymentMethodLabel(rental.payment_method || 'cash')}
+                            </Badge>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => openPaymentMethodDialog(rental)}
+                              title="Editar método de pago"
+                            >
+                              <Edit2 className="h-3 w-3 text-slate-400 hover:text-slate-600" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                        
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
                             <Button
