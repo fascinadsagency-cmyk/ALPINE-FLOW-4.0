@@ -96,15 +96,33 @@ class SyncService {
       this.notifySyncStatus({ type: 'downloading', progress: 0 });
       
       // Descargar en paralelo para mayor velocidad
-      const [customers, items, rentals, tariffs, packs, sources, itemTypes] = await Promise.all([
+      // Usar Promise.allSettled para no fallar si una petición falla
+      const results = await Promise.allSettled([
         this.fetchWithRetry(`${API}/api/customers`, headers),
         this.fetchWithRetry(`${API}/api/items`, headers),
-        this.fetchWithRetry(`${API}/api/rentals?include_all=true`, headers),
+        this.fetchWithRetry(`${API}/api/rentals?status=active`, headers), // Solo activos para evitar errores
         this.fetchWithRetry(`${API}/api/tariffs`, headers),
         this.fetchWithRetry(`${API}/api/packs`, headers),
         this.fetchWithRetry(`${API}/api/sources`, headers),
         this.fetchWithRetry(`${API}/api/item-types`, headers)
       ]);
+
+      // Extraer datos exitosos, usar array vacío para fallos
+      const extractData = (result) => result.status === 'fulfilled' ? result.value : [];
+      
+      const customers = extractData(results[0]);
+      const items = extractData(results[1]);
+      const rentals = extractData(results[2]);
+      const tariffs = extractData(results[3]);
+      const packs = extractData(results[4]);
+      const sources = extractData(results[5]);
+      const itemTypes = extractData(results[6]);
+
+      // Contar errores
+      const errors = results.filter(r => r.status === 'rejected');
+      if (errors.length > 0) {
+        console.warn('[SyncService] Algunos endpoints fallaron:', errors.length);
+      }
 
       this.notifySyncStatus({ type: 'downloading', progress: 50 });
 
@@ -148,7 +166,8 @@ class SyncService {
       console.log('[SyncService] Descarga completa:', {
         customers: customers?.length || 0,
         items: items?.length || 0,
-        rentals: rentals?.length || 0
+        rentals: rentals?.length || 0,
+        errors: errors.length
       });
 
       return true;
