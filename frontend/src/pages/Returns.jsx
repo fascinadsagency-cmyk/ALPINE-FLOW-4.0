@@ -1460,25 +1460,30 @@ export default function Returns() {
                     <div className="divide-y divide-slate-100 max-h-[280px] overflow-y-auto">
                       {rental.items.filter(i => !i.returned).map((item, idx) => {
                         const isScanned = scannedBarcodes.includes(item.barcode);
+                        const isPartialItem = isPartialReturnItem(item);
+                        const pendingQty = getPendingQuantity(item);
+                        const returnQty = getReturnQuantity(item);
                         
                         // Toggle handler - marcar/desmarcar
                         const handleToggle = () => {
-                          if (isScanned) {
-                            // Desmarcar
-                            setScannedBarcodes(prev => prev.filter(code => code !== item.barcode));
-                            toast.info(`${item.item_type || item.brand} desmarcado`);
-                          } else {
-                            // Marcar
-                            setScannedBarcodes(prev => [...prev, item.barcode]);
-                            toast.success(`${item.item_type || item.brand} marcado ✓`);
+                          if (!isPartialItem) {
+                            // Regular item: simple toggle
+                            if (isScanned) {
+                              setScannedBarcodes(prev => prev.filter(code => code !== item.barcode));
+                              toast.info(`${item.item_type || item.brand} desmarcado`);
+                            } else {
+                              setScannedBarcodes(prev => [...prev, item.barcode]);
+                              toast.success(`${item.item_type || item.brand} marcado ✓`);
+                            }
                           }
+                          // For partial items, clicking opens quantity controls (handled by UI)
                         };
                         
                         return (
                           <div 
                             key={idx}
                             onClick={handleToggle}
-                            className={`px-4 py-3 cursor-pointer transition-all duration-200 flex items-center gap-4 ${
+                            className={`px-4 py-3 ${!isPartialItem ? 'cursor-pointer' : ''} transition-all duration-200 flex items-center gap-4 ${
                               isScanned 
                                 ? 'bg-emerald-50 border-l-4 border-l-emerald-500' 
                                 : 'bg-white hover:bg-slate-50 border-l-4 border-l-transparent'
@@ -1499,6 +1504,11 @@ export default function Returns() {
                                 {item.item_type || 'Artículo'}
                                 {item.brand && <span className="font-normal text-slate-500 ml-1">- {item.brand} {item.model}</span>}
                               </p>
+                              {isPartialItem && (
+                                <p className="text-xs text-slate-500 mt-1">
+                                  {item.returned_quantity || 0} devuelto(s) / {item.quantity} total
+                                </p>
+                              )}
                             </div>
                             
                             {/* Código */}
@@ -1510,9 +1520,46 @@ export default function Returns() {
                               </span>
                             </div>
                             
-                            {/* Talla */}
-                            <div className="flex-shrink-0 w-20 text-center">
-                              {item.size ? (
+                            {/* Talla / Cantidad Selector */}
+                            <div className="flex-shrink-0 w-32 text-center">
+                              {isPartialItem ? (
+                                <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-7 w-7 p-0"
+                                    onClick={() => {
+                                      const newQty = Math.max(0, returnQty - 1);
+                                      setReturnQuantity(item.barcode, newQty, pendingQty);
+                                    }}
+                                  >
+                                    -
+                                  </Button>
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    max={pendingQty}
+                                    value={returnQty}
+                                    onChange={(e) => {
+                                      const val = parseInt(e.target.value) || 0;
+                                      setReturnQuantity(item.barcode, val, pendingQty);
+                                    }}
+                                    className="h-7 w-14 text-center font-bold"
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-7 w-7 p-0"
+                                    onClick={() => {
+                                      const newQty = Math.min(pendingQty, returnQty + 1);
+                                      setReturnQuantity(item.barcode, newQty, pendingQty);
+                                    }}
+                                  >
+                                    +
+                                  </Button>
+                                </div>
+                              ) : item.size ? (
                                 <Badge variant="outline" className={isScanned ? 'border-emerald-300 text-emerald-700' : ''}>
                                   T. {item.size}
                                 </Badge>
@@ -1526,10 +1573,12 @@ export default function Returns() {
                               {isScanned ? (
                                 <span className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600">
                                   <CheckCircle className="h-4 w-4" />
-                                  LISTO
+                                  {isPartialItem ? `${returnQty}/${pendingQty}` : 'LISTO'}
                                 </span>
                               ) : (
-                                <span className="text-sm text-slate-400">Pendiente</span>
+                                <span className="text-sm text-slate-400">
+                                  {isPartialItem ? `0/${pendingQty}` : 'Pendiente'}
+                                </span>
                               )}
                             </div>
                           </div>
