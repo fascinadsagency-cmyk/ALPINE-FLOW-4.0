@@ -2653,7 +2653,7 @@ async def central_swap_item(rental_id: str, data: CentralSwapRequest, current_us
         "brand": new_item.get("brand", ""),
         "model": new_item.get("model", ""),
         "size": new_item.get("size", ""),
-        "category": new_item.get("category", "MEDIA"),
+        "category": "STANDARD",  # All individual items are STANDARD
         "unit_price": old_item_data.get("unit_price", 0) + data.delta_amount,
         "returned": False,
         "swapped_from": data.old_item_barcode,
