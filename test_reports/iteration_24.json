@@ -1,0 +1,129 @@
+{
+  "summary": "Iteration 24 - Pack Pricing with Scaled Tariffs Verification. All pack pricing tests PASSED. The system correctly uses scaled tariffs (day_1, day_2, ..., day_10, day_11_plus) instead of multiplying day_1 price × number of days. Manual price editing and reset functionality also working correctly.",
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  
+  "passed_tests": [
+    "1. Create pack 'Equipo gama media' (esquí + bota) - 1 day = €27.00 - PASSED",
+    "2. Change pack days to 6 - price = €95.00 (NOT €162.00 = 27×6) - PASSED",
+    "3. Change pack days to 3 - price = €65.00 (NOT €81.00 = 27×3) - PASSED",
+    "4. Edit pack price manually to €50.00 - PASSED",
+    "5. Manual price €50.00 maintained after changing days to 3 - PASSED",
+    "6. Reset pack price to tariff - returns to €65.00 (day_3 scaled tariff) - PASSED",
+    "7. Total a pagar updates automatically when pack days change - PASSED"
+  ],
+  
+  "verified_pack_pricing": {
+    "pack_name": "Equipo gama media",
+    "pack_components": ["esquí_gama_media_", "bota_esqui_"],
+    "tariff_table": {
+      "day_1": 27,
+      "day_2": 47,
+      "day_3": 65,
+      "day_4": 77,
+      "day_5": 86,
+      "day_6": 95,
+      "day_7": 104,
+      "day_8": 113,
+      "day_9": 122,
+      "day_10": 131,
+      "day_11_plus": 9
+    },
+    "test_results": {
+      "1_day": {"expected": 27, "actual": 27, "status": "PASSED"},
+      "3_days": {"expected": 65, "actual": 65, "wrong_calculation": 81, "status": "PASSED"},
+      "6_days": {"expected": 95, "actual": 95, "wrong_calculation": 162, "status": "PASSED"}
+    }
+  },
+  
+  "verified_manual_price_editing": {
+    "set_manual_price": {"value": 50, "status": "PASSED", "shows_editado_badge": true},
+    "price_preserved_on_days_change": {"status": "PASSED", "price_after_change": 50},
+    "reset_to_tariff": {"status": "PASSED", "price_after_reset": 65, "toast_message": "Precio del pack restaurado a tarifa"}
+  },
+  
+  "code_review_verification": {
+    "getPackPrice_function": {
+      "location": "/app/frontend/src/pages/NewRental.jsx line ~610",
+      "logic": "Uses pack[`day_${targetDays}`] for days 1-10, pack.day_11_plus for days > 10",
+      "status": "CORRECT - looks up scaled tariff, does NOT multiply"
+    },
+    "updatePackDays_function": {
+      "location": "/app/frontend/src/pages/NewRental.jsx line ~1197",
+      "logic": "Clears customPackPrice when days change (unless manualPriceEdit=true)",
+      "status": "CORRECT - recalculates from tariff table"
+    },
+    "updatePackPrice_function": {
+      "location": "/app/frontend/src/pages/NewRental.jsx line ~1299",
+      "logic": "Sets customPackPrice and manualPriceEdit=true",
+      "status": "CORRECT - preserves manual price on days change"
+    },
+    "resetPackPrice_function": {
+      "location": "/app/frontend/src/pages/NewRental.jsx line ~1334",
+      "logic": "Clears customPackPrice and manualPriceEdit=false",
+      "status": "CORRECT - returns to scaled tariff"
+    }
+  },
+  
+  "test_report_links": [],
+  
+  "action_items": [],
+  
+  "critical_code_review_comments": [],
+  
+  "updated_files": [],
+  
+  "success_rate": {
+    "backend": "N/A (frontend-only testing)",
+    "frontend": "100% (7/7 tests passed)"
+  },
+  
+  "test_credentials": {
+    "username": "testcaja",
+    "password": "test1234"
+  },
+  
+  "seed_data_creation": "Used existing items: FLOW1135507 (esquí_gama_media_) and TEST_IMP002 (bota_esqui_)",
+  
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  
+  "context_for_next_testing_agent": "Pack pricing with scaled tariffs is fully verified. The getPackPrice() function correctly looks up day_X fields in the pack tariff table instead of multiplying. Manual price editing with manualPriceEdit flag works correctly - preserves custom price when days change. Reset functionality clears customPackPrice and returns to scaled tariff. All features working as expected.",
+  
+  "screenshots": [
+    ".screenshots/pack_1_day.png - Pack with 1 day showing €27.00",
+    ".screenshots/pack_3_days.png - Pack with 3 days showing €65.00",
+    ".screenshots/pack_6_days.png - Pack with 6 days showing €95.00",
+    ".screenshots/pack_manual_price_50.png - Manual price €50.00 with EDITADO badge",
+    ".screenshots/pack_after_days_change.png - Manual price maintained after days change",
+    ".screenshots/pack_manual_100.png - Manual price €100.00 with EDITADO badge",
+    ".screenshots/pack_after_reset.png - Price reset to tariff €65.00"
+  ],
+  
+  "bugs_fixed_verification": {
+    "bug_pack_pricing_multiplication": {
+      "description": "Pack prices were being calculated as day_1 × number_of_days instead of looking up the specific day_X tariff",
+      "status": "VERIFIED FIXED",
+      "evidence": "3 days = €65.00 (not €81.00), 6 days = €95.00 (not €162.00)"
+    },
+    "feature_manual_price_edit": {
+      "description": "Manual price editing with preservation on days change",
+      "status": "VERIFIED WORKING",
+      "evidence": "€50.00 manual price maintained after changing days, EDITADO badge shown"
+    },
+    "feature_reset_to_tariff": {
+      "description": "Reset pack price to scaled tariff",
+      "status": "VERIFIED WORKING",
+      "evidence": "Price returned to €65.00 after reset, toast 'Precio del pack restaurado a tarifa'"
+    }
+  }
+}
