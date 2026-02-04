@@ -5362,6 +5362,7 @@ async def get_cash_summary(date: Optional[str] = None, current_user: dict = Depe
         "total_income": total_income,
         "total_expense": total_expense,
         "total_refunds": total_refunds,
+        "total_adjustments": total_adjustments,
         "balance": balance,
         "by_payment_method": by_method,
         "movements_count": len(movements)
