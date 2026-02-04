@@ -1331,6 +1331,29 @@ export default function NewRental() {
     toast.success("Precio del pack actualizado manualmente");
   };
 
+  // Resetear precio del pack a la tarifa original (elimina edición manual)
+  const resetPackPrice = (packItems) => {
+    const packItemIds = new Set(packItems.map(i => i.id || i.barcode));
+    
+    setItems(items.map((item, idx) => {
+      const itemId = item.id || item.barcode;
+      if (packItemIds.has(itemId)) {
+        const isFirstPackItem = items.findIndex(i => packItemIds.has(i.id || i.barcode)) === idx;
+        if (isFirstPackItem) {
+          // Clear custom price and manual edit flag
+          return { 
+            ...item, 
+            customPackPrice: null,
+            manualPriceEdit: false
+          };
+        }
+      }
+      return item;
+    }));
+    
+    toast.success("Precio del pack restaurado a tarifa");
+  };
+
   const calculateTotal = () => {
     const subtotal = calculateSubtotal();
     let total = subtotal;
