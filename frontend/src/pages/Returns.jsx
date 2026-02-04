@@ -1537,6 +1537,11 @@ export default function Returns() {
                             {/* Nombre del Producto */}
                             <div className="flex-1 min-w-0">
                               <p className={`font-semibold truncate ${isScanned ? 'text-emerald-800' : 'text-slate-800'}`}>
+                                {isPartialItem && (
+                                  <span className="font-bold text-blue-600 mr-1">
+                                    {item.quantity}x
+                                  </span>
+                                )}
                                 {item.item_type || 'Artículo'}
                                 {item.brand && <span className="font-normal text-slate-500 ml-1">- {item.brand} {item.model}</span>}
                               </p>
