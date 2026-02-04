@@ -5338,19 +5338,20 @@ async def get_cash_summary(date: Optional[str] = None, current_user: dict = Depe
     total_income = sum(m["amount"] for m in movements if m["movement_type"] == "income")
     total_expense = sum(m["amount"] for m in movements if m["movement_type"] == "expense")
     total_refunds = sum(m["amount"] for m in movements if m["movement_type"] == "refund")
+    total_adjustments = sum(m["amount"] for m in movements if m["movement_type"] == "adjustment")
     
     # Group by payment method
     by_method = {}
     for m in movements:
         method = m["payment_method"]
         if method not in by_method:
-            by_method[method] = {"income": 0, "expense": 0, "refund": 0}
+            by_method[method] = {"income": 0, "expense": 0, "refund": 0, "adjustment": 0}
         movement_type = m["movement_type"]
         if movement_type in by_method[method]:
             by_method[method][movement_type] += m["amount"]
     
-    # Net balance = Opening balance + Income - Expenses - Refunds
-    balance = active_session["opening_balance"] + total_income - total_expense - total_refunds
+    # Net balance = Opening balance + Income - Expenses - Refunds + Adjustments
+    balance = active_session["opening_balance"] + total_income - total_expense - total_refunds + total_adjustments
     
     return {
         "date": date,
