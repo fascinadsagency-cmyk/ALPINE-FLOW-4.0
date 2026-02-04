@@ -1194,8 +1194,8 @@ export default function NewRental() {
     return tariff[dayField] || tariff.day_1 || 0;
   };
 
-  // Update days for all items in a pack
-  const updatePackDays = (packItems, newDays) => {
+  // Update days for all items in a pack - RECALCULATE pack price using scaled tariff
+  const updatePackDays = (packItems, newDays, keepCustomPrice = false) => {
     // Validate: only positive integers allowed
     const days = parseInt(newDays);
     if (isNaN(days) || days < 1) {
@@ -1205,14 +1205,46 @@ export default function NewRental() {
     }
     
     const packItemIds = new Set(packItems.map(i => i.id || i.barcode));
+    
+    // Get the first item to check if price was manually edited
+    const firstItem = packItems[0];
+    const wasManuallyEdited = firstItem?.manualPriceEdit === true;
+    
     setItems(items.map(item => {
       const itemId = item.id || item.barcode;
       if (packItemIds.has(itemId)) {
-        return { ...item, itemDays: days, manualDaysEdit: true };
+        const isFirstItem = (item.id || item.barcode) === (firstItem?.id || firstItem?.barcode);
+        
+        // CRITICAL: Only clear customPackPrice if:
+        // 1. It wasn't manually edited by user (not keepCustomPrice)
+        // 2. OR if explicitly told to recalculate (!keepCustomPrice)
+        // This ensures the price is recalculated from the tariff table
+        const updatedItem = { 
+          ...item, 
+          itemDays: days, 
+          manualDaysEdit: true 
+        };
+        
+        // Clear customPackPrice on first item so getGroupedCartItems will recalculate
+        // ONLY if the price was NOT manually edited
+        if (isFirstItem && !wasManuallyEdited && !keepCustomPrice) {
+          updatedItem.customPackPrice = null;
+          updatedItem.manualPriceEdit = false;
+        }
+        
+        return updatedItem;
       }
       return item;
     }));
+    
     setEditingItemDays(null);
+    
+    // Provide feedback about the recalculation
+    if (!wasManuallyEdited) {
+      toast.success(`Duración del pack actualizada a ${days} día${days !== 1 ? 's' : ''} - Precio recalculado`);
+    } else {
+      toast.info(`Duración del pack actualizada a ${days} día${days !== 1 ? 's' : ''} - Precio manual mantenido`);
+    }
   };
 
   // Calcula el precio total de un item (precio unitario * cantidad * días)
