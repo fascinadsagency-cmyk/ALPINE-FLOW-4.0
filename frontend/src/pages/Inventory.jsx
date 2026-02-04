@@ -1804,6 +1804,8 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                 </TableBody>
               </Table>
               </DndContext>
+              )}
+              {/* FIN CONDICIONAL showProfitability */}
             </div>
           )}
         </CardContent>
