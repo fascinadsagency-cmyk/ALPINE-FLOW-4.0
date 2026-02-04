@@ -23,6 +23,7 @@ import {
   Loader2,
   History,
   Barcode,
+  RotateCcw,
   Calendar,
   Clock,
   ArrowRight,
