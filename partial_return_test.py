@@ -504,23 +504,23 @@ class PartialReturnTester:
         
         # Step 3: TEST 1 - Partial return (1 of 2 units)
         print("\n🔄 TEST 1: Partial return (1 of 2 units)...")
-        test1_success = self.test_partial_return_1_of_2("61ce90b0")
+        test1_success = self.test_partial_return_1_of_2("61ce90b0-75b6-4178-91e3-50e9a3beb201")
         
         # Step 4: TEST 2 - Complete return (remaining unit)
         print("\n✅ TEST 2: Complete return (remaining unit)...")
-        test2_success = self.test_complete_remaining_return("61ce90b0")
+        test2_success = self.test_complete_remaining_return("61ce90b0-75b6-4178-91e3-50e9a3beb201")
         
         # Step 5: TEST 3 - Full return in one step
         print("\n⚡ TEST 3: Full return in one step...")
-        test3_success = self.test_full_return_one_step("8bdcc15b")
+        test3_success = self.test_full_return_one_step("8bdcc15b-6877-4149-9099-8e82ad233f47")
         
         # Step 6: TEST 4 - Multiple items with mixed quantities
         print("\n🔀 TEST 4: Multiple items with mixed quantities...")
-        test4_success = self.test_multiple_items_mixed_quantities("8bdcc15b")
+        test4_success = self.test_multiple_items_mixed_quantities("8bdcc15b-6877-4149-9099-8e82ad233f47")
         
         # Step 7: TEST 5 - Edge case (excess quantity)
         print("\n⚠️ TEST 5: Edge case - excess quantity...")
-        test5_success = self.test_edge_case_excess_quantity("61ce90b0")
+        test5_success = self.test_edge_case_excess_quantity("61ce90b0-75b6-4178-91e3-50e9a3beb201")
         
         # Step 8: Verify stock updates
         print("\n📊 Verifying stock updates...")
