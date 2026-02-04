@@ -54,22 +54,6 @@ const PAYMENT_METHODS = [
 ];
 
 // Item types will be loaded from API
-const CATEGORIES = [
-  { value: "all", label: "Todas" },
-  { value: "SUPERIOR", label: "Gama Superior" },
-  { value: "ALTA", label: "Gama Alta" },
-  { value: "MEDIA", label: "Gama Media" },
-];
-
-const getCategoryBadge = (category) => {
-  const styles = {
-    SUPERIOR: "bg-purple-100 text-purple-700 border-purple-200",
-    ALTA: "bg-blue-100 text-blue-700 border-blue-200",
-    MEDIA: "bg-emerald-100 text-emerald-700 border-emerald-200"
-  };
-  return styles[category] || styles.MEDIA;
-};
-
 // Helper: Get smart start date based on time
 const getSmartStartDate = () => {
   const now = new Date();
