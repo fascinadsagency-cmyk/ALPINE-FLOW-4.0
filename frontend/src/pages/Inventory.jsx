@@ -2858,7 +2858,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                 <p className="text-sm text-slate-600">
                   {deletingItem.brand} {deletingItem.model} - {deletingItem.size}
                 </p>
-                <Badge className={getCategoryBadge(deletingItem.category)}>
+                <Badge>
                   {deletingItem.category}
                 </Badge>
               </div>
