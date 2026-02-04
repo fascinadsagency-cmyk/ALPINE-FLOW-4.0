@@ -33,6 +33,7 @@ class PaymentMethodTester:
         self.initial_balances = {}
         self.test_barcode_1 = None
         self.test_barcode_2 = None
+        self.test_barcode_3 = None
         
     def log_test(self, test_name, success, details=""):
         """Log test result"""
