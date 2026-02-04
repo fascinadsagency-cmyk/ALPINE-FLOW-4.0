@@ -206,7 +206,6 @@ export default function Tariffs() {
       await axios.post(`${API}/packs`, {
         name: newPack.name,
         description: newPack.description,
-        category: newPack.category,
         items: newPack.items,
         day_1: parseFloat(newPack.day_1) || 0,
         day_2: parseFloat(newPack.day_2) || 0,
@@ -226,7 +225,6 @@ export default function Tariffs() {
       setNewPack({
         name: "",
         description: "",
-        category: "MEDIA",
         day_1: "", day_2: "", day_3: "", day_4: "", day_5: "",
         day_6: "", day_7: "", day_8: "", day_9: "", day_10: "",
         day_11_plus: "",
