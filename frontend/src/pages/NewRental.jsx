@@ -143,7 +143,6 @@ export default function NewRental() {
   const [showItemSearch, setShowItemSearch] = useState(false);
   const [itemSearchTerm, setItemSearchTerm] = useState("");
   const [itemSearchType, setItemSearchType] = useState("all");
-  const [itemSearchCategory, setItemSearchCategory] = useState("all");
   const [searchResults, setSearchResults] = useState([]);
   const [searchingItems, setSearchingItems] = useState(false);
   const [searchFilter, setSearchFilter] = useState(null); // For upselling suggestion filter
