@@ -62,6 +62,16 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
 - ✅ **Tipos de Artículo Personalizados:** Usuario crea y gestiona categorías
 - ✅ **Artículos Genéricos:** Gestión por stock (Cascos, Bastones, etc.)
 - ✅ **Botonera de Añadido Rápido:** Cascos, Bastones, Máscara
+- ✅ **PERSISTENCIA DE CARRITO EN NUEVO ALQUILER (NUEVO 2026-02-04):**
+  - **Hook `useCartPersistence`:** Persiste el estado del carrito en localStorage
+  - **Datos Persistidos:** Cliente, artículos, packs detectados, días, fechas, notas, descuentos
+  - **Restauración Automática:** Al volver a "Nuevo Alquiler", el carrito se restaura completo
+  - **Ciclo de Vida Controlado:** Solo se borra al completar venta, vaciar carrito o cerrar sesión
+  - **Prevención de Colisiones:** Cada usuario tiene su propio carrito (userId vinculado)
+  - **Expiración Automática:** Datos caducan a las 24 horas por seguridad
+  - **Indicador Visual:** Badge "✓ Guardado" cuando hay datos persistidos
+  - **Botón "Vaciar":** Limpia carrito manualmente sin completar venta
+  - **Integración con Logout:** `clearPersistedCart()` se llama al cerrar sesión
 - ✅ **SISTEMA DE CAPTURA GLOBAL DE ESCÁNER HID (NUEVO 2026-02-02):**
   - **Hook `useScannerListener`:** Escucha global de teclas a nivel de window
   - **Detección Automática de Escáner:** Entrada rápida (< 50ms entre teclas) = escáner HID
