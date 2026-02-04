@@ -813,13 +813,11 @@ export default function NewRental() {
       params.append('status', 'available');
       if (itemSearchTerm) params.append('search', itemSearchTerm);
       if (itemSearchType && itemSearchType !== 'all') params.append('item_type', itemSearchType);
-      if (itemSearchCategory && itemSearchCategory !== 'all') params.append('category', itemSearchCategory);
       
       const response = await itemApi.getAll({
         status: 'available',
         search: itemSearchTerm || undefined,
-        item_type: (itemSearchType && itemSearchType !== 'all') ? itemSearchType : undefined,
-        category: (itemSearchCategory && itemSearchCategory !== 'all') ? itemSearchCategory : undefined
+        item_type: (itemSearchType && itemSearchType !== 'all') ? itemSearchType : undefined
       });
       
       // Filter out already added items
@@ -836,7 +834,7 @@ export default function NewRental() {
     if (showItemSearch) {
       searchItems();
     }
-  }, [showItemSearch, itemSearchTerm, itemSearchType, itemSearchCategory]);
+  }, [showItemSearch, itemSearchTerm, itemSearchType]);
 
   const addItemFromSearch = (item) => {
     setItems([...items, { ...item, customPrice: null, itemDays: numDays }]);
