@@ -1381,17 +1381,17 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
               </Button>
               
               {showProfitability && (
-                <Select value={sortBy || "none"} onValueChange={(v) => setSortBy(v === "none" ? "" : v)}>
+                <Select value={sortBy || "roi_desc"} onValueChange={(v) => setSortBy(v)}>
                   <SelectTrigger className="w-52 h-10">
                     <ArrowUpDown className="h-4 w-4 mr-2" />
                     <SelectValue placeholder="Ordenar por..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Sin ordenar</SelectItem>
+                    <SelectItem value="roi_desc">Mayor ROI (%)</SelectItem>
+                    <SelectItem value="roi_asc">Menor ROI (%)</SelectItem>
                     <SelectItem value="profit">Mayor Beneficio</SelectItem>
                     <SelectItem value="profit_asc">Menor Beneficio</SelectItem>
                     <SelectItem value="revenue">Más Ingresos</SelectItem>
-                    <SelectItem value="amortization">Mayor Amortización</SelectItem>
                   </SelectContent>
                 </Select>
               )}
