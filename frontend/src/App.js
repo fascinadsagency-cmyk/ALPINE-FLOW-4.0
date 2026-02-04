@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
+import { OfflineProvider, useOffline } from "@/contexts/OfflineContext";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import NewRental from "@/pages/NewRental";
@@ -18,6 +20,31 @@ import Providers from "@/pages/Providers";
 import Settings from "@/pages/Settings";
 import Layout from "@/components/Layout";
 
+// Registrar Service Worker para PWA
+const registerServiceWorker = async () => {
+  if ('serviceWorker' in navigator) {
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/'
+      });
+      console.log('[App] Service Worker registrado:', registration.scope);
+      
+      // Escuchar actualizaciones
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        newWorker?.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            console.log('[App] Nueva versión disponible');
+            // Aquí se podría mostrar un toast para recargar
+          }
+        });
+      });
+    } catch (error) {
+      console.error('[App] Error registrando Service Worker:', error);
+    }
+  }
+};
+
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   
@@ -32,6 +59,21 @@ const ProtectedRoute = ({ children }) => {
   if (!user) {
     return <Navigate to="/login" replace />;
   }
+  
+  return children;
+};
+
+// Componente que descarga datos iniciales después del login
+const DataInitializer = ({ children }) => {
+  const { user } = useAuth();
+  const { downloadInitialData, isInitialized } = useOffline();
+  
+  useEffect(() => {
+    if (user && isInitialized) {
+      // Descargar datos en segundo plano después del login
+      downloadInitialData();
+    }
+  }, [user, isInitialized, downloadInitialData]);
   
   return children;
 };
