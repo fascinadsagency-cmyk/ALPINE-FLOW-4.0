@@ -2255,7 +2255,21 @@ export default function NewRental() {
                                     <Edit2 className="h-3 w-3 ml-1 inline opacity-50" />
                                   </p>
                                   {group.isEdited && (
-                                    <Badge className="bg-orange-500 text-white text-xs mt-1">EDITADO</Badge>
+                                    <div className="flex items-center gap-1 mt-1">
+                                      <Badge className="bg-orange-500 text-white text-xs">EDITADO</Badge>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-5 px-1 text-xs text-slate-500 hover:text-blue-600"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          resetPackPrice(group.items);
+                                        }}
+                                        title="Restaurar precio de tarifa"
+                                      >
+                                        <RotateCcw className="h-3 w-3" />
+                                      </Button>
+                                    </div>
                                   )}
                                 </div>
                               )}
