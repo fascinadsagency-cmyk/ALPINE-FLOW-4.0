@@ -524,7 +524,7 @@ export default function Inventory() {
       purchase_date: new Date().toISOString().split('T')[0],
       location: "",
       maintenance_interval: "30",
-      category: "MEDIA",
+      category: "STANDARD",
       is_generic: false,
       name: "",
       stock_total: "",
