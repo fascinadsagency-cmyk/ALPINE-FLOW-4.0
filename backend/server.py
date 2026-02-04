@@ -3988,13 +3988,25 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
         }, {"_id": 0, "paid_amount": 1}).to_list(500)
         today_revenue = sum(r.get("paid_amount", 0) for r in rentals)
     
-    # ========== RETURNS TODAY (COUNT DISTINCT rentals) ==========
-    # Count unique rentals returned today, NOT individual items
-    # Primary: Use actual_return_date field for rentals marked as 'returned'
-    returns_today = await db.rentals.count_documents({
-        "status": "returned",
-        "actual_return_date": {"$gte": start, "$lte": end}
-    })
+    # ========== RETURNS TODAY (COUNT UNITS, NOT LINES) ==========
+    # Improved: Count individual returned UNITS, not just rental documents
+    # Query all rentals that had items returned today
+    returns_today = 0
+    rentals_with_returns_today = await db.rentals.find(
+        {
+            "status": "returned",
+            "actual_return_date": {"$gte": start, "$lte": end}
+        },
+        {"_id": 0, "items": 1}
+    ).to_list(1000)
+    
+    # Sum up the QUANTITY of all returned items
+    for rental in rentals_with_returns_today:
+        for item in rental.get("items", []):
+            if item.get("returned", False):
+                # For generic items, count the actual quantity
+                # For regular items, count as 1
+                returns_today += item.get("quantity", 1)
     
     # Fallback: If no results with actual_return_date, count cash movements of type 'return'
     if returns_today == 0:
@@ -4003,10 +4015,15 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
             "type": "return",
             "created_at": {"$gte": start, "$lte": end}
         }, {"_id": 0, "rental_id": 1}).to_list(500)
-        # Count unique rental_ids (distinct operations)
-        unique_return_rentals = set(m.get("rental_id") for m in return_movements if m.get("rental_id"))
-        if unique_return_rentals:
-            returns_today = len(unique_return_rentals)
+        
+        # For each unique rental, sum item quantities
+        unique_rental_ids = set(m.get("rental_id") for m in return_movements if m.get("rental_id"))
+        for rental_id in unique_rental_ids:
+            rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0, "items": 1})
+            if rental:
+                for item in rental.get("items", []):
+                    if item.get("returned", False):
+                        returns_today += item.get("quantity", 1)
     
     # ========== CUSTOMERS TODAY (COUNT DISTINCT customer_id) ==========
     # Count unique customers who had a rental created today
