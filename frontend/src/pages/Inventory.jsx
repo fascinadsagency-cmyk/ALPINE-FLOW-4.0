@@ -1372,7 +1372,14 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
             <div className="flex items-center justify-between flex-wrap gap-4">
               <Button
                 variant={showProfitability ? "default" : "outline"}
-                onClick={() => setShowProfitability(!showProfitability)}
+                onClick={() => {
+                  const newMode = !showProfitability;
+                  setShowProfitability(newMode);
+                  // Set default sort to ROI desc when entering profitability mode
+                  if (newMode && !sortBy) {
+                    setSortBy('roi_desc');
+                  }
+                }}
                 className={`gap-2 ${showProfitability ? "bg-emerald-600 hover:bg-emerald-700" : ""}`}
                 data-testid="toggle-profitability"
               >
