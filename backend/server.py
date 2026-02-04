@@ -3571,31 +3571,57 @@ financial_service = FinancialCalculatorService()
 
 @api_router.get("/reports/daily", response_model=DailyReportResponse)
 async def get_daily_report(date: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """
+    Reporte diario usando el servicio financiero centralizado.
+    GARANTIZA coincidencia con la vista de Caja.
+    """
     if not date:
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     start = f"{date}T00:00:00"
     end = f"{date}T23:59:59"
     
-    # Get rentals for the day
-    rentals = await db.rentals.find({
-        "created_at": {"$gte": start, "$lte": end}
-    }, {"_id": 0}).to_list(500)
+    # ===== USAR SERVICIO CENTRALIZADO (Single Source of Truth) =====
+    financial_summary = await financial_service.get_financial_summary(date, date)
     
-    # Calculate revenue by payment method
-    cash_revenue = sum(r["paid_amount"] for r in rentals if r["payment_method"] == "cash")
-    card_revenue = sum(r["paid_amount"] for r in rentals if r["payment_method"] == "card")
-    online_revenue = sum(r["paid_amount"] for r in rentals if r["payment_method"] in ["online", "pago_online"])
-    other_revenue = sum(r["paid_amount"] for r in rentals if r["payment_method"] in ["pending", "other"])
+    # Extraer totales por método de pago desde cash_movements
+    cash_revenue = financial_summary["by_payment_method"]["cash"]["income"]
+    card_revenue = financial_summary["by_payment_method"]["card"]["income"]
+    
+    # Para online y other, buscar en cash_movements con payment_method específico
+    other_methods = await db.cash_movements.aggregate([
+        {"$match": {
+            "created_at": {"$gte": start, "$lte": end},
+            "movement_type": "income",
+            "payment_method": {"$nin": ["cash", "card"]}
+        }},
+        {"$group": {
+            "_id": "$payment_method",
+            "total": {"$sum": "$amount"}
+        }}
+    ]).to_list(10)
+    
+    online_revenue = 0
+    other_revenue = 0
+    for m in other_methods:
+        if m["_id"] in ["online", "pago_online"]:
+            online_revenue += m["total"]
+        else:
+            other_revenue += m["total"]
+    
+    # Get rentals count for the day (operational data, not financial)
+    rentals_count = await db.rentals.count_documents({
+        "created_at": {"$gte": start, "$lte": end}
+    })
     
     # Get returns for the day
     returns_count = await db.rentals.count_documents({
         "status": "returned",
-        "created_at": {"$gte": start, "$lte": end}
+        "actual_return_date": {"$gte": start, "$lte": end}
     })
     
     # Get active rentals
-    active_rentals = await db.rentals.count_documents({"status": "active"})
+    active_rentals = await db.rentals.count_documents({"status": {"$in": ["active", "partial"]}})
     
     # Get pending returns
     pending_returns = await db.rentals.find(
