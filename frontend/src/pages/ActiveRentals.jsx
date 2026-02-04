@@ -728,6 +728,25 @@ export default function ActiveRentals() {
             items: rental.items || [], 
             rental_id: rental.id,
             customer_id: rental.customer_id
+          };
+        } catch (error) {
+          console.error("Error loading customer data:", error);
+        }
+      }
+      
+      setSelectedCustomer(customerData);
+      setTechnicalData({
+        height: customerData.height || '',
+        weight: customerData.weight || '',
+        boot_size: customerData.boot_size || '',
+        ski_level: customerData.ski_level || ''
+      });
+      setShowCustomerModal(true);
+    } catch (error) {
+      console.error("Error opening customer modal:", error);
+      toast.error("Error al cargar datos del cliente");
+    }
+  };
 
   // ============ PAYMENT METHOD EDITOR FUNCTIONS ============
   const openPaymentMethodDialog = (rental) => {
