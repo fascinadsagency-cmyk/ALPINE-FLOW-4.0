@@ -341,6 +341,7 @@ export default function Inventory() {
 
   useEffect(() => {
     loadItemTypes();
+    loadTariffs();
   }, []);
 
   const loadItemTypes = async () => {
@@ -353,6 +354,18 @@ export default function Inventory() {
       console.error("Error loading item types:", error);
       // No fallback - empty list if API fails (user creates their own types)
       setItemTypes([]);
+    }
+  };
+
+  const loadTariffs = async () => {
+    try {
+      const response = await axios.get(`${API}/tariffs`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      setTariffs(response.data);
+    } catch (error) {
+      console.error("Error loading tariffs:", error);
+      setTariffs([]);
     }
   };
 
