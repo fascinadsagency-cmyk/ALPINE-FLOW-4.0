@@ -3512,11 +3512,25 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
         }, {"_id": 0, "paid_amount": 1}).to_list(500)
         today_revenue = sum(r.get("paid_amount", 0) for r in rentals)
     
-    # Today's returns count
+    # Today's returns count - COUNT DISTINCT by rental_id (not items)
+    # This counts unique return operations, not individual items
+    # Primary: Use actual_return_date field
     returns_today = await db.rentals.count_documents({
         "status": "returned",
         "actual_return_date": {"$gte": start, "$lte": end}
     })
+    
+    # Fallback: If no results with actual_return_date, count cash movements of type 'return'
+    if returns_today == 0:
+        # Count distinct return movements in cash register today
+        return_movements = await db.cash_movements.find({
+            "type": "return",
+            "created_at": {"$gte": start, "$lte": end}
+        }, {"_id": 0, "rental_id": 1}).to_list(500)
+        # Count unique rental_ids (distinct operations)
+        unique_return_rentals = set(m.get("rental_id") for m in return_movements if m.get("rental_id"))
+        if unique_return_rentals:
+            returns_today = len(unique_return_rentals)
     
     # Active rentals
     active_rentals = await db.rentals.count_documents({"status": {"$in": ["active", "partial"]}})
