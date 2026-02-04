@@ -226,9 +226,9 @@ class RentalResponse(BaseModel):
     total_amount: float
     paid_amount: float
     pending_amount: float
-    deposit: float
+    deposit: Optional[float] = 0
     status: str  # active, returned, partial
-    notes: str
+    notes: Optional[str] = ""
     created_at: str
     operation_number: Optional[str] = None  # Ticket number for printing
 
