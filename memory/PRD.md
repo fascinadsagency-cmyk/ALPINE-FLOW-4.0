@@ -35,6 +35,14 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - **Panel Secundario (Arqueo):**
     - Efectivo en Cajón = Fondo + Neto Efectivo
     - Total Tarjeta = Ingresos - Salidas (puede ser negativo)
+  - **REDISEÑO PRIVACIDAD - SISTEMA ACORDEÓN (NUEVO 2026-02-04):**
+    - **Eliminado efecto blur** - Reemplazado por marcador neutro "••••••"
+    - **Botón maestro "Mostrar/Ocultar Todo"** - Controla visibilidad global
+    - **Iconos de ojo individuales** - Cada métrica puede mostrarse/ocultarse
+    - **Estados visuales diferenciados** - Iconos resaltados cuando datos visibles
+    - **Transiciones suaves** - CSS transitions de 200-300ms
+    - **Estructura preservada** - Contenedores mantienen tamaño mínimo
+    - **Diseño limpio sin distracción** - Sin blur, solo texto enmascarado
   - **Modal de Cierre:** Valores COINCIDEN EXACTAMENTE con Panel de Arqueo
   - **Ticket de Cierre (REDISEÑADO 30/01/2026):**
     - Formato 80mm para impresora térmica
