@@ -2701,7 +2701,7 @@ export default function NewRental() {
             </DialogTitle>
             {searchFilter && (
               <p className="text-sm text-amber-600">
-                Mostrando artículos de tipo <strong>{itemTypes.find(t => t.value === searchFilter.type)?.label}</strong> en categoría <strong>{searchFilter.category}</strong> para completar el pack
+                Mostrando artículos de tipo <strong>{itemTypes.find(t => t.value === searchFilter.type)?.label}</strong> para completar el pack
               </p>
             )}
           </DialogHeader>
