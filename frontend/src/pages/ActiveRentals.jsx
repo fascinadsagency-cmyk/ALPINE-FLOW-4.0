@@ -2154,10 +2154,6 @@ export default function ActiveRentals() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
-
 
       {/* ============ PAYMENT METHOD EDITOR DIALOG ============ */}
       <Dialog open={showPaymentMethodDialog} onOpenChange={setShowPaymentMethodDialog}>
