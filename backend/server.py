@@ -2772,7 +2772,6 @@ class UpdateRentalDaysRequest(BaseModel):
 class UpdatePaymentMethodRequest(BaseModel):
     new_payment_method: str  # The new payment method to set
     reason: Optional[str] = ""  # Optional reason for the change
-    new_total: float
 
 class ModifyDurationRequest(BaseModel):
     new_days: int
