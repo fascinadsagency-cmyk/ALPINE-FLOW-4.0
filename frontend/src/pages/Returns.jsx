@@ -141,6 +141,48 @@ export default function Returns() {
   
   const barcodeRef = useRef(null);
 
+  // ============ PARTIAL RETURN HELPERS (Generic Items) ============
+  
+  // Get the quantity to return for a generic item (default: full quantity)
+  const getReturnQuantity = (item) => {
+    if (!item.is_generic || (item.quantity || 1) <= 1) return 1;
+    const qty = item.quantity || 1;
+    const alreadyReturned = item.returned_quantity || 0;
+    const pending = qty - alreadyReturned;
+    // Return the stored value or default to pending (full return)
+    return returnQuantities[item.barcode] ?? pending;
+  };
+  
+  // Set the quantity to return for a generic item
+  const setReturnQuantity = (barcode, quantity, maxQty) => {
+    const validQty = Math.max(0, Math.min(quantity, maxQty));
+    setReturnQuantities(prev => ({
+      ...prev,
+      [barcode]: validQty
+    }));
+    
+    // If quantity is 0, remove from scannedBarcodes
+    // If quantity > 0, add to scannedBarcodes
+    if (validQty === 0) {
+      setScannedBarcodes(prev => prev.filter(code => code !== barcode));
+    } else if (!scannedBarcodes.includes(barcode)) {
+      setScannedBarcodes(prev => [...prev, barcode]);
+    }
+  };
+  
+  // Get pending quantity for a generic item
+  const getPendingQuantity = (item) => {
+    if (!item.is_generic) return 1;
+    const qty = item.quantity || 1;
+    const alreadyReturned = item.returned_quantity || 0;
+    return qty - alreadyReturned;
+  };
+  
+  // Check if item is a generic with partial return capability
+  const isPartialReturnItem = (item) => {
+    return item.is_generic && (item.quantity || 1) > 1;
+  };
+
   // ============ GLOBAL SCANNER LISTENER (HID BARCODE READER) ============
   // Captura entrada de lectores HID como Netum NT-1698W cuando el cursor no está en un input
   const handleGlobalScan = useCallback(async (scannedCode) => {
