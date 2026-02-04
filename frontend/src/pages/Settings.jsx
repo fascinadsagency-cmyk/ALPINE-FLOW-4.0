@@ -67,7 +67,7 @@ export default function Settings() {
     customer: "Juan García López",
     dni: "12345678A",
     items: [
-      { name: "Esquís Gama Alta", price: 35.00 },
+      { name: "Esquís Salomon X-Max 170", price: 35.00 },
       { name: "Botas Esquí 42", price: 15.00 },
       { name: "Casco Adulto", price: 8.00 }
     ],
