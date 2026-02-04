@@ -1323,6 +1323,7 @@ async def update_item(item_id: str, item: ItemCreate, current_user: dict = Depen
         "size": item.size,
         "binding": item.binding or "",
         "purchase_price": item.purchase_price,
+        "rental_price": item.rental_price,  # Rental price per day
         "purchase_date": item.purchase_date,
         "location": item.location or "",
         "category": item.category or "MEDIA",
