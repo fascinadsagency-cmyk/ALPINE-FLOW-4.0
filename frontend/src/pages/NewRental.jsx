@@ -1565,21 +1565,32 @@ export default function NewRental() {
   };
 
   const resetForm = () => {
-    setCustomer(null);
-    setCustomerHistory(null);
-    setItems([]);
+    // Usar clearCart() para limpiar el estado persistido
+    clearCart();
+    
+    // Limpiar estados transitorios adicionales
     setSearchTerm("");
     setPaidAmount("");
     setDeposit("");
-    setNotes("");
-    setNumDays(1);
-    setStartDate(getSmartStartDate());
-    setEndDate(getSmartStartDate());
-    setDiscountType('none');
-    setDiscountValue("");
-    setDiscountReason("");
+    setDetectedPacks([]);
     
     if (searchRef.current) searchRef.current.focus();
+  };
+
+  // Función para vaciar carrito manualmente (botón "Vaciar Carrito")
+  const handleClearCart = () => {
+    if (items.length === 0 && !customer) {
+      toast.info("El carrito ya está vacío");
+      return;
+    }
+    
+    clearCart();
+    setSearchTerm("");
+    setPaidAmount("");
+    setDeposit("");
+    toast.success("Carrito vaciado");
+    
+    if (barcodeRef.current) barcodeRef.current.focus();
   };
 
   const subtotal = calculateSubtotal();
