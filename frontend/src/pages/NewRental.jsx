@@ -510,7 +510,6 @@ export default function NewRental() {
         if (potentialSavings > 0) {
           suggestions.push({
             pack: pack,
-            category: pack.category, // Use pack's category
             missingItems: [...new Set(missingItems)], // Unique missing types
             missingCount: missingItems.length,
             currentItems: currentItems.map(i => i.item_type),
@@ -522,15 +521,8 @@ export default function NewRental() {
       }
     });
 
-    // Return only the best suggestion per pack category (highest savings)
-    const bestByCategory = {};
-    suggestions.forEach(s => {
-      if (!bestByCategory[s.category] || s.potentialSavings > bestByCategory[s.category].potentialSavings) {
-        bestByCategory[s.category] = s;
-      }
-    });
-
-    return Object.values(bestByCategory);
+    // Return suggestions sorted by highest savings
+    return suggestions.sort((a, b) => b.potentialSavings - a.potentialSavings).slice(0, 3);
   };
 
   // Update suggestions when items change
