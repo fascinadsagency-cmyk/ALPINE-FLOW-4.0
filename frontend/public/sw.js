@@ -5,9 +5,9 @@
  * que la aplicación cargue sin conexión a internet.
  */
 
-const CACHE_NAME = 'alpineflow-v1';
-const STATIC_CACHE = 'alpineflow-static-v1';
-const API_CACHE = 'alpineflow-api-v1';
+const CACHE_NAME = 'alpineflow-v2-no-category';
+const STATIC_CACHE = 'alpineflow-static-v2-no-category';
+const API_CACHE = 'alpineflow-api-v2-no-category';
 
 // Archivos estáticos a cachear en la instalación
 const STATIC_ASSETS = [
