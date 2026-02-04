@@ -469,9 +469,21 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+  - task: "Automatic Price Update on Type Change in Inventory Edit"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Inventory.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test automatic price update functionality when changing item type in inventory edit dialog. Test flow: login with testcaja/test1234, navigate to inventory, open edit dialog for first item, verify initial price, change type dropdown, verify automatic price update without confirmation, test manual price editing, save changes and verify success."
+
 agent_communication:
     - agent: "testing"
-      message: "🎯 STARTING AUTOMATIC PACK PRICING SYSTEM TESTING: Testing silent pack detection, discrete 'Tarifa: Pack' indicator, compact pack suggestions, automatic pack completion without interruptions, and visual elements validation in New Rental page. Will validate complete non-intrusive workflow as specified in requirements."
+      message: "🎯 STARTING AUTOMATIC PRICE UPDATE TESTING: Testing automatic price update functionality when changing item type in inventory edit form. Validating login with testcaja/test1234, navigation to inventory page, opening edit dialog, capturing initial price, changing type dropdown, verifying automatic price update without confirmation, testing manual price editing, and saving changes."
     - agent: "testing"
       message: "🎉 AUTOMATIC PACK PRICING SYSTEM TESTING COMPLETED SUCCESSFULLY! All 10 test scenarios passed (100% success rate). Verified complete silent and non-intrusive pack system: ✅ Silent Pack Detection (no toasts or interruptions), ✅ Discrete Visual Indicators ('Tarifa: Pack' badge with Gift icon, emerald styling), ✅ Compact Pack Suggestions (single-line format with Sparkles icon, savings badge, small search button), ✅ Automatic Pack Completion (silent detection, automatic pricing, suggestion disappears), ✅ Pack Dissolution (silent removal, badge disappears, suggestion reappears), ✅ Visual Elements (proper icons, colors, layouts), ✅ Non-Intrusive Workflow (smooth transitions, no interruptions), ✅ Item Management (search and barcode input working), ✅ Customer Management (selection/creation working), ✅ Price Calculations (pack pricing applied automatically). ALL PACK PRICING FUNCTIONALITY WORKING EXACTLY AS SPECIFIED - COMPLETELY SILENT AND NON-INTRUSIVE SYSTEM ALLOWING OPERATORS TO WORK FLUIDLY WITHOUT INTERRUPTIONS."
     - agent: "testing"
