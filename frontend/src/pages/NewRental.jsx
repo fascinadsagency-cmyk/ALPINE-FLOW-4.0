@@ -104,27 +104,50 @@ export default function NewRental() {
   // Settings context for ticket configuration
   const settings = useSettings();
   
+  // ============ PERSISTENT CART STATE ============
+  // Este hook persiste el carrito en localStorage para que no se pierda al navegar
+  const {
+    isInitialized: cartInitialized,
+    customer,
+    customerHistory,
+    items,
+    detectedPacks,
+    numDays,
+    startDate,
+    endDate,
+    notes,
+    discountType,
+    discountValue,
+    discountReason,
+    setCustomer,
+    setCustomerHistory,
+    setItems,
+    setDetectedPacks,
+    setNumDays,
+    setStartDate,
+    setEndDate,
+    setNotes,
+    setDiscountType,
+    setDiscountValue,
+    setDiscountReason,
+    clearCart,
+    hasCartData
+  } = useCartPersistence();
+  
+  // ============ NON-PERSISTENT STATE (UI/Transient) ============
   const [searchTerm, setSearchTerm] = useState("");
   const [customerSuggestions, setCustomerSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [customer, setCustomer] = useState(null);
-  const [customerHistory, setCustomerHistory] = useState(null);
-  const [items, setItems] = useState([]);
   const [packs, setPacks] = useState([]);
-  const [detectedPacks, setDetectedPacks] = useState([]);
   const [barcodeInput, setBarcodeInput] = useState("");
   
-  // Smart date system
-  const [numDays, setNumDays] = useState(1);
-  const [startDate, setStartDate] = useState(getSmartStartDate());
-  const [endDate, setEndDate] = useState(getSmartStartDate());
+  // Smart date system (showTimeHint is transient)
   const [showTimeHint, setShowTimeHint] = useState(true);
   
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [paidAmount, setPaidAmount] = useState("");
   const [deposit, setDeposit] = useState("");
-  const [notes, setNotes] = useState("");
   const [tariffs, setTariffs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -156,10 +179,7 @@ export default function NewRental() {
   const [openingCashBalance, setOpeningCashBalance] = useState("");
   const [pendingPaymentData, setPendingPaymentData] = useState(null);
   
-  // Price editing
-  const [discountType, setDiscountType] = useState('none');
-  const [discountValue, setDiscountValue] = useState("");
-  const [discountReason, setDiscountReason] = useState("");
+  // Price editing (transient UI state)
   const [editingItemPrice, setEditingItemPrice] = useState(null);
   const [editingItemDays, setEditingItemDays] = useState(null);
   const [editingPackPrice, setEditingPackPrice] = useState(null); // Moved here for scanner disable check
