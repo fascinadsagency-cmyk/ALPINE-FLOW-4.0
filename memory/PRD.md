@@ -152,6 +152,18 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - Desglose por método de pago: Efectivo / Tarjeta
   - Saldo Neto del Turno = Fondo Inicial + Income - Expense - Refunds
   - Backend calcula `by_category` en agregación MongoDB
+- ✅ **Unificación Caja-Reportes (FinancialCalculatorService - 2026-02-04):**
+  - **PROBLEMA RESUELTO:** Discrepancia entre totales de Caja y Reportes de Ventas
+  - **SOLUCIÓN:** Servicio centralizado `FinancialCalculatorService` como Single Source of Truth
+  - **FUENTE ÚNICA:** Todos los cálculos financieros leen de `cash_movements` (NO de `rentals.paid_amount`)
+  - **Nuevos Endpoints:**
+    - `GET /api/reports/financial-summary` - Resumen financiero unificado
+    - `GET /api/reports/reconciliation` - Diagnóstico de discrepancias (orphan_rentals, orphan_movements)
+  - **Endpoints Refactorizados:**
+    - `GET /api/reports/daily` - Ahora usa `financial_service.get_financial_summary()`
+    - `GET /api/reports/range` - Ahora usa `financial_service.get_financial_summary()`
+  - **Garantía:** Si Caja dice €245.53, Reportes dice €245.53 (verificado con 13/13 tests)
+  - **Reconciliación:** Identifica alquileres sin movimiento de caja y viceversa
 - ✅ **Ficha de Cliente Completa (MEJORADA 2026-01-30):**
   - Al pulsar **nombre del cliente** o icono de persona en Alquileres Activos, abre modal profesional con:
     - **Datos Personales:** Nombre completo, DNI/Pasaporte
