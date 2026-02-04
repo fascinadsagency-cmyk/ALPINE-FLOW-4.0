@@ -33,6 +33,13 @@ const STATUS_OPTIONS = [
   { value: "retired", label: "Baja" },
 ];
 
+const CATEGORY_OPTIONS = [
+  { value: "all", label: "Todas" },
+  { value: "MEDIA", label: "Media" },
+  { value: "ALTA", label: "Alta" },
+  { value: "SUPERIOR", label: "Superior" },
+];
+
 // Column definitions for customizable table
 const ALL_COLUMNS = [
   { id: "internal_code", label: "Código/Nombre", width: "w-32", required: true },
