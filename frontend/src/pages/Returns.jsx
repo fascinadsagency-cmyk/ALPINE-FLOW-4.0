@@ -798,8 +798,20 @@ export default function Returns() {
     
     setProcessing(true);
     try {
+      // Build quantities map for partial returns
+      const quantitiesMap = {};
+      barcodes.forEach(barcode => {
+        const item = rental.items.find(i => i.barcode === barcode);
+        if (item && isPartialReturnItem(item)) {
+          quantitiesMap[barcode] = getReturnQuantity(item);
+        }
+      });
+      
+      console.log('Quantities map:', quantitiesMap);
+      
       const response = await axios.post(`${API}/rentals/${rental.id}/return`, {
-        barcodes: barcodes
+        barcodes: barcodes,
+        quantities: quantitiesMap
       }, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
@@ -820,7 +832,9 @@ export default function Returns() {
           internal_code: item?.internal_code || barcode,
           size: item?.size,
           days: item?.days || rental.days || 1,
-          barcode: item?.barcode || barcode
+          barcode: item?.barcode || barcode,
+          quantity: isPartialReturnItem(item) ? getReturnQuantity(item) : 1,
+          is_partial: isPartialReturnItem(item)
         };
       });
       
