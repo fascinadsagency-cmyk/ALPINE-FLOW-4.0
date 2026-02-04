@@ -3819,8 +3819,14 @@ async def get_dashboard(current_user: dict = Depends(get_current_user)):
     # Recent activity
     recent_rentals = await db.rentals.find({}, {"_id": 0}).sort("created_at", -1).to_list(10)
     
-    # Occupancy by Category (Gama)
+    # Occupancy by Category (Gama) - EXCLUDING retired/deleted/lost items
+    # Only count rentable items: available, rented, maintenance
     category_stats = await db.items.aggregate([
+        {
+            "$match": {
+                "status": {"$in": ["available", "rented", "maintenance"]}  # Exclude retired/deleted/lost
+            }
+        },
         {
             "$group": {
                 "_id": {
@@ -3834,9 +3840,9 @@ async def get_dashboard(current_user: dict = Depends(get_current_user)):
     
     # Process category stats for occupancy calculation
     occupancy_by_category = {
-        "SUPERIOR": {"total": 0, "rented": 0, "percentage": 0},
-        "ALTA": {"total": 0, "rented": 0, "percentage": 0},
-        "MEDIA": {"total": 0, "rented": 0, "percentage": 0}
+        "SUPERIOR": {"total": 0, "rented": 0, "maintenance": 0, "available": 0, "percentage": 0},
+        "ALTA": {"total": 0, "rented": 0, "maintenance": 0, "available": 0, "percentage": 0},
+        "MEDIA": {"total": 0, "rented": 0, "maintenance": 0, "available": 0, "percentage": 0}
     }
     
     for stat in category_stats:
@@ -3848,8 +3854,12 @@ async def get_dashboard(current_user: dict = Depends(get_current_user)):
             occupancy_by_category[category]["total"] += count
             if status == "rented":
                 occupancy_by_category[category]["rented"] += count
+            elif status == "maintenance":
+                occupancy_by_category[category]["maintenance"] += count
+            elif status == "available":
+                occupancy_by_category[category]["available"] += count
     
-    # Calculate percentages
+    # Calculate percentages (rented / rentable_total * 100)
     for category in occupancy_by_category:
         total = occupancy_by_category[category]["total"]
         rented = occupancy_by_category[category]["rented"]
