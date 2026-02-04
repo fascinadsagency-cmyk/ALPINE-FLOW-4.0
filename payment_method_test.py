@@ -128,42 +128,22 @@ class PaymentMethodTester:
                 self.log_test("Setup Test Customer", False, f"Could not create/get customer: {customer_response.text}")
                 return False
             
-            # 4. Create test items with unique barcodes
-            import time
-            timestamp = str(int(time.time()))[-6:]  # Last 6 digits of timestamp
-            
-            test_items = [
-                {
-                    "barcode": f"PAY-TEST-{timestamp}-1",
-                    "internal_code": f"PAY-TEST-{timestamp}-1",
-                    "item_type": "ski",
-                    "brand": "Test Brand",
-                    "model": "Payment Test",
-                    "size": "170",
-                    "purchase_price": 100.0,
-                    "purchase_date": "2024-01-01",
-                    "category": "MEDIA"
-                },
-                {
-                    "barcode": f"PAY-TEST-{timestamp}-2", 
-                    "internal_code": f"PAY-TEST-{timestamp}-2",
-                    "item_type": "boots",
-                    "brand": "Test Brand",
-                    "model": "Payment Test",
-                    "size": "42",
-                    "purchase_price": 80.0,
-                    "purchase_date": "2024-01-01",
-                    "category": "MEDIA"
-                }
-            ]
-            
-            self.test_barcode_1 = f"PAY-TEST-{timestamp}-1"
-            self.test_barcode_2 = f"PAY-TEST-{timestamp}-2"
-            
-            for item in test_items:
-                item_response = requests.post(f"{BACKEND_URL}/items", json=item, headers=self.headers)
-                if item_response.status_code not in [200, 201] and "already exists" not in item_response.text:
-                    print(f"Warning: Could not create item {item['barcode']}: {item_response.text}")
+            # 4. Use existing available items instead of creating new ones
+            items_response = requests.get(f"{BACKEND_URL}/items", headers=self.headers)
+            if items_response.status_code == 200:
+                items = items_response.json()
+                available_items = [item for item in items if item.get("status") == "available"]
+                
+                if len(available_items) >= 2:
+                    self.test_barcode_1 = available_items[0]["barcode"]
+                    self.test_barcode_2 = available_items[1]["barcode"]
+                    print(f"   Using existing items: {self.test_barcode_1}, {self.test_barcode_2}")
+                else:
+                    self.log_test("Setup Test Items", False, f"Not enough available items: {len(available_items)}")
+                    return False
+            else:
+                self.log_test("Setup Test Items", False, f"Could not get items: {items_response.text}")
+                return False
             
             self.log_test("Setup Test Environment", True, f"Session ID: {self.session_id}, Customer ID: {self.customer_id}")
             return True
