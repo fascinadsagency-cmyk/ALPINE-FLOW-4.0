@@ -33,13 +33,6 @@ const STATUS_OPTIONS = [
   { value: "retired", label: "Baja" },
 ];
 
-const CATEGORY_OPTIONS = [
-  { value: "all", label: "Todas las gamas" },
-  { value: "SUPERIOR", label: "Gama Superior" },
-  { value: "ALTA", label: "Gama Alta" },
-  { value: "MEDIA", label: "Gama Media" },
-];
-
 // Column definitions for customizable table
 const ALL_COLUMNS = [
   { id: "internal_code", label: "Código/Nombre", width: "w-32", required: true },
@@ -50,7 +43,6 @@ const ALL_COLUMNS = [
   { id: "brand_model", label: "Marca / Modelo", width: "w-40" },
   { id: "size", label: "Talla", width: "w-16" },
   { id: "binding", label: "Fijación", width: "w-28" },
-  { id: "category", label: "Gama", width: "w-24" },
   { id: "status", label: "Estado", width: "w-24" },
   { id: "stock", label: "Stock", width: "w-24" },
   { id: "location", label: "Ubicación", width: "w-24" },
@@ -62,7 +54,6 @@ const ALL_COLUMNS = [
 ];
 
 const DEFAULT_VISIBLE_COLUMNS = ["internal_code", "barcode", "barcode_2", "item_type", "brand_model", "size", "status", "stock", "days_used", "maintenance"];
-// "category" (Gama) ELIMINADA de las columnas visibles por defecto
 const DEFAULT_COLUMN_ORDER = ALL_COLUMNS.map(c => c.id);
 
 // Sortable Header Component
