@@ -176,14 +176,22 @@ class PaymentMethodTester:
             print(f"Error getting balances: {str(e)}")
             return None
     
-    def create_test_rental(self, payment_method="cash", amount=50.0):
+    def create_test_rental(self, payment_method="cash", amount=50.0, item_index=0):
         """Create a test rental with specified payment method"""
         try:
+            # Use different items for each rental to avoid conflicts
+            available_barcodes = [self.test_barcode_1, self.test_barcode_2]
+            if item_index >= len(available_barcodes):
+                print(f"Warning: Not enough available items for index {item_index}")
+                return None
+                
+            barcode = available_barcodes[item_index]
+            
             rental_data = {
                 "customer_id": self.customer_id,
                 "start_date": TEST_DATE,
                 "end_date": "2026-02-06",
-                "items": [{"barcode": self.test_barcode_1, "person_name": ""}],
+                "items": [{"barcode": barcode, "person_name": ""}],
                 "payment_method": payment_method,
                 "total_amount": amount,
                 "paid_amount": amount if payment_method != "pending" else 0,
