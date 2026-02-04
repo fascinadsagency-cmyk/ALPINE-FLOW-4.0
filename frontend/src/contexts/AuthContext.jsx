@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import { clearPersistedCart } from "@/hooks/useCartPersistence";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
