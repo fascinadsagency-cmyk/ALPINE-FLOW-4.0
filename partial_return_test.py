@@ -488,8 +488,8 @@ class PartialReturnTester:
             print("❌ Authentication failed. Cannot continue tests.")
             return False
         
-        # Test data - rental IDs from review request
-        rental_ids = ["61ce90b0", "8bdcc15b"]
+        # Test data - rental IDs from review request (full UUIDs)
+        rental_ids = ["61ce90b0-75b6-4178-91e3-50e9a3beb201", "8bdcc15b-6877-4149-9099-8e82ad233f47"]
         
         # Step 2: Get rental data for both rentals
         print("\n📋 Getting rental data...")
