@@ -4063,7 +4063,7 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
     return {
         "today_rentals": today_rentals,
         "revenue_today": today_revenue,  # Unified with cash register
-        "returns_today": returns_today,  # COUNT DISTINCT rentals returned today
+        "returns_today": returns_today,  # COUNT UNITS returned today (not lines)
         "customers_today": customers_today,  # COUNT DISTINCT customers served today
         "active_rentals": active_rentals,
         "overdue_returns": overdue,
