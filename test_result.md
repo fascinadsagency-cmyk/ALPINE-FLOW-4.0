@@ -556,3 +556,18 @@ agent_communication:
         - working: false
           agent: "testing"
           comment: "❌ CRITICAL ISSUES FOUND (10/12 tests passed): ✅ Authentication successful, ✅ Test items/customer creation working, ✅ Cash session opening working (€100 balance), ✅ Rental WITH active session creates cash movement automatically, ❌ CRITICAL: Rental WITHOUT active session was created successfully (SHOULD HAVE FAILED with 'No hay sesión de caja activa' error), ❌ CRITICAL: Found movements without session_id (orphaned operations from previous days), ✅ Validate orphans endpoint working (20 orphans found from 2026-01-28), ✅ Cash summary calculations correct, ✅ Complete flow working (income/expense/refund), ✅ Session closure working. MAIN ISSUES: 1) Session validation not properly enforced for rentals - allows creation without active session, 2) Historical orphaned movements exist (20 from previous testing). The validate-orphans endpoint correctly identifies these issues but the core session validation needs fixing."
+
+  - task: "Partial Return Functionality for Generic Items"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test new partial return functionality for generic items: modified /api/rentals/{rental_id}/return endpoint with quantities parameter, partial return tracking with returned_quantity field, status management (partial vs returned), stock updates for generic items, and all test scenarios from review request"
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE PARTIAL RETURN FUNCTIONALITY TESTING COMPLETED (11/11 tests passed): Authentication with testcaja/test1234 ✅, Test data creation (customer + rentals with generic items) ✅, TEST 1: Partial Return 1/2 units ✅ (status='partial', returned_quantity=1, item in pending_items, stock updated correctly), TEST 2: Complete Remaining Return ✅ (returned_quantity=2, returned=True, item moved to returned_items), TEST 3: Full Return One Step ✅ (2 units returned directly, status='returned', item in returned_items), TEST 4: Multiple Items Mixed Quantities ✅ (partial + full returns processed correctly in single request), TEST 5: Edge Case Excess Quantity ✅ (backend handles excess gracefully without errors), Stock Consistency Verification ✅ (generic item stock levels updated correctly after all operations). ADDITIONAL VALIDATION: Tested original rental data from review request (61ce90b0/8bdcc15b) - confirmed partial return of poles (1 of 2 units → status='partial', then remaining 1 unit → status='returned'). ALL PARTIAL RETURN SCENARIOS WORKING EXACTLY AS SPECIFIED IN REQUIREMENTS."
