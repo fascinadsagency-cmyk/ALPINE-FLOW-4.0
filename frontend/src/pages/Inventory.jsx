@@ -2737,7 +2737,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                   <Label>Tipo *</Label>
                   <Select 
                     value={editingItem.item_type} 
-                    onValueChange={(v) => setEditingItem({ ...editingItem, item_type: v })}
+                    onValueChange={handleTypeChangeInEdit}
                   >
                     <SelectTrigger className="h-11 mt-1">
                       <SelectValue />
@@ -2773,6 +2773,17 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+                <div>
+                  <Label>Precio Alquiler (€/día)</Label>
+                  <Input
+                    type="number"
+                    value={editingItem.rental_price || ""}
+                    onChange={(e) => setEditingItem({ ...editingItem, rental_price: e.target.value })}
+                    className="h-11 mt-1"
+                    placeholder="Auto"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Se actualiza automáticamente según tipo</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
