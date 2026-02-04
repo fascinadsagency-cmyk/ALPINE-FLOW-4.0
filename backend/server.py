@@ -5205,6 +5205,39 @@ async def get_integration_config(integration_type: str, current_user: dict = Dep
         return {"integration_type": integration_type, "enabled": False, "config": {}}
     return config
 
+
+@api_router.post("/admin/fix-return-dates")
+async def fix_return_dates(current_user: dict = Depends(get_current_user)):
+    """
+    MIGRATION UTILITY: Fix rentals that are 'returned' but missing actual_return_date.
+    This sets actual_return_date to end_date for historical rentals.
+    """
+    # Find all returned rentals without actual_return_date
+    rentals_to_fix = await db.rentals.find({
+        "status": "returned",
+        "$or": [
+            {"actual_return_date": {"$exists": False}},
+            {"actual_return_date": None}
+        ]
+    }, {"_id": 0, "id": 1, "end_date": 1, "created_at": 1}).to_list(1000)
+    
+    fixed_count = 0
+    for rental in rentals_to_fix:
+        # Use end_date as fallback, or created_at if end_date is missing
+        return_date = rental.get("end_date") or rental.get("created_at") or datetime.now(timezone.utc).isoformat()
+        
+        await db.rentals.update_one(
+            {"id": rental["id"]},
+            {"$set": {"actual_return_date": return_date}}
+        )
+        fixed_count += 1
+    
+    return {
+        "message": f"Fixed {fixed_count} rentals with missing actual_return_date",
+        "fixed_count": fixed_count
+    }
+
+
 # Include router
 app.include_router(api_router)
 
