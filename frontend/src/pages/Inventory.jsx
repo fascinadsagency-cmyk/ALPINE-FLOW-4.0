@@ -837,7 +837,6 @@ export default function Inventory() {
             (field.value === 'brand' && (headerLower.includes('marca') || headerLower.includes('fabricante'))) ||
             (field.value === 'model' && (headerLower.includes('modelo') || headerLower.includes('referencia'))) ||
             (field.value === 'size' && (headerLower.includes('talla') || headerLower.includes('tamaño') || headerLower.includes('medida'))) ||
-            (field.value === 'category' && (headerLower.includes('gama') || headerLower.includes('nivel') || headerLower.includes('calidad'))) ||
             (field.value === 'purchase_price' && (headerLower.includes('precio') || headerLower.includes('coste') || headerLower.includes('costo') || headerLower.includes('pvp'))) ||
             (field.value === 'purchase_date' && (headerLower.includes('fecha') || headerLower.includes('compra'))) ||
             (field.value === 'location' && (headerLower.includes('ubicación') || headerLower.includes('ubicacion') || headerLower.includes('almacén') || headerLower.includes('almacen')))
