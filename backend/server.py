@@ -3028,6 +3028,8 @@ async def update_rental_payment_method(
     # Determine old and new states
     old_is_paid = is_paid_method(old_method)
     new_is_paid = is_paid_method(new_method)
+    old_is_unpaid = is_unpaid_method(old_method)
+    new_is_unpaid = is_unpaid_method(new_method)
     
     customer = await db.customers.find_one({"id": rental["customer_id"]}, {"_id": 0})
     customer_name = customer.get("name", "Cliente") if customer else "Cliente"
