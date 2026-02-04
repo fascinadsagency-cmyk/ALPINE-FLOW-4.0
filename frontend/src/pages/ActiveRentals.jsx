@@ -1004,6 +1004,11 @@ export default function ActiveRentals() {
                                         className="flex items-center justify-between p-2 rounded-md bg-white border border-slate-100 hover:border-slate-200"
                                       >
                                         <div className="flex items-center gap-2 min-w-0">
+                                          {item.quantity > 1 && (
+                                            <span className="font-bold text-xs text-blue-600 shrink-0">
+                                              {item.quantity}x
+                                            </span>
+                                          )}
                                           <span className="font-mono text-xs font-medium text-blue-600 shrink-0">
                                             {item.internal_code || item.barcode?.substring(0, 10)}
                                           </span>
