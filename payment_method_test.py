@@ -182,7 +182,7 @@ class PaymentMethodTester:
         """Create a test rental with specified payment method"""
         try:
             # Use different items for each rental to avoid conflicts
-            available_barcodes = [self.test_barcode_1, self.test_barcode_2]
+            available_barcodes = [self.test_barcode_1, self.test_barcode_2, self.test_barcode_3]
             if item_index >= len(available_barcodes):
                 print(f"Warning: Not enough available items for index {item_index}")
                 return None
