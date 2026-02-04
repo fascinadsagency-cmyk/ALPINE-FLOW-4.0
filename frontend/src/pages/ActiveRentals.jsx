@@ -123,6 +123,12 @@ export default function ActiveRentals() {
   const [dateDelta, setDateDelta] = useState(0); // Price difference for date change
   const [combinedDelta, setCombinedDelta] = useState(0); // Material + Date combined
 
+  // ============ PAYMENT METHOD EDITOR STATE ============
+  const [showPaymentMethodDialog, setShowPaymentMethodDialog] = useState(false);
+  const [editingRental, setEditingRental] = useState(null);
+  const [newPaymentMethod, setNewPaymentMethod] = useState("");
+  const [savingPaymentMethod, setSavingPaymentMethod] = useState(false);
+
   useEffect(() => {
     loadActiveRentals();
   }, []);
