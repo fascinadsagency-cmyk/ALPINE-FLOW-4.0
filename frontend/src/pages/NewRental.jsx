@@ -435,7 +435,6 @@ export default function NewRental() {
               detectedPackInstances.push({
                 pack: pack,
                 items: packInstanceItems,
-                category: pack.category, // Use pack's category, not item's
                 instanceId: instanceId  // Unique ID for this specific pack instance
               });
               
