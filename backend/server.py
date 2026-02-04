@@ -2336,9 +2336,15 @@ async def process_return(rental_id: str, return_input: ReturnInput, current_user
     
     # Update rental status
     new_status = "returned" if len(pending_items) == 0 else "partial"
+    
+    update_fields = {"items": rental["items"], "status": new_status}
+    # Add actual_return_date when fully returned
+    if new_status == "returned":
+        update_fields["actual_return_date"] = datetime.now(timezone.utc).isoformat()
+    
     await db.rentals.update_one(
         {"id": rental_id},
-        {"$set": {"items": rental["items"], "status": new_status}}
+        {"$set": update_fields}
     )
     
     return {
@@ -2346,7 +2352,8 @@ async def process_return(rental_id: str, return_input: ReturnInput, current_user
         "returned_items": returned_items,
         "pending_items": pending_items,
         "status": new_status,
-        "pending_amount": rental["pending_amount"]
+        "pending_amount": rental["pending_amount"],
+        "operation_number": rental.get("operation_number", rental_id[:8].upper())
     }
 
 class PaymentRequest(BaseModel):
