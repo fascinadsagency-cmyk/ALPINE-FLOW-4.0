@@ -2168,3 +2168,92 @@ export default function ActiveRentals() {
     </div>
   );
 }
+
+
+      {/* ============ PAYMENT METHOD EDITOR DIALOG ============ */}
+      <Dialog open={showPaymentMethodDialog} onOpenChange={setShowPaymentMethodDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-blue-500" />
+              Editar Método de Pago
+            </DialogTitle>
+            <DialogDescription>
+              Cambiar la forma de cobro del alquiler. El sistema actualizará automáticamente la caja.
+            </DialogDescription>
+          </DialogHeader>
+
+          {editingRental && (
+            <div className="space-y-4 py-4">
+              {/* Customer Info */}
+              <div className="bg-slate-50 p-3 rounded-lg">
+                <p className="text-sm font-semibold text-slate-700">{editingRental.customer_name}</p>
+                <p className="text-xs text-slate-500">Alquiler #{editingRental.id.substring(0, 8).toUpperCase()}</p>
+              </div>
+
+              {/* Current Payment Method */}
+              <div className="space-y-2">
+                <Label className="text-xs text-slate-500">Método Actual:</Label>
+                <Badge className={getPaymentMethodBadge(editingRental.payment_method || 'cash')}>
+                  {getPaymentMethodLabel(editingRental.payment_method || 'cash')}
+                </Badge>
+              </div>
+
+              {/* New Payment Method Selector */}
+              <div className="space-y-2">
+                <Label htmlFor="new-payment-method">Nuevo Método de Pago *</Label>
+                <Select value={newPaymentMethod} onValueChange={setNewPaymentMethod}>
+                  <SelectTrigger id="new-payment-method" className="h-11">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">💵 Efectivo</SelectItem>
+                    <SelectItem value="card">💳 Tarjeta</SelectItem>
+                    <SelectItem value="online">🌐 Pago Online</SelectItem>
+                    <SelectItem value="deposit">🏦 Depósito</SelectItem>
+                    <SelectItem value="other">📝 Otro</SelectItem>
+                    <SelectItem value="online_reservation">🔵 Reserva Online</SelectItem>
+                    <SelectItem value="pending">🔴 Pendiente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Info Alert */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800">
+                <p className="font-semibold mb-1">💡 Reconciliación Automática:</p>
+                <p>• De ingreso a ingreso: Mueve entre cajas</p>
+                <p>• De ingreso a deuda: Resta de la caja</p>
+                <p>• De deuda a ingreso: Suma a la caja</p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowPaymentMethodDialog(false)}
+              disabled={savingPaymentMethod}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={savePaymentMethod}
+              disabled={savingPaymentMethod || !newPaymentMethod}
+              className="gap-2"
+            >
+              {savingPaymentMethod ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-4 w-4" />
+                  Guardar Cambio
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
