@@ -4122,8 +4122,14 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
     
     if active_session:
         # Use MongoDB aggregation to calculate total revenue from cash movements
+        # EXCLUDE unpaid methods: pending and online_reservation
+        UNPAID_METHODS = ["pending", "online_reservation"]
+        
         revenue_pipeline = [
-            {"$match": {"session_id": active_session["id"]}},
+            {"$match": {
+                "session_id": active_session["id"],
+                "payment_method": {"$nin": UNPAID_METHODS}  # Exclude unpaid methods
+            }},
             {"$group": {
                 "_id": "$movement_type",
                 "total": {"$sum": "$amount"}
@@ -4142,12 +4148,23 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
         
         # Net revenue = income - refunds (same formula as cash register balance)
         today_revenue = total_income - total_refunds
+        
+        # Calculate UNPAID amount separately for display
+        unpaid_rentals = await db.rentals.find({
+            "created_at": {"$gte": start, "$lte": end},
+            "payment_method": {"$in": UNPAID_METHODS}
+        }, {"_id": 0, "total_amount": 1}).to_list(1000)
+        unpaid_amount = sum(r.get("total_amount", 0) for r in unpaid_rentals)
     else:
         # No active session - fallback to rentals created today
+        # Also exclude unpaid methods here
+        UNPAID_METHODS = ["pending", "online_reservation"]
         rentals = await db.rentals.find({
-            "created_at": {"$gte": start, "$lte": end}
+            "created_at": {"$gte": start, "$lte": end},
+            "payment_method": {"$nin": UNPAID_METHODS}
         }, {"_id": 0, "paid_amount": 1}).to_list(500)
         today_revenue = sum(r.get("paid_amount", 0) for r in rentals)
+        unpaid_amount = 0
     
     # ========== RETURNS TODAY (COUNT UNITS, NOT LINES) ==========
     # Improved: Count individual returned UNITS, not just rental documents
