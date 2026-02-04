@@ -123,14 +123,17 @@ export default function Layout() {
           </div>
           <span className={`font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>AlpineFlow</span>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className={darkMode ? 'text-slate-300' : ''}
-        >
-          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </Button>
+        <div className="flex items-center gap-2">
+          <OfflineIndicator />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className={darkMode ? 'text-slate-300' : ''}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </div>
       </header>
 
       {/* Mobile Menu */}
