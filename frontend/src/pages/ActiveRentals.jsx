@@ -1019,6 +1019,7 @@ export default function ActiveRentals() {
                     <TableHead className="text-center">Días</TableHead>
                     <TableHead className="text-right">Total</TableHead>
                     <TableHead className="text-right">Pendiente</TableHead>
+                    <TableHead className="text-center">Pago</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
