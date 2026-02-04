@@ -76,7 +76,7 @@ export default function CashRegister() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   
-  // Privacy masking state - all hidden by default
+  // Privacy visibility state - all hidden by default (accordion style)
   const [visibleMetrics, setVisibleMetrics] = useState({
     ingresos: false,
     gastos: false,
@@ -86,17 +86,32 @@ export default function CashRegister() {
     fondo: false
   });
   
+  // Master visibility toggle - show/hide all at once
+  const [allVisible, setAllVisible] = useState(false);
+  
   // Toggle visibility of a specific metric
   const toggleMetricVisibility = (metric) => {
     setVisibleMetrics(prev => ({ ...prev, [metric]: !prev[metric] }));
   };
   
-  // Mask value helper
-  const maskValue = (value, isVisible) => {
-    if (isVisible) {
-      return typeof value === 'number' ? `€${value.toFixed(2)}` : value;
-    }
-    return '•••••';
+  // Toggle all metrics visibility at once (master toggle)
+  const toggleAllVisibility = () => {
+    const newState = !allVisible;
+    setAllVisible(newState);
+    setVisibleMetrics({
+      ingresos: newState,
+      gastos: newState,
+      balance: newState,
+      efectivo: newState,
+      tarjeta: newState,
+      fondo: newState
+    });
+  };
+  
+  // Format value for display - show masked or real value with smooth transition
+  const formatValue = (value, isVisible, prefix = '€') => {
+    const formatted = typeof value === 'number' ? `${prefix}${Math.abs(value).toFixed(2)}` : value;
+    return isVisible ? formatted : '••••••';
   };
   
   // Dialog states
