@@ -240,7 +240,32 @@ Crear un sistema de gestión completo para tiendas de alquiler de equipos de esq
   - UI se actualiza inmediatamente (item desaparece de la lista)
   - Toast muestra: "Contadores reseteados (X → 0 días)"
 
-### 8. Integraciones Futuras
+### 8. AUDITORÍA DE MÉTRICAS DEL DASHBOARD (CORREGIDO 2026-02-04)
+- ✅ **Porcentaje de Ocupación de Stock (occupancy_percent):**
+  - **FÓRMULA CORREGIDA**: `rented / (available + rented + maintenance) * 100`
+  - **EXCLUYE**: items con status `retired`, `deleted`, `lost` (baja/perdido)
+  - **NUEVO CAMPO**: `rentable_total` = suma de items aptos para alquilar
+  - Ejemplo: 47 items totales - 8 retired/deleted = 39 rentables → 10.3% con 4 alquilados
+- ✅ **Contador de Clientes Atendidos Hoy (customers_today):**
+  - **NUEVO CAMPO** en respuesta de stats
+  - Usa `COUNT(DISTINCT customer_id)` via pipeline de agregación MongoDB
+  - **EXCLUYE**: alquileres con status `cancelled` o `deleted`
+  - Si un cliente alquila 3 veces en el día, cuenta como 1 cliente único
+- ✅ **Contador de Devoluciones Hoy (returns_today):**
+  - Cuenta alquileres devueltos hoy (status `returned` + `actual_return_date` = hoy)
+  - **Fallback**: si no hay `actual_return_date`, cuenta movimientos de caja tipo `return`
+- ✅ **Ocupación por Categorías (occupancy_by_category):**
+  - **FILTRO AÑADIDO**: `status: {$in: ['available', 'rented', 'maintenance']}`
+  - Ya no cuenta items `retired`/`deleted` en los totales por gama
+  - Ejemplo: MEDIA ahora muestra 27 (no 33) porque excluye 6 items en baja
+- ✅ **Formateo de Resultados:**
+  - Porcentajes redondeados a 1 decimal
+  - Campos numéricos devuelven `0` en lugar de `null`/`undefined`
+- ✅ **Frontend actualizado:**
+  - "Clientes del Día" ahora usa `stats.customers_today ?? 0`
+  - Subtítulo actualizado: "Clientes únicos atendidos"
+
+### 9. Integraciones Futuras
 - ⏳ VeriFactu, WhatsApp, TPV, Email, Google Calendar
 
 ### 9. Inventario y Rentabilidad (ACTUALIZADO 2026-02-02)
