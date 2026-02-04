@@ -459,74 +459,68 @@ export default function NewRental() {
     
     // Try to detect partial packs with all available packs (regardless of category)
     // Since all individual items are now "STANDARD", we don't group by category
+    
+    // Count item types in current items
+    const itemTypeCounts = currentItems.reduce((acc, item) => {
+      acc[item.item_type] = (acc[item.item_type] || 0) + 1;
       return acc;
     }, {});
 
-    // For each category with items, check if we can form a pack by adding more items
-    Object.entries(itemsByCategory).forEach(([category, categoryItems]) => {
-      // Count item types in this category
-      const itemTypeCounts = categoryItems.reduce((acc, item) => {
-        acc[item.item_type] = (acc[item.item_type] || 0) + 1;
+    // Check each pack to see if we can form it by adding items
+    packs.forEach(pack => {
+      // Count required components for this pack
+      const requiredComponents = pack.items.reduce((acc, itemType) => {
+        acc[itemType] = (acc[itemType] || 0) + 1;
         return acc;
       }, {});
 
-      // Check each pack of this category
-      const categoryPacks = packs.filter(p => p.category === category);
-      
-      categoryPacks.forEach(pack => {
-        // Count required components for this pack
-        const requiredComponents = pack.items.reduce((acc, itemType) => {
-          acc[itemType] = (acc[itemType] || 0) + 1;
-          return acc;
-        }, {});
+      // Find what's missing
+      const missingItems = [];
+      let hasAtLeastOne = false;
+      let canComplete = true;
 
-        // Find what's missing
-        const missingItems = [];
-        let hasAtLeastOne = false;
-        let canComplete = true;
-
-        for (const [type, requiredCount] of Object.entries(requiredComponents)) {
-          const currentCount = itemTypeCounts[type] || 0;
-          if (currentCount > 0) {
-            hasAtLeastOne = true;
-          }
-          if (currentCount < requiredCount) {
-            for (let i = 0; i < (requiredCount - currentCount); i++) {
-              missingItems.push(type);
-            }
+      for (const [type, requiredCount] of Object.entries(requiredComponents)) {
+        const currentCount = itemTypeCounts[type] || 0;
+        if (currentCount > 0) {
+          hasAtLeastOne = true;
+        }
+        if (currentCount < requiredCount) {
+          for (let i = 0; i < (requiredCount - currentCount); i++) {
+            missingItems.push(type);
           }
         }
+      }
 
-        // Only suggest if we have at least one component but not all
-        if (hasAtLeastOne && missingItems.length > 0 && missingItems.length < pack.items.length) {
-          // Calculate individual prices for current items
-          const currentItemsPrice = categoryItems.reduce((sum, item) => {
-            return sum + getItemPrice(item);
-          }, 0);
+      // Only suggest if we have at least one component but not all
+      if (hasAtLeastOne && missingItems.length > 0 && missingItems.length < pack.items.length) {
+        // Calculate individual prices for current items
+        const currentItemsPrice = currentItems.reduce((sum, item) => {
+          return sum + getItemPrice(item);
+        }, 0);
 
-          // Calculate what we'd pay if we completed the pack
-          const packPrice = getPackPrice(pack);
-          
-          // Estimate individual price for missing items (average)
-          const avgMissingPrice = currentItemsPrice / categoryItems.length;
-          const estimatedTotalWithoutPack = currentItemsPrice + (avgMissingPrice * missingItems.length);
-          
-          // Calculate potential savings
-          const potentialSavings = estimatedTotalWithoutPack - packPrice;
+        // Calculate what we'd pay if we completed the pack
+        const packPrice = getPackPrice(pack);
+        
+        // Estimate individual price for missing items (average)
+        const avgMissingPrice = currentItemsPrice / currentItems.length;
+        const estimatedTotalWithoutPack = currentItemsPrice + (avgMissingPrice * missingItems.length);
+        
+        // Calculate potential savings
+        const potentialSavings = estimatedTotalWithoutPack - packPrice;
 
-          if (potentialSavings > 0) {
-            suggestions.push({
-              pack: pack,
-              category: category,
-              missingItems: [...new Set(missingItems)], // Unique missing types
-              missingCount: missingItems.length,
-              currentItems: categoryItems.map(i => i.item_type),
-              packPrice: packPrice,
-              potentialSavings: potentialSavings,
-              packName: pack.name
-            });
-          }
+        if (potentialSavings > 0) {
+          suggestions.push({
+            pack: pack,
+            category: pack.category, // Use pack's category
+            missingItems: [...new Set(missingItems)], // Unique missing types
+            missingCount: missingItems.length,
+            currentItems: currentItems.map(i => i.item_type),
+            packPrice: packPrice,
+            potentialSavings: potentialSavings,
+            packName: pack.name
+          });
         }
+      }
       });
     });
 
