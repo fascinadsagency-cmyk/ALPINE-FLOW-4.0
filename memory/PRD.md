@@ -2,7 +2,7 @@
 
 ## Estado del Proyecto
 **Última actualización:** 2026-02-04
-**Estado:** Operativo - Persistencia de Carrito + Rediseño Privacidad en Caja COMPLETADOS
+**Estado:** Operativo - Cálculo de Precios de Packs CORREGIDO
 
 ---
 
