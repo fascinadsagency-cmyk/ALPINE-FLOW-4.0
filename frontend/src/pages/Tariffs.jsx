@@ -281,7 +281,6 @@ export default function Tariffs() {
     setNewPack({
       name: pack.name,
       description: pack.description || "",
-      category: pack.category || "MEDIA",
       day_1: pack.day_1?.toString() || "",
       day_2: pack.day_2?.toString() || "",
       day_3: pack.day_3?.toString() || "",
