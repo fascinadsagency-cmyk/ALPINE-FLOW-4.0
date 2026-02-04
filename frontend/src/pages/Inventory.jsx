@@ -3012,7 +3012,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
               Eliminar Tipo de Artículo
             </DialogTitle>
             <DialogDescription>
-              ¿Estás seguro de que deseas eliminar el tipo "{deleteTypeData?.typeName}"?
+              ¿Estás seguro de que deseas eliminar el tipo &quot;{deleteTypeData?.typeName}&quot;?
               <br /><br />
               <span className="text-amber-600">
                 Si hay artículos usando este tipo, no se podrá eliminar.
