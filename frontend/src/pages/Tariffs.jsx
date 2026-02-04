@@ -478,13 +478,7 @@ export default function Tariffs() {
                       <CardContent className="pt-6">
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-lg">{getCategoryIcon(pack.category)}</span>
-                              <h3 className="font-semibold text-slate-900">{pack.name}</h3>
-                            </div>
-                            <Badge className={getCategoryBadge(pack.category)}>
-                              Gama {pack.category}
-                            </Badge>
+                            <h3 className="font-semibold text-slate-900 mb-1">{pack.name}</h3>
                           </div>
                           <div className="flex gap-1">
                             <Button
