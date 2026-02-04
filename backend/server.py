@@ -3498,6 +3498,11 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
     """
     Dashboard stats - revenue_today now comes from cash_movements (Single Source of Truth)
     This ensures Dashboard shows same value as Cash Register.
+    
+    AUDITED METRICS:
+    - returns_today: COUNT DISTINCT rentals returned today (not individual items)
+    - customers_today: COUNT DISTINCT customers with rentals created today (unique clients)
+    - occupancy_percent: Calculated over rentable inventory (excludes retired/lost/deleted)
     """
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     start = f"{today}T00:00:00"
@@ -3543,9 +3548,9 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
         }, {"_id": 0, "paid_amount": 1}).to_list(500)
         today_revenue = sum(r.get("paid_amount", 0) for r in rentals)
     
-    # Today's returns count - COUNT DISTINCT by rental_id (not items)
-    # This counts unique return operations, not individual items
-    # Primary: Use actual_return_date field
+    # ========== RETURNS TODAY (COUNT DISTINCT rentals) ==========
+    # Count unique rentals returned today, NOT individual items
+    # Primary: Use actual_return_date field for rentals marked as 'returned'
     returns_today = await db.rentals.count_documents({
         "status": "returned",
         "actual_return_date": {"$gte": start, "$lte": end}
@@ -3563,6 +3568,29 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
         if unique_return_rentals:
             returns_today = len(unique_return_rentals)
     
+    # ========== CUSTOMERS TODAY (COUNT DISTINCT customer_id) ==========
+    # Count unique customers who had a rental created today
+    # This prevents counting the same customer multiple times if they rented multiple times
+    # Also excludes cancelled/deleted rentals
+    customers_pipeline = [
+        {
+            "$match": {
+                "created_at": {"$gte": start, "$lte": end},
+                "status": {"$nin": ["cancelled", "deleted"]}  # Exclude cancelled/deleted
+            }
+        },
+        {
+            "$group": {
+                "_id": "$customer_id"  # Group by unique customer_id
+            }
+        },
+        {
+            "$count": "unique_customers"
+        }
+    ]
+    customers_result = await db.rentals.aggregate(customers_pipeline).to_list(1)
+    customers_today = customers_result[0]["unique_customers"] if customers_result else 0
+    
     # Active rentals
     active_rentals = await db.rentals.count_documents({"status": {"$in": ["active", "partial"]}})
     
@@ -3572,13 +3600,14 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
         "end_date": {"$lt": today}
     })
     
-    # Inventory stats
+    # Inventory stats (now with proper occupancy calculation)
     inventory = await get_inventory_stats(current_user)
     
     return {
         "today_rentals": today_rentals,
-        "revenue_today": today_revenue,  # Now unified with cash register
-        "returns_today": returns_today,
+        "revenue_today": today_revenue,  # Unified with cash register
+        "returns_today": returns_today,  # COUNT DISTINCT rentals returned today
+        "customers_today": customers_today,  # COUNT DISTINCT customers served today
         "active_rentals": active_rentals,
         "overdue_returns": overdue,
         "inventory": inventory
