@@ -1985,7 +1985,7 @@ async def delete_tariff(item_type: str, current_user: dict = Depends(get_current
 class PackCreate(BaseModel):
     name: str
     description: Optional[str] = ""
-    category: str = "MEDIA"  # SUPERIOR, ALTA, MEDIA
+    category: str = "MEDIA"  # SUPERIOR, ALTA, MEDIA, OTRO
     items: List[str]  # List of item types
     day_1: float = 0
     day_2: float = 0
