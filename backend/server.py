@@ -3775,6 +3775,50 @@ async def get_range_report(
         commissions=commissions_list
     )
 
+@api_router.get("/reports/reconciliation")
+async def get_reconciliation_report(
+    start_date: str,
+    end_date: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Endpoint de reconciliación para depurar discrepancias entre Caja y Reportes.
+    
+    Compara:
+    1. Totales de cash_movements (fuente de verdad)
+    2. Totales de rentals.paid_amount (referencia)
+    3. Identifica transacciones huérfanas en ambas direcciones
+    
+    Uso: Cuando los totales de Caja no coinciden con los de Reportes
+    """
+    return await financial_service.get_reconciliation_data(start_date, end_date)
+
+@api_router.get("/reports/financial-summary")
+async def get_unified_financial_summary(
+    start_date: str,
+    end_date: str,
+    include_manual: bool = True,
+    include_deposits: bool = True,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Resumen financiero unificado usando el servicio centralizado.
+    
+    Este endpoint GARANTIZA que los totales coincidan con la vista de Caja.
+    
+    Args:
+        start_date: Fecha inicio (YYYY-MM-DD)
+        end_date: Fecha fin (YYYY-MM-DD)
+        include_manual: Incluir movimientos manuales de caja (default: True)
+        include_deposits: Incluir fianzas (default: True)
+    """
+    return await financial_service.get_financial_summary(
+        start_date, 
+        end_date,
+        include_manual_movements=include_manual,
+        include_deposits=include_deposits
+    )
+
 # ==================== DAILY REPORT ENDPOINT ====================
 
 @api_router.get("/reports/stats")
