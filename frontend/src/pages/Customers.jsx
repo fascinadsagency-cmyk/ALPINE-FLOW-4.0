@@ -910,16 +910,28 @@ export default function Customers() {
                   Deseleccionar
                 </Button>
               </div>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={openBulkDeleteDialog}
-                className="gap-2"
-                data-testid="bulk-delete-customers-btn"
-              >
-                <Trash2 className="h-4 w-4" />
-                Eliminar Seleccionados
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={exportSelectedCustomers}
+                  className="gap-2 bg-white hover:bg-blue-50"
+                  data-testid="export-selected-customers-btn"
+                >
+                  <Download className="h-4 w-4" />
+                  Exportar Seleccionados ({selectedCustomers.size})
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={openBulkDeleteDialog}
+                  className="gap-2"
+                  data-testid="bulk-delete-customers-btn"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Eliminar Seleccionados
+                </Button>
+              </div>
             </div>
           )}
           
