@@ -759,47 +759,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Occupancy by Category (existing) */}
-      <Card className="border-slate-200">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Package className="h-5 w-5 text-slate-500" />
-            Ocupación Actual por Gamas
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {Object.entries(occupancy).map(([category, data]) => {
-              const colors = categoryColors[category] || categoryColors.MEDIA;
-              const available = data.total - data.rented;
-              
-              return (
-                <div 
-                  key={category}
-                  className={`p-4 rounded-xl ${colors.light} border border-slate-200`}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className={`font-semibold ${colors.text}`}>
-                      {category === 'SUPERIOR' ? 'Gama Superior' : category === 'ALTA' ? 'Gama Alta' : 'Gama Media'}
-                    </span>
-                    <Badge className={`${colors.bg} ${colors.text}`}>
-                      {data.rented}/{data.total}
-                    </Badge>
-                  </div>
-                  <Progress 
-                    value={data.percentage} 
-                    className="h-3"
-                  />
-                  <div className="flex justify-between mt-2 text-sm">
-                    <span className="text-slate-500">Disponibles: {available}</span>
-                    <span className={colors.text}>{data.percentage}% ocupado</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
