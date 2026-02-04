@@ -2010,6 +2010,9 @@ export default function ActiveRentals() {
                                 {rental.items.slice(0, 6).map((item, itemIdx) => (
                                   <div key={itemIdx} className="flex items-center justify-between p-2 rounded bg-slate-50 text-sm">
                                     <span className="text-slate-700 truncate">
+                                      {item.quantity > 1 && (
+                                        <span className="font-bold text-blue-600 mr-1">{item.quantity}x</span>
+                                      )}
                                       {item.item_type} {item.brand && `- ${item.brand}`} {item.model && item.model}
                                     </span>
                                     {item.size && (
