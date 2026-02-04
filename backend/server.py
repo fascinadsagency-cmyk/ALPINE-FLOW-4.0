@@ -853,7 +853,7 @@ async def create_item(item: ItemCreate, current_user: dict = Depends(get_current
             "purchase_price": item.purchase_price or 0,
             "purchase_date": item.purchase_date or datetime.now(timezone.utc).strftime("%Y-%m-%d"),
             "location": item.location or "",
-            "category": item.category or "MEDIA",
+            "category": "STANDARD",  # All individual items are STANDARD
             "maintenance_interval": 0,
             "days_used": 0,
             "amortization": 0,
