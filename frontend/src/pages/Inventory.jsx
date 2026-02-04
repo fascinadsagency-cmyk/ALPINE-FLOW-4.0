@@ -95,7 +95,6 @@ export default function Inventory() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterType, setFilterType] = useState("all");
-  const [filterCategory, setFilterCategory] = useState("all");
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
