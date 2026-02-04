@@ -1638,8 +1638,9 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100,SUPERIOR`;
                           return item.is_generic ? '-' : item.size;
                         case 'binding':
                           return item.is_generic ? '-' : <span className="text-sm text-slate-600">{item.binding || '-'}</span>;
+                        // Category field eliminated - no longer displayed
                         case 'category':
-                          return <Badge className={getCategoryBadge(item.category)}>{item.category}</Badge>;
+                          return null;
                         case 'status':
                           return item.is_generic ? (
                             <Badge className={item.stock_available > 0 ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}>
