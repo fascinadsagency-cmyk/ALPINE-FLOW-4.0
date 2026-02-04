@@ -1,0 +1,147 @@
+{
+  "summary": "Iteration 23 - Dashboard Calculation Logic Verification. All metrics are correctly calculated: occupancy_percent uses rentable_total (excludes retired/deleted/lost), customers_today uses COUNT DISTINCT customer_id, returns_today uses COUNT DISTINCT rentals, occupancy_by_category excludes non-rentable items. Backend: 10/10 tests passed (1 skipped). Frontend: All KPI cards display correct values and labels.",
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  
+  "passed_tests": [
+    "1. GET /api/dashboard returns 200 with correct structure - PASSED",
+    "2. Inventory stats contain all required fields (available, rented, maintenance, retired, total, rentable_total, occupancy_percent) - PASSED",
+    "3. occupancy_percent correctly calculated over rentable_total (4/39 = 10.3%) - PASSED",
+    "4. customers_today uses COUNT DISTINCT customer_id (excludes cancelled/deleted rentals) - PASSED",
+    "5. returns_today uses COUNT DISTINCT rentals returned today - PASSED",
+    "6. occupancy_by_category excludes retired/deleted/lost items - PASSED",
+    "7. Percentages return 0 instead of null/undefined - PASSED",
+    "8. GET /api/reports/stats returns proper format - PASSED",
+    "9. Database item counts match expected calculation logic - PASSED",
+    "10. Frontend 'Clientes del Día' shows 'Clientes únicos atendidos' subtitle - PASSED",
+    "11. Frontend 'Ocupación Stock' shows 10.3% (correct calculation) - PASSED",
+    "12. Frontend 'Ocupación Actual por Gamas' shows correct totals (3+9+27=39 rentable) - PASSED"
+  ],
+  
+  "verified_calculations": {
+    "inventory_stats": {
+      "available": 35,
+      "rented": 4,
+      "maintenance": 0,
+      "retired": 5,
+      "deleted": 3,
+      "lost": 0,
+      "total": 47,
+      "rentable_total": 39,
+      "occupancy_percent": 10.3,
+      "formula": "rented / (available + rented + maintenance) * 100 = 4/39*100 = 10.3%"
+    },
+    "occupancy_by_category": {
+      "SUPERIOR": {"total": 3, "rented": 0, "percentage": 0.0},
+      "ALTA": {"total": 9, "rented": 0, "percentage": 0.0},
+      "MEDIA": {"total": 27, "rented": 4, "percentage": 14.8},
+      "sum_totals": "3+9+27=39 (matches rentable_total)"
+    },
+    "customers_today": {
+      "value": 4,
+      "method": "COUNT DISTINCT customer_id from rentals created today",
+      "excludes": "cancelled and deleted rentals"
+    },
+    "returns_today": {
+      "value": 2,
+      "method": "COUNT DISTINCT rentals with status='returned' and actual_return_date=today"
+    }
+  },
+  
+  "backend_tests": {
+    "file": "/app/backend/tests/test_dashboard_calculations.py",
+    "total": 11,
+    "passed": 10,
+    "skipped": 1,
+    "failed": 0,
+    "tests": [
+      "test_dashboard_endpoint_returns_200 - PASSED",
+      "test_inventory_stats_structure - PASSED",
+      "test_occupancy_percent_excludes_retired_deleted_lost - PASSED",
+      "test_customers_today_is_count_distinct - PASSED",
+      "test_returns_today_is_count_distinct - PASSED",
+      "test_occupancy_by_category_excludes_retired_deleted - PASSED",
+      "test_no_cancelled_deleted_rentals_in_customers_count - PASSED",
+      "test_percentages_return_zero_not_null - PASSED",
+      "test_reports_stats_endpoint - PASSED",
+      "test_inventory_stats_endpoint - SKIPPED (endpoint not found)",
+      "test_item_counts_by_status - PASSED"
+    ]
+  },
+  
+  "frontend_verification": {
+    "kpi_cards": {
+      "alquileres_activos": {"value": "2", "subtitle": "En curso ahora mismo"},
+      "devoluciones_hoy": {"value": "2", "subtitle": "Equipos por recoger"},
+      "ocupacion_stock": {"value": "10.3%", "subtitle": "Material alquilado"},
+      "clientes_del_dia": {"value": "4", "subtitle": "Clientes únicos atendidos"}
+    },
+    "ocupacion_por_gamas": {
+      "gama_superior": "0/3 - 0% ocupado",
+      "gama_alta": "0/9 - 0% ocupado",
+      "gama_media": "4/27 - 14.8% ocupado"
+    }
+  },
+  
+  "test_report_links": [
+    "/app/backend/tests/test_dashboard_calculations.py",
+    "/app/test_reports/pytest/pytest_dashboard_calculations.xml"
+  ],
+  
+  "action_items": [],
+  
+  "critical_code_review_comments": [],
+  
+  "updated_files": [
+    "/app/backend/tests/test_dashboard_calculations.py"
+  ],
+  
+  "success_rate": {
+    "backend": "100% (10/10 tests passed, 1 skipped)",
+    "frontend": "100% (All dashboard metrics verified)"
+  },
+  
+  "test_credentials": {
+    "username": "testcaja",
+    "password": "test1234"
+  },
+  
+  "seed_data_creation": "None - used existing database data",
+  
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  
+  "context_for_next_testing_agent": "Dashboard calculation logic has been fully verified. Key fixes confirmed: 1) occupancy_percent now calculated over rentable_total (39 items) excluding retired/deleted/lost, resulting in 10.3% (4/39). 2) customers_today uses COUNT DISTINCT customer_id with aggregation pipeline, excluding cancelled/deleted rentals. 3) occupancy_by_category filters with status: {$in: ['available', 'rented', 'maintenance']} to exclude non-rentable items. 4) Frontend Dashboard.jsx correctly displays stats.customers_today with 'Clientes únicos atendidos' subtitle. All calculations match expected values from problem statement.",
+  
+  "screenshots": [
+    ".screenshots/dashboard_after_login.png - Dashboard KPI cards showing correct values",
+    ".screenshots/dashboard_occupancy_by_category.png - Ocupación Actual por Gamas section"
+  ],
+  
+  "bugs_fixed_verification": {
+    "bug_1_occupancy_percent": {
+      "description": "occupancy_percent now calculated over rentable_total (39 items) instead of total bruto (47 items)",
+      "status": "VERIFIED FIXED",
+      "evidence": "Backend returns occupancy_percent=10.3 (4/39*100), Frontend displays 10.3%"
+    },
+    "bug_2_customers_today": {
+      "description": "customers_today is new field using COUNT DISTINCT customer_id",
+      "status": "VERIFIED FIXED",
+      "evidence": "Backend returns customers_today=4, Frontend shows 'Clientes del Día: 4' with 'Clientes únicos atendidos' subtitle"
+    },
+    "bug_3_occupancy_by_category": {
+      "description": "occupancy_by_category now filters with status: {$in: ['available', 'rented', 'maintenance']} excluding retired/deleted/lost",
+      "status": "VERIFIED FIXED",
+      "evidence": "Category totals sum to 39 (3+9+27) matching rentable_total, not 47 total"
+    }
+  }
+}
