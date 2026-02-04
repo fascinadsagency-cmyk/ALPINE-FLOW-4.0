@@ -2975,6 +2975,165 @@ async def update_rental_days(rental_id: str, update_data: UpdateRentalDaysReques
 
 # Refund request model
 class RefundRequest(BaseModel):
+
+# ============ PAYMENT METHOD CONSTANTS ============
+# Classification of payment methods for accounting
+PAID_METHODS = ["cash", "card", "online", "deposit", "other"]  # GRUPO A: Real income
+UNPAID_METHODS = ["pending", "online_reservation"]  # GRUPO B: Debts/Unpaid
+
+PAYMENT_METHOD_LABELS = {
+    "cash": "Efectivo",
+    "card": "Tarjeta",
+    "online": "Pago Online",
+    "deposit": "Depósito",
+    "other": "Otro",
+    "online_reservation": "Reserva Online",
+    "pending": "Pendiente"
+}
+
+def is_paid_method(method: str) -> bool:
+    """Check if payment method represents actual income"""
+    return method in PAID_METHODS
+
+def is_unpaid_method(method: str) -> bool:
+    """Check if payment method represents a debt"""
+    return method in UNPAID_METHODS
+
+@api_router.patch("/rentals/{rental_id}/payment-method")
+async def update_rental_payment_method(
+    rental_id: str, 
+    data: UpdatePaymentMethodRequest, 
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Update payment method for a rental with automatic financial reconciliation.
+    
+    RECONCILIATION LOGIC:
+    - CASE 1: Income -> Income (e.g., cash -> card): Move amount between cash registers
+    - CASE 2: Income -> Debt (e.g., cash -> pending): Remove from cash register (it was an error)
+    - CASE 3: Debt -> Income (e.g., pending -> card): Add to cash register (payment received)
+    """
+    rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
+    if not rental:
+        raise HTTPException(status_code=404, detail="Rental not found")
+    
+    old_method = rental.get("payment_method", "cash")
+    new_method = data.new_payment_method
+    amount = rental.get("paid_amount", rental.get("total_amount", 0))
+    
+    # Validate new payment method
+    if new_method not in PAID_METHODS and new_method not in UNPAID_METHODS:
+        raise HTTPException(status_code=400, detail=f"Invalid payment method: {new_method}")
+    
+    # Skip if no change
+    if old_method == new_method:
+        return {"message": "No changes needed", "rental": rental}
+    
+    # Determine old and new states
+    old_is_paid = is_paid_method(old_method)
+    new_is_paid = is_paid_method(new_method)
+    
+    customer = await db.customers.find_one({"id": rental["customer_id"]}, {"_id": 0})
+    customer_name = customer.get("name", "Cliente") if customer else "Cliente"
+    
+    reconciliation_action = ""
+    
+    # ========== CASE 1: Income -> Income (Move between cash registers) ==========
+    if old_is_paid and new_is_paid:
+        reconciliation_action = "moved_between_registers"
+        
+        # Remove from old cash register
+        await db.cash_movements.insert_one({
+            "id": str(uuid4()),
+            "date": datetime.now(timezone.utc).isoformat(),
+            "type": "adjustment",
+            "amount": -amount,  # Negative = removal
+            "payment_method": old_method,
+            "concept": f"Corrección método de pago (Alquiler #{rental_id[:8]}) - De {PAYMENT_METHOD_LABELS.get(old_method, old_method)} a {PAYMENT_METHOD_LABELS.get(new_method, new_method)}",
+            "rental_id": rental_id,
+            "user": current_user.get("username", "system"),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        # Add to new cash register
+        await db.cash_movements.insert_one({
+            "id": str(uuid4()),
+            "date": datetime.now(timezone.utc).isoformat(),
+            "type": "income",
+            "amount": amount,
+            "payment_method": new_method,
+            "concept": f"Corrección método de pago (Alquiler #{rental_id[:8]}) - De {PAYMENT_METHOD_LABELS.get(old_method, old_method)} a {PAYMENT_METHOD_LABELS.get(new_method, new_method)}",
+            "rental_id": rental_id,
+            "user": current_user.get("username", "system"),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+    
+    # ========== CASE 2: Income -> Debt (Remove from cash - it was an error) ==========
+    elif old_is_paid and new_is_unpaid:
+        reconciliation_action = "removed_from_cash"
+        
+        # Remove from cash register (negative adjustment)
+        await db.cash_movements.insert_one({
+            "id": str(uuid4()),
+            "date": datetime.now(timezone.utc).isoformat(),
+            "type": "adjustment",
+            "amount": -amount,  # Negative = removal
+            "payment_method": old_method,
+            "concept": f"Corrección: Alquiler #{rental_id[:8]} marcado como {PAYMENT_METHOD_LABELS.get(new_method, new_method)} - {customer_name}",
+            "rental_id": rental_id,
+            "user": current_user.get("username", "system"),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        # Update rental to unpaid status
+        await db.rentals.update_one(
+            {"id": rental_id},
+            {"$set": {"pending_amount": amount, "paid_amount": 0}}
+        )
+    
+    # ========== CASE 3: Debt -> Income (Add to cash - payment received) ==========
+    elif old_is_unpaid and new_is_paid:
+        reconciliation_action = "added_to_cash"
+        
+        # Add to cash register
+        await db.cash_movements.insert_one({
+            "id": str(uuid4()),
+            "date": datetime.now(timezone.utc).isoformat(),
+            "type": "income",
+            "amount": amount,
+            "payment_method": new_method,
+            "concept": f"Cobro de {PAYMENT_METHOD_LABELS.get(old_method, old_method)} - Alquiler #{rental_id[:8]} - {customer_name}",
+            "rental_id": rental_id,
+            "user": current_user.get("username", "system"),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        # Update rental to paid status
+        await db.rentals.update_one(
+            {"id": rental_id},
+            {"$set": {"pending_amount": 0, "paid_amount": amount}}
+        )
+    
+    # Update rental payment method
+    await db.rentals.update_one(
+        {"id": rental_id},
+        {"$set": {"payment_method": new_method}}
+    )
+    
+    # Get updated rental
+    updated_rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
+    
+    return {
+        "message": "Payment method updated successfully",
+        "rental": updated_rental,
+        "reconciliation": {
+            "action": reconciliation_action,
+            "old_method": PAYMENT_METHOD_LABELS.get(old_method, old_method),
+            "new_method": PAYMENT_METHOD_LABELS.get(new_method, new_method),
+            "amount": amount
+        }
+    }
+
     days_to_refund: int
     refund_amount: float
     payment_method: str = "cash"
