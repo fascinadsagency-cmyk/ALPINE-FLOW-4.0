@@ -910,12 +910,6 @@ export default function Inventory() {
             if (field === 'item_type') {
               value = value.toLowerCase();
             }
-            if (field === 'category') {
-              value = value.toUpperCase();
-              if (!['SUPERIOR', 'ALTA', 'MEDIA'].includes(value)) {
-                value = 'MEDIA';
-              }
-            }
             if (field === 'purchase_price') {
               value = parseFloat(value.replace(',', '.')) || 0;
             }
