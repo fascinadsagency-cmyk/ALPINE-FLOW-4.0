@@ -2755,16 +2755,6 @@ export default function NewRental() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={itemSearchCategory} onValueChange={setItemSearchCategory}>
-              <SelectTrigger className="h-11">
-                <SelectValue placeholder="Categoría" />
-              </SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map(c => (
-                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           {/* Results */}
