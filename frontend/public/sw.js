@@ -74,6 +74,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // NO interceptar peticiones POST, PUT, DELETE (dejar que vayan directamente a la red)
+  if (request.method !== 'GET') {
+    return;
+  }
+
   // Estrategia para archivos estáticos: Cache First
   if (isStaticAsset(request)) {
     event.respondWith(cacheFirst(request, STATIC_CACHE));
