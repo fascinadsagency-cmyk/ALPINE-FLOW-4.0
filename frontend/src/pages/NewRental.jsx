@@ -2780,9 +2780,6 @@ export default function NewRental() {
                       <div>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className="text-xs">{item.item_type}</Badge>
-                          <Badge className={`${getCategoryBadge(item.category || 'MEDIA')} text-xs`}>
-                            {item.category || 'MEDIA'}
-                          </Badge>
                           <span className="font-mono text-xs text-slate-400">{item.barcode}</span>
                         </div>
                         <p className="font-medium text-slate-900">
