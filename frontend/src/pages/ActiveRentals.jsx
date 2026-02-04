@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { rentalApi } from "@/lib/api";
 import { printTicket, getStoredSettings } from "@/lib/ticketGenerator";
 import { useSettings } from "@/contexts/SettingsContext";
+import { toast } from "sonner";
 import axios from "axios";
 import { 
   ShoppingCart, 
