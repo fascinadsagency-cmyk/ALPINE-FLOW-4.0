@@ -728,6 +728,73 @@ export default function ActiveRentals() {
             items: rental.items || [], 
             rental_id: rental.id,
             customer_id: rental.customer_id
+
+  // ============ PAYMENT METHOD EDITOR FUNCTIONS ============
+  const openPaymentMethodDialog = (rental) => {
+    setEditingRental(rental);
+    setNewPaymentMethod(rental.payment_method || "cash");
+    setShowPaymentMethodDialog(true);
+  };
+
+  const savePaymentMethod = async () => {
+    if (!editingRental || !newPaymentMethod) return;
+    
+    setSavingPaymentMethod(true);
+    try {
+      const response = await axios.patch(
+        `${API}/rentals/${editingRental.id}/payment-method`,
+        { new_payment_method: newPaymentMethod },
+        { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
+      );
+      
+      toast.success(`✅ Método de pago actualizado: ${getPaymentMethodLabel(newPaymentMethod)}`);
+      
+      // Show reconciliation info if available
+      if (response.data.reconciliation) {
+        const { action, old_method, new_method, amount } = response.data.reconciliation;
+        console.log(`Reconciliación: ${action} - ${old_method} → ${new_method} (€${amount})`);
+      }
+      
+      setShowPaymentMethodDialog(false);
+      loadActiveRentals(); // Reload to show updated data
+    } catch (error) {
+      console.error('Error updating payment method:', error);
+      toast.error(error.response?.data?.detail || 'Error al actualizar método de pago');
+    } finally {
+      setSavingPaymentMethod(false);
+    }
+  };
+
+  const getPaymentMethodLabel = (method) => {
+    const labels = {
+      'cash': 'Efectivo',
+      'card': 'Tarjeta',
+      'online': 'Pago Online',
+      'deposit': 'Depósito',
+      'other': 'Otro',
+      'online_reservation': 'Reserva Online',
+      'pending': 'Pendiente'
+    };
+    return labels[method] || method;
+  };
+
+  const getPaymentMethodBadge = (method, isPending = false) => {
+    // Paid methods: Green
+    const paidMethods = ['cash', 'card', 'online', 'deposit', 'other'];
+    // Unpaid methods: Red/Orange
+    const unpaidMethods = ['pending', 'online_reservation'];
+    
+    if (paidMethods.includes(method)) {
+      return 'bg-emerald-100 text-emerald-700 border-emerald-300';
+    } else if (method === 'pending') {
+      return 'bg-red-100 text-red-700 border-red-300';
+    } else if (method === 'online_reservation') {
+      return 'bg-orange-100 text-orange-700 border-orange-300';
+    }
+    
+    return 'bg-slate-100 text-slate-700 border-slate-300';
+  };
+
           };
           
           // Load full customer history (includes financials and detailed rentals)
