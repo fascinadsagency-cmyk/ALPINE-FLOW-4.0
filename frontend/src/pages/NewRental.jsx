@@ -417,7 +417,7 @@ export default function NewRental() {
           const packInstanceItems = [];
           
           for (const requiredType of pack.items) {
-              const item = availableCategoryItems.find(i => 
+              const item = availableItems.find(i => 
                 i.item_type === requiredType && 
                 !packInstanceItems.includes(i.barcode) &&
                 !usedBarcodes.has(i.barcode)
@@ -430,12 +430,12 @@ export default function NewRental() {
 
             if (packInstanceItems.length === pack.items.length) {
               // Generate unique instance ID for this pack
-              const instanceId = `pack-instance-${Date.now()}-${detected.length}`;
+              const instanceId = `pack-instance-${Date.now()}-${detectedPackInstances.length}`;
               
-              detected.push({
+              detectedPackInstances.push({
                 pack: pack,
                 items: packInstanceItems,
-                category: category,
+                category: pack.category, // Use pack's category, not item's
                 instanceId: instanceId  // Unique ID for this specific pack instance
               });
               
@@ -445,9 +445,8 @@ export default function NewRental() {
           }
         }
       }
-    });
 
-    return detected;
+    return detectedPackInstances;
   };
 
   // SMART UPSELLING: Detect partial packs (when missing components to complete a pack)
@@ -458,11 +457,8 @@ export default function NewRental() {
 
     const suggestions = [];
     
-    // Group items by category
-    const itemsByCategory = currentItems.reduce((acc, item) => {
-      const cat = item.category || 'MEDIA';
-      if (!acc[cat]) acc[cat] = [];
-      acc[cat].push(item);
+    // Try to detect partial packs with all available packs (regardless of category)
+    // Since all individual items are now "STANDARD", we don't group by category
       return acc;
     }, {});
 
