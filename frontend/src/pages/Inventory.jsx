@@ -2845,9 +2845,6 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                 <p className="text-sm text-slate-600">
                   {deletingItem.brand} {deletingItem.model} - {deletingItem.size}
                 </p>
-                <Badge>
-                  {deletingItem.category}
-                </Badge>
               </div>
               {deletingItem.status === 'rented' && (
                 <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
