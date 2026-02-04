@@ -812,6 +812,14 @@ export default function Customers() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={customers.length > 0 && selectedCustomers.size === customers.length}
+                        onCheckedChange={toggleSelectAll}
+                        aria-label="Seleccionar todos"
+                        data-testid="select-all-customers"
+                      />
+                    </TableHead>
                     <TableHead>DNI/Pasaporte</TableHead>
                     <TableHead>Nombre Completo</TableHead>
                     <TableHead>Teléfono</TableHead>
@@ -824,8 +832,20 @@ export default function Customers() {
                 <TableBody>
                   {customers.map((customer) => {
                     const discount = getProviderDiscount(customer.source);
+                    const isSelected = selectedCustomers.has(customer.id);
                     return (
-                      <TableRow key={customer.id} className={`hover:bg-slate-50 ${customer.has_active_rental ? 'bg-emerald-50/30' : ''}`}>
+                      <TableRow 
+                        key={customer.id} 
+                        className={`hover:bg-slate-50 ${customer.has_active_rental ? 'bg-emerald-50/30' : ''} ${isSelected ? 'bg-blue-50' : ''}`}
+                      >
+                        <TableCell className="w-12">
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={() => toggleCustomerSelection(customer.id)}
+                            aria-label={`Seleccionar ${customer.name}`}
+                            data-testid={`select-customer-${customer.id}`}
+                          />
+                        </TableCell>
                         <TableCell className="font-mono text-sm font-medium">{customer.dni}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
