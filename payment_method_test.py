@@ -184,8 +184,8 @@ class PaymentMethodTester:
             by_payment = data.get("by_payment_method", {})
             
             balances = {
-                "cash_balance": by_payment.get("cash", {}).get("income", 0) - by_payment.get("cash", {}).get("expense", 0) - by_payment.get("cash", {}).get("refund", 0),
-                "card_balance": by_payment.get("card", {}).get("income", 0) - by_payment.get("card", {}).get("expense", 0) - by_payment.get("card", {}).get("refund", 0),
+                "cash_balance": by_payment.get("cash", {}).get("income", 0) - by_payment.get("cash", {}).get("expense", 0) - by_payment.get("cash", {}).get("refund", 0) + by_payment.get("cash", {}).get("adjustment", 0),
+                "card_balance": by_payment.get("card", {}).get("income", 0) - by_payment.get("card", {}).get("expense", 0) - by_payment.get("card", {}).get("refund", 0) + by_payment.get("card", {}).get("adjustment", 0),
                 "total_balance": data.get("balance", 0),
                 "movements_count": data.get("movements_count", 0)
             }
