@@ -598,3 +598,18 @@ agent_communication:
         - working: true
           agent: "testing"
           comment: "✅ COMPREHENSIVE PARTIAL RETURN UI TESTING COMPLETED (9/10 test scenarios passed): Login successful with testcaja/test1234 ✅, Navigation to Returns page (/returns) ✅, Returns page structure verified (Mostrador de Recepción title, barcode input field, pending returns sections) ✅, Contract loading successful (found 2 Erika Quijano Guerrero contracts as specified in review request) ✅, QUANTITY SELECTORS UI WORKING ✅ (1 plus button, 1 minus button, 1 numeric input found for generic items with quantity > 1), 'X devuelto(s) / Y total' display working ✅ (found '0 devuelto(s) / 2 total' text under item name), INTERACTION WITH SELECTORS FUNCTIONAL ✅ (minus button: 2→1, plus button: 1→2, direct input working), VISUAL STATES CORRECT ✅ (3 items with green background bg-emerald-50, 2 check icons, selected state working), PROCESS BUTTON COUNTER UPDATES ✅ ('PROCESAR DEVOLUCIÓN (1)' showing correct count), Responsive design verified ✅ (selectors accessible on tablet/mobile views). CRITICAL SUCCESS: All UI elements for partial return of generic items working exactly as specified - quantity selectors visible for items with quantity > 1, +/- buttons functional, numeric input working, visual feedback correct, process workflow integrated. READY FOR PRODUCTION USE."
+
+  - task: "Customer Export Functionality - Excel Export"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/Customers.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test customer export functionality to Excel (.xlsx) format: login with testcaja/test1234, navigate to /customers page, verify export button visibility in header (with Download icon), test export all customers functionality, test export with filters applied, test bulk selection and export selected customers, validate filename formats (clientes_export_YYYY-MM-DD.xlsx and clientes_seleccionados_YYYY-MM-DD.xlsx), verify success toast messages, and test edge cases with search filters"
+        - working: true
+          agent: "testing"
+          comment: "✅ CUSTOMER EXPORT FUNCTIONALITY TESTING COMPLETED SUCCESSFULLY! All test scenarios passed (9/9 tests - 100% success rate): ✅ Login Authentication (testcaja/test1234 successful), ✅ Navigation to Customers Page (/clientes URL working), ✅ Export Button Visibility (found in header with data-testid='export-customers-btn', Download icon present, button enabled), ✅ Button Position and Layout (correctly positioned with Exportar, Importar, Nuevo Cliente buttons), ✅ Export All Customers (500 customers exported, filename: clientes_export_2026-02-04.xlsx, correct format, success toast: '✅ 500 clientes exportados'), ✅ Export with Filters (applied 'Activos Hoy' filter showing 5 customers, export successful), ✅ Export Selected Customers (bulk selection working, 3 customers selected, bulk actions bar appeared, 'Exportar Seleccionados (3)' button found, filename: clientes_seleccionados_2026-02-04.xlsx with correct format), ✅ Export with Search Filter (search for 'test' returned 22 customers, export successful), ✅ Console Error Check (no JavaScript errors found). CRITICAL SUCCESS: All export functionality working exactly as specified - both export all and export selected customers working, proper filename formats, success toasts appearing, Download icon present, button positioning correct. READY FOR PRODUCTION USE."
