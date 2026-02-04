@@ -1,57 +1,47 @@
 <analysis>**original_problem_statement:**
-El problema principal del usuario era un error contable crítico, que ha evolucionado hacia una refactorización completa y la adición de nuevas funcionalidades para un sistema de gestión de alquiler de esquí. Las solicitudes recientes se han centrado en optimizar drásticamente el flujo de trabajo para operaciones con lectores de códigos de barras, mejorar la usabilidad de la interfaz y corregir bugs en tiempo real.
+El problema original del usuario era un error contable, que ha evolucionado hacia una refactorización y la adición de múltiples funcionalidades para un sistema de gestión de alquiler de esquí. Las solicitudes se han centrado en optimizar flujos de trabajo con lectores de códigos de barras, mejorar la usabilidad, corregir bugs, y recientemente, en transformar la aplicación para que sea funcional sin conexión (PWA) e implementar nuevas características de gestión.
 
 **PRODUCT REQUIREMENTS (Consolidated & Updated):**
-1.  **Gestión Central:** Alquileres, Devoluciones, Inventario (con código interno y de barras), Clientes, Proveedores.
-2.  **Módulos Financieros:** Dashboard Operativo, Gestión de Caja, Reportes Flexibles, Panel de Rentabilidad.
-3.  **Flujos de Trabajo Optimizados (Scanner-First):**
-    *   **Entrada Automática en Inventario:** Guardado automático al escanear, con limpieza de formulario y manejo de duplicados.
-    *   **Captura Global de Escáner (HID):** Un  global que captura los códigos de barras sin necesidad de que el foco esté en un input específico, y dirige la acción a la página activa (Ventas, Devoluciones, etc.).
-    *   **Navegación Profesional por Teclado:** Orden de tabulación () lógico en todos los formularios y focus trap en modales para una operación 100% sin ratón.
-4.  **Sistema de Impresión Unificado:** Un servicio de impresión global, asíncrono y no bloqueante () para generar tickets desde cualquier parte de la aplicación.
-5.  **Mejoras de UI/UX:**
-    *   **Edición en Línea:** Permitir la edición individual de precio y días para cada artículo en el carrito de alquiler.
-    *   **Ajustes de Layout:** Optimización del espacio vertical para mostrar más artículos en la pantalla de ventas.
-6.  **Bugs Críticos:**
-    *   **Contador de Dashboard:** Reparar el contador de Devoluciones Hoy que marca cero incorrectamente.
+1.  **Gestión Central:** Alquileres, Devoluciones (incluyendo parciales para artículos genéricos), Inventario, Clientes (con borrado masivo), Proveedores.
+2.  **Módulos Financieros:** Dashboard Operativo (con métricas auditadas), Gestión de Caja (con UI de privacidad mejorada), Reportes Unificados (con fuente única de datos), Panel de Rentabilidad.
+3.  **Flujos de Trabajo Optimizados (Scanner-First):** Entrada automática en inventario, captura global de escáner (HID), navegación por teclado profesional.
+4.  **Arquitectura Offline-First (PWA):** La aplicación debe ser funcional sin conexión a internet, utilizando una base de datos local (IndexedDB con Dexie.js) y una cola de sincronización para actualizar los datos cuando se recupera la conexión.
+5.  **Persistencia de Estado:** El carrito de 'Nuevo Alquiler' debe persistir en  para no perderse al navegar entre pestañas.
+6.  **Sistema de Impresión Unificado:** Servicio de impresión global no bloqueante.
+7.  **Mejoras de UI/UX:**
+    *   Edición en línea en el carrito.
+    *   Selección y borrado masivo en la tabla de Clientes.
+8.  **Bugs Críticos:**
+    *   Corregir el cálculo de precios para packs/combos.
+    *   Eliminar discrepancias de datos entre Caja y Reportes.
+    *   Solucionar el bug visual que impide que los checkboxes de selección masiva aparezcan para el usuario.
 
 **User's preferred language**: Spanish
 
 **what currently exists?**
-Un sistema full-stack (React, FastAPI, MongoDB) para la gestión de alquileres de esquí. En esta sesión, la aplicación ha sido transformada para ser scanner-first, optimizando drásticamente la velocidad de entrada de datos. Se implementó un modo de entrada rápida en el inventario, un listener global para capturar códigos de barras en cualquier pantalla, y una navegación por teclado profesional con  lógicos y . Además, se corrigió un bug crítico en la edición de artículos del carrito, se creó un servicio de impresión centralizado y se realizaron varios ajustes de UI. La aplicación es funcional, pero un bug en el contador del dashboard está actualmente bajo investigación.
+Un sistema full-stack (React, FastAPI, MongoDB) para gestión de alquiler de esquí. La aplicación ha sido significativamente mejorada con una arquitectura PWA Offline-First, usando Dexie.js para la base de datos local y un Service Worker para el caché de la aplicación. Se implementó una lógica financiera unificada (Single Source of Truth) para eliminar discrepancias entre la Caja y los Reportes. Además, se corrigieron bugs críticos en el cálculo de precios de packs, se rediseñó la UI de privacidad en la caja, se añadió persistencia al carrito de alquiler y se implementó la funcionalidad de borrado masivo de clientes. Un error de sincronización inicial de la PWA fue resuelto.
 
 **Last working item**:
--   Last item agent was working: El agente estaba depurando un bug crítico en el que el contador de Devoluciones Hoy en el Dashboard siempre muestra '0', a pesar de que se procesan devoluciones. El agente había confirmado que los datos existen en la base de datos pero la API del dashboard no los refleja.
--   Status: IN PROGRESS
+-   Last item agent was working: El usuario ha solicitado una nueva funcionalidad para permitir **devoluciones parciales de artículos genéricos** (ej: devolver 1 de 3 cascos alquilados). El agente comenzó la fase de análisis, revisando el código de  y los endpoints del backend en  para entender la lógica actual antes de implementar los cambios.
+-   Status: NOT STARTED
 -   Agent Testing Done: N
--   Which testing method agent to use? backend testing agent
+-   Which testing method agent to use? both
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: (P0) El contador Devoluciones Hoy en el Dashboard muestra 0.
+-   Issue 1: (P0) Los checkboxes para la selección masiva en la página de Clientes no son visibles para el usuario.
 
 **Issues Detail:**
--   **Issue 1**: El contador Devoluciones Hoy en el Dashboard muestra 0.
-    -   **Attempted fixes**: El agente pasó por un largo proceso de depuración:
-        1.  Confirmó que el estado de devolución () era correcto.
-        2.  Corrigió un bug donde el endpoint de devolución no guardaba el campo  y creó un script de migración para los datos históricos.
-        3.  Descartó problemas con el nombre de la base de datos () o la conexión, confirmando que los datos existen y son accesibles.
-        4.  Verificó que la consulta de agregación de MongoDB funciona correctamente cuando se ejecuta de forma aislada, encontrando los registros de devolución del día actual.
-        5.  La principal sospecha es que la aplicación FastAPI en ejecución no está leyendo/procesando correctamente los datos para la ruta , posiblemente debido a un problema con el manejo de fechas/zonas horarias o un error sutil en la función .
+-   **Issue 1**: Los checkboxes para la selección masiva en la página de Clientes no son visibles para el usuario.
+    -   **Attempted fixes**: El agente verificó que el código en  era correcto y forzó una reconstrucción completa del frontend. Aunque el agente pudo ver los checkboxes en su entorno, la captura de pantalla del usuario confirmó que el problema persistía. La última sugerencia del agente fue que el usuario limpiara la caché del navegador manualmente.
     -   **Next debug checklist**:
-        1.  **Añadir Logging:** Editar  y añadir logs detallados dentro de la función  para imprimir los valores de , , la  de agregación completa, y el resultado crudo de .
-        2.  **Reiniciar Backend:** backend: stopped
-backend: started.
-        3.  **Verificar Logs:** Llamar al endpoint () y observar los logs del backend (==> /var/log/supervisor/backend.err.log <==
-INFO:     Started server process [160]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-
-==> /var/log/supervisor/backend.out.log <==) para ver qué datos se están procesando en tiempo real. Esto confirmará si la query devuelve resultados vacíos a la aplicación en vivo.
-    -   **Why fix this issue and what will be achieved with the fix?**: El dashboard es una herramienta operativa clave. Un contador incorrecto lo hace inútil y poco fiable.
+        1.  Revisar la estrategia de caché del Service Worker en . Es probable que esté sirviendo una versión antigua de los archivos de la página de Clientes. Considerar cambiar la estrategia a  para esta página o implementar una lógica de invalidación de caché más robusta.
+        2.  Investigar posibles conflictos de CSS que puedan estar ocultando los checkboxes (, , z-index).
+        3.  Instruir al agente para que guíe al usuario sobre cómo abrir las herramientas de desarrollador y verificar si hay errores de consola en su navegador.
+    -   **Why fix this issue and what will be achieved with the fix?**: La funcionalidad de borrado masivo, que ya está implementada en el backend, es completamente inutilizable sin los checkboxes para seleccionar los clientes.
     -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: backend
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: frontend
     -   **Blocked on other issue**: No
 
 **In progress Task List**:
@@ -59,111 +49,133 @@ INFO:     Application startup complete.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    *   (P1) **Refactorización del Backend**: Dividir el monolito .
+    *   (P0) **Implementar devoluciones parciales** para artículos genéricos en la página de Devoluciones.
+    *   (P1) **Refactorización del Backend**: Dividir el monolito  en una estructura de carpetas (routers, models, services).
     *   (P2) **Conectar Lógica de Configuración 'Hardware'**: Vincular los interruptores de la UI a la lógica de auto-impresión.
-    *   (P2) **Crear Pestaña de Soporte y Mejoras.**
-    *   (P3) **Implementar personalización de la tabla de Inventario (Drag & Drop)**.
+    *   (P3) **Crear Pestaña de Soporte y Mejoras.**
+    - (P4) **Implementar personalización de la tabla de Inventario (Drag & Drop)**.
 -   **Future Tasks:**
     *   Integraciones (VeriFactu, WhatsApp API, TPV, Email, Google Calendar).
     *   Sistema de Reservas Online.
     *   Buscador Global.
-    *   Borrado Masivo en Inventario.
     *   Importador Universal (CSV/Excel).
 
 **Completed work in this session**
--   **Feature: Entrada Automática por Escáner en Inventario (DONE)**: Implementado modo de guardado rápido, limpieza de formulario y gestión de duplicados en .
--   **Feature: Sistema de Captura Global de Escáner (HID) (DONE)**: Creado el hook  e integrado en ,  y .
--   **Feature: Servicio de Impresión Global (DONE)**: Creado  para impresión asíncrona y no bloqueante, integrado en  y .
--   **Bug Fix: Edición en Línea en Carrito de Alquiler (DONE)**: Reparada y mejorada la edición individual de precio y días en , previniendo interferencias del escáner.
--   **Feature: Navegación Profesional por Teclado (DONE)**: Implementado  lógico y  en modales, principalmente en  y .
--   **UI Tweak: Ajuste de Altura en Lista de Artículos (DONE)**: Modificada la UI en  para mostrar más artículos sin scroll.
+-   **Feature: Auditoría y Corrección del Dashboard (DONE):** Se revisó y corrigió la lógica de cálculo para el porcentaje de stock, clientes atendidos hoy y la precisión general de los datos en  y .
+-   **Feature: Persistencia del Carrito de Alquiler (DONE):** Se implementó  para guardar el estado del carrito en  usando un nuevo hook .
+-   **Feature: Rediseño de Privacidad en Caja (DONE):** Se eliminó el efecto  en  y se reemplazó con un sistema de acordeón para mostrar/ocultar datos sensibles.
+-   **Bug Fix: Corrección de Precios de Packs (DONE):** Se arregló la lógica en  para que el precio de los packs se calcule usando tarifas escalonadas por día.
+-   **Feature: Unificación Financiera (Single Source of Truth) (DONE):** Se creó un  centralizado en  para eliminar discrepancias de datos entre la Caja y los Reportes.
+-   **Feature: Implementación Base de PWA Offline-First (DONE):** Se configuró la arquitectura PWA con , un , y un  para permitir la funcionalidad offline.
+-   **Bug Fix: Corrección de Error de Sincronización PWA (DONE):** Se solucionó un error 500 que impedía la sincronización inicial, ajustando el modelo Pydantic  para que campos opcionales no bloquearan la carga.
+-   **Feature: Selección y Borrado Masivo en Clientes (PARTIALLY DONE / BLOCKED):** Se implementó la UI y lógica en  y los endpoints en . La funcionalidad está bloqueada porque el usuario no puede ver los checkboxes de selección.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1**: **Monolito en el backend ().**
     -   **Debug checklist**: Planificar la división del archivo en carpetas: , , .
-    -   **Why to solve this issue and what will be achieved with this?**: Reducir la deuda técnica y mejorar la mantenibilidad.
+    -   **Why to solve this issue and what will be achieved with this?**: Reducir la deuda técnica y mejorar la mantenibilidad del código.
     -   **Should Test frontend/backend/both after fix**: backend
     -   **Is recurring issue?**: Y
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**: Errores de sintaxis/indentación en .
--   **Recurrence count**: Alto. El riesgo persiste y es la principal fuente de deuda técnica.
+-   **Recurrence count**: Alto. El riesgo persiste debido al tamaño del archivo ( líneas). El refactor es la solución definitiva.
 -   **Status**: NOT STARTED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **React Hooks & State Management**: Uso extensivo de , ,  para manejar estados complejos de UI (modos de edición, estado del escáner, etc.).
--   **Global Event Listeners**: Creación de un hook personalizado () para capturar eventos de teclado () a nivel de , permitiendo una funcionalidad de escáner HID global.
--   **Focus Management & Accessibility**: Implementación de Focus Traps para modales y un orden de tabulación () lógico para una navegación por teclado fluida.
--   **Asynchronous Operations**: Creación de un servicio de impresión () no bloqueante que utiliza  y .
--   **MongoDB Aggregation**: Uso de pipelines de agregación para calcular estadísticas en el backend, aunque actualmente está bajo depuración.
--   **Event Handling**: Uso de  y  para controlar el flujo de eventos en componentes de UI complejos como el carrito de alquiler.
+-   **PWA (Progressive Web App):** Uso de Service Workers para caché de assets y  para la instalación.
+-   **Offline Data Persistence:** Uso de  como wrapper de IndexedDB para replicar la base de datos en el cliente.
+-   **Background Synchronization:** Sistema de cola () que procesa operaciones pendientes cuando se recupera la conexión, usando .
+-   **Centralized Service Layer (Backend):** Creación de un  en  como Single Source of Truth para los cálculos financieros.
+-   **State Management con Persistencia:** Creación de un hook personalizado () que abstrae la lógica de .
+-   **Global Event Listeners**: Hook  para la funcionalidad de escáner HID.
+-   **MongoDB Aggregation**: Uso de pipelines de agregación para estadísticas complejas.
 
 **key DB schema**
--   No se han realizado cambios en el esquema de la base de datos en esta sesión.
+-   No hubo cambios estructurales en las colecciones de MongoDB, pero el modelo Pydantic  fue modificado para hacer los campos  y  opcionales, solucionando un error de serialización con datos antiguos.
 
 **changes in tech stack**
--   No se han añadido nuevas dependencias.
+-   : Para la gestión de IndexedDB.
+-   : Para integrar Dexie con componentes de React.
+-   : Para facilitar la gestión del Service Worker.
 
 **All files of reference**
--   : Modificado para añadir un endpoint de verificación de duplicados (), un endpoint de migración, y la lógica del contador del dashboard que está en depuración.
--   : Modificado para implementar el modo de entrada rápida por escáner.
--   : Modificado extensamente para la edición en línea del carrito, navegación por teclado, integración del escáner global y ajustes de UI.
--   : Modificado para integrar el escáner global y el nuevo servicio de impresión.
--   : Nuevo archivo para la captura global de escaneos.
--   : Nuevo archivo para la gestión de impresión centralizada.
--   : Nuevo componente para la gestión del foco en modales.
--   : Modificado para deshabilitar el  en la barra lateral.
--   : Añadidos estilos .
--   : Actualizado con las nuevas funcionalidades.
+-   **Nuevos:**
+    -   
+    -   
+    -   
+    -   
+    -   
+    -   
+    -   
+-   **Modificados Críticos:**
+    -   : Múltiples adiciones y refactorizaciones (Servicio Financiero, endpoints de borrado masivo, corrección de modelo ).
+    -   : Implementación de la selección y borrado masivo.
+    -   : Integración de persistencia y corrección de precios de packs.
+    -   : Rediseño de la UI de privacidad.
+    -   : Lógica de obtención de datos actualizada para usar endpoints unificados.
+    -   : Integración de proveedores de contexto y registro del Service Worker.
+    -   : Adición del indicador de estado offline.
 
 **Areas that need refactoring**:
--   **CRÍTICO:**  sigue siendo un monolito y la principal fuente de deuda técnica.
--   **ALTO:**  ha crecido significativamente en complejidad debido a las nuevas funcionalidades y podría beneficiarse de ser dividido en componentes más pequeños.
+-   **CRÍTICO:**  es un monolito inmanejable y la principal fuente de deuda técnica. Su refactorización es urgente.
+-   **ALTO:**  y  han acumulado una gran cantidad de lógica y se beneficiarían de ser descompuestos en componentes más pequeños.
 
 **key api endpoints**
--   **Nuevos:**
-    -   : Verifica si un código de barras existe y devuelve el artículo.
-    -   : Endpoint de utilidad para una migración de datos puntual.
--   **Modificados:**
-    -   : Corregido para guardar .
-    -   : Lógica del contador  modificada y actualmente bajo depuración.
+-   : **(NUEVO)** Elimina un listado de clientes por sus IDs.
+-   : **(NUEVO)** Recibe una lista de IDs de clientes y devuelve cuáles tienen alquileres activos.
+-   : **(NUEVO)** Endpoint de depuración para comparar las transacciones de  vs. .
+-   , : **(MODIFICADO)** Ahora utilizan el  centralizado.
+-   : **(MODIFICADO)** Lógica de cálculo completamente revisada para mayor precisión.
+-   : **(MODIFICADO)** Se corrigió el modelo de respuesta Pydantic para manejar datos heredados sin fallar.
 
 **Critical Info for New Agent**
--   **Prioridad Inmediata**: La única tarea es resolver el bug del contador Devoluciones Hoy en el Dashboard. No empieces ninguna otra tarea hasta que esto esté solucionado y verificado.
--   **Contexto de Depuración**: El agente anterior confirmó que los datos de devoluciones existen en la BD () con las fechas correctas. El problema NO es la ausencia de datos, sino que la aplicación FastAPI en ejecución no los está leyendo o procesando para el endpoint .
--   **Acción Recomendada**: El paso más importante es añadir logs en la función  de  para ver qué está ocurriendo dentro de la aplicación en vivo cuando se llama al endpoint. Esto revelará el punto exacto del fallo.
+-   **Prioridad Inmediata:** La tarea principal es implementar la nueva funcionalidad solicitada: **Devolución Parcial de Artículos Multi-Cantidad**.
+-   **Bloqueador a Resolver Primero:** Antes de iniciar la nueva tarea, debes solucionar el bug visual que impide al usuario ver los **checkboxes en la página de Clientes**. Este problema probablemente está relacionado con la estrategia de caché del Service Worker (). Investiga y resuelve esto para desbloquear la funcionalidad de borrado masivo.
+-   **Contexto PWA:** La aplicación acaba de ser convertida a PWA. Ten en cuenta que esto introduce capas de caché (Service Worker) y una base de datos local (Dexie) que pueden causar comportamientos inesperados como el bug de los checkboxes.
+-   **Monolito del Backend:** Procede con extrema precaución al editar . Es un archivo muy grande y propenso a errores.
 
 **documents and test reports created in this job**
 -   
--    (actualizado)
+-   
+-   
+-    (actualizado continuamente)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Implementar servicio de impresión global. (COMPLETED)
-2.  **User**: Arreglar la edición en línea de artículos en el carrito de ventas. (COMPLETED)
-3.  **User**: Implementar navegación profesional por teclado (Tab Order / Focus Trap). (COMPLETED)
-4.  **User**: Ajustar altura de la sección de artículos en ventas. (COMPLETED)
-5.  **User**: Arreglar el contador de Devoluciones Hoy en el Dashboard. (IN PROGRESS - **Current Task**)
+10. **User**: No me aparecen los cambios ultimos (The latest changes are not showing up). - *PENDING*
+9.  **User**: *Uploads image showing Customers page without checkboxes*. - *PENDING*
+8.  **User**: Que no aparecen los checks. (The checks don't appear). - *PENDING*
+7.  **User**: Requests feature for bulk selection and deletion in Customers. - *DONE (but blocked by UI bug)*
+6.  **User**: Me salta error de sincronización (I'm getting a sync error). - *RESOLVED*
+5.  **User**: Requests feature to transform app to Offline-First (PWA). - *DONE*
+4.  **User**: Requests fix for discrepancy between Cash Management and Sales Reports. - *DONE*
+3.  **User**: Requests fix for technical error in pack price calculation. - *DONE*
+2.  **User**: Requests redesign of privacy feature in Cash Management. - *DONE*
+1.  **User**: Requests partial return functionality for multi-quantity generic items. - *NOT STARTED (Current Task)*
 
 **Project Health Check:**
--   **Broken**: Parcialmente. Una característica clave del Dashboard (contador de devoluciones) está rota. El resto de la aplicación es funcional.
+-   **Broken**: Parcialmente. La funcionalidad de borrado masivo de clientes es inutilizable para el usuario debido al bug visual de los checkboxes faltantes.
 -   **Mocked**: No.
 
 **3rd Party Integrations**
 -   
 -   , 
 -   
+-   
+-   
+-   
 
 **Testing status**
--   **Testing agent used after significant changes**: YES (para la funcionalidad del modo escáner en inventario).
+-   **Testing agent used after significant changes**: YES
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: Ninguno.
--   **Known regressions**: El contador de devoluciones del dashboard ha dejado de funcionar.
+-   **Known regressions**: La UI para la selección masiva de clientes no se renderiza correctamente para el usuario final, bloqueando la funcionalidad.
 
 **Credentials to test flow:**
 -   Usuario:  / 
 
 **What agent forgot to execute**
--   El agente no olvidó ninguna tarea, pero quedó bloqueado en un ciclo de depuración complejo para el bug del contador del dashboard. La resolución de este bug es la tarea pendiente.</analysis>
+-   El agente no diagnosticó a fondo la causa raíz del porqué los checkboxes no aparecían para el usuario. La solución propuesta (limpiar caché manualmente) no es robusta. La causa probable (caché del Service Worker) no fue investigada ni resuelta de manera definitiva.</analysis>
