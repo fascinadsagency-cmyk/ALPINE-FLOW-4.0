@@ -39,7 +39,6 @@ export default function Tariffs() {
   const [newPack, setNewPack] = useState({
     name: "",
     description: "",
-    category: "MEDIA",
     day_1: "",
     day_2: "",
     day_3: "",
