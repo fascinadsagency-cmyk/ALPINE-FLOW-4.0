@@ -563,23 +563,6 @@ export default function Tariffs() {
                   className="h-11 mt-1"
                 />
               </div>
-              <div>
-                <Label>Categoría</Label>
-                <Select 
-                  value={newPack.category} 
-                  onValueChange={(v) => setNewPack({ ...newPack, category: v })}
-                >
-                  <SelectTrigger className="h-11 mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="SUPERIOR">🟣 Gama Superior</SelectItem>
-                    <SelectItem value="ALTA">🔵 Gama Alta</SelectItem>
-                    <SelectItem value="MEDIA">🟢 Gama Media</SelectItem>
-                    <SelectItem value="OTRO">⚪ Otro</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
             
             <div>
