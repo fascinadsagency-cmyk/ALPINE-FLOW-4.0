@@ -2198,13 +2198,42 @@ export default function NewRental() {
                             key={group.packId}
                             className="grid grid-cols-12 gap-2 items-center py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-400 animate-fade-in"
                           >
-                            {/* Nombre FUSIONADO: "Pack Gama Media (SKI-001 / BOT-204)" */}
+                            {/* Nombre FUSIONADO: Editable pack name */}
                             <div className="col-span-5">
                               <div className="flex items-center gap-2">
                                 <Package className="h-5 w-5 text-amber-600 flex-shrink-0" />
-                                <span className="font-bold text-amber-800 text-sm leading-tight">
-                                  {group.fusedName}
-                                </span>
+                                {editingPackName === group.packId ? (
+                                  <Input
+                                    type="text"
+                                    defaultValue={group.displayName}
+                                    className="h-8 text-sm font-bold border-2 border-amber-500 bg-white"
+                                    autoFocus
+                                    onBlur={(e) => {
+                                      const newName = e.target.value.trim();
+                                      if (newName && newName !== group.displayName) {
+                                        handlePackNameChange(group.packId, newName);
+                                      } else {
+                                        setEditingPackName(null);
+                                      }
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.target.blur();
+                                      } else if (e.key === 'Escape') {
+                                        setEditingPackName(null);
+                                      }
+                                    }}
+                                  />
+                                ) : (
+                                  <span 
+                                    className="font-bold text-amber-800 text-sm leading-tight cursor-pointer hover:underline"
+                                    onClick={() => setEditingPackName(group.packId)}
+                                    title="Click para editar nombre"
+                                  >
+                                    {group.displayName}
+                                  </span>
+                                )}
+                                <span className="text-xs text-amber-600">({group.childCodes})</span>
                               </div>
                             </div>
                             
