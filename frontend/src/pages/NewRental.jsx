@@ -540,8 +540,7 @@ export default function NewRental() {
   // Open item search with pre-filter for missing item
   const openSearchForMissingItem = (itemType, category) => {
     setItemSearchType(itemType);
-    setItemSearchCategory(category);
-    setSearchFilter({ type: itemType, category: category });
+    setSearchFilter({ type: itemType });
     setShowItemSearch(true);
   };
 
@@ -2786,7 +2785,6 @@ export default function NewRental() {
         if (!open) {
           setSearchFilter(null);
           setItemSearchType("all");
-          setItemSearchCategory("all");
           setItemSearchTerm("");
         }
       }}>
