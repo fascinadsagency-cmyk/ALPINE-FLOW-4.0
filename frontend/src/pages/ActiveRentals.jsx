@@ -2195,7 +2195,6 @@ export default function ActiveRentals() {
                     <SelectItem value="online">🌐 Pago Online</SelectItem>
                     <SelectItem value="deposit">🏦 Depósito</SelectItem>
                     <SelectItem value="other">📝 Otro</SelectItem>
-                    <SelectItem value="online_reservation">🔵 Reserva Online</SelectItem>
                     <SelectItem value="pending">🔴 Pendiente</SelectItem>
                   </SelectContent>
                 </Select>
