@@ -4160,8 +4160,8 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
     
     if active_session:
         # Use MongoDB aggregation to calculate total revenue from cash movements
-        # EXCLUDE unpaid methods: pending and online_reservation
-        UNPAID_METHODS = ["pending", "online_reservation"]
+        # EXCLUDE unpaid methods: pending
+        UNPAID_METHODS = ["pending"]
         
         revenue_pipeline = [
             {"$match": {
