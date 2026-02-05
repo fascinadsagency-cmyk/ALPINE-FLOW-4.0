@@ -48,10 +48,10 @@ const PAYMENT_METHODS = [
   { value: "cash", label: "Efectivo" },
   { value: "card", label: "Tarjeta" },
   { value: "pending", label: "Pendiente" },
-  { value: "online", label: "Reserva Online" },
   { value: "pago_online", label: "Pago Online" },
   { value: "other", label: "Otros" },
 ];
+
 
 // Item types will be loaded from API
 // Helper: Get smart start date based on time
