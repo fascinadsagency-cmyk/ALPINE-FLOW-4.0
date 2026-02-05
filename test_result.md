@@ -484,7 +484,26 @@ test_plan:
           agent: "testing"
           comment: "❌ TESTING INCOMPLETE DUE TO TECHNICAL ISSUES: Successfully logged in with testcaja/test1234 and navigated to inventory page. Found inventory table with items (J002, B001, J003, etc.) and action buttons in 'Acciones' column. However, encountered multiple issues: 1) Session timeouts causing redirects to login page during testing, 2) Clicking action buttons opened profitability dashboard instead of edit dialog, 3) Unable to locate correct edit button (pencil icon) for opening item edit dialog, 4) Could not complete the automatic price update testing flow due to inability to access edit functionality. CRITICAL ISSUE: The edit functionality appears to be either not working correctly or the UI selectors have changed. Main agent needs to investigate the edit dialog implementation and ensure proper session management."
 
+  - task: "Pack Name Editing in Rental Cart"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/NewRental.jsx"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Need to test pack name editing functionality in rental cart: login with testcaja/test1234, navigate to New Rental, add items that form a pack (TEST001 + boot), verify pack formation with amber/orange background, test clicking on pack name to edit it, change name to 'Pack Cliente Juan', verify change persists and shows notification"
+        - working: false
+          agent: "testing"
+          comment: "❌ PACK NAME EDITING TEST FAILED: Successfully logged in with testcaja/test1234 and navigated to New Rental page. Added first item (J002 - Esquí gama media) via TEST001 barcode successfully. However, encountered critical issues: 1) Unable to add second item (boot) to form a pack - tried multiple boot barcodes (B001, B002, B003, BOOT001, TEST002, TEST003) but none were found or added, 2) Manual search modal opened but could not successfully add boot items, 3) Without two compatible items, pack formation does not occur, 4) Cannot test pack name editing functionality without pack formation, 5) Session timeouts occurred during extended testing. CRITICAL ISSUE: Pack formation requires at least two compatible items (ski + boot), but the available boot items or their barcodes are not accessible through the current interface. The pack name editing code exists in NewRental.jsx (handlePackNameChange function, editingPackName state, cursor-pointer styling) but cannot be tested without successful pack formation."
+
 agent_communication:
+    - agent: "testing"
+      message: "🎯 STARTING PACK NAME EDITING TESTING: Testing pack name editing functionality in rental cart as specified in review request. Validating login with testcaja/test1234, navigation to New Rental, adding items that form a pack (TEST001 + boot), verifying pack formation with amber/orange background, testing clicking on pack name to edit it, changing name to 'Pack Cliente Juan', and verifying change persists with notification."
+    - agent: "testing"
+      message: "❌ PACK NAME EDITING TEST FAILED: Successfully completed login and navigation steps. Added first item (J002 - Esquí gama media) via TEST001 barcode. CRITICAL ISSUES ENCOUNTERED: 1) Unable to add second item (boot) to form pack - tried multiple boot barcodes (B001, B002, B003, BOOT001, TEST002, TEST003) but none found, 2) Manual search modal opened but boot addition unsuccessful, 3) Pack formation requires minimum 2 compatible items (ski + boot), 4) Without pack formation, cannot test pack name editing functionality, 5) Session timeouts during extended testing. TECHNICAL ANALYSIS: Pack name editing code exists in NewRental.jsx (handlePackNameChange function, editingPackName state, cursor-pointer styling for pack names) but requires successful pack formation to test. RECOMMENDATION: Main agent should investigate available boot items/barcodes or ensure test data includes compatible items for pack formation testing."
     - agent: "testing"
       message: "🎯 STARTING AUTOMATIC PRICE UPDATE TESTING: Testing automatic price update functionality when changing item type in inventory edit form. Validating login with testcaja/test1234, navigation to inventory page, opening edit dialog, capturing initial price, changing type dropdown, verifying automatic price update without confirmation, testing manual price editing, and saving changes."
     - agent: "testing"
