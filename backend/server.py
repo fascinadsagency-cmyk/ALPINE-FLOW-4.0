@@ -4196,7 +4196,7 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
     else:
         # No active session - fallback to rentals created today
         # Also exclude unpaid methods here
-        UNPAID_METHODS = ["pending", "online_reservation"]
+        UNPAID_METHODS = ["pending"]
         rentals = await db.rentals.find({
             "created_at": {"$gte": start, "$lte": end},
             "payment_method": {"$nin": UNPAID_METHODS}
