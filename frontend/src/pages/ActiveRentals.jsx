@@ -793,7 +793,6 @@ export default function ActiveRentals() {
       'online': 'Pago Online',
       'deposit': 'Depósito',
       'other': 'Otro',
-      'online_reservation': 'Reserva Online',
       'pending': 'Pendiente'
     };
     return labels[method] || method;
@@ -802,15 +801,13 @@ export default function ActiveRentals() {
   const getPaymentMethodBadge = (method, isPending = false) => {
     // Paid methods: Green
     const paidMethods = ['cash', 'card', 'online', 'deposit', 'other'];
-    // Unpaid methods: Red/Orange
-    const unpaidMethods = ['pending', 'online_reservation'];
+    // Unpaid methods: Red
+    const unpaidMethods = ['pending'];
     
     if (paidMethods.includes(method)) {
       return 'bg-emerald-100 text-emerald-700 border-emerald-300';
     } else if (method === 'pending') {
       return 'bg-red-100 text-red-700 border-red-300';
-    } else if (method === 'online_reservation') {
-      return 'bg-orange-100 text-orange-700 border-orange-300';
     }
     
     return 'bg-slate-100 text-slate-700 border-slate-300';
