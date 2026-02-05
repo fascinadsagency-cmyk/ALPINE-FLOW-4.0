@@ -2976,7 +2976,7 @@ async def update_rental_days(rental_id: str, update_data: UpdateRentalDaysReques
 # ============ PAYMENT METHOD CONSTANTS ============
 # Classification of payment methods for accounting
 PAID_METHODS = ["cash", "card", "online", "deposit", "other"]  # GRUPO A: Real income
-UNPAID_METHODS = ["pending", "online_reservation"]  # GRUPO B: Debts/Unpaid
+UNPAID_METHODS = ["pending"]  # GRUPO B: Debts/Unpaid
 
 PAYMENT_METHOD_LABELS = {
     "cash": "Efectivo",
@@ -2984,7 +2984,6 @@ PAYMENT_METHOD_LABELS = {
     "online": "Pago Online",
     "deposit": "Depósito",
     "other": "Otro",
-    "online_reservation": "Reserva Online",
     "pending": "Pendiente"
 }
 
