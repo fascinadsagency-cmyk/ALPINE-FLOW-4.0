@@ -1173,6 +1173,24 @@ export default function NewRental() {
     toast.success("Tipo actualizado - Precio ajustado automáticamente");
   };
 
+  // Handle pack name change - custom label for this rental only
+  const handlePackNameChange = (packId, newName) => {
+    // Update the custom name in the items that belong to this pack
+    const updatedItems = items.map(item => {
+      if (item.packId === packId) {
+        return {
+          ...item,
+          customPackName: newName  // Store custom name for this rental
+        };
+      }
+      return item;
+    });
+    
+    setItems(updatedItems);
+    setEditingPackName(null);
+    toast.success("Nombre del pack actualizado");
+  };
+
   // Update days for all items in a pack - RECALCULATE pack price using scaled tariff
   const updatePackDays = (packItems, newDays, keepCustomPrice = false) => {
     // Validate: only positive integers allowed
