@@ -1080,18 +1080,24 @@ export default function NewRental() {
         : basePackPrice;
       const isPackPriceEdited = customPackPrice !== null && customPackPrice !== undefined;
       
+      // Get custom pack name if set by user
+      const customPackName = firstPackItem?.customPackName;
+      
       // PASO 1: CONSOLIDACIÓN - Extraer códigos de los HIJOS y fusionarlos en el nombre
       const childCodes = packItemObjects.map(item => 
         item.internal_code || item.barcode?.substring(0, 10) || 'N/A'
       ).join(' / ');
       
-      // Crear nombre fusionado: "Pack Gama Media (SKI-001 / BOT-204)"
-      const fusedName = `${dp.pack.name} (${childCodes})`;
+      // Crear nombre fusionado: Use custom name if set, otherwise use original pack name
+      // "Pack Gama Media (SKI-001 / BOT-204)" OR "Pack Personalizado (SKI-001 / BOT-204)"
+      const displayPackName = customPackName || dp.pack.name;
+      const fusedName = `${displayPackName} (${childCodes})`;
       
       groups.push({
         type: 'pack',
         pack: dp.pack,
         fusedName: fusedName,  // Nombre con códigos de hijos incrustados
+        displayName: displayPackName,  // Name without codes (for editing)
         childCodes: childCodes,
         items: packItemObjects,  // Solo para referencia interna, NO para renderizar filas
         price: packPrice,  // Precio TOTAL del pack (puede ser personalizado)
