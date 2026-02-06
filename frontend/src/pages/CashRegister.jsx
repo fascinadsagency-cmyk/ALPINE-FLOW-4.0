@@ -544,8 +544,9 @@ export default function CashRegister() {
     const disc = getDiscrepancy();
     
     try {
+      const today = new Date().toISOString().split('T')[0];
       const closingData = {
-        date: date,
+        date: today,
         physical_cash: parseFloat(arqueoForm.physical_cash) || 0,
         card_total: parseFloat(arqueoForm.card_total) || 0,
         expected_cash: summary?.efectivo_esperado || 0,
