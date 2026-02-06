@@ -144,6 +144,15 @@ export default function Inventory() {
     const saved = localStorage.getItem('inventory_column_order');
     return saved ? JSON.parse(saved) : DEFAULT_COLUMN_ORDER;
   });
+  
+  // ========== DEBOUNCE SEARCH ==========
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   const [visibleColumns, setVisibleColumns] = useState(() => {
     const saved = localStorage.getItem('inventory_visible_columns');
     return saved ? JSON.parse(saved) : DEFAULT_VISIBLE_COLUMNS;
