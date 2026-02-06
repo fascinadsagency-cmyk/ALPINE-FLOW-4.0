@@ -1701,49 +1701,55 @@ async def delete_item_type(
     current_user: CurrentUser = Depends(get_current_user)
 ):
     """Delete a custom item type with smart handling of linked items"""
-    item_type = await db.item_types.find_one({"id": type_id})
+    # Multi-tenant: Check item_type exists in same store
+    item_type = await db.item_types.find_one({**current_user.get_store_filter(), "id": type_id})
     if not item_type:
         raise HTTPException(status_code=404, detail="Tipo de artículo no encontrado")
     
     type_value = item_type["value"]
     
-    # Count items by status
-    total_items = await db.items.count_documents({"item_type": type_value})
+    # Count items by status (within same store)
+    total_items = await db.items.count_documents({**current_user.get_store_filter(), "item_type": type_value})
     active_items = await db.items.count_documents({
+        **current_user.get_store_filter(),
         "item_type": type_value,
         "status": {"$in": ["available", "rented", "maintenance"]}
     })
     ghost_items = await db.items.count_documents({
+        **current_user.get_store_filter(),
         "item_type": type_value,
         "status": {"$in": ["retired", "deleted", "archived"]},
     })
     soft_deleted = await db.items.count_documents({
+        **current_user.get_store_filter(),
         "item_type": type_value,
         "deleted_at": {"$exists": True, "$ne": None}
     })
     
     # Case 1: No items at all - delete directly
     if total_items == 0:
-        await db.item_types.delete_one({"id": type_id})
-        # Also delete associated tariff
-        await db.tariffs.delete_one({"item_type": type_value})
+        await db.item_types.delete_one({**current_user.get_store_filter(), "id": type_id})
+        # Also delete associated tariff (within same store)
+        await db.tariffs.delete_one({**current_user.get_store_filter(), "item_type": type_value})
         return {"message": "Tipo eliminado correctamente", "deleted_tariff": True}
     
     # Case 2: Only ghost/retired items and force=True - clean them up
     if force and active_items == 0 and ghost_items > 0:
-        # Delete ghost items permanently
+        # Delete ghost items permanently (within same store)
         await db.items.delete_many({
+            **current_user.get_store_filter(),
             "item_type": type_value,
             "status": {"$in": ["retired", "deleted", "archived"]}
         })
-        # Delete soft-deleted items
+        # Delete soft-deleted items (within same store)
         await db.items.delete_many({
+            **current_user.get_store_filter(),
             "item_type": type_value,
             "deleted_at": {"$exists": True, "$ne": None}
         })
         # Now delete the type
-        await db.item_types.delete_one({"id": type_id})
-        await db.tariffs.delete_one({"item_type": type_value})
+        await db.item_types.delete_one({**current_user.get_store_filter(), "id": type_id})
+        await db.tariffs.delete_one({**current_user.get_store_filter(), "item_type": type_value})
         return {
             "message": f"Tipo eliminado. Se eliminaron {ghost_items + soft_deleted} artículos fantasma.",
             "deleted_ghost_items": ghost_items + soft_deleted
@@ -1751,27 +1757,28 @@ async def delete_item_type(
     
     # Case 3: Active items exist but reassign_to is provided
     if active_items > 0 and reassign_to:
-        # Verify target type exists
-        target_type = await db.item_types.find_one({"value": reassign_to})
+        # Verify target type exists (within same store)
+        target_type = await db.item_types.find_one({**current_user.get_store_filter(), "value": reassign_to})
         if not target_type:
             raise HTTPException(status_code=400, detail=f"El tipo de destino '{reassign_to}' no existe")
         
-        # Reassign active items
+        # Reassign active items (within same store)
         await db.items.update_many(
-            {"item_type": type_value, "status": {"$in": ["available", "rented", "maintenance"]}},
+            {**current_user.get_store_filter(), "item_type": type_value, "status": {"$in": ["available", "rented", "maintenance"]}},
             {"$set": {"item_type": reassign_to}}
         )
         
-        # Delete ghost items if force=True
+        # Delete ghost items if force=True (within same store)
         if force:
             await db.items.delete_many({
+                **current_user.get_store_filter(),
                 "item_type": type_value,
                 "status": {"$in": ["retired", "deleted", "archived"]}
             })
         
         # Delete the type
-        await db.item_types.delete_one({"id": type_id})
-        await db.tariffs.delete_one({"item_type": type_value})
+        await db.item_types.delete_one({**current_user.get_store_filter(), "id": type_id})
+        await db.tariffs.delete_one({**current_user.get_store_filter(), "item_type": type_value})
         return {
             "message": f"Tipo eliminado. {active_items} artículos reasignados a '{reassign_to}'.",
             "reassigned": active_items
