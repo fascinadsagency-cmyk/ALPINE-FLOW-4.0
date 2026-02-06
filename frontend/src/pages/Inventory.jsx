@@ -1631,7 +1631,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2">
               <Package className="h-5 w-5 text-slate-500" />
-              Artículos ({items.length})
+              Artículos ({items.length} de {totalItems})
             </CardTitle>
             
             {/* Column Configuration Button */}
