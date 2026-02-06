@@ -620,7 +620,7 @@ async def get_customers_stats(
     current_user: CurrentUser = Depends(get_current_user)
 ):
     """Get customer statistics without loading all records - optimized for large datasets"""
-    total = await db.customers.count_documents({})
+    total = await db.customers.count_documents({**current_user.get_store_filter(), **{}})
     
     # Get active rentals count
     active_rentals = await db.rentals.distinct(
@@ -644,14 +644,14 @@ async def get_customers_stats(
 
 @api_router.get("/customers/{customer_id}", response_model=CustomerResponse)
 async def get_customer(customer_id: str, current_user: CurrentUser = Depends(get_current_user)):
-    customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+    customer = await db.customers.find_one({**current_user.get_store_filter(), **{"id": customer_id}}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     return CustomerResponse(**customer)
 
 @api_router.get("/customers/dni/{dni}", response_model=CustomerResponse)
 async def get_customer_by_dni(dni: str, current_user: CurrentUser = Depends(get_current_user)):
-    customer = await db.customers.find_one({"dni": dni.upper()}, {"_id": 0})
+    customer = await db.customers.find_one({**current_user.get_store_filter(), **{"dni": dni.upper()}}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     return CustomerResponse(**customer)
@@ -659,9 +659,9 @@ async def get_customer_by_dni(dni: str, current_user: CurrentUser = Depends(get_
 @api_router.get("/customers/{customer_id}/history")
 async def get_customer_history(customer_id: str, current_user: CurrentUser = Depends(get_current_user)):
     # Get customer info first
-    customer = await db.customers.find_one({"customer_id": customer_id}, {"_id": 0})
+    customer = await db.customers.find_one({**current_user.get_store_filter(), **{"customer_id": customer_id}}, {"_id": 0})
     
-    rentals = await db.rentals.find({"customer_id": customer_id}, {"_id": 0}).sort("created_at", -1).to_list(50)
+    rentals = await db.rentals.find({**current_user.get_store_filter(), **{"customer_id": customer_id}}, {"_id": 0}).sort("created_at", -1).to_list(50)
     
     # Check for active/pending rentals (for alerts)
     active_rentals = [r for r in rentals if r.get("status") in ["active", "partial"]]
@@ -731,13 +731,13 @@ async def update_customer(
     customer: CustomerCreate,
     current_user: CurrentUser = Depends(get_current_user)
 ):
-    existing = await db.customers.find_one({"id": customer_id})
+    existing = await db.customers.find_one({**current_user.get_store_filter(), **{"id": customer_id}})
     if not existing:
         raise HTTPException(status_code=404, detail="Customer not found")
     
     # Check if DNI is being changed and if new DNI already exists
     if customer.dni.upper() != existing["dni"]:
-        dni_exists = await db.customers.find_one({"dni": customer.dni.upper()})
+        dni_exists = await db.customers.find_one({**current_user.get_store_filter(), **{"dni": customer.dni.upper()}})
         if dni_exists:
             raise HTTPException(status_code=400, detail="Customer with this DNI already exists")
     
@@ -756,8 +756,8 @@ async def update_customer(
         "ski_level": customer.ski_level or ""
     }
     
-    await db.customers.update_one({"id": customer_id}, {"$set": update_doc})
-    updated_customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+    await db.customers.update_one({**current_user.get_store_filter(), **{"id": customer_id}}, {"$set": update_doc})
+    updated_customer = await db.customers.find_one({**current_user.get_store_filter(), **{"id": customer_id}}, {"_id": 0})
     return CustomerResponse(**updated_customer)
 
 # Quick update endpoint for technical data only
@@ -774,7 +774,7 @@ async def update_customer_technical_data(
     current_user: CurrentUser = Depends(get_current_user)
 ):
     """Quick update endpoint for technical data (boot size, height, weight, level)"""
-    existing = await db.customers.find_one({"id": customer_id})
+    existing = await db.customers.find_one({**current_user.get_store_filter(), **{"id": customer_id}})
     if not existing:
         raise HTTPException(status_code=404, detail="Customer not found")
     
@@ -789,22 +789,22 @@ async def update_customer_technical_data(
         update_doc["ski_level"] = data.ski_level
     
     if update_doc:
-        await db.customers.update_one({"id": customer_id}, {"$set": update_doc})
+        await db.customers.update_one({**current_user.get_store_filter(), **{"id": customer_id}}, {"$set": update_doc})
     
-    updated_customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+    updated_customer = await db.customers.find_one({**current_user.get_store_filter(), **{"id": customer_id}}, {"_id": 0})
     return updated_customer
 
 @api_router.delete("/customers/{customer_id}")
 async def delete_customer(customer_id: str, current_user: CurrentUser = Depends(get_current_user)):
-    existing = await db.customers.find_one({"id": customer_id})
+    existing = await db.customers.find_one({**current_user.get_store_filter(), **{"id": customer_id}})
     if not existing:
         raise HTTPException(status_code=404, detail="Customer not found")
     
     # Check if customer has active rentals
-    active_rentals = await db.rentals.count_documents({
+    active_rentals = await db.rentals.count_documents({**current_user.get_store_filter(), **{
         "customer_id": customer_id,
         "status": "active"
-    })
+    }})
     
     if active_rentals > 0:
         raise HTTPException(
@@ -812,7 +812,7 @@ async def delete_customer(customer_id: str, current_user: CurrentUser = Depends(
             detail=f"Cannot delete customer with {active_rentals} active rental(s). Please complete or cancel them first."
         )
     
-    await db.customers.delete_one({"id": customer_id})
+    await db.customers.delete_one({**current_user.get_store_filter(), **{"id": customer_id}})
     return {"message": "Customer deleted successfully"}
 
 # ========== BULK OPERATIONS ==========
@@ -829,13 +829,13 @@ async def check_customers_active_rentals(request: BulkCustomerIdsRequest, curren
     customers_with_rentals = []
     
     for customer_id in request.customer_ids:
-        active_count = await db.rentals.count_documents({
+        active_count = await db.rentals.count_documents({**current_user.get_store_filter(), **{
             "customer_id": customer_id,
-            "status": {"$in": ["active", "partial"]}
+            "status": {"$in": ["active", "partial"]}}
         })
         
         if active_count > 0:
-            customer = await db.customers.find_one({"id": customer_id}, {"_id": 0, "id": 1, "name": 1, "dni": 1})
+            customer = await db.customers.find_one({**current_user.get_store_filter(), **{"id": customer_id}}, {"_id": 0, "id": 1, "name": 1, "dni": 1})
             if customer:
                 customer["active_rentals"] = active_count
                 customers_with_rentals.append(customer)
@@ -854,20 +854,20 @@ async def bulk_delete_customers(request: BulkCustomerIdsRequest, current_user: C
     
     for customer_id in request.customer_ids:
         # Check if customer has active rentals
-        active_count = await db.rentals.count_documents({
+        active_count = await db.rentals.count_documents({**current_user.get_store_filter(), **{
             "customer_id": customer_id,
-            "status": {"$in": ["active", "partial"]}
+            "status": {"$in": ["active", "partial"]}}
         })
         
         if active_count > 0:
             failed += 1
-            customer = await db.customers.find_one({"id": customer_id}, {"_id": 0, "id": 1, "name": 1, "dni": 1})
+            customer = await db.customers.find_one({**current_user.get_store_filter(), **{"id": customer_id}}, {"_id": 0, "id": 1, "name": 1, "dni": 1})
             if customer:
                 failed_customers.append(customer)
             continue
         
         # Safe to delete
-        result = await db.customers.delete_one({"id": customer_id})
+        result = await db.customers.delete_one({**current_user.get_store_filter(), **{"id": customer_id}})
         if result.deleted_count > 0:
             deleted += 1
         else:
@@ -908,7 +908,7 @@ async def import_customers(request: CustomerImportRequest, current_user: Current
                 continue
             
             # Check for existing customer by DNI
-            existing = await db.customers.find_one({"dni": dni_upper})
+            existing = await db.customers.find_one({**current_user.get_store_filter(), **{"dni": dni_upper}})
             if existing:
                 duplicates += 1
                 duplicate_dnis.append(dni_upper)
@@ -916,7 +916,7 @@ async def import_customers(request: CustomerImportRequest, current_user: Current
             
             # Check for existing by email if provided
             if customer.email and customer.email.strip():
-                existing_email = await db.customers.find_one({"email": customer.email.strip().lower()})
+                existing_email = await db.customers.find_one({**current_user.get_store_filter(), **{"email": customer.email.strip().lower()}})
                 if existing_email:
                     duplicates += 1
                     duplicate_dnis.append(f"{dni_upper} (email)")
@@ -962,7 +962,7 @@ async def export_all_customers(
     format: 'json' returns all data, 'count' returns just the count
     """
     if format == "count":
-        total = await db.customers.count_documents({})
+        total = await db.customers.count_documents({**current_user.get_store_filter(), **{}})
         return {"total": total}
     
     # For full export, use cursor to stream data efficiently
@@ -1047,12 +1047,12 @@ async def create_item(item: ItemCreate, current_user: CurrentUser = Depends(get_
         raise HTTPException(status_code=400, detail="El código de barras es obligatorio para artículos con trazabilidad")
     
     # Check for duplicate internal_code (primary identifier)
-    existing_internal = await db.items.find_one({"internal_code": item.internal_code})
+    existing_internal = await db.items.find_one({**current_user.get_store_filter(), **{"internal_code": item.internal_code}})
     if existing_internal:
         raise HTTPException(status_code=400, detail=f"Ya existe un artículo con código interno '{item.internal_code}'")
     
     # Check for duplicate barcode
-    existing_barcode = await db.items.find_one({"barcode": item.barcode})
+    existing_barcode = await db.items.find_one({**current_user.get_store_filter(), **{"barcode": item.barcode}})
     if existing_barcode:
         raise HTTPException(status_code=400, detail=f"Ya existe un artículo con código '{item.barcode}'")
     
@@ -1229,11 +1229,11 @@ async def get_items_stats(
     current_user: CurrentUser = Depends(get_current_user)
 ):
     """Get inventory statistics without loading all records - optimized for large datasets"""
-    total = await db.items.count_documents({"status": {"$nin": ["deleted"]}})
-    available = await db.items.count_documents({"status": "available"})
-    rented = await db.items.count_documents({"status": "rented"})
-    maintenance = await db.items.count_documents({"status": "maintenance"})
-    retired = await db.items.count_documents({"status": "retired"})
+    total = await db.items.count_documents({**current_user.get_store_filter(), **{"status": {"$nin": ["deleted"]}}})
+    available = await db.items.count_documents({**current_user.get_store_filter(), **{"status": "available"}})
+    rented = await db.items.count_documents({**current_user.get_store_filter(), **{"status": "rented"}})
+    maintenance = await db.items.count_documents({**current_user.get_store_filter(), **{"status": "maintenance"}})
+    retired = await db.items.count_documents({**current_user.get_store_filter(), **{"status": "retired"}})
     
     return {
         "total": total,
@@ -1263,7 +1263,7 @@ async def adjust_generic_stock(
     current_user: CurrentUser = Depends(get_current_user)
 ):
     """Adjust stock for a generic item"""
-    item = await db.items.find_one({"id": item_id})
+    item = await db.items.find_one({**current_user.get_store_filter(), **{"id": item_id}})
     if not item:
         raise HTTPException(status_code=404, detail="Artículo no encontrado")
     
@@ -1295,7 +1295,7 @@ async def rent_generic_item(
     current_user: CurrentUser = Depends(get_current_user)
 ):
     """Rent units from a generic item (decreases available stock)"""
-    item = await db.items.find_one({"id": item_id})
+    item = await db.items.find_one({**current_user.get_store_filter(), **{"id": item_id}})
     if not item:
         raise HTTPException(status_code=404, detail="Artículo no encontrado")
     
@@ -1321,7 +1321,7 @@ async def return_generic_item(
     current_user: CurrentUser = Depends(get_current_user)
 ):
     """Return units to a generic item (increases available stock)"""
-    item = await db.items.find_one({"id": item_id})
+    item = await db.items.find_one({**current_user.get_store_filter(), **{"id": item_id}})
     if not item:
         raise HTTPException(status_code=404, detail="Artículo no encontrado")
     
@@ -1472,7 +1472,7 @@ async def get_item_profitability(item_id: str, current_user: CurrentUser = Depen
     - Rental history summary
     """
     # Get the item
-    item = await db.items.find_one({"id": item_id}, {"_id": 0})
+    item = await db.items.find_one({**current_user.get_store_filter(), **{"id": item_id}}, {"_id": 0})
     if not item:
         raise HTTPException(status_code=404, detail="Artículo no encontrado")
     
@@ -1545,11 +1545,11 @@ async def get_item_profitability(item_id: str, current_user: CurrentUser = Depen
 @api_router.get("/items/barcode/{barcode}", response_model=ItemResponse)
 async def get_item_by_barcode(barcode: str, current_user: CurrentUser = Depends(get_current_user)):
     # Try internal_code first, then barcode
-    item = await db.items.find_one({"internal_code": barcode}, {"_id": 0})
+    item = await db.items.find_one({**current_user.get_store_filter(), **{"internal_code": barcode}}, {"_id": 0})
     if not item:
-        item = await db.items.find_one({"barcode": barcode}, {"_id": 0})
+        item = await db.items.find_one({**current_user.get_store_filter(), **{"barcode": barcode}}, {"_id": 0})
     if not item:
-        item = await db.items.find_one({"barcode_2": barcode}, {"_id": 0})
+        item = await db.items.find_one({**current_user.get_store_filter(), **{"barcode_2": barcode}}, {"_id": 0})
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
     return ItemResponse(**item)
@@ -1566,11 +1566,11 @@ async def check_barcode_exists(barcode: str, current_user: CurrentUser = Depends
         return {"exists": False, "item": None}
     
     # Search in all barcode fields
-    item = await db.items.find_one({"internal_code": barcode}, {"_id": 0})
+    item = await db.items.find_one({**current_user.get_store_filter(), **{"internal_code": barcode}}, {"_id": 0})
     if not item:
-        item = await db.items.find_one({"barcode": barcode}, {"_id": 0})
+        item = await db.items.find_one({**current_user.get_store_filter(), **{"barcode": barcode}}, {"_id": 0})
     if not item:
-        item = await db.items.find_one({"barcode_2": barcode}, {"_id": 0})
+        item = await db.items.find_one({**current_user.get_store_filter(), **{"barcode_2": barcode}}, {"_id": 0})
     
     if item:
         return {"exists": True, "item": ItemResponse(**item)}
@@ -1579,19 +1579,19 @@ async def check_barcode_exists(barcode: str, current_user: CurrentUser = Depends
 
 @api_router.put("/items/{item_id}", response_model=ItemResponse)
 async def update_item(item_id: str, item: ItemCreate, current_user: CurrentUser = Depends(get_current_user)):
-    existing = await db.items.find_one({"id": item_id})
+    existing = await db.items.find_one({**current_user.get_store_filter(), **{"id": item_id}})
     if not existing:
         raise HTTPException(status_code=404, detail="Item not found")
     
     # Check if internal_code changed and new code exists
     if item.internal_code != existing.get("internal_code", ""):
-        code_exists = await db.items.find_one({"internal_code": item.internal_code, "id": {"$ne": item_id}})
+        code_exists = await db.items.find_one({**current_user.get_store_filter(), **{"internal_code": item.internal_code, "id": {"$ne": item_id}}})
         if code_exists:
             raise HTTPException(status_code=400, detail=f"Internal code '{item.internal_code}' already exists")
     
     # Check if barcode changed and new barcode exists
     if item.barcode != existing["barcode"]:
-        barcode_exists = await db.items.find_one({"barcode": item.barcode, "id": {"$ne": item_id}})
+        barcode_exists = await db.items.find_one({**current_user.get_store_filter(), **{"barcode": item.barcode, "id": {"$ne": item_id}}})
         if barcode_exists:
             raise HTTPException(status_code=400, detail="Barcode already exists")
     
@@ -1612,15 +1612,15 @@ async def update_item(item_id: str, item: ItemCreate, current_user: CurrentUser 
         "category": "STANDARD",  # All individual items are STANDARD
         "maintenance_interval": item.maintenance_interval or 30
     }
-    await db.items.update_one({"id": item_id}, {"$set": update_doc})
+    await db.items.update_one({**current_user.get_store_filter(), **{"id": item_id}}, {"$set": update_doc})
     
-    updated = await db.items.find_one({"id": item_id}, {"_id": 0})
+    updated = await db.items.find_one({**current_user.get_store_filter(), **{"id": item_id}}, {"_id": 0})
     return ItemResponse(**updated)
 
 @api_router.delete("/items/{item_id}")
 async def delete_item(item_id: str, force: bool = Query(False), current_user: CurrentUser = Depends(get_current_user)):
     """Delete an item permanently or mark as deleted if has history"""
-    item = await db.items.find_one({"id": item_id})
+    item = await db.items.find_one({**current_user.get_store_filter(), **{"id": item_id}})
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
     
@@ -1629,15 +1629,15 @@ async def delete_item(item_id: str, force: bool = Query(False), current_user: Cu
         raise HTTPException(status_code=400, detail="No se puede eliminar un artículo alquilado")
     
     # Check if item has rental history
-    rental_history = await db.rentals.count_documents({
+    rental_history = await db.rentals.count_documents({**current_user.get_store_filter(), **{
         "items.item_id": item_id
-    })
+    }})
     
     # Also check by barcode for legacy rentals
     if rental_history == 0 and item.get("barcode"):
-        rental_history = await db.rentals.count_documents({
+        rental_history = await db.rentals.count_documents({**current_user.get_store_filter(), **{
             "items.barcode": item.get("barcode")
-        })
+        }})
     
     if rental_history > 0 and not force:
         # Item has history - mark as deleted (soft delete) instead of physical delete
@@ -1651,7 +1651,7 @@ async def delete_item(item_id: str, force: bool = Query(False), current_user: Cu
         return {"message": "Artículo dado de baja (tiene historial)", "action": "soft_delete", "deleted": True}
     
     # No history or force=True - physical delete
-    result = await db.items.delete_one({"id": item_id})
+    result = await db.items.delete_one({**current_user.get_store_filter(), **{"id": item_id}})
     
     if result.deleted_count == 0:
         raise HTTPException(status_code=500, detail="Error al eliminar el artículo")
@@ -1704,18 +1704,18 @@ async def delete_item_type(
     type_value = item_type["value"]
     
     # Count items by status
-    total_items = await db.items.count_documents({"item_type": type_value})
-    active_items = await db.items.count_documents({
+    total_items = await db.items.count_documents({**current_user.get_store_filter(), **{"item_type": type_value}})
+    active_items = await db.items.count_documents({**current_user.get_store_filter(), **{
         "item_type": type_value,
-        "status": {"$in": ["available", "rented", "maintenance"]}
+        "status": {"$in": ["available", "rented", "maintenance"]}}
     })
-    ghost_items = await db.items.count_documents({
+    ghost_items = await db.items.count_documents({**current_user.get_store_filter(), **{
         "item_type": type_value,
-        "status": {"$in": ["retired", "deleted", "archived"]},
+        "status": {"$in": ["retired", "deleted", "archived"]}},
     })
-    soft_deleted = await db.items.count_documents({
+    soft_deleted = await db.items.count_documents({**current_user.get_store_filter(), **{
         "item_type": type_value,
-        "deleted_at": {"$exists": True, "$ne": None}
+        "deleted_at": {"$exists": True, "$ne": None}}
     })
     
     # Case 1: No items at all - delete directly
@@ -1728,14 +1728,14 @@ async def delete_item_type(
     # Case 2: Only ghost/retired items and force=True - clean them up
     if force and active_items == 0 and ghost_items > 0:
         # Delete ghost items permanently
-        await db.items.delete_many({
+        await db.items.delete_many({**current_user.get_store_filter(), **{
             "item_type": type_value,
-            "status": {"$in": ["retired", "deleted", "archived"]}
+            "status": {"$in": ["retired", "deleted", "archived"]}}
         })
         # Delete soft-deleted items
-        await db.items.delete_many({
+        await db.items.delete_many({**current_user.get_store_filter(), **{
             "item_type": type_value,
-            "deleted_at": {"$exists": True, "$ne": None}
+            "deleted_at": {"$exists": True, "$ne": None}}
         })
         # Now delete the type
         await db.item_types.delete_one({"id": type_id})
@@ -1760,9 +1760,9 @@ async def delete_item_type(
         
         # Delete ghost items if force=True
         if force:
-            await db.items.delete_many({
+            await db.items.delete_many({**current_user.get_store_filter(), **{
                 "item_type": type_value,
-                "status": {"$in": ["retired", "deleted", "archived"]}
+                "status": {"$in": ["retired", "deleted", "archived"]}}
             })
         
         # Delete the type
@@ -1808,15 +1808,15 @@ async def cleanup_item_type(type_id: str, current_user: CurrentUser = Depends(ge
     type_value = item_type["value"]
     
     # Delete ghost items
-    result1 = await db.items.delete_many({
+    result1 = await db.items.delete_many({**current_user.get_store_filter(), **{
         "item_type": type_value,
-        "status": {"$in": ["retired", "deleted", "archived"]}
+        "status": {"$in": ["retired", "deleted", "archived"]}}
     })
     
     # Delete soft-deleted items
-    result2 = await db.items.delete_many({
+    result2 = await db.items.delete_many({**current_user.get_store_filter(), **{
         "item_type": type_value,
-        "deleted_at": {"$exists": True, "$ne": None}
+        "deleted_at": {"$exists": True, "$ne": None}}
     })
     
     total_deleted = result1.deleted_count + result2.deleted_count
@@ -1865,7 +1865,7 @@ async def migrate_legacy_types(current_user: CurrentUser = Depends(get_current_u
     
     for legacy_type in legacy_types:
         # Count items with this legacy type
-        count = await db.items.count_documents({"item_type": legacy_type})
+        count = await db.items.count_documents({**current_user.get_store_filter(), **{"item_type": legacy_type}})
         if count > 0:
             # Check if custom type already exists
             existing = await db.item_types.find_one({"value": legacy_type})
@@ -1908,7 +1908,7 @@ async def reassign_item_types(
 
 @api_router.put("/items/{item_id}/status")
 async def update_item_status(item_id: str, status: str = Query(...), current_user: CurrentUser = Depends(get_current_user)):
-    result = await db.items.update_one({"id": item_id}, {"$set": {"status": status}})
+    result = await db.items.update_one({**current_user.get_store_filter(), **{"id": item_id}}, {"$set": {"status": status}})
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Item not found")
     return {"message": "Status updated"}
@@ -1926,7 +1926,7 @@ async def complete_item_maintenance(item_id: str, current_user: CurrentUser = De
     Returns the updated item data.
     """
     # Find the item
-    item = await db.items.find_one({"id": item_id})
+    item = await db.items.find_one({**current_user.get_store_filter(), **{"id": item_id}})
     if not item:
         raise HTTPException(status_code=404, detail="Artículo no encontrado")
     
@@ -1942,13 +1942,13 @@ async def complete_item_maintenance(item_id: str, current_user: CurrentUser = De
         "last_maintenance_by": current_user.get("username", "system")
     }
     
-    result = await db.items.update_one({"id": item_id}, {"$set": update_doc})
+    result = await db.items.update_one({**current_user.get_store_filter(), **{"id": item_id}}, {"$set": update_doc})
     
     if result.modified_count == 0:
         raise HTTPException(status_code=500, detail="Error al actualizar el artículo")
     
     # Get the updated item
-    updated_item = await db.items.find_one({"id": item_id}, {"_id": 0})
+    updated_item = await db.items.find_one({**current_user.get_store_filter(), **{"id": item_id}}, {"_id": 0})
     
     return {
         "success": True,
@@ -1969,7 +1969,7 @@ async def create_items_bulk(data: BulkItemCreate, current_user: CurrentUser = De
     errors = []
     
     for item in data.items:
-        existing = await db.items.find_one({"barcode": item.barcode})
+        existing = await db.items.find_one({**current_user.get_store_filter(), **{"barcode": item.barcode}})
         if existing:
             errors.append({"barcode": item.barcode, "error": "Already exists"})
             continue
@@ -2016,7 +2016,7 @@ async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUs
                 errors.append({"row": row, "error": "Missing barcode"})
                 continue
             
-            existing = await db.items.find_one({"barcode": barcode})
+            existing = await db.items.find_one({**current_user.get_store_filter(), **{"barcode": barcode}})
             if existing:
                 errors.append({"barcode": barcode, "error": "Already exists"})
                 continue
@@ -2079,7 +2079,7 @@ async def import_items(request: ItemImportRequest, current_user: CurrentUser = D
                 continue
             
             # Check for duplicate by internal_code
-            existing = await db.items.find_one({"internal_code": internal_code})
+            existing = await db.items.find_one({**current_user.get_store_filter(), **{"internal_code": internal_code}})
             if existing:
                 duplicates += 1
                 duplicate_codes.append(internal_code)
@@ -2087,7 +2087,7 @@ async def import_items(request: ItemImportRequest, current_user: CurrentUser = D
             
             # Check for duplicate barcode if provided
             if item.barcode and item.barcode.strip():
-                existing_barcode = await db.items.find_one({"barcode": item.barcode.strip()})
+                existing_barcode = await db.items.find_one({**current_user.get_store_filter(), **{"barcode": item.barcode.strip()}})
                 if existing_barcode:
                     duplicates += 1
                     duplicate_codes.append(f"{internal_code} (barcode)")
@@ -2162,7 +2162,7 @@ async def generate_barcodes(data: GenerateBarcodeRequest, current_user: CurrentU
 @api_router.get("/items/export-csv")
 async def export_items_csv(current_user: CurrentUser = Depends(get_current_user)):
     """Export all items as CSV"""
-    items = await db.items.find({}, {"_id": 0}).to_list(10000)
+    items = await db.items.find({**current_user.get_store_filter(), **{}}, {"_id": 0}).to_list(10000)
     
     output = io.StringIO()
     fieldnames = ['barcode', 'item_type', 'brand', 'model', 'size', 'status', 
@@ -2379,7 +2379,7 @@ async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depend
     # CRITICAL: Validate active cash session FIRST (if payment is being made)
     if rental.paid_amount > 0:
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+        active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
         
         if not active_session:
             raise HTTPException(
@@ -2388,7 +2388,7 @@ async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depend
             )
     
     # Validate customer
-    customer = await db.customers.find_one({"id": rental.customer_id}, {"_id": 0})
+    customer = await db.customers.find_one({**current_user.get_store_filter(), **{"id": rental.customer_id}}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     
@@ -2396,10 +2396,10 @@ async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depend
     items_data = []
     for item_input in rental.items:
         # Try to find item by barcode OR by ID (for generic items that use ID as barcode)
-        item = await db.items.find_one({"barcode": item_input.barcode}, {"_id": 0})
+        item = await db.items.find_one({**current_user.get_store_filter(), **{"barcode": item_input.barcode}}, {"_id": 0})
         if not item:
             # Fallback: search by ID (generic items may send their ID as barcode)
-            item = await db.items.find_one({"id": item_input.barcode}, {"_id": 0})
+            item = await db.items.find_one({**current_user.get_store_filter(), **{"id": item_input.barcode}}, {"_id": 0})
         
         if not item:
             raise HTTPException(status_code=404, detail=f"Artículo {item_input.barcode} no encontrado")
@@ -2456,7 +2456,7 @@ async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depend
             })
             
             # Mark regular item as rented
-            await db.items.update_one({"id": item["id"]}, {"$set": {"status": "rented"}})
+            await db.items.update_one({**current_user.get_store_filter(), **{"id": item["id"]}}, {"$set": {"status": "rented"}})
     
     days = calculate_days(rental.start_date, rental.end_date)
     rental_id = str(uuid.uuid4())
@@ -2481,19 +2481,19 @@ async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depend
     }
     
     await db.rentals.insert_one(doc)
-    await db.customers.update_one({"id": rental.customer_id}, {"$inc": {"total_rentals": 1}})
+    await db.customers.update_one({**current_user.get_store_filter(), **{"id": rental.customer_id}}, {"$inc": {"total_rentals": 1}})
     
     # AUTO-REGISTER in CAJA: Create cash movement for the paid amount
     if rental.paid_amount > 0:
         # Get active session (already validated at the beginning)
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+        active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
         
         # Prepare rental items for ticket printing
         rental_items_for_ticket = []
         for item_input in rental.items:
             # Get item details from database using barcode
-            item_doc = await db.items.find_one({"barcode": item_input.barcode})
+            item_doc = await db.items.find_one({**current_user.get_store_filter(), **{"barcode": item_input.barcode}})
             item_name = item_doc.get("item_type", "Artículo") if item_doc else "Artículo"
             item_size = item_doc.get("size", "") if item_doc else ""
             item_brand = item_doc.get("brand", "") if item_doc else ""
@@ -2533,7 +2533,7 @@ async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depend
         await db.cash_movements.insert_one(cash_doc)
         
         # Store operation_number in rental for ticket reference
-        await db.rentals.update_one({"id": rental_id}, {"$set": {"operation_number": operation_number}})
+        await db.rentals.update_one({**current_user.get_store_filter(), **{"id": rental_id}}, {"$set": {"operation_number": operation_number}})
         
         # Add operation_number to response
         doc["operation_number"] = operation_number
@@ -2557,7 +2557,7 @@ async def get_rentals(
 
 @api_router.get("/rentals/{rental_id}", response_model=RentalResponse)
 async def get_rental(rental_id: str, current_user: CurrentUser = Depends(get_current_user)):
-    rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
+    rental = await db.rentals.find_one({**current_user.get_store_filter(), **{"id": rental_id}}, {"_id": 0})
     if not rental:
         raise HTTPException(status_code=404, detail="Rental not found")
     return RentalResponse(**rental)
@@ -2668,7 +2668,7 @@ async def get_pending_returns(current_user: CurrentUser = Depends(get_current_us
 
 @api_router.post("/rentals/{rental_id}/return")
 async def process_return(rental_id: str, return_input: ReturnInput, current_user: CurrentUser = Depends(get_current_user)):
-    rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
+    rental = await db.rentals.find_one({**current_user.get_store_filter(), **{"id": rental_id}}, {"_id": 0})
     if not rental:
         raise HTTPException(status_code=404, detail="Rental not found")
     
@@ -2680,7 +2680,7 @@ async def process_return(rental_id: str, return_input: ReturnInput, current_user
     for item in rental["items"]:
         if item["barcode"] in return_input.barcodes:
             # Get the item document to check if it's generic
-            item_doc = await db.items.find_one({"id": item["item_id"]})
+            item_doc = await db.items.find_one({**current_user.get_store_filter(), **{"id": item["item_id"]}})
             
             if item_doc and item_doc.get("is_generic"):
                 # GENERIC ITEM with PARTIAL RETURN support
@@ -2772,13 +2772,13 @@ async def process_payment(rental_id: str, payment: PaymentRequest, current_user:
     Procesar un pago adicional para un alquiler existente.
     SIEMPRE crea un movimiento de caja vinculado a la sesión activa.
     """
-    rental = await db.rentals.find_one({"id": rental_id})
+    rental = await db.rentals.find_one({**current_user.get_store_filter(), **{"id": rental_id}})
     if not rental:
         raise HTTPException(status_code=404, detail="Rental not found")
     
     # Validate active cash session
     date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+    active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
     
     if not active_session:
         raise HTTPException(
@@ -2797,7 +2797,7 @@ async def process_payment(rental_id: str, payment: PaymentRequest, current_user:
     # CREATE CASH MOVEMENT - This is MANDATORY for accounting integrity
     cash_movement_id = str(uuid.uuid4())
     operation_number = await get_next_operation_number()
-    customer = await db.customers.find_one({"id": rental.get("customer_id")})
+    customer = await db.customers.find_one({**current_user.get_store_filter(), **{"id": rental.get("customer_id")}})
     customer_name = customer.get("name", rental.get("customer_name", "Cliente")) if customer else rental.get("customer_name", "Cliente")
     
     cash_doc = {
@@ -2848,7 +2848,7 @@ async def central_swap_item(rental_id: str, data: CentralSwapRequest, current_us
     7. Returns swap ticket data
     """
     # Get rental
-    rental = await db.rentals.find_one({"id": rental_id})
+    rental = await db.rentals.find_one({**current_user.get_store_filter(), **{"id": rental_id}})
     if not rental:
         raise HTTPException(status_code=404, detail="Alquiler no encontrado")
     
@@ -2873,17 +2873,17 @@ async def central_swap_item(rental_id: str, data: CentralSwapRequest, current_us
         raise HTTPException(status_code=404, detail=f"Artículo '{data.old_item_barcode}' no encontrado en el alquiler activo")
     
     # Get old item from inventory (for updating status)
-    old_inventory_item = await db.items.find_one({
+    old_inventory_item = await db.items.find_one({**current_user.get_store_filter(), **{
         "$or": [
-            {"barcode": {"$regex": f"^{data.old_item_barcode}$", "$options": "i"}},
+            {"barcode": {"$regex": f"^{data.old_item_barcode}}$", "$options": "i"}},
             {"internal_code": {"$regex": f"^{data.old_item_barcode}$", "$options": "i"}}
         ]
     })
     
     # Get new item from inventory
-    new_item = await db.items.find_one({
+    new_item = await db.items.find_one({**current_user.get_store_filter(), **{
         "$or": [
-            {"barcode": {"$regex": f"^{data.new_item_barcode}$", "$options": "i"}},
+            {"barcode": {"$regex": f"^{data.new_item_barcode}}$", "$options": "i"}},
             {"internal_code": {"$regex": f"^{data.new_item_barcode}$", "$options": "i"}}
         ]
     })
@@ -2995,7 +2995,7 @@ async def central_swap_item(rental_id: str, data: CentralSwapRequest, current_us
     # Create cash movement for price difference
     operation_number = None
     if data.delta_amount != 0:
-        active_session = await db.cash_sessions.find_one({"status": "open"})
+        active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"status": "open"}})
         
         if active_session:
             operation_number = await get_next_operation_number()
@@ -3069,7 +3069,7 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
     Modify rental duration with mandatory cash register entry.
     Creates a cash movement for any price difference (income for extensions, refund for reductions).
     """
-    rental = await db.rentals.find_one({"id": rental_id})
+    rental = await db.rentals.find_one({**current_user.get_store_filter(), **{"id": rental_id}})
     if not rental:
         raise HTTPException(status_code=404, detail="Rental not found")
     
@@ -3136,7 +3136,7 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
     if data.difference_amount != 0:
         # Validate active cash session FIRST
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+        active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
         
         if not active_session:
             raise HTTPException(
@@ -3175,7 +3175,7 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
         }
         await db.cash_movements.insert_one(cash_doc)
     
-    updated = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
+    updated = await db.rentals.find_one({**current_user.get_store_filter(), **{"id": rental_id}}, {"_id": 0})
     return {
         "rental": RentalResponse(**updated),
         "operation_number": operation_number if cash_movement_id else None,
@@ -3189,7 +3189,7 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
 
 @api_router.patch("/rentals/{rental_id}/days")
 async def update_rental_days(rental_id: str, update_data: UpdateRentalDaysRequest, current_user: CurrentUser = Depends(get_current_user)):
-    rental = await db.rentals.find_one({"id": rental_id})
+    rental = await db.rentals.find_one({**current_user.get_store_filter(), **{"id": rental_id}})
     if not rental:
         raise HTTPException(status_code=404, detail="Rental not found")
     
@@ -3222,7 +3222,7 @@ async def update_rental_days(rental_id: str, update_data: UpdateRentalDaysReques
     if price_difference != 0:
         # Validate active cash session FIRST
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+        active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
         
         if not active_session:
             raise HTTPException(
@@ -3253,7 +3253,7 @@ async def update_rental_days(rental_id: str, update_data: UpdateRentalDaysReques
         }
         await db.cash_movements.insert_one(cash_doc)
     
-    updated = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
+    updated = await db.rentals.find_one({**current_user.get_store_filter(), **{"id": rental_id}}, {"_id": 0})
     return RentalResponse(**updated)
 
 # ============ PAYMENT METHOD CONSTANTS ============
@@ -3292,7 +3292,7 @@ async def update_rental_payment_method(
     - CASE 2: Income -> Debt (e.g., cash -> pending): Remove from cash register (it was an error)
     - CASE 3: Debt -> Income (e.g., pending -> card): Add to cash register (payment received)
     """
-    rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
+    rental = await db.rentals.find_one({**current_user.get_store_filter(), **{"id": rental_id}}, {"_id": 0})
     if not rental:
         raise HTTPException(status_code=404, detail="Rental not found")
     
@@ -3321,14 +3321,14 @@ async def update_rental_payment_method(
     old_is_unpaid = is_unpaid_method(old_method)
     new_is_unpaid = is_unpaid_method(new_method)
     
-    customer = await db.customers.find_one({"id": rental["customer_id"]}, {"_id": 0})
+    customer = await db.customers.find_one({**current_user.get_store_filter(), **{"id": rental["customer_id"]}}, {"_id": 0})
     customer_name = customer.get("name", "Cliente") if customer else "Cliente"
     
     reconciliation_action = ""
     
     # Get current active cash session
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    active_session = await db.cash_sessions.find_one({"date": today, "status": "open"})
+    active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": today, "status": "open"}})
     
     if not active_session:
         raise HTTPException(status_code=400, detail="No active cash session. Please open the cash register first.")
@@ -3340,7 +3340,7 @@ async def update_rental_payment_method(
         reconciliation_action = "moved_between_registers"
         
         # Remove from old cash register
-        await db.cash_movements.insert_one({
+        await db.cash_movements.insert_one({"store_id": current_user.store_id, 
             "id": str(uuid.uuid4()),
             "session_id": session_id,  # CRITICAL: Link to cash session
             "date": datetime.now(timezone.utc).isoformat(),
@@ -3358,7 +3358,7 @@ async def update_rental_payment_method(
         })
         
         # Add to new cash register
-        await db.cash_movements.insert_one({
+        await db.cash_movements.insert_one({"store_id": current_user.store_id, 
             "id": str(uuid.uuid4()),
             "session_id": session_id,  # CRITICAL: Link to cash session
             "date": datetime.now(timezone.utc).isoformat(),
@@ -3380,7 +3380,7 @@ async def update_rental_payment_method(
         reconciliation_action = "removed_from_cash"
         
         # Remove from cash register (negative adjustment)
-        await db.cash_movements.insert_one({
+        await db.cash_movements.insert_one({"store_id": current_user.store_id, 
             "id": str(uuid.uuid4()),
             "session_id": session_id,  # CRITICAL: Link to cash session
             "date": datetime.now(timezone.utc).isoformat(),
@@ -3408,7 +3408,7 @@ async def update_rental_payment_method(
         reconciliation_action = "added_to_cash"
         
         # Add to cash register
-        await db.cash_movements.insert_one({
+        await db.cash_movements.insert_one({"store_id": current_user.store_id, 
             "id": str(uuid.uuid4()),
             "session_id": session_id,  # CRITICAL: Link to cash session
             "date": datetime.now(timezone.utc).isoformat(),
@@ -3438,7 +3438,7 @@ async def update_rental_payment_method(
     )
     
     # Get updated rental
-    updated_rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
+    updated_rental = await db.rentals.find_one({**current_user.get_store_filter(), **{"id": rental_id}}, {"_id": 0})
     
     return {
         "message": "Payment method updated successfully",
@@ -3464,7 +3464,7 @@ async def process_refund(rental_id: str, refund: RefundRequest, current_user: Cu
     Process a partial refund for unused days.
     Creates a negative entry in the cash register.
     """
-    rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
+    rental = await db.rentals.find_one({**current_user.get_store_filter(), **{"id": rental_id}}, {"_id": 0})
     if not rental:
         raise HTTPException(status_code=404, detail="Rental not found")
     
@@ -3481,7 +3481,7 @@ async def process_refund(rental_id: str, refund: RefundRequest, current_user: Cu
         raise HTTPException(status_code=400, detail="El reembolso no puede superar el importe pagado")
     
     # Get customer info
-    customer = await db.customers.find_one({"id": rental["customer_id"]}, {"_id": 0})
+    customer = await db.customers.find_one({**current_user.get_store_filter(), **{"id": rental["customer_id"]}}, {"_id": 0})
     customer_name = customer["name"] if customer else rental.get("customer_name", "Cliente")
     
     # Calculate new values
@@ -3511,7 +3511,7 @@ async def process_refund(rental_id: str, refund: RefundRequest, current_user: Cu
     
     # Validate active cash session FIRST
     date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+    active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
     
     if not active_session:
         raise HTTPException(
@@ -3539,7 +3539,7 @@ async def process_refund(rental_id: str, refund: RefundRequest, current_user: Cu
     }
     await db.cash_movements.insert_one(refund_doc)
     
-    updated_rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
+    updated_rental = await db.rentals.find_one({**current_user.get_store_filter(), **{"id": rental_id}}, {"_id": 0})
     
     return {
         "message": "Reembolso procesado correctamente",
@@ -3557,7 +3557,7 @@ async def quick_return(rental_id: str, current_user: CurrentUser = Depends(get_c
     Quick return: Mark ALL items as returned with one click
     Perfect for when staff receives all items physically
     """
-    rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
+    rental = await db.rentals.find_one({**current_user.get_store_filter(), **{"id": rental_id}}, {"_id": 0})
     if not rental:
         raise HTTPException(status_code=404, detail="Rental not found")
     
@@ -3573,7 +3573,7 @@ async def quick_return(rental_id: str, current_user: CurrentUser = Depends(get_c
         item["return_date"] = datetime.now(timezone.utc).isoformat()
         
         # Get the item document to check if it's generic
-        item_doc = await db.items.find_one({"id": item.get("item_id")})
+        item_doc = await db.items.find_one({**current_user.get_store_filter(), **{"id": item.get("item_id")}})
         
         if item_doc and item_doc.get("is_generic"):
             # GENERIC ITEM: Return stock
@@ -3611,7 +3611,7 @@ async def quick_return(rental_id: str, current_user: CurrentUser = Depends(get_c
 
 @api_router.post("/maintenance", response_model=MaintenanceResponse)
 async def create_maintenance(maintenance: MaintenanceCreate, current_user: CurrentUser = Depends(get_current_user)):
-    item = await db.items.find_one({"id": maintenance.item_id}, {"_id": 0})
+    item = await db.items.find_one({**current_user.get_store_filter(), **{"id": maintenance.item_id}}, {"_id": 0})
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
     
@@ -3631,7 +3631,7 @@ async def create_maintenance(maintenance: MaintenanceCreate, current_user: Curre
     }
     
     await db.maintenance.insert_one(doc)
-    await db.items.update_one({"id": maintenance.item_id}, {"$set": {"status": "maintenance"}})
+    await db.items.update_one({**current_user.get_store_filter(), **{"id": maintenance.item_id}}, {"$set": {"status": "maintenance"}})
     
     return MaintenanceResponse(**doc)
 
@@ -3735,7 +3735,7 @@ async def complete_maintenance(maintenance_id: str, current_user: CurrentUser = 
         {"id": maintenance_id},
         {"$set": {"status": "completed", "completed_date": datetime.now(timezone.utc).isoformat()}}
     )
-    await db.items.update_one({"id": maintenance["item_id"]}, {"$set": {"status": "available"}})
+    await db.items.update_one({**current_user.get_store_filter(), **{"id": maintenance["item_id"]}}, {"$set": {"status": "available"}})
     
     return {"message": "Maintenance completed"}
 
@@ -3860,7 +3860,7 @@ async def deliver_external_repair(
     if repair["price"] > 0:
         # Validate active cash session FIRST
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+        active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
         
         if not active_session:
             raise HTTPException(
@@ -4076,13 +4076,13 @@ class FinancialCalculatorService:
         end_dt = f"{end_date}T23:59:59"
         
         # 1. Obtener todos los cash_movements del período
-        movements = await db.cash_movements.find({
-            "created_at": {"$gte": start_dt, "$lte": end_dt}
+        movements = await db.cash_movements.find({**current_user.get_store_filter(), **{
+            "created_at": {"$gte": start_dt, "$lte": end_dt}}
         }, {"_id": 0}).to_list(5000)
         
         # 2. Obtener todos los rentals del período
-        rentals = await db.rentals.find({
-            "created_at": {"$gte": start_dt, "$lte": end_dt}
+        rentals = await db.rentals.find({**current_user.get_store_filter(), **{
+            "created_at": {"$gte": start_dt, "$lte": end_dt}}
         }, {"_id": 0, "id": 1, "paid_amount": 1, "payment_method": 1, "customer_name": 1}).to_list(5000)
         
         # 3. Calcular totales de cada fuente
@@ -4183,18 +4183,18 @@ async def get_daily_report(date: Optional[str] = None, current_user: CurrentUser
             other_revenue += m["total"]
     
     # Get rentals count for the day (operational data, not financial)
-    rentals_count = await db.rentals.count_documents({
-        "created_at": {"$gte": start, "$lte": end}
+    rentals_count = await db.rentals.count_documents({**current_user.get_store_filter(), **{
+        "created_at": {"$gte": start, "$lte": end}}
     })
     
     # Get returns for the day
-    returns_count = await db.rentals.count_documents({
+    returns_count = await db.rentals.count_documents({**current_user.get_store_filter(), **{
         "status": "returned",
-        "actual_return_date": {"$gte": start, "$lte": end}
+        "actual_return_date": {"$gte": start, "$lte": end}}
     })
     
     # Get active rentals
-    active_rentals = await db.rentals.count_documents({"status": {"$in": ["active", "partial"]}})
+    active_rentals = await db.rentals.count_documents({**current_user.get_store_filter(), **{"status": {"$in": ["active", "partial"]}}})
     
     # Get pending returns
     pending_returns = await db.rentals.find(
@@ -4216,8 +4216,8 @@ async def get_daily_report(date: Optional[str] = None, current_user: CurrentUser
             })
     
     # Calculate inventory usage (percentage of items rented)
-    total_items = await db.items.count_documents({"status": {"$nin": ["deleted", "retired"]}})
-    rented_items = await db.items.count_documents({"status": "rented"})
+    total_items = await db.items.count_documents({**current_user.get_store_filter(), **{"status": {"$nin": ["deleted", "retired"]}}})
+    rented_items = await db.items.count_documents({**current_user.get_store_filter(), **{"status": "rented"}})
     inventory_usage = (rented_items / total_items * 100) if total_items > 0 else 0
     
     total_revenue = cash_revenue + card_revenue + online_revenue + other_revenue
@@ -4285,14 +4285,14 @@ async def get_range_report(
             other_revenue += m["total"]
     
     # Get rentals count in the range (operational data, not financial)
-    rentals = await db.rentals.find({
-        "created_at": {"$gte": start_dt, "$lte": end_dt}
+    rentals = await db.rentals.find({**current_user.get_store_filter(), **{
+        "created_at": {"$gte": start_dt, "$lte": end_dt}}
     }, {"_id": 0, "id": 1, "customer_id": 1, "paid_amount": 1}).to_list(5000)
     
     # Get returns in the range
-    returns_count = await db.rentals.count_documents({
+    returns_count = await db.rentals.count_documents({**current_user.get_store_filter(), **{
         "status": "returned",
-        "actual_return_date": {"$gte": start_dt, "$lte": end_dt}
+        "actual_return_date": {"$gte": start_dt, "$lte": end_dt}}
     })
     
     # Get external repairs revenue (ya está en cash_movements pero también lo mostramos)
@@ -4314,8 +4314,8 @@ async def get_range_report(
             
             if customer_ids:
                 # Get rentals from these customers in the date range
-                source_rentals = await db.rentals.find({
-                    "customer_id": {"$in": customer_ids},
+                source_rentals = await db.rentals.find({**current_user.get_store_filter(), **{
+                    "customer_id": {"$in": customer_ids}},
                     "created_at": {"$gte": start_dt, "$lte": end_dt}
                 }, {"_id": 0, "paid_amount": 1}).to_list(1000)
                 
@@ -4431,15 +4431,15 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
     end = f"{today}T23:59:59"
     
     # Today's rentals count (new contracts)
-    today_rentals = await db.rentals.count_documents({
-        "created_at": {"$gte": start, "$lte": end}
+    today_rentals = await db.rentals.count_documents({**current_user.get_store_filter(), **{
+        "created_at": {"$gte": start, "$lte": end}}
     })
     
     # ========== UNIFIED REVENUE CALCULATION (Single Source of Truth) ==========
     # Revenue today = Sum of all cash movements from today's active session
     # This includes: new rentals + adjustments (extensions/reductions) - refunds
     
-    active_session = await db.cash_sessions.find_one({"date": today, "status": "open"})
+    active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": today, "status": "open"}})
     
     if active_session:
         # Use MongoDB aggregation to calculate total revenue from cash movements
@@ -4471,8 +4471,8 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
         today_revenue = total_income - total_refunds
         
         # Calculate UNPAID amount separately for display
-        unpaid_rentals = await db.rentals.find({
-            "created_at": {"$gte": start, "$lte": end},
+        unpaid_rentals = await db.rentals.find({**current_user.get_store_filter(), **{
+            "created_at": {"$gte": start, "$lte": end}},
             "payment_method": {"$in": UNPAID_METHODS}
         }, {"_id": 0, "total_amount": 1}).to_list(1000)
         unpaid_amount = sum(r.get("total_amount", 0) for r in unpaid_rentals)
@@ -4480,8 +4480,8 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
         # No active session - fallback to rentals created today
         # Also exclude unpaid methods here
         UNPAID_METHODS = ["pending"]
-        rentals = await db.rentals.find({
-            "created_at": {"$gte": start, "$lte": end},
+        rentals = await db.rentals.find({**current_user.get_store_filter(), **{
+            "created_at": {"$gte": start, "$lte": end}},
             "payment_method": {"$nin": UNPAID_METHODS}
         }, {"_id": 0, "paid_amount": 1}).to_list(10000)
         today_revenue = sum(r.get("paid_amount", 0) for r in rentals)
@@ -4510,15 +4510,15 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
     # Fallback: If no results with actual_return_date, count cash movements of type 'return'
     if returns_today == 0:
         # Count distinct return movements in cash register today
-        return_movements = await db.cash_movements.find({
+        return_movements = await db.cash_movements.find({**current_user.get_store_filter(), **{
             "type": "return",
-            "created_at": {"$gte": start, "$lte": end}
+            "created_at": {"$gte": start, "$lte": end}}
         }, {"_id": 0, "rental_id": 1}).to_list(10000)
         
         # For each unique rental, sum item quantities
         unique_rental_ids = set(m.get("rental_id") for m in return_movements if m.get("rental_id"))
         for rental_id in unique_rental_ids:
-            rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0, "items": 1})
+            rental = await db.rentals.find_one({**current_user.get_store_filter(), **{"id": rental_id}}, {"_id": 0, "items": 1})
             if rental:
                 for item in rental.get("items", []):
                     if item.get("returned", False):
@@ -4548,11 +4548,11 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
     customers_today = customers_result[0]["unique_customers"] if customers_result else 0
     
     # Active rentals
-    active_rentals = await db.rentals.count_documents({"status": {"$in": ["active", "partial"]}})
+    active_rentals = await db.rentals.count_documents({**current_user.get_store_filter(), **{"status": {"$in": ["active", "partial"]}}})
     
     # Pending returns (overdue)
-    overdue = await db.rentals.count_documents({
-        "status": {"$in": ["active", "partial"]},
+    overdue = await db.rentals.count_documents({**current_user.get_store_filter(), **{
+        "status": {"$in": ["active", "partial"]}},
         "end_date": {"$lt": today}
     })
     
@@ -4598,9 +4598,9 @@ async def global_lookup(code: str, current_user: CurrentUser = Depends(get_curre
     
     # STEP 1: Check if it's an item barcode/internal_code
     # Search in items collection
-    item = await db.items.find_one({
+    item = await db.items.find_one({**current_user.get_store_filter(), **{
         "$or": [
-            {"barcode": {"$regex": f"^{code}$", "$options": "i"}},
+            {"barcode": {"$regex": f"^{code}}$", "$options": "i"}},
             {"internal_code": {"$regex": f"^{code}$", "$options": "i"}}
         ]
     }, {"_id": 0})
@@ -4609,8 +4609,8 @@ async def global_lookup(code: str, current_user: CurrentUser = Depends(get_curre
         # Found an item - check if it's currently rented
         if item.get("status") == "rented":
             # Find the active rental that contains this item
-            rental = await db.rentals.find_one({
-                "status": {"$in": ["active", "partial"]},
+            rental = await db.rentals.find_one({**current_user.get_store_filter(), **{
+                "status": {"$in": ["active", "partial"]}},
                 "$or": [
                     {"items.barcode": {"$regex": f"^{code}$", "$options": "i"}},
                     {"items.internal_code": {"$regex": f"^{code}$", "$options": "i"}}
@@ -4693,9 +4693,9 @@ async def global_lookup(code: str, current_user: CurrentUser = Depends(get_curre
         return results
     
     # STEP 2: Check if it's a customer name/DNI search
-    customers = await db.customers.find({
+    customers = await db.customers.find({**current_user.get_store_filter(), **{
         "$or": [
-            {"name": {"$regex": code, "$options": "i"}},
+            {"name": {"$regex": code, "$options": "i"}}},
             {"dni": {"$regex": f"^{code}$", "$options": "i"}}
         ]
     }, {"_id": 0}).to_list(10)
@@ -4706,8 +4706,8 @@ async def global_lookup(code: str, current_user: CurrentUser = Depends(get_curre
         
         for customer in customers:
             # Check for active rentals
-            active_rental = await db.rentals.find_one({
-                "status": {"$in": ["active", "partial"]},
+            active_rental = await db.rentals.find_one({**current_user.get_store_filter(), **{
+                "status": {"$in": ["active", "partial"]}},
                 "$or": [
                     {"customer_id": customer.get("id")},
                     {"customer_dni": {"$regex": f"^{customer.get('dni')}$", "$options": "i"}}
@@ -4774,7 +4774,7 @@ async def get_dashboard(current_user: CurrentUser = Depends(get_current_user)):
     stats = await get_stats(current_user)
     
     # Recent activity
-    recent_rentals = await db.rentals.find({}, {"_id": 0}).sort("created_at", -1).to_list(10)
+    recent_rentals = await db.rentals.find({**current_user.get_store_filter(), **{}}, {"_id": 0}).sort("created_at", -1).to_list(10)
     
     # Occupancy by Category (Gama) - EXCLUDING retired/deleted/lost items
     # Only count rentable items: available, rented, maintenance
@@ -4916,9 +4916,9 @@ async def get_returns_control(current_user: CurrentUser = Depends(get_current_us
     today_str = today.strftime("%Y-%m-%d")
     
     # Get all rentals that should return today and are not yet returned
-    pending_returns = await db.rentals.find({
+    pending_returns = await db.rentals.find({**current_user.get_store_filter(), **{
         "end_date": today_str,
-        "status": {"$in": ["active", "pending"]}
+        "status": {"$in": ["active", "pending"]}}
     }, {"_id": 0}).to_list(10000)
     
     # Get item details for all items in pending returns
@@ -5262,7 +5262,7 @@ async def get_sources(current_user: CurrentUser = Depends(get_current_user)):
     
     # Count customers per source
     for source in sources:
-        count = await db.customers.count_documents({"source": source["name"]})
+        count = await db.customers.count_documents({**current_user.get_store_filter(), **{"source": source["name"]}})
         source["customer_count"] = count
     
     return [SourceResponse(**s) for s in sources]
@@ -5274,7 +5274,7 @@ async def delete_source(source_id: str, current_user: CurrentUser = Depends(get_
         raise HTTPException(status_code=404, detail="Source not found")
     
     # Check if source is used
-    count = await db.customers.count_documents({"source": source["name"]})
+    count = await db.customers.count_documents({**current_user.get_store_filter(), **{"source": source["name"]}})
     if count > 0:
         raise HTTPException(status_code=400, detail=f"Cannot delete: {count} customers using this source")
     
@@ -5307,7 +5307,7 @@ async def update_source(source_id: str, source: SourceCreate, current_user: Curr
     await db.sources.update_one({"id": source_id}, {"$set": update_doc})
     
     updated = await db.sources.find_one({"id": source_id}, {"_id": 0})
-    count = await db.customers.count_documents({"source": updated["name"]})
+    count = await db.customers.count_documents({**current_user.get_store_filter(), **{"source": updated["name"]}})
     updated["customer_count"] = count
     return SourceResponse(**updated)
 
@@ -5319,7 +5319,7 @@ async def get_source_stats(source_id: str, current_user: CurrentUser = Depends(g
         raise HTTPException(status_code=404, detail="Source not found")
     
     # Get customers from this source
-    customers = await db.customers.find({"source": source["name"]}, {"_id": 0}).to_list(1000)
+    customers = await db.customers.find({**current_user.get_store_filter(), **{"source": source["name"]}}, {"_id": 0}).to_list(1000)
     customer_ids = [c["id"] for c in customers]
     
     # Get rentals from these customers
@@ -5450,13 +5450,13 @@ async def create_cash_session(session: CashSessionCreate, current_user: CurrentU
     date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     # Check if there's already an open session for today
-    existing_open = await db.cash_sessions.find_one({"date": date, "status": "open"})
+    existing_open = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
     if existing_open:
         # Return existing session instead of error
         return CashSessionResponse(**{k: v for k, v in existing_open.items() if k != '_id'})
     
     # Get next session number for today
-    sessions_today = await db.cash_sessions.count_documents({"date": date})
+    sessions_today = await db.cash_sessions.count_documents({**current_user.get_store_filter(), **{"date": date}})
     session_number = sessions_today + 1
     
     session_id = str(uuid.uuid4())
@@ -5484,7 +5484,7 @@ async def open_cash_session(session: CashSessionCreate, current_user: CurrentUse
 async def get_active_session(current_user: CurrentUser = Depends(get_current_user)):
     """Get the currently active (open) cash session"""
     date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    session = await db.cash_sessions.find_one({"date": date, "status": "open"}, {"_id": 0})
+    session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}}, {"_id": 0})
     
     if not session:
         return None
@@ -5494,7 +5494,7 @@ async def get_active_session(current_user: CurrentUser = Depends(get_current_use
 @api_router.get("/cash/sessions")
 async def get_cash_sessions(current_user: CurrentUser = Depends(get_current_user)):
     """Get all cash sessions (history)"""
-    sessions = await db.cash_sessions.find({}, {"_id": 0}).sort("opened_at", -1).to_list(5000)
+    sessions = await db.cash_sessions.find({**current_user.get_store_filter(), **{}}, {"_id": 0}).sort("opened_at", -1).to_list(5000)
     return [CashSessionResponse(**s) for s in sessions]
 
 # ==================== CASH MOVEMENTS ROUTES ====================
@@ -5520,7 +5520,7 @@ async def get_next_operation_number():
 async def create_cash_movement(movement: CashMovementCreate, current_user: CurrentUser = Depends(get_current_user)):
     # Check if there's an active session
     date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+    active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
     
     if not active_session:
         raise HTTPException(status_code=400, detail="No active cash session. Please open the cash register first.")
@@ -5556,7 +5556,7 @@ async def get_cash_movements(
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     # Find active session
-    active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+    active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
     
     if not active_session:
         return []  # No active session = no movements to show
@@ -5577,7 +5577,7 @@ async def update_cash_movement(
 ):
     """Update a cash movement (e.g., change payment method)"""
     # Find the movement
-    movement = await db.cash_movements.find_one({"id": movement_id})
+    movement = await db.cash_movements.find_one({**current_user.get_store_filter(), **{"id": movement_id}})
     
     if not movement:
         raise HTTPException(status_code=404, detail="Movement not found")
@@ -5609,7 +5609,7 @@ async def get_cash_summary(date: Optional[str] = None, current_user: CurrentUser
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     # Find active session for this date
-    active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+    active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
     
     # If no active session, return zeros
     if not active_session:
@@ -5675,7 +5675,7 @@ async def audit_and_sync_cash_movements(current_user: CurrentUser = Depends(get_
     date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     # Find active session
-    active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+    active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
     if not active_session:
         raise HTTPException(status_code=400, detail="No hay sesión de caja activa. Abre la caja primero.")
     
@@ -5800,7 +5800,7 @@ async def get_cash_summary_realtime(date: Optional[str] = None, current_user: Cu
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     # Find active session
-    active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
+    active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
     
     empty_response = {
         "date": date,
@@ -5947,7 +5947,7 @@ async def close_cash_register(closing: CashClosingCreate, current_user: CurrentU
     """Close the active cash session and create closing record with corrected financial logic"""
     
     # Find active session
-    active_session = await db.cash_sessions.find_one({"date": closing.date, "status": "open"})
+    active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": closing.date, "status": "open"}})
     
     if not active_session:
         raise HTTPException(status_code=400, detail="No active cash session found for this date")
@@ -6075,7 +6075,7 @@ async def search_cash_movements(
     # Enrich with rental/customer data if available
     for mov in movements:
         if mov.get("reference_id") and mov.get("reference_type") == "rental":
-            rental = await db.rentals.find_one({"id": mov["reference_id"]}, {"_id": 0, "customer_name": 1, "customer_dni": 1, "items": 1})
+            rental = await db.rentals.find_one({**current_user.get_store_filter(), **{"id": mov["reference_id"]}}, {"_id": 0, "customer_name": 1, "customer_dni": 1, "items": 1})
             if rental:
                 mov["customer_name"] = rental.get("customer_name", mov.get("customer_name"))
                 mov["customer_dni"] = rental.get("customer_dni", "")
@@ -6134,8 +6134,8 @@ async def validate_and_fix_orphan_movements(current_user: CurrentUser = Depends(
     """
     # Find orphan movements from last 24 hours
     yesterday = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
-    orphans = await db.cash_movements.find({
-        "session_id": {"$exists": False},
+    orphans = await db.cash_movements.find({**current_user.get_store_filter(), **{
+        "session_id": {"$exists": False}},
         "created_at": {"$gte": yesterday}
     }, {"_id": 0}).to_list(1000)
     
@@ -6148,10 +6148,10 @@ async def validate_and_fix_orphan_movements(current_user: CurrentUser = Depends(
             movement_date = movement["created_at"][:10]  # YYYY-MM-DD
             
             # Find active session for that date
-            session = await db.cash_sessions.find_one({
+            session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{
                 "date": movement_date,
                 "status": "open"
-            })
+            }})
             
             if session:
                 # Link movement to session
@@ -6243,10 +6243,10 @@ async def fix_return_dates(current_user: CurrentUser = Depends(get_current_user)
     This sets actual_return_date to end_date for historical rentals.
     """
     # Find all returned rentals without actual_return_date
-    rentals_to_fix = await db.rentals.find({
+    rentals_to_fix = await db.rentals.find({**current_user.get_store_filter(), **{
         "status": "returned",
         "$or": [
-            {"actual_return_date": {"$exists": False}},
+            {"actual_return_date": {"$exists": False}}},
             {"actual_return_date": None}
         ]
     }, {"_id": 0, "id": 1, "end_date": 1, "created_at": 1}).to_list(1000)
