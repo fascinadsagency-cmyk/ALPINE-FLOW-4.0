@@ -1133,7 +1133,7 @@ async def get_items(
         else:
             query["$or"] = search_conditions
     
-    items = await db.items.find(query, {"_id": 0}).to_list(10000)
+    items = await db.items.find(query, {"_id": 0}).to_list(None)  # No limit - return all matching items
     return [ItemResponse(**i) for i in items]
 
 @api_router.get("/items/paginated/list")
