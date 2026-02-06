@@ -372,38 +372,109 @@ export default function Inventory() {
     }
   };
 
-  const loadItems = async () => {
-    setLoading(true);
+  const loadItems = async (reset = false) => {
+    const currentPage = reset ? 1 : page;
+    
+    if (reset) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
+
     try {
-      const params = {};
-      if (filterStatus && filterStatus !== "all") params.status = filterStatus;
-      if (filterType && filterType !== "all") params.item_type = filterType;
-      if (debouncedSearch) params.search = debouncedSearch;
-      if (sortBy) params.sort_by = sortBy;
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: '500',
+      });
+      
+      if (filterStatus && filterStatus !== "all") {
+        params.append('status', filterStatus);
+      }
+      if (filterType && filterType !== "all") {
+        params.append('item_type', filterType);
+      }
+      if (debouncedSearch) {
+        params.append('search', debouncedSearch);
+      }
       
       // Use profitability endpoint if enabled
       if (showProfitability) {
+        // For now, fallback to old endpoint for profitability view
+        // TODO: Optimize profitability endpoint with pagination
         const response = await axios.get(`${API}/items/with-profitability`, {
-          params,
+          params: {
+            status: filterStatus !== "all" ? filterStatus : undefined,
+            item_type: filterType !== "all" ? filterType : undefined,
+            search: debouncedSearch || undefined,
+            sort_by: sortBy || undefined
+          },
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         setItems(response.data.items);
         setProfitabilitySummary(response.data.summary);
+        setHasMore(false); // Disable scroll for profitability view
+        setTotalItems(response.data.items.length);
       } else {
-        const response = await itemApi.getAll(params);
-        setItems(response.data);
-        setProfitabilitySummary(null);
+        const response = await axios.get(`${API}/items/paginated/list?${params}`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+
+        const newItems = response.data.items;
+        const pagination = response.data.pagination;
+
+        if (reset) {
+          setItems(newItems);
+          setPage(1);
+        } else {
+          setItems(prev => [...prev, ...newItems]);
+        }
+
+        setHasMore(pagination.has_next);
+        setTotalItems(pagination.total);
+        
+        if (!reset) {
+          setPage(currentPage + 1);
+        }
       }
     } catch (error) {
+      console.error("Error loading items:", error);
       toast.error("Error al cargar inventario");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
-    loadItems();
-  }, [filterStatus, filterType, showProfitability, sortBy, debouncedSearch]);
+    setItems([]);
+    setPage(1);
+    setHasMore(true);
+    loadItems(true);
+  }, [filterStatus, filterType, debouncedSearch, showProfitability, sortBy]);
+
+  // ========== INFINITE SCROLL OBSERVER ==========
+  useEffect(() => {
+    if (showProfitability) return; // Disable for profitability view
+    
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
+          loadItems(false);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [hasMore, loading, loadingMore, page, debouncedSearch, filterStatus, filterType, showProfitability]);
 
   // Load individual item profitability data
   const loadItemProfitability = async (item) => {
