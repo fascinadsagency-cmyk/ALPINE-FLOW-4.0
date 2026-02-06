@@ -1945,15 +1945,29 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
               )}
               {/* FIN CONDICIONAL showProfitability */}
               
+              {/* Infinite Scroll Loading Indicator */}
+              {!showProfitability && loadingMore && (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <span className="ml-2 text-slate-600">Cargando más artículos...</span>
+                </div>
+              )}
+              
               {/* Infinite Scroll Observer Target */}
-              {!showProfitability && (
-                <div ref={observerTarget} className="h-4 flex justify-center items-center">
-                  {loadingMore && (
-                    <div className="flex items-center gap-2 text-slate-500">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span className="text-sm">Cargando más artículos...</span>
-                    </div>
+              {!showProfitability && hasMore && !loading && (
+                <div ref={observerTarget} className="h-10 flex justify-center items-center">
+                  {!loadingMore && (
+                    <span className="text-xs text-slate-400">Scroll para cargar más</span>
                   )}
+                </div>
+              )}
+              
+              {/* End of List Indicator */}
+              {!showProfitability && !hasMore && items.length > 0 && (
+                <div className="py-6 text-center text-slate-500 text-sm border-t border-slate-200 mt-4">
+                  <Badge variant="outline" className="bg-slate-50">
+                    Fin de la lista - {totalItems} artículo{totalItems !== 1 ? 's' : ''} en total
+                  </Badge>
                 </div>
               )}
             </div>
