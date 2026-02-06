@@ -733,20 +733,30 @@ export default function Customers() {
   };
 
   // ========== EXPORT FUNCTIONALITY ==========
-  const exportCustomers = (customersToExport = null) => {
+  const exportCustomers = async (customersToExport = null) => {
     try {
-      // Determine which customers to export
       let dataToExport;
       let fileName;
       
       if (customersToExport) {
-        // Export selected customers
-        dataToExport = allCustomers.filter(c => customersToExport.includes(c.id));
+        // Export selected customers - fetch full details
+        toast.info("Cargando clientes seleccionados...");
+        const promises = customersToExport.map(id => 
+          axios.get(`${API}/customers/${id}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          })
+        );
+        const responses = await Promise.all(promises);
+        dataToExport = responses.map(r => r.data);
         fileName = `clientes_seleccionados_${new Date().toISOString().split('T')[0]}.xlsx`;
       } else {
-        // Export all filtered customers
-        dataToExport = customers;
-        fileName = `clientes_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+        // Export ALL customers from server (optimized for large datasets)
+        toast.info("Exportando todos los clientes... Esto puede tardar un momento.");
+        const response = await axios.get(`${API}/customers/export/all?format=json`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        dataToExport = response.data.customers;
+        fileName = `clientes_export_completo_${new Date().toISOString().split('T')[0]}.xlsx`;
       }
 
       if (dataToExport.length === 0) {
