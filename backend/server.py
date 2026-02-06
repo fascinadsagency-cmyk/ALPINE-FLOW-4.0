@@ -1617,6 +1617,9 @@ async def update_item(item_id: str, item: ItemCreate, current_user: CurrentUser 
         "category": "STANDARD",  # All individual items are STANDARD
         "maintenance_interval": item.maintenance_interval or 30
     }
+    # Only update status if explicitly provided (manual override)
+    if item.status and item.status in ["available", "rented", "maintenance", "retired"]:
+        update_doc["status"] = item.status
     await db.items.update_one({**current_user.get_store_filter(), "id": item_id}, {"$set": update_doc})
     
     updated = await db.items.find_one({**current_user.get_store_filter(), **{"id": item_id}}, {"_id": 0})
