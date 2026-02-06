@@ -957,7 +957,7 @@ async def get_items(
         else:
             query["$or"] = search_conditions
     
-    items = await db.items.find(query, {"_id": 0}).to_list(500)
+    items = await db.items.find(query, {"_id": 0}).to_list(10000)
     return [ItemResponse(**i) for i in items]
 
 @api_router.get("/items/generic")
