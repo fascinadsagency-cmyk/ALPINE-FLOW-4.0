@@ -1136,6 +1136,117 @@ async def get_items(
     items = await db.items.find(query, {"_id": 0}).to_list(10000)
     return [ItemResponse(**i) for i in items]
 
+@api_router.get("/items/paginated/list")
+async def get_items_paginated(
+    page: int = Query(1, ge=1),
+    limit: int = Query(500, ge=10, le=1000),
+    status: Optional[str] = None,
+    item_type: Optional[str] = None,
+    category: Optional[str] = None,
+    search: Optional[str] = None,
+    include_deleted: bool = Query(False),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get items with server-side pagination for handling large inventories (50K+ items)
+    Optimized for scroll-infinite pattern with minimal data transfer
+    """
+    query = {}
+    
+    # CRITICAL: Always exclude deleted items unless explicitly requested
+    if not include_deleted:
+        query["status"] = {"$nin": ["deleted"]}
+    
+    # Apply status filter
+    if status and status != "all":
+        query["status"] = status
+    
+    if item_type and item_type != "all":
+        query["item_type"] = item_type
+        
+    if category and category != "all":
+        query["category"] = category
+    
+    # Search filter
+    if search and search.strip():
+        search_conditions = [
+            {"internal_code": {"$regex": search, "$options": "i"}},
+            {"barcode": {"$regex": search, "$options": "i"}},
+            {"barcode_2": {"$regex": search, "$options": "i"}},
+            {"serial_number": {"$regex": search, "$options": "i"}},
+            {"brand": {"$regex": search, "$options": "i"}},
+            {"model": {"$regex": search, "$options": "i"}},
+            {"size": {"$regex": search, "$options": "i"}},
+            {"name": {"$regex": search, "$options": "i"}}
+        ]
+        if query:
+            existing_query = dict(query)
+            query = {"$and": [existing_query, {"$or": search_conditions}]}
+        else:
+            query["$or"] = search_conditions
+    
+    # Calculate total count
+    total = await db.items.count_documents(query)
+    
+    # Get paginated items with minimal fields for list view
+    skip = (page - 1) * limit
+    items = await db.items.find(
+        query,
+        {
+            "_id": 0,
+            "id": 1,
+            "internal_code": 1,
+            "barcode": 1,
+            "barcode_2": 1,
+            "serial_number": 1,
+            "item_type": 1,
+            "brand": 1,
+            "model": 1,
+            "size": 1,
+            "status": 1,
+            "category": 1,
+            "days_used": 1,
+            "maintenance_interval": 1,
+            "is_generic": 1,
+            "name": 1,
+            "stock_total": 1,
+            "stock_available": 1
+        }
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    total_pages = (total + limit - 1) // limit
+    
+    return {
+        "items": items,
+        "pagination": {
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "total_pages": total_pages,
+            "has_next": page < total_pages,
+            "has_prev": page > 1
+        }
+    }
+
+@api_router.get("/items/stats/summary")
+async def get_items_stats(
+    current_user: dict = Depends(get_current_user)
+):
+    """Get inventory statistics without loading all records - optimized for large datasets"""
+    total = await db.items.count_documents({"status": {"$nin": ["deleted"]}})
+    available = await db.items.count_documents({"status": "available"})
+    rented = await db.items.count_documents({"status": "rented"})
+    maintenance = await db.items.count_documents({"status": "maintenance"})
+    retired = await db.items.count_documents({"status": "retired"})
+    
+    return {
+        "total": total,
+        "available": available,
+        "rented": rented,
+        "maintenance": maintenance,
+        "retired": retired
+    }
+
 @api_router.get("/items/generic")
 async def get_generic_items(
     item_type: Optional[str] = None,
