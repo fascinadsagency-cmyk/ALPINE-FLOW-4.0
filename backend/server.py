@@ -4559,10 +4559,11 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
     # ========== CUSTOMERS TODAY (COUNT DISTINCT customer_id) ==========
     # Count unique customers who had a rental created today
     # This prevents counting the same customer multiple times if they rented multiple times
-    # Also excludes cancelled/deleted rentals
+    # Also excludes cancelled/deleted rentals - Multi-tenant: Filter by store
     customers_pipeline = [
         {
             "$match": {
+                **current_user.get_store_filter(),
                 "created_at": {"$gte": start, "$lte": end},
                 "status": {"$nin": ["cancelled", "deleted"]}  # Exclude cancelled/deleted
             }
@@ -4579,11 +4580,12 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
     customers_result = await db.rentals.aggregate(customers_pipeline).to_list(1)
     customers_today = customers_result[0]["unique_customers"] if customers_result else 0
     
-    # Active rentals
-    active_rentals = await db.rentals.count_documents({"status": {"$in": ["active", "partial"]}})
+    # Active rentals - Multi-tenant: Filter by store
+    active_rentals = await db.rentals.count_documents({**current_user.get_store_filter(), "status": {"$in": ["active", "partial"]}})
     
-    # Pending returns (overdue)
+    # Pending returns (overdue) - Multi-tenant: Filter by store
     overdue = await db.rentals.count_documents({
+        **current_user.get_store_filter(),
         "status": {"$in": ["active", "partial"]},
         "end_date": {"$lt": today}
     })
