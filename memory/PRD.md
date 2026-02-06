@@ -2,7 +2,33 @@
 
 ## Estado del Proyecto
 **Última actualización:** 2026-02-06
-**Estado:** Operativo - Selector de Packs con Edición Local IMPLEMENTADO
+**Estado:** Operativo - Multi-Tenant SaaS Estable
+
+---
+
+## Cambios Recientes (2026-02-06)
+
+### Correcciones de Issues Multi-Tenant
+1. **✅ Lógica "Find or Create" en Importador (CONFIRMADA FUNCIONAL)**
+   - El endpoint `POST /api/items/import` YA crea tipos automáticamente si no existen
+   - El endpoint `POST /api/items/import-csv` también soporta esta funcionalidad
+   - La lógica normaliza el tipo (lowercase, underscores) antes de buscar/crear
+   
+2. **✅ Script de Reparación de Tarifas v2 EJECUTADO**
+   - Nuevo script `/app/backend/fix_missing_tariffs_v2.py` con normalización robusta
+   - **1939 artículos reparados** en Tienda 1 (asignada tarifa correspondiente)
+   - Los 9 restantes no tienen tarifa definida para su tipo (ski, boots)
+   - Tienda 2 tiene 1950 sin tarifa porque no tiene tarifas configuradas
+   
+3. **✅ Checkboxes en Clientes MEJORADOS**
+   - Componente Checkbox actualizado con bordes más visibles (border-2 border-slate-300)
+   - Tamaño aumentado de h-4 w-4 a h-5 w-5
+   - Efecto hover y transiciones añadidos
+   
+4. **✅ Persistencia de Logo en Settings VERIFICADA**
+   - El sistema guarda en localStorage correctamente
+   - Fallback desde servidor si existe configuración en BD
+   - Compresión automática de imágenes > 200KB
 
 ---
 
