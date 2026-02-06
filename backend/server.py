@@ -6063,6 +6063,28 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+@app.on_event("startup")
+async def startup_db_indexes():
+    """Create database indexes for performance optimization"""
+    try:
+        # Customer indexes for fast search and filtering
+        await db.customers.create_index("dni", unique=True)
+        await db.customers.create_index("name")
+        await db.customers.create_index("phone")
+        await db.customers.create_index("created_at")
+        await db.customers.create_index("source")
+        
+        # Rental indexes for status filtering
+        await db.rentals.create_index("status")
+        await db.rentals.create_index("customer_id")
+        await db.rentals.create_index("customer_dni")
+        await db.rentals.create_index("start_date")
+        await db.rentals.create_index("end_date")
+        
+        logger.info("✅ Database indexes created successfully")
+    except Exception as e:
+        logger.warning(f"⚠️ Index creation error (may already exist): {e}")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
