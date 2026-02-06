@@ -931,11 +931,44 @@ export default function Returns() {
   const confirmSettlement = async () => {
     console.log('=== CONFIRMANDO LIQUIDACIÓN ===');
     console.log('settlementData:', settlementData);
+    console.log('fullRefundOverride:', fullRefundOverride);
     
     setSettlementProcessing(true);
     try {
-      const { balance, itemsToReturn, paymentMethod } = settlementData;
+      const { balance, itemsToReturn, paymentMethod, totalPaid } = settlementData;
       
+      // CASO ESPECIAL: Anulación Total (Override activado)
+      if (fullRefundOverride) {
+        const refundAmount = totalPaid || 0;
+        console.log('=== ANULACIÓN TOTAL - Devolviendo todo:', refundAmount);
+        
+        if (refundAmount > 0) {
+          // Registrar salida de caja por el importe total
+          await axios.post(`${API}/cash/movements`, {
+            type: "expense",
+            category: "refund",
+            amount: refundAmount,
+            payment_method: paymentMethod || settlementData.originalPaymentMethod || 'cash',
+            description: `⚠️ ANULACIÓN TOTAL - ${rental.customer_name} (Devolución completa por excepción)`,
+            reference_id: rental.id,
+            reference_type: "rental"
+          }, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          });
+          toast.success(`⚠️ Anulación completada - Devuelto €${refundAmount.toFixed(2)} al cliente`);
+        } else {
+          toast.success(`⚠️ Anulación completada - Sin importe a devolver`);
+        }
+        
+        // Ejecutar la devolución física
+        await executeReturn(itemsToReturn);
+        
+        // Reset del override
+        setFullRefundOverride(false);
+        return;
+      }
+      
+      // FLUJO NORMAL (sin override)
       if (balance > 0) {
         // CASO B: Cobrar al cliente
         console.log('Registrando cobro:', balance);
@@ -972,6 +1005,7 @@ export default function Returns() {
       toast.error(`❌ ${error.response?.data?.detail || "Error al procesar la liquidación"}`);
     } finally {
       setSettlementProcessing(false);
+      setFullRefundOverride(false); // Reset always
     }
   };
 
