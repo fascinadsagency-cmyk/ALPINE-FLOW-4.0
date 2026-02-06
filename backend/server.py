@@ -4456,8 +4456,9 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
     start = f"{today}T00:00:00"
     end = f"{today}T23:59:59"
     
-    # Today's rentals count (new contracts)
+    # Today's rentals count (new contracts) - Multi-tenant: Filter by store
     today_rentals = await db.rentals.count_documents({
+        **current_user.get_store_filter(),
         "created_at": {"$gte": start, "$lte": end}
     })
     
@@ -4496,17 +4497,19 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
         # Net revenue = income - refunds (same formula as cash register balance)
         today_revenue = total_income - total_refunds
         
-        # Calculate UNPAID amount separately for display
+        # Calculate UNPAID amount separately for display - Multi-tenant: Filter by store
         unpaid_rentals = await db.rentals.find({
+            **current_user.get_store_filter(),
             "created_at": {"$gte": start, "$lte": end},
             "payment_method": {"$in": UNPAID_METHODS}
         }, {"_id": 0, "total_amount": 1}).to_list(1000)
         unpaid_amount = sum(r.get("total_amount", 0) for r in unpaid_rentals)
     else:
         # No active session - fallback to rentals created today
-        # Also exclude unpaid methods here
+        # Also exclude unpaid methods here - Multi-tenant: Filter by store
         UNPAID_METHODS = ["pending"]
         rentals = await db.rentals.find({
+            **current_user.get_store_filter(),
             "created_at": {"$gte": start, "$lte": end},
             "payment_method": {"$nin": UNPAID_METHODS}
         }, {"_id": 0, "paid_amount": 1}).to_list(10000)
@@ -4515,10 +4518,11 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
     
     # ========== RETURNS TODAY (COUNT UNITS, NOT LINES) ==========
     # Improved: Count individual returned UNITS, not just rental documents
-    # Query all rentals that had items returned today
+    # Query all rentals that had items returned today - Multi-tenant: Filter by store
     returns_today = 0
     rentals_with_returns_today = await db.rentals.find(
         {
+            **current_user.get_store_filter(),
             "status": "returned",
             "actual_return_date": {"$gte": start, "$lte": end}
         },
@@ -4534,9 +4538,11 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
                 returns_today += item.get("quantity", 1)
     
     # Fallback: If no results with actual_return_date, count cash movements of type 'return'
+    # Multi-tenant: Filter by store
     if returns_today == 0:
         # Count distinct return movements in cash register today
         return_movements = await db.cash_movements.find({
+            **current_user.get_store_filter(),
             "type": "return",
             "created_at": {"$gte": start, "$lte": end}
         }, {"_id": 0, "rental_id": 1}).to_list(10000)
