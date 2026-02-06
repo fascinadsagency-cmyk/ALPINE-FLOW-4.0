@@ -37,7 +37,6 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import axios from "axios";
-import { useEffect } from "react";
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
