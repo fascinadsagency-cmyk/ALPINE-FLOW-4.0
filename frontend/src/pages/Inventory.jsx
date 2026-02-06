@@ -2948,18 +2948,6 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                     className="h-11 mt-1"
                   />
                 </div>
-                {/* CAMPO CATEGORÍA/GAMA ELIMINADO del formulario de edición */}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Precio Coste (€)</Label>
-                  <Input
-                    type="number"
-                    value={editingItem.purchase_price}
-                    onChange={(e) => setEditingItem({ ...editingItem, purchase_price: e.target.value })}
-                    className="h-11 mt-1"
-                  />
-                </div>
                 <div>
                   <Label>Mantenimiento cada (días)</Label>
                   <Input
