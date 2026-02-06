@@ -16,6 +16,9 @@ import csv
 import io
 from fastapi import UploadFile, File
 
+# Multi-tenant imports
+from multitenant import get_current_user, CurrentUser, require_super_admin, create_token as mt_create_token
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
