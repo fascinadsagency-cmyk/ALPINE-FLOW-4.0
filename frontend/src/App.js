@@ -19,6 +19,7 @@ import Integrations from "@/pages/Integrations";
 import ActiveRentals from "@/pages/ActiveRentals";
 import Providers from "@/pages/Providers";
 import Settings from "@/pages/Settings";
+import StoreManagement from "@/pages/StoreManagement";
 import Layout from "@/components/Layout";
 
 // ============================================================
