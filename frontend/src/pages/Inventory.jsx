@@ -1944,6 +1944,18 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
               </DndContext>
               )}
               {/* FIN CONDICIONAL showProfitability */}
+              
+              {/* Infinite Scroll Observer Target */}
+              {!showProfitability && (
+                <div ref={observerTarget} className="h-4 flex justify-center items-center">
+                  {loadingMore && (
+                    <div className="flex items-center gap-2 text-slate-500">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm">Cargando más artículos...</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </CardContent>
