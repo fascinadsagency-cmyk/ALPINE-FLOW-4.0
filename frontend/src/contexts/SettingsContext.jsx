@@ -618,6 +618,9 @@ export function SettingsProvider({ children }) {
     paperWidth, setPaperWidth,
     autoPrintOnPayment, setAutoPrintOnPayment,
     printDoubleCopy, setPrintDoubleCopy,
+    
+    // Backend sync
+    saveSettingsToBackend,
   };
 
   return (
