@@ -545,6 +545,52 @@ export function SettingsProvider({ children }) {
     }
   };
 
+  // Función para guardar todas las settings en el backend
+  const saveSettingsToBackend = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.warn('[Settings] No token, no se puede guardar en backend');
+      return false;
+    }
+    
+    try {
+      console.log('[Settings] Guardando configuración en backend...');
+      const payload = {
+        company_logo: companyLogo,
+        ticket_header: ticketHeader,
+        ticket_footer: ticketFooter,
+        ticket_terms: ticketTerms,
+        show_dni_on_ticket: showDniOnTicket,
+        show_vat_on_ticket: showVatOnTicket,
+        default_vat: defaultVat,
+        vat_included_in_prices: vatIncludedInPrices,
+        language: language,
+        dark_mode: darkMode,
+        auto_print: autoPrint
+      };
+      
+      const response = await fetch(`${API}/api/settings`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      if (response.ok) {
+        console.log('[Settings] Configuración guardada en backend');
+        return true;
+      } else {
+        console.error('[Settings] Error guardando en backend:', response.status);
+        return false;
+      }
+    } catch (error) {
+      console.error('[Settings] Error guardando en backend:', error);
+      return false;
+    }
+  };
+
   const value = {
     // Basic
     darkMode, setDarkMode,
