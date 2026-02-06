@@ -852,7 +852,7 @@ export default function Inventory() {
       setImportResult(response.data);
       if (response.data.created > 0) {
         toast.success(`${response.data.created} artículos importados`);
-        loadItems();
+        loadItems(true);
       }
       if (response.data.errors?.length > 0) {
         toast.warning(`${response.data.errors.length} errores en la importación`);
