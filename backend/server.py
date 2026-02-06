@@ -6552,6 +6552,43 @@ async def update_store(store_id: int, updates: StoreUpdate, current_user: Curren
     
     return {"message": "Store updated successfully"}
 
+@api_router.delete("/stores/{store_id}")
+async def delete_store(store_id: int, current_user: CurrentUser = Depends(require_super_admin)):
+    """Delete a store - SUPER_ADMIN only
+    
+    WARNING: This will:
+    1. Delete the store record
+    2. Delete all users associated with the store
+    3. Optionally delete all store data (customers, items, rentals)
+    
+    Use with caution!
+    """
+    # Prevent deleting store 1 (main store)
+    if store_id == 1:
+        raise HTTPException(status_code=400, detail="Cannot delete the main store (Store 1)")
+    
+    # Check if store exists
+    store = await db.stores.find_one({"store_id": store_id})
+    if not store:
+        raise HTTPException(status_code=404, detail="Store not found")
+    
+    # Delete all users associated with this store
+    users_result = await db.users.delete_many({"store_id": store_id})
+    
+    # Delete the store
+    await db.stores.delete_one({"store_id": store_id})
+    
+    # Optional: Delete all store data (customers, items, rentals, etc.)
+    # For now, we'll just delete the store and users
+    # The data will remain but won't be accessible
+    
+    return {
+        "message": f"Store {store_id} deleted successfully",
+        "deleted_users": users_result.deleted_count,
+        "store_name": store.get("name"),
+        "warning": "Store data (customers, items, rentals) still exists in database but is inaccessible"
+    }
+
 @api_router.post("/stores/{store_id}/impersonate")
 async def impersonate_store(store_id: int, current_user: CurrentUser = Depends(require_super_admin)):
     """Impersonate a store - SUPER_ADMIN only - Access as that store's admin"""
