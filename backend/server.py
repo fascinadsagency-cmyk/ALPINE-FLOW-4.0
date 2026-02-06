@@ -409,7 +409,7 @@ async def get_me(current_user: CurrentUser = Depends(get_current_user)):
 @api_router.post("/customers", response_model=CustomerResponse)
 async def create_customer(customer: CustomerCreate, current_user: CurrentUser = Depends(get_current_user)):
     # Check for duplicate within the same store
-    query ={**current_user.get_store_filter(),  {"dni": customer.dni, **current_user.get_store_filter()}
+    query = {**current_user.get_store_filter(), "dni": customer.dni}
     existing = await db.customers.find_one(query)
     if existing:
         raise HTTPException(status_code=400, detail="Customer with this DNI already exists in your store")
