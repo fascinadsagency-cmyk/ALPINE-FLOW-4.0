@@ -170,6 +170,9 @@ export default function NewRental() {
   const [editingItemType, setEditingItemType] = useState(null); // Track which item is editing its type
   const [editingPackName, setEditingPackName] = useState(null); // Track which pack is editing its name
   
+  // Pack expansion state - which pack is currently expanded to show components
+  const [expandedPackId, setExpandedPackId] = useState(null);
+  
   // Customer technical data visibility toggle
   const [showCustomerTechData, setShowCustomerTechData] = useState(false);
   
