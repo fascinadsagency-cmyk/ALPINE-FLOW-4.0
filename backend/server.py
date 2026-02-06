@@ -450,7 +450,7 @@ async def get_customers(
                 {"phone": {"$regex": search, "$options": "i"}}
             ]
         }
-    customers = await db.customers.find(query, {"_id": 0}).to_list(100)
+    customers = await db.customers.find(query, {"_id": 0}).to_list(5000)
     return [CustomerResponse(**c) for c in customers]
 
 @api_router.get("/customers/with-status")
@@ -469,7 +469,7 @@ async def get_customers_with_status(
             ]
         }
     
-    customers = await db.customers.find(query, {"_id": 0}).to_list(500)
+    customers = await db.customers.find(query, {"_id": 0}).to_list(10000)
     
     # Get all active rentals
     active_rentals = await db.rentals.find(
@@ -563,7 +563,7 @@ async def get_customer_history(customer_id: str, current_user: dict = Depends(ge
         cash_movements = await db.cash_movements.find(
             {"reference_id": {"$in": rental_ids}},
             {"_id": 0}
-        ).sort("created_at", -1).to_list(100)
+        ).sort("created_at", -1).to_list(5000)
         
         for m in cash_movements:
             transactions.append({
@@ -970,7 +970,7 @@ async def get_generic_items(
     if item_type:
         query["item_type"] = item_type
     
-    items = await db.items.find(query, {"_id": 0}).to_list(100)
+    items = await db.items.find(query, {"_id": 0}).to_list(5000)
     return [ItemResponse(**i) for i in items]
 
 @api_router.post("/items/{item_id}/adjust-stock")
@@ -1092,7 +1092,7 @@ async def get_items_with_profitability(
         else:
             query["$or"] = search_conditions
     
-    items = await db.items.find(query, {"_id": 0}).to_list(500)
+    items = await db.items.find(query, {"_id": 0}).to_list(10000)
     
     # Get all closed rentals to calculate revenue per item
     closed_rentals = await db.rentals.find(
@@ -1381,7 +1381,7 @@ async def delete_item(item_id: str, force: bool = Query(False), current_user: di
 async def get_item_types(current_user: dict = Depends(get_current_user)):
     """Get all item types (only custom types from database)"""
     # Get custom types from database only - no hardcoded defaults
-    custom_types = await db.item_types.find({}, {"_id": 0}).to_list(100)
+    custom_types = await db.item_types.find({}, {"_id": 0}).to_list(5000)
     return [ItemTypeResponse(**t) for t in custom_types]
 
 @api_router.post("/item-types", response_model=ItemTypeResponse)
@@ -2326,7 +2326,7 @@ async def get_pending_returns(current_user: dict = Depends(get_current_user)):
         items_cursor = await db.items.find(
             {"id": {"$in": all_item_ids}},
             {"_id": 0, "id": 1, "item_type": 1}
-        ).to_list(500)
+        ).to_list(10000)
         for item in items_cursor:
             items_map[item["id"]] = item.get("item_type", "unknown")
     
@@ -3361,7 +3361,7 @@ async def get_maintenance(
     if status:
         query["status"] = status
     
-    records = await db.maintenance.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    records = await db.maintenance.find(query, {"_id": 0}).sort("created_at", -1).to_list(5000)
     return [MaintenanceResponse(**r) for r in records]
 
 @api_router.get("/maintenance/fleet")
@@ -3380,7 +3380,7 @@ async def get_maintenance_fleet(current_user: dict = Depends(get_current_user)):
     in_maintenance = await db.items.find(
         {"status": {"$in": ["maintenance", "repair", "broken"]}},
         {"_id": 0}
-    ).to_list(100)
+    ).to_list(5000)
     
     # 2. Items that NEED maintenance (same query as Dashboard)
     # Exclude items with maintenance_interval <= 0 to avoid false positives with generic items
@@ -3395,7 +3395,7 @@ async def get_maintenance_fleet(current_user: dict = Depends(get_current_user)):
             "status": {"$in": ["available", "rented"]}
         },
         {"_id": 0}
-    ).to_list(100)
+    ).to_list(5000)
     
     # 3. Also include generic items with maintenance_interval = 0 that Dashboard shows
     # (for consistency with what user sees)
@@ -3406,7 +3406,7 @@ async def get_maintenance_fleet(current_user: dict = Depends(get_current_user)):
             "status": {"$in": ["available", "rented"]}
         },
         {"_id": 0}
-    ).to_list(100)
+    ).to_list(5000)
     
     # Combine all, avoiding duplicates
     all_ids = set()
@@ -3917,7 +3917,7 @@ async def get_daily_report(date: Optional[str] = None, current_user: dict = Depe
     pending_returns = await db.rentals.find(
         {"status": {"$in": ["active", "partial"]}},
         {"_id": 0}
-    ).to_list(100)
+    ).to_list(5000)
     
     pending_list = []
     for r in pending_returns:
@@ -4016,7 +4016,7 @@ async def get_range_report(
     repairs_revenue = financial_summary["by_category"].get("external_repair", {}).get("total", 0)
     
     # Calculate commissions by provider
-    sources = await db.sources.find({}, {"_id": 0}).to_list(100)
+    sources = await db.sources.find({}, {"_id": 0}).to_list(5000)
     commissions_list = []
     
     for source in sources:
@@ -4200,7 +4200,7 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
         rentals = await db.rentals.find({
             "created_at": {"$gte": start, "$lte": end},
             "payment_method": {"$nin": UNPAID_METHODS}
-        }, {"_id": 0, "paid_amount": 1}).to_list(500)
+        }, {"_id": 0, "paid_amount": 1}).to_list(10000)
         today_revenue = sum(r.get("paid_amount", 0) for r in rentals)
         unpaid_amount = 0
     
@@ -4230,7 +4230,7 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
         return_movements = await db.cash_movements.find({
             "type": "return",
             "created_at": {"$gte": start, "$lte": end}
-        }, {"_id": 0, "rental_id": 1}).to_list(500)
+        }, {"_id": 0, "rental_id": 1}).to_list(10000)
         
         # For each unique rental, sum item quantities
         unique_rental_ids = set(m.get("rental_id") for m in return_movements if m.get("rental_id"))
@@ -4636,7 +4636,7 @@ async def get_returns_control(current_user: dict = Depends(get_current_user)):
     pending_returns = await db.rentals.find({
         "end_date": today_str,
         "status": {"$in": ["active", "pending"]}
-    }, {"_id": 0}).to_list(500)
+    }, {"_id": 0}).to_list(10000)
     
     # Get item details for all items in pending returns
     item_ids = []
@@ -4649,12 +4649,12 @@ async def get_returns_control(current_user: dict = Depends(get_current_user)):
         items_cursor = await db.items.find(
             {"id": {"$in": item_ids}},
             {"_id": 0, "id": 1, "item_type": 1, "brand": 1, "model": 1, "internal_code": 1}
-        ).to_list(500)
+        ).to_list(10000)
         for item in items_cursor:
             items_data[item["id"]] = item
     
     # Get all item types (dynamic categories)
-    item_types = await db.item_types.find({}, {"_id": 0}).to_list(100)
+    item_types = await db.item_types.find({}, {"_id": 0}).to_list(5000)
     type_labels = {t["value"]: t["label"] for t in item_types}
     
     # Count by item type
@@ -4762,7 +4762,7 @@ async def get_dashboard_analytics(
     active_rentals = await db.rentals.find(
         {"status": {"$in": ["active", "partial"]}},
         {"_id": 0, "items": 1, "start_date": 1, "end_date": 1}
-    ).to_list(500)
+    ).to_list(10000)
     
     # Build 7-day calendar
     for day_offset in range(7):
@@ -4835,7 +4835,7 @@ async def get_dashboard_analytics(
     rentals_for_stats = await db.rentals.find(
         {"created_at": {"$gte": analysis_start, "$lte": analysis_end}},
         {"_id": 0, "items": 1, "total_amount": 1, "days": 1}
-    ).to_list(500)
+    ).to_list(10000)
     
     for rental in rentals_for_stats:
         items = rental.get("items", [])
@@ -4975,7 +4975,7 @@ async def create_source(source: SourceCreate, current_user: dict = Depends(get_c
 
 @api_router.get("/sources", response_model=List[SourceResponse])
 async def get_sources(current_user: dict = Depends(get_current_user)):
-    sources = await db.sources.find({}, {"_id": 0}).sort([("is_favorite", -1), ("name", 1)]).to_list(100)
+    sources = await db.sources.find({}, {"_id": 0}).sort([("is_favorite", -1), ("name", 1)]).to_list(5000)
     
     # Count customers per source
     for source in sources:
@@ -5211,7 +5211,7 @@ async def get_active_session(current_user: dict = Depends(get_current_user)):
 @api_router.get("/cash/sessions")
 async def get_cash_sessions(current_user: dict = Depends(get_current_user)):
     """Get all cash sessions (history)"""
-    sessions = await db.cash_sessions.find({}, {"_id": 0}).sort("opened_at", -1).to_list(100)
+    sessions = await db.cash_sessions.find({}, {"_id": 0}).sort("opened_at", -1).to_list(5000)
     return [CashSessionResponse(**s) for s in sessions]
 
 # ==================== CASH MOVEMENTS ROUTES ====================
@@ -5283,7 +5283,7 @@ async def get_cash_movements(
     if movement_type:
         query["movement_type"] = movement_type
     
-    movements = await db.cash_movements.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    movements = await db.cash_movements.find(query, {"_id": 0}).sort("created_at", -1).to_list(10000)
     return [CashMovementResponse(**m) for m in movements]
 
 @api_router.patch("/cash/movements/{movement_id}")
@@ -5347,7 +5347,7 @@ async def get_cash_summary(date: Optional[str] = None, current_user: dict = Depe
     movements = await db.cash_movements.find(
         {"session_id": active_session["id"]},
         {"_id": 0}
-    ).to_list(500)
+    ).to_list(10000)
     
     total_income = sum(m["amount"] for m in movements if m["movement_type"] == "income")
     total_expense = sum(m["amount"] for m in movements if m["movement_type"] == "expense")
@@ -5413,7 +5413,7 @@ async def audit_and_sync_cash_movements(current_user: dict = Depends(get_current
         "paid_amount": {"$gt": 0},
         "created_at": {"$gte": session_opened_at}
     }
-    rentals = await db.rentals.find(rentals_query, {"_id": 0}).to_list(500)
+    rentals = await db.rentals.find(rentals_query, {"_id": 0}).to_list(10000)
     
     for rental in rentals:
         if rental["id"] not in existing_refs:
@@ -5450,7 +5450,7 @@ async def audit_and_sync_cash_movements(current_user: dict = Depends(get_current
         "price": {"$gt": 0},
         "delivery_date": {"$gte": session_opened_at}
     }
-    repairs = await db.external_repairs.find(repairs_query, {"_id": 0}).to_list(500)
+    repairs = await db.external_repairs.find(repairs_query, {"_id": 0}).to_list(10000)
     
     for repair in repairs:
         if repair["id"] not in existing_refs:
@@ -5563,7 +5563,7 @@ async def get_cash_summary_realtime(date: Optional[str] = None, current_user: di
         }}
     ]
     
-    results = await db.cash_movements.aggregate(pipeline).to_list(100)
+    results = await db.cash_movements.aggregate(pipeline).to_list(5000)
     
     # Inicializar acumuladores
     by_method = {
@@ -5740,7 +5740,7 @@ async def close_cash_register(closing: CashClosingCreate, current_user: dict = D
 
 @api_router.get("/cash/closings")
 async def get_cash_closings(current_user: dict = Depends(get_current_user)):
-    closings = await db.cash_closings.find({}, {"_id": 0}).sort("date", -1).to_list(100)
+    closings = await db.cash_closings.find({}, {"_id": 0}).sort("date", -1).to_list(5000)
     return [CashClosingResponse(**c) for c in closings]
 
 @api_router.get("/cash/movements/search")
@@ -5840,7 +5840,7 @@ async def get_cash_movements_history(
             {"notes": {"$regex": search, "$options": "i"}}
         ]
     
-    movements = await db.cash_movements.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    movements = await db.cash_movements.find(query, {"_id": 0}).sort("created_at", -1).to_list(10000)
     return movements
 
 @api_router.post("/cash/validate-orphans")
