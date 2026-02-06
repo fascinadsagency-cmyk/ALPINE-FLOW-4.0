@@ -685,27 +685,13 @@ export default function CashRegister() {
             Gestión de Caja
           </h1>
           <p className={`mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-            Control financiero diario
+            Control financiero diario - {new Date().toLocaleDateString('es-ES', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
           </p>
-        </div>
-        
-        {/* Date Navigator */}
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => changeDate(-1)} data-testid="prev-day">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'bg-white border-slate-200'}`}>
-            <Calendar className="h-4 w-4 text-slate-500" />
-            <Input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="border-0 p-0 h-auto w-[130px] text-center font-medium"
-            />
-          </div>
-          <Button variant="outline" size="icon" onClick={() => changeDate(1)} data-testid="next-day">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
         </div>
       </div>
 
