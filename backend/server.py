@@ -5108,9 +5108,9 @@ async def get_dashboard_analytics(
     # ============ WEEKLY AVAILABILITY CALENDAR ============
     weekly_calendar = []
     
-    # Get all items by category
+    # Get all items by category - Multi-tenant: Filter by store
     all_items = await db.items.find(
-        {"status": {"$in": ["available", "rented"]}},
+        {**current_user.get_store_filter(), "status": {"$in": ["available", "rented"]}},
         {"_id": 0, "id": 1, "category": 1, "status": 1}
     ).to_list(1000)
     
@@ -5121,9 +5121,9 @@ async def get_dashboard_analytics(
         if cat in totals_by_cat:
             totals_by_cat[cat] += 1
     
-    # Get active rentals
+    # Get active rentals - Multi-tenant: Filter by store
     active_rentals = await db.rentals.find(
-        {"status": {"$in": ["active", "partial"]}},
+        {**current_user.get_store_filter(), "status": {"$in": ["active", "partial"]}},
         {"_id": 0, "items": 1, "start_date": 1, "end_date": 1}
     ).to_list(10000)
     
