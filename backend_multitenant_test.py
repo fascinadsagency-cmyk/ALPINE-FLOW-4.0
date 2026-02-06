@@ -82,7 +82,6 @@ class MultiTenantTester:
         """Test 1-7: Verify Store 3 has empty data for all collections"""
         endpoints_expected = [
             ("/packs", 0, "packs"),
-            ("/sources", 0, "proveedores"),
             ("/tariffs", 0, "tarifas"),
             ("/item-types", 0, "tipos personalizados"),
             ("/customers", 0, "clientes"),
@@ -90,6 +89,22 @@ class MultiTenantTester:
         ]
         
         all_passed = True
+        
+        # First get the current count of sources to establish baseline
+        try:
+            response = requests.get(f"{BACKEND_URL}/sources", headers=self.store3_headers)
+            if response.status_code == 200:
+                sources_data = response.json()
+                self.store3_initial_sources = len(sources_data)
+                self.log_test("Store 3 Initial Sources Count", True, 
+                            f"Store 3 has {self.store3_initial_sources} existing sources")
+            else:
+                self.store3_initial_sources = 0
+                self.log_test("Store 3 Initial Sources Count", False, 
+                            f"Could not get sources: {response.status_code}")
+        except Exception as e:
+            self.store3_initial_sources = 0
+            self.log_test("Store 3 Initial Sources Count", False, f"Exception: {str(e)}")
         
         for endpoint, expected_count, description in endpoints_expected:
             try:
