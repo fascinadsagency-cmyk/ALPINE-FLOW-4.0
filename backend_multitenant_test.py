@@ -156,8 +156,12 @@ class MultiTenantTester:
     def test_store3_create_provider(self):
         """Test 12: Create provider in Store 3"""
         try:
+            # Use a unique name with timestamp to avoid conflicts
+            import time
+            timestamp = int(time.time())
+            
             provider_data = {
-                "name": "Proveedor Test Store 3",
+                "name": f"Proveedor Test Store 3 - {timestamp}",
                 "discount_percent": 15.0,
                 "commission_percent": 5.0,
                 "contact_info": "test@store3.com",
