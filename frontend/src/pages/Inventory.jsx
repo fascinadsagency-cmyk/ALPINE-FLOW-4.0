@@ -1022,7 +1022,7 @@ export default function Inventory() {
       
       if (response.data.imported > 0) {
         toast.success(`${response.data.imported} artículos importados correctamente`);
-        loadItems();
+        loadItems(true);
       }
     } catch (error) {
       console.error("Import error:", error);
