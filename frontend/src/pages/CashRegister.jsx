@@ -151,8 +151,18 @@ export default function CashRegister() {
   // Tabs
   const [activeTab, setActiveTab] = useState("today");
   const [closureHistory, setClosureHistory] = useState([]);
+  const [filteredClosures, setFilteredClosures] = useState([]);
   const [historicLoading, setHistoricLoading] = useState(false);
   const [revertClosureId, setRevertClosureId] = useState(null);
+  
+  // Filtro de cierres - por defecto últimos 7 días
+  const [closureFilterType, setClosureFilterType] = useState("week"); // "today", "week", "month", "range"
+  const [closureFilterFrom, setClosureFilterFrom] = useState(
+    new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  );
+  const [closureFilterTo, setClosureFilterTo] = useState(
+    new Date().toISOString().split('T')[0]
+  );
   
   // ============ HISTORIAL / BUSCADOR STATE ============
   const [historySearch, setHistorySearch] = useState({
