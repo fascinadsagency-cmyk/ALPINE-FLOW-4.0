@@ -5304,13 +5304,14 @@ async def delete_source(source_id: str, current_user: CurrentUser = Depends(get_
 
 @api_router.put("/sources/{source_id}", response_model=SourceResponse)
 async def update_source(source_id: str, source: SourceCreate, current_user: CurrentUser = Depends(get_current_user)):
-    existing = await db.sources.find_one({"id": source_id})
+    # Multi-tenant: Check existing in same store
+    existing = await db.sources.find_one({**current_user.get_store_filter(), "id": source_id})
     if not existing:
         raise HTTPException(status_code=404, detail="Source not found")
     
-    # Check if name changed and new name exists
+    # Check if name changed and new name exists (within same store)
     if source.name != existing["name"]:
-        name_exists = await db.sources.find_one({"name": source.name, "id": {"$ne": source_id}})
+        name_exists = await db.sources.find_one({**current_user.get_store_filter(), "name": source.name, "id": {"$ne": source_id}})
         if name_exists:
             raise HTTPException(status_code=400, detail="Source name already exists")
     
@@ -5325,27 +5326,30 @@ async def update_source(source_id: str, source: SourceCreate, current_user: Curr
         "notes": source.notes or "",
         "active": source.active
     }
-    await db.sources.update_one({"id": source_id}, {"$set": update_doc})
+    # Multi-tenant: Update only in own store
+    await db.sources.update_one({**current_user.get_store_filter(), "id": source_id}, {"$set": update_doc})
     
-    updated = await db.sources.find_one({"id": source_id}, {"_id": 0})
-    count = await db.customers.count_documents({"source": updated["name"]})
+    updated = await db.sources.find_one({**current_user.get_store_filter(), "id": source_id}, {"_id": 0})
+    # Count customers from same store
+    count = await db.customers.count_documents({**current_user.get_store_filter(), "source": updated["name"]})
     updated["customer_count"] = count
     return SourceResponse(**updated)
 
 @api_router.get("/sources/{source_id}/stats")
 async def get_source_stats(source_id: str, current_user: CurrentUser = Depends(get_current_user)):
     """Get statistics for a specific provider/source"""
-    source = await db.sources.find_one({"id": source_id}, {"_id": 0})
+    # Multi-tenant: Check source exists in same store
+    source = await db.sources.find_one({**current_user.get_store_filter(), "id": source_id}, {"_id": 0})
     if not source:
         raise HTTPException(status_code=404, detail="Source not found")
     
-    # Get customers from this source
+    # Get customers from this source (within same store)
     customers = await db.customers.find({**current_user.get_store_filter(), "source": source["name"]}, {"_id": 0}).to_list(1000)
     customer_ids = [c["id"] for c in customers]
     
-    # Get rentals from these customers
+    # Get rentals from these customers (within same store)
     rentals = await db.rentals.find(
-        {"customer_id": {"$in": customer_ids}},
+        {**current_user.get_store_filter(), "customer_id": {"$in": customer_ids}},
         {"_id": 0}
     ).sort("created_at", -1).to_list(1000)
     
