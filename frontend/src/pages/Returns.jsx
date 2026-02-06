@@ -2779,13 +2779,17 @@ export default function Returns() {
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setShowSettlementModal(false)}>
+            <Button variant="outline" onClick={() => {
+              setShowSettlementModal(false);
+              setFullRefundOverride(false); // Reset on close
+            }}>
               Cancelar
             </Button>
             <Button
               onClick={confirmSettlement}
               disabled={settlementProcessing}
               className={`min-w-[160px] ${
+                fullRefundOverride ? 'bg-red-600 hover:bg-red-700' :
                 settlementData.balance > 0 ? 'bg-orange-600 hover:bg-orange-700' :
                 settlementData.balance < 0 ? 'bg-emerald-600 hover:bg-emerald-700' :
                 'bg-blue-600 hover:bg-blue-700'
@@ -2793,6 +2797,8 @@ export default function Returns() {
             >
               {settlementProcessing ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : fullRefundOverride ? (
+                <AlertTriangle className="h-4 w-4 mr-2" />
               ) : settlementData.balance > 0 ? (
                 <CreditCard className="h-4 w-4 mr-2" />
               ) : settlementData.balance < 0 ? (
@@ -2800,9 +2806,11 @@ export default function Returns() {
               ) : (
                 <Check className="h-4 w-4 mr-2" />
               )}
-              {settlementData.balance > 0 ? `Cobrar €${settlementData.balance.toFixed(2)}` :
-               settlementData.balance < 0 ? `Devolver €${Math.abs(settlementData.balance).toFixed(2)}` :
-               'Confirmar Devolución'}
+              {fullRefundOverride 
+                ? `⚠️ ANULAR y Devolver €${settlementData.totalPaid?.toFixed(2) || '0.00'}`
+                : settlementData.balance > 0 ? `Cobrar €${settlementData.balance.toFixed(2)}` 
+                : settlementData.balance < 0 ? `Devolver €${Math.abs(settlementData.balance).toFixed(2)}` 
+                : 'Confirmar Devolución'}
             </Button>
           </DialogFooter>
         </DialogContent>
