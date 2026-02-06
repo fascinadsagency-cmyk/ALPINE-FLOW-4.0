@@ -18,7 +18,6 @@ from fastapi import UploadFile, File
 
 # Multi-tenant imports
 from multitenant import get_current_user, CurrentUser, require_super_admin, create_token as mt_create_token
-from store_models import StoreCreate, StoreResponse, StoreUpdate
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -6376,7 +6375,6 @@ async def shutdown_db_client():
 
 # ==================== STORE MANAGEMENT ROUTES (SUPER_ADMIN ONLY) ====================
 
-from store_models import StoreCreate, StoreResponse, StoreUpdate
 
 @api_router.get("/stores", response_model=List[StoreResponse])
 async def get_all_stores(current_user: CurrentUser = Depends(require_super_admin)):
