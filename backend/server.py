@@ -1549,15 +1549,81 @@ async def get_item_profitability(item_id: str, current_user: CurrentUser = Depen
 
 @api_router.get("/items/barcode/{barcode}", response_model=ItemResponse)
 async def get_item_by_barcode(barcode: str, current_user: CurrentUser = Depends(get_current_user)):
-    # Try internal_code first, then barcode
-    item = await db.items.find_one({**current_user.get_store_filter(), **{"internal_code": barcode}}, {"_id": 0})
-    if not item:
-        item = await db.items.find_one({**current_user.get_store_filter(), **{"barcode": barcode}}, {"_id": 0})
-    if not item:
-        item = await db.items.find_one({**current_user.get_store_filter(), **{"barcode_2": barcode}}, {"_id": 0})
-    if not item:
+    """
+    Búsqueda multi-campo optimizada para mostrador/escáner.
+    Busca en: internal_code, barcode, barcode_2, serial_number
+    Con sanitización automática de entrada.
+    """
+    import re
+    
+    # SANITIZACIÓN: Limpiar entrada
+    clean_code = barcode.strip()
+    if not clean_code:
         raise HTTPException(status_code=404, detail="Item not found")
-    return ItemResponse(**item)
+    
+    # Variantes para búsqueda flexible (con y sin ceros a la izquierda)
+    search_variants = [clean_code]
+    
+    # Sin ceros a la izquierda
+    code_no_leading_zeros = clean_code.lstrip('0')
+    if code_no_leading_zeros and code_no_leading_zeros != clean_code:
+        search_variants.append(code_no_leading_zeros)
+    
+    # Con ceros a la izquierda (hasta 10 dígitos)
+    if clean_code.isdigit():
+        for padding in [4, 6, 8, 10, 12, 13]:  # Common barcode lengths
+            padded = clean_code.zfill(padding)
+            if padded not in search_variants:
+                search_variants.append(padded)
+    
+    store_filter = current_user.get_store_filter()
+    
+    # Búsqueda en todos los campos de identificación
+    for variant in search_variants:
+        # Try exact match first (fastest)
+        item = await db.items.find_one(
+            {**store_filter, "internal_code": variant}, 
+            {"_id": 0}
+        )
+        if item:
+            return ItemResponse(**item)
+        
+        item = await db.items.find_one(
+            {**store_filter, "barcode": variant}, 
+            {"_id": 0}
+        )
+        if item:
+            return ItemResponse(**item)
+        
+        item = await db.items.find_one(
+            {**store_filter, "barcode_2": variant}, 
+            {"_id": 0}
+        )
+        if item:
+            return ItemResponse(**item)
+        
+        item = await db.items.find_one(
+            {**store_filter, "serial_number": variant}, 
+            {"_id": 0}
+        )
+        if item:
+            return ItemResponse(**item)
+    
+    # Case-insensitive fallback search
+    regex_pattern = {"$regex": f"^{re.escape(clean_code)}$", "$options": "i"}
+    item = await db.items.find_one(
+        {**store_filter, "$or": [
+            {"internal_code": regex_pattern},
+            {"barcode": regex_pattern},
+            {"barcode_2": regex_pattern},
+            {"serial_number": regex_pattern}
+        ]},
+        {"_id": 0}
+    )
+    if item:
+        return ItemResponse(**item)
+    
+    raise HTTPException(status_code=404, detail="Item not found")
 
 
 @api_router.get("/items/check-barcode/{barcode}")
