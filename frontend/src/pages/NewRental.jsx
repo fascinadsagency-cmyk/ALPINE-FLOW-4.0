@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import axios from "axios";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,12 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Skeleton, SearchResultsSkeleton, LoadingSpinner } from "@/components/ui/skeleton";
 import { customerApi, itemApi, tariffApi, rentalApi } from "@/lib/api";
 import { printTicket, getStoredSettings } from "@/lib/ticketGenerator";
 import { PrintService } from "@/lib/printService";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useScannerListener } from "@/hooks/useScannerListener";
 import { useCartPersistence } from "@/hooks/useCartPersistence";
+import { useDebounce, useDebouncedCallback } from "@/hooks/useDebounce";
 import { FocusTrap } from "@/components/FocusTrap";
 import { 
   Search, 
