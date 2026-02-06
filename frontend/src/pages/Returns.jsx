@@ -103,6 +103,9 @@ export default function Returns() {
   });
   const [settlementProcessing, setSettlementProcessing] = useState(false);
   
+  // NUEVO: Opción de anulación total / devolución completa
+  const [fullRefundOverride, setFullRefundOverride] = useState(false);
+  
   // Customer modal state
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
