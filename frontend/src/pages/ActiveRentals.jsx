@@ -1283,12 +1283,38 @@ export default function ActiveRentals() {
                     <div className="p-2 bg-red-100 rounded-lg">
                       <Package className="h-6 w-6 text-red-600" />
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <p className="font-mono font-bold">{swapOldItem.internal_code || swapOldItem.barcode}</p>
                       <p className="text-sm text-slate-600">{swapOldItem.item_type}</p>
                     </div>
                   </div>
-                  <p className="text-xs text-blue-600 mt-3">Ahora escanea el NUEVO artículo que entregará al cliente</p>
+                  
+                  {/* Action options */}
+                  <div className="mt-4 pt-3 border-t border-blue-200">
+                    <p className="text-xs text-slate-600 mb-3">¿Qué desea hacer?</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-3 rounded-lg bg-white border-2 border-dashed border-blue-300 text-center">
+                        <Scan className="h-5 w-5 mx-auto text-blue-500 mb-1" />
+                        <p className="text-sm font-medium text-slate-700">Escanee nuevo artículo</p>
+                        <p className="text-xs text-slate-500">para SUSTITUIR</p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        className="h-auto py-3 flex-col gap-1 border-2 border-emerald-300 bg-emerald-50 hover:bg-emerald-100"
+                        onClick={executeReturnOnly}
+                        disabled={swapLoading}
+                        data-testid="return-only-btn"
+                      >
+                        {swapLoading ? (
+                          <Loader2 className="h-5 w-5 animate-spin text-emerald-600" />
+                        ) : (
+                          <RotateCcw className="h-5 w-5 text-emerald-600" />
+                        )}
+                        <span className="text-sm font-medium text-emerald-700">Solo DEVOLVER</span>
+                        <span className="text-xs text-emerald-600">sin reemplazo</span>
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               )}
 
