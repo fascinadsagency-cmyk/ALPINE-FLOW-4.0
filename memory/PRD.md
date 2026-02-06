@@ -475,6 +475,30 @@ POST /api/cash/close            - Cerrar caja con arqueo
   - 6 días = €95.00 (NO €162 = 27×6) ✓
 - **Testing:** 7/7 tests passed (iteration_24.json)
 
+### 2d. SELECTOR DE PACKS CON EDICIÓN LOCAL - NUEVO 2026-02-06
+- **Solicitud:** Redefinición de lógica de packs con selector global y edición local
+- **Implementación:**
+  - **LÍNEA PRINCIPAL DEL PACK:**
+    - Selector (Dropdown) con la lista de TODOS los packs existentes en el sistema
+    - Al cambiar selección, recarga componentes y precio del nuevo pack
+    - Función: `handlePackDefinitionChange(currentPackItems, newPackId)`
+  - **COMPONENTES INTERNOS (EXPANDIBLES):**
+    - Botón chevron para expandir/colapsar
+    - Al expandir: muestra lista de componentes con campos editables
+    - Campo "Tipo (Etiqueta Ticket)": Input de texto libre
+    - Permite personalizar el texto que aparece en el ticket (ej: "Botas (Traídas por cliente)")
+    - Función: `handleComponentTypeLabelChange(itemBarcode, newLabel)`
+    - Estado: `expandedPackId` para trackear qué pack está expandido
+  - **SEGURIDAD DE DATOS:**
+    - Los cambios de texto son LOCALES al alquiler actual
+    - Se guardan en `item.customTypeLabel` (solo en memoria del carrito)
+    - NUNCA se actualiza la tabla maestra de "Tipos"
+    - El nombre original del tipo en la BD permanece intacto
+  - **INTERACCIÓN:**
+    - Al escribir en inputs, el desplegable NO se cierra (`stopPropagation`)
+    - `data-testid="component-type-label-{barcode}"` para cada input
+- **Testing:** 7/7 tests passed (iteration_26.json)
+
 ### 3. Corrección del Bug Crítico de Contabilidad
 - **Problema:** Los cobros de alquileres no se registraban en la caja
 - **Solución:**
