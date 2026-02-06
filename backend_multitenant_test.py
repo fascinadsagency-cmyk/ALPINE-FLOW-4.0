@@ -23,6 +23,7 @@ class MultiTenantTester:
         self.store1_headers = {}
         self.store3_headers = {}
         self.test_results = []
+        self.store3_initial_sources = 0
         
     def log_test(self, test_name, success, details=""):
         """Log test result"""
