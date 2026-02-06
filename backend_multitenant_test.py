@@ -314,7 +314,7 @@ class MultiTenantTester:
         """Test 16: Verify Store 1 functionality still works (no regressions)"""
         endpoints_to_test = [
             ("/dashboard", "dashboard statistics"),
-            ("/rentals/active", "active rentals")
+            ("/rentals?status=active", "active rentals")
         ]
         
         all_passed = True
