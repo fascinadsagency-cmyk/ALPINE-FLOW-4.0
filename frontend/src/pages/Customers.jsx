@@ -18,11 +18,18 @@ import * as XLSX from "xlsx";
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Customers() {
+  // ========== INFINITE SCROLL STATES ==========
   const [customers, setCustomers] = useState([]);
-  const [allCustomers, setAllCustomers] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalCustomers, setTotalCustomers] = useState(0);
+  const observerTarget = useRef(null);
+  
   const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedProvider, setSelectedProvider] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all"); // all, active, inactive
   const [statusCounts, setStatusCounts] = useState({ total: 0, active: 0, inactive: 0 });
