@@ -2197,41 +2197,42 @@ export default function NewRental() {
                             key={group.packId}
                             className="grid grid-cols-12 gap-2 items-center py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-400 animate-fade-in"
                           >
-                            {/* Nombre FUSIONADO: Editable pack name */}
+                            {/* Nombre FUSIONADO: Always-on editable input */}
                             <div className="col-span-5">
                               <div className="flex items-center gap-2">
                                 <Package className="h-5 w-5 text-amber-600 flex-shrink-0" />
-                                {editingPackName === group.packId ? (
-                                  <Input
-                                    type="text"
-                                    defaultValue={group.displayName}
-                                    className="h-8 text-sm font-bold border-2 border-amber-500 bg-white"
-                                    autoFocus
-                                    onBlur={(e) => {
-                                      const newName = e.target.value.trim();
-                                      if (newName && newName !== group.displayName) {
-                                        handlePackNameChange(group.packId, newName);
-                                      } else {
-                                        setEditingPackName(null);
-                                      }
-                                    }}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        e.target.blur();
-                                      } else if (e.key === 'Escape') {
-                                        setEditingPackName(null);
-                                      }
-                                    }}
-                                  />
-                                ) : (
-                                  <span 
-                                    className="font-bold text-amber-800 text-sm leading-tight cursor-pointer hover:underline"
-                                    onClick={() => setEditingPackName(group.packId)}
-                                    title="Click para editar nombre"
-                                  >
-                                    {group.displayName}
-                                  </span>
-                                )}
+                                <input
+                                  type="text"
+                                  defaultValue={group.displayName}
+                                  placeholder="Nombre del pack"
+                                  className="flex-1 font-bold text-amber-800 text-sm leading-tight bg-transparent border-b border-transparent hover:border-amber-400 focus:border-amber-600 focus:outline-none transition-colors px-1 py-0.5 cursor-text"
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // Prevent accordion toggle
+                                    e.target.focus();
+                                  }}
+                                  onFocus={(e) => {
+                                    e.stopPropagation(); // Prevent accordion interference
+                                  }}
+                                  onBlur={(e) => {
+                                    const newName = e.target.value.trim();
+                                    if (newName && newName !== group.displayName) {
+                                      handlePackNameChange(group.packId, newName);
+                                    } else if (!newName) {
+                                      // Restore original name if empty
+                                      e.target.value = group.displayName;
+                                    }
+                                  }}
+                                  onKeyDown={(e) => {
+                                    e.stopPropagation(); // Prevent keyboard shortcuts
+                                    if (e.key === 'Enter') {
+                                      e.target.blur();
+                                    } else if (e.key === 'Escape') {
+                                      e.target.value = group.displayName;
+                                      e.target.blur();
+                                    }
+                                  }}
+                                  title="Click para editar nombre del pack"
+                                />
                                 <span className="text-xs text-amber-600">({group.childCodes})</span>
                               </div>
                             </div>
