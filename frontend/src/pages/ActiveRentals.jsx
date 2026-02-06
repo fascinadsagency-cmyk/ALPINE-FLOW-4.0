@@ -1342,21 +1342,11 @@ export default function ActiveRentals() {
                 </div>
               )}
             </div>
-            
-            {/* CAMBIOS Button - Prominent */}
-            <Button
-              onClick={openSwapModalBlank}
-              className="h-12 px-6 bg-orange-500 hover:bg-orange-600 text-white font-bold text-base shadow-lg hover:shadow-xl transition-all shrink-0"
-              data-testid="cambios-btn"
-            >
-              <RefreshCw className="h-5 w-5 mr-2" />
-              CAMBIOS
-            </Button>
           </div>
           
           {/* Quick help text */}
           <p className="text-xs text-slate-500">
-            💡 Escanea un artículo para identificar al cliente automáticamente, o pulsa <strong>CAMBIOS</strong> para abrir el gestor manualmente
+            💡 Escanea un artículo alquilado para identificar al cliente y abrir el gestor de cambios automáticamente
           </p>
         </div>
       </div>
