@@ -942,7 +942,7 @@ export default function Customers() {
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
             <Users className="h-5 w-5 text-slate-500" />
-            Lista de Clientes ({customers.length})
+            Lista de Clientes ({customers.length} de {totalCustomers})
           </CardTitle>
         </CardHeader>
         <CardContent>
