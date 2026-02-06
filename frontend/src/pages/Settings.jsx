@@ -97,22 +97,85 @@ export default function Settings() {
     setHasChanges(true);
   };
 
-  const handleLogoUpload = (event) => {
+  // Función para comprimir imagen a Base64 con tamaño máximo
+  const compressImage = (file, maxWidth = 500, maxHeight = 500, quality = 0.8) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          // Calcular dimensiones manteniendo proporción
+          let { width, height } = img;
+          
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+          if (height > maxHeight) {
+            width = (width * maxHeight) / height;
+            height = maxHeight;
+          }
+          
+          // Crear canvas y dibujar imagen redimensionada
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Convertir a Base64 con compresión
+          const base64 = canvas.toDataURL('image/jpeg', quality);
+          
+          // Verificar tamaño final (máximo 200KB para tickets)
+          const sizeKB = (base64.length * 0.75) / 1024;
+          if (sizeKB > 200) {
+            // Reducir calidad si es muy grande
+            const reducedBase64 = canvas.toDataURL('image/jpeg', 0.5);
+            resolve(reducedBase64);
+          } else {
+            resolve(base64);
+          }
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleLogoUpload = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("El archivo es demasiado grande. Máximo 2MB.");
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      toast.error("Por favor, selecciona un archivo de imagen válido");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setCompanyLogo(e.target?.result);
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("El archivo es demasiado grande. Máximo 5MB.");
+      return;
+    }
+
+    try {
+      toast.loading("Procesando imagen...", { id: 'logo-upload' });
+      
+      // Comprimir la imagen antes de guardar
+      const compressedBase64 = await compressImage(file, 500, 500, 0.8);
+      
+      // Guardar en el estado (se sincronizará con localStorage vía useEffect)
+      setCompanyLogo(compressedBase64);
       setHasChanges(true);
-      toast.success("Logo actualizado");
-    };
-    reader.readAsDataURL(file);
+      
+      const sizeKB = Math.round((compressedBase64.length * 0.75) / 1024);
+      toast.success(`Logo actualizado (${sizeKB}KB)`, { id: 'logo-upload' });
+      
+    } catch (error) {
+      console.error("Error procesando imagen:", error);
+      toast.error("Error al procesar la imagen", { id: 'logo-upload' });
+    }
   };
 
   const handleRemoveLogo = () => {
