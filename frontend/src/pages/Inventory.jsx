@@ -1328,7 +1328,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
     
     // CRITICAL: Force complete refresh - clear state and reload
     setItems([]);
-    await loadItems();
+    await loadItems(true);
     
     // VERIFICATION: Check if any deleted items are still in the list
     setTimeout(async () => {
