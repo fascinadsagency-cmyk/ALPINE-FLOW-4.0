@@ -141,15 +141,16 @@ class MultiTenantIsolationTester:
             # Check various dashboard metrics should be 0
             stats = data.get("stats", {})
             active_rentals = stats.get("active_rentals", -1)
-            total_revenue = stats.get("total_revenue", -1)
+            revenue_today = stats.get("revenue_today", -1)
+            today_rentals = stats.get("today_rentals", -1)
             
-            if active_rentals == 0 and total_revenue == 0:
+            if active_rentals == 0 and revenue_today == 0 and today_rentals == 0:
                 self.log_test("Store 3 General Dashboard", True, 
-                            f"Dashboard stats all 0 as expected: active_rentals={active_rentals}, total_revenue={total_revenue}")
+                            f"Dashboard stats all 0 as expected: active_rentals={active_rentals}, revenue_today={revenue_today}, today_rentals={today_rentals}")
                 return True
             else:
                 self.log_test("Store 3 General Dashboard", False, 
-                            f"Expected 0 values, got: active_rentals={active_rentals}, total_revenue={total_revenue}")
+                            f"Expected 0 values, got: active_rentals={active_rentals}, revenue_today={revenue_today}, today_rentals={today_rentals}")
                 return False
                 
         except Exception as e:
