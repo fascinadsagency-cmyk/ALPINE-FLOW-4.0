@@ -2833,7 +2833,7 @@ export default function NewRental() {
                   <div className="flex items-center gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="text-sm text-slate-500">Total a pagar</p>
+                        <p className="text-sm text-slate-500">Total del alquiler</p>
                       </div>
                       <p className="text-3xl font-bold text-slate-900">€{total.toFixed(2)}</p>
                       {getProviderDiscount() > 0 && (
@@ -2849,6 +2849,72 @@ export default function NewRental() {
                     )}
                   </div>
                 </div>
+              </div>
+              
+              {/* RESUMEN FINANCIERO DINÁMICO */}
+              {(() => {
+                const cleanPaidAmount = paidAmount !== "" ? Number(parseFloat(paidAmount) || 0) : total;
+                const cleanDeposit = Number(parseFloat(deposit) || 0);
+                const pendingAmount = paymentMethodSelected === 'pending' ? total : Math.max(0, total - cleanPaidAmount);
+                const cashInToday = paymentMethodSelected === 'pending' ? cleanDeposit : cleanPaidAmount + cleanDeposit;
+                
+                return (
+                  <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                    <p className="text-sm font-semibold text-slate-700 uppercase">Resumen de la Operación</p>
+                    
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-600">Total del alquiler:</span>
+                        <span className="font-medium">€{total.toFixed(2)}</span>
+                      </div>
+                      
+                      <div className="flex justify-between">
+                        <span className="text-slate-600">Importe pagado ahora:</span>
+                        <span className={`font-medium ${paymentMethodSelected === 'pending' ? 'text-amber-600' : 'text-emerald-600'}`}>
+                          €{paymentMethodSelected === 'pending' ? '0.00' : cleanPaidAmount.toFixed(2)}
+                        </span>
+                      </div>
+                      
+                      {cleanDeposit > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-600">Depósito/Fianza:</span>
+                          <span className="font-medium text-blue-600">€{cleanDeposit.toFixed(2)}</span>
+                        </div>
+                      )}
+                      
+                      {pendingAmount > 0 && (
+                        <div className="flex justify-between pt-2 border-t border-slate-200">
+                          <span className="text-amber-700 font-medium">Pendiente de pago:</span>
+                          <span className="font-bold text-amber-600">€{pendingAmount.toFixed(2)}</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-between pt-2 border-t border-slate-300 mt-2">
+                        <span className="text-slate-800 font-semibold">💵 ENTRADA EN CAJA HOY:</span>
+                        <span className="font-bold text-lg text-emerald-700">€{cashInToday.toFixed(2)}</span>
+                      </div>
+                    </div>
+                    
+                    {pendingAmount > 0 && (
+                      <div className="mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200">
+                        <p className="text-xs text-amber-800">
+                          ⚠️ Este alquiler quedará con saldo pendiente. Se cobrará al devolver los artículos.
+                        </p>
+                      </div>
+                    )}
+                    
+                    {cleanDeposit > 0 && (
+                      <div className="mt-2 p-2 rounded-lg bg-blue-50 border border-blue-200">
+                        <p className="text-xs text-blue-800">
+                          ℹ️ El depósito de €{cleanDeposit.toFixed(2)} se devolverá al cliente cuando entregue los artículos.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              <div className="mt-4 flex justify-end">
                 <Button
                   ref={submitRef}
                   size="lg"
