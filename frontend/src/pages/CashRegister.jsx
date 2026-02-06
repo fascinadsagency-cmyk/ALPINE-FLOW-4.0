@@ -279,9 +279,10 @@ export default function CashRegister() {
   const loadData = async () => {
     setLoading(true);
     try {
+      const today = new Date().toISOString().split('T')[0]; // Always use today's date
       const [summaryRes, movementsRes, sessionRes] = await Promise.all([
-        axios.get(`${API}/cash/summary/realtime`, { params: { date } }),
-        axios.get(`${API}/cash/movements`, { params: { date } }),
+        axios.get(`${API}/cash/summary/realtime`, { params: { date: today } }),
+        axios.get(`${API}/cash/movements`, { params: { date: today } }),
         axios.get(`${API}/cash/sessions/active`)
       ]);
       setSummary(summaryRes.data);
