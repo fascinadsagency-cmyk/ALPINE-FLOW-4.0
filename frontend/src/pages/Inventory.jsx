@@ -2861,6 +2861,46 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                   </Select>
                 </div>
                 <div>
+                  <Label>Estado</Label>
+                  <Select 
+                    value={editingItem.status || "available"} 
+                    onValueChange={(value) => setEditingItem({ ...editingItem, status: value })}
+                  >
+                    <SelectTrigger className="h-11 mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="available">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                          Disponible
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="rented">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                          Alquilado
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="maintenance">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                          Mantenimiento
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="retired">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-slate-400"></span>
+                          Retirado / Baja
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-slate-500 mt-1">Cambiar estado manualmente</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
                   <Label>Precio Alquiler (€/día)</Label>
                   <Input
                     type="number"
@@ -2870,6 +2910,15 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                     placeholder="Auto"
                   />
                   <p className="text-xs text-slate-500 mt-1">Se actualiza automáticamente según tipo</p>
+                </div>
+                <div>
+                  <Label>Precio Coste (€)</Label>
+                  <Input
+                    type="number"
+                    value={editingItem.purchase_price}
+                    onChange={(e) => setEditingItem({ ...editingItem, purchase_price: e.target.value })}
+                    className="h-11 mt-1"
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
