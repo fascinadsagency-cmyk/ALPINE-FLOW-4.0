@@ -231,53 +231,6 @@ export default function Customers() {
     loadCustomers(true);
   };
 
-  const loadCustomers = async (search = "") => {
-    setLoading(true);
-    try {
-      const response = await customerApi.getAll(search);
-      setCustomers(response.data);
-      setAllCustomers(response.data);
-    } catch (error) {
-      toast.error("Error al cargar clientes");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filterCustomers = useCallback(() => {
-    let filtered = [...allCustomers];
-
-    // Filter by search term
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(c => 
-        c.name.toLowerCase().includes(term) ||
-        c.dni.toLowerCase().includes(term) ||
-        (c.phone && c.phone.toLowerCase().includes(term))
-      );
-    }
-
-    // Filter by provider
-    if (selectedProvider === "none") {
-      filtered = filtered.filter(c => !c.source || c.source === "");
-    } else if (selectedProvider !== "all") {
-      filtered = filtered.filter(c => c.source === selectedProvider);
-    }
-
-    // Filter by status (active/inactive)
-    if (selectedStatus === "active") {
-      filtered = filtered.filter(c => c.has_active_rental === true);
-    } else if (selectedStatus === "inactive") {
-      filtered = filtered.filter(c => c.has_active_rental !== true);
-    }
-
-    setCustomers(filtered);
-  }, [searchTerm, selectedProvider, selectedStatus, allCustomers]);
-
-  useEffect(() => {
-    filterCustomers();
-  }, [filterCustomers]);
-
   // ========== BULK SELECTION FUNCTIONS ==========
   
   // Toggle selection of a single customer
