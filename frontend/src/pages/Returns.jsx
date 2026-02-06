@@ -2628,49 +2628,112 @@ export default function Returns() {
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            {/* Resumen del Cálculo */}
-            <div className="bg-slate-50 rounded-lg p-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Días contratados:</span>
-                <span className="font-medium">{settlementData.daysPaid} días</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Días usados:</span>
-                <span className={`font-medium ${settlementData.daysUsed > settlementData.daysPaid ? 'text-orange-600' : settlementData.daysUsed < settlementData.daysPaid ? 'text-emerald-600' : ''}`}>
-                  {settlementData.daysUsed} días
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Precio/día:</span>
-                <span className="font-medium">€{settlementData.pricePerDay?.toFixed(2)}</span>
-              </div>
-              <Separator className="my-2" />
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Pagado inicialmente:</span>
-                <span className="font-medium">€{settlementData.totalPaid?.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Valor servicio usado:</span>
-                <span className="font-medium">€{settlementData.serviceUsed?.toFixed(2)}</span>
+            {/* ⚠️ OPCIÓN DE ANULACIÓN TOTAL / DEVOLUCIÓN COMPLETA */}
+            <div className={`rounded-lg p-4 border-2 transition-all ${
+              fullRefundOverride 
+                ? 'bg-red-50 border-red-300' 
+                : 'bg-slate-50 border-slate-200'
+            }`}>
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id="fullRefundOverride"
+                  checked={fullRefundOverride}
+                  onChange={(e) => setFullRefundOverride(e.target.checked)}
+                  className="mt-1 h-5 w-5 rounded border-red-300 text-red-600 focus:ring-red-500"
+                />
+                <div className="flex-1">
+                  <label 
+                    htmlFor="fullRefundOverride" 
+                    className={`font-semibold cursor-pointer ${fullRefundOverride ? 'text-red-700' : 'text-slate-700'}`}
+                  >
+                    ⚠️ Anulación Total / Devolución Completa
+                  </label>
+                  <p className={`text-xs mt-1 ${fullRefundOverride ? 'text-red-600' : 'text-slate-500'}`}>
+                    Activa esta opción para casos excepcionales (cierre de estación, fuerza mayor). 
+                    Se ignorará el cobro mínimo de 1 día y se devolverá TODO el importe pagado.
+                  </p>
+                  {fullRefundOverride && (
+                    <div className="mt-2 p-2 rounded bg-red-100 border border-red-200">
+                      <p className="text-sm font-bold text-red-700">
+                        ¡ATENCIÓN! Se devolverá: €{settlementData.totalPaid?.toFixed(2) || '0.00'} al cliente
+                      </p>
+                      <p className="text-xs text-red-600 mt-1">
+                        El alquiler quedará registrado con saldo final €0.00
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
+            {/* Resumen del Cálculo - Se muestra diferente si hay override */}
+            {!fullRefundOverride ? (
+              <div className="bg-slate-50 rounded-lg p-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">Días contratados:</span>
+                  <span className="font-medium">{settlementData.daysPaid} días</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">Días usados:</span>
+                  <span className={`font-medium ${settlementData.daysUsed > settlementData.daysPaid ? 'text-orange-600' : settlementData.daysUsed < settlementData.daysPaid ? 'text-emerald-600' : ''}`}>
+                    {settlementData.daysUsed} días
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">Precio/día:</span>
+                  <span className="font-medium">€{settlementData.pricePerDay?.toFixed(2)}</span>
+                </div>
+                <Separator className="my-2" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">Pagado inicialmente:</span>
+                  <span className="font-medium">€{settlementData.totalPaid?.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">Valor servicio usado:</span>
+                  <span className="font-medium">€{settlementData.serviceUsed?.toFixed(2)}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-red-50 rounded-lg p-4 space-y-2 border border-red-200">
+                <div className="flex justify-between text-sm">
+                  <span className="text-red-700">Pagado por el cliente:</span>
+                  <span className="font-bold text-red-700">€{settlementData.totalPaid?.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-red-700 line-through">Valor servicio usado:</span>
+                  <span className="font-medium text-red-400 line-through">€{settlementData.serviceUsed?.toFixed(2)}</span>
+                </div>
+                <Separator className="my-2 bg-red-200" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-red-800 font-semibold">Coste anulado (€0):</span>
+                  <span className="font-bold text-red-800">EXCEPCIÓN APLICADA</span>
+                </div>
+              </div>
+            )}
+
             {/* Resultado Final */}
             <div className={`rounded-lg p-4 text-center ${
+              fullRefundOverride ? 'bg-red-100 border-2 border-red-300' :
               settlementData.balance > 0 ? 'bg-orange-50 border-2 border-orange-200' :
               settlementData.balance < 0 ? 'bg-emerald-50 border-2 border-emerald-200' :
               'bg-blue-50 border-2 border-blue-200'
             }`}>
               <p className="text-sm text-slate-600 mb-1">
-                {settlementData.balance > 0 ? 'El cliente debe pagar:' :
+                {fullRefundOverride ? '⚠️ DEVOLUCIÓN TOTAL (Excepción):' :
+                 settlementData.balance > 0 ? 'El cliente debe pagar:' :
                  settlementData.balance < 0 ? 'Importe a devolver:' : 'Saldo:'}
               </p>
               <p className={`text-3xl font-bold ${
+                fullRefundOverride ? 'text-red-600' :
                 settlementData.balance > 0 ? 'text-orange-600' :
                 settlementData.balance < 0 ? 'text-emerald-600' :
                 'text-blue-600'
               }`}>
-                {settlementData.balance > 0 ? '+' : ''}€{Math.abs(settlementData.balance).toFixed(2)}
+                {fullRefundOverride 
+                  ? `-€${settlementData.totalPaid?.toFixed(2) || '0.00'}`
+                  : `${settlementData.balance > 0 ? '+' : ''}€${Math.abs(settlementData.balance).toFixed(2)}`
+                }
               </p>
             </div>
 
