@@ -1,8 +1,8 @@
 # AlpineFlow - Sistema de Gestión de Alquiler de Equipos de Esquí
 
 ## Estado del Proyecto
-**Última actualización:** 2026-02-04
-**Estado:** Operativo - Selección y Borrado Masivo en Clientes IMPLEMENTADO
+**Última actualización:** 2026-02-06
+**Estado:** Operativo - Selector de Packs con Edición Local IMPLEMENTADO
 
 ---
 
