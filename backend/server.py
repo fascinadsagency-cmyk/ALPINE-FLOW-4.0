@@ -1097,6 +1097,7 @@ async def get_items(
     item_type: Optional[str] = None,
     category: Optional[str] = None,
     search: Optional[str] = None,
+    limit: int = Query(None, ge=1, le=500, description="Max results (default: unlimited, max: 500)"),
     include_deleted: bool = Query(False),
     current_user: CurrentUser = Depends(get_current_user)
 ):
@@ -1116,25 +1117,30 @@ async def get_items(
     if category:
         query["category"] = category
     if search:
-        # Search by internal_code, barcode, barcode_2, serial_number, brand, model, size, name (for generic)
-        search_conditions = [
-            {"internal_code": {"$regex": search, "$options": "i"}},
-            {"barcode": {"$regex": search, "$options": "i"}},
-            {"barcode_2": {"$regex": search, "$options": "i"}},  # Secondary barcode search
-            {"serial_number": {"$regex": search, "$options": "i"}},
-            {"brand": {"$regex": search, "$options": "i"}},
-            {"model": {"$regex": search, "$options": "i"}},
-            {"size": {"$regex": search, "$options": "i"}},
-            {"name": {"$regex": search, "$options": "i"}}
-        ]
-        # If we have other conditions, we need to combine with $and
-        if query:
-            existing_query = dict(query)
-            query = {"$and": [existing_query, {"$or": search_conditions}]}
-        else:
-            query["$or"] = search_conditions
+        # Sanitize search term
+        clean_search = search.strip()
+        if clean_search:
+            # Search by internal_code, barcode, barcode_2, serial_number, brand, model, size, name (for generic)
+            search_conditions = [
+                {"internal_code": {"$regex": clean_search, "$options": "i"}},
+                {"barcode": {"$regex": clean_search, "$options": "i"}},
+                {"barcode_2": {"$regex": clean_search, "$options": "i"}},  # Secondary barcode search
+                {"serial_number": {"$regex": clean_search, "$options": "i"}},
+                {"brand": {"$regex": clean_search, "$options": "i"}},
+                {"model": {"$regex": clean_search, "$options": "i"}},
+                {"size": {"$regex": clean_search, "$options": "i"}},
+                {"name": {"$regex": clean_search, "$options": "i"}}
+            ]
+            # If we have other conditions, we need to combine with $and
+            if query:
+                existing_query = dict(query)
+                query = {"$and": [existing_query, {"$or": search_conditions}]}
+            else:
+                query["$or"] = search_conditions
     
-    items = await db.items.find(query, {"_id": 0}).to_list(None)  # No limit - return all matching items
+    # OPTIMIZACIÓN: Aplicar límite para rendimiento (default: sin límite para compatibilidad)
+    max_results = limit if limit else None
+    items = await db.items.find(query, {"_id": 0}).to_list(max_results)
     return [ItemResponse(**i) for i in items]
 
 @api_router.get("/items/paginated/list")
