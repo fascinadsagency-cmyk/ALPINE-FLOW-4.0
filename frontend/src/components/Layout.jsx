@@ -46,6 +46,11 @@ export default function Layout() {
     { to: "/configuracion", icon: Cog, label: t('nav.settings') },
   ];
 
+  // Add store management for SUPER_ADMIN only
+  if (user?.role === "super_admin") {
+    navItems.push({ to: "/tiendas", icon: Building2, label: "🏪 Gestión de Tiendas", superAdmin: true });
+  }
+
   return (
     <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
       {/* Sidebar - Desktop */}
