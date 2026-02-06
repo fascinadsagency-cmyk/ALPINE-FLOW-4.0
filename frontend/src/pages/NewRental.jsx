@@ -1184,6 +1184,9 @@ export default function NewRental() {
   // Handle PACK DEFINITION CHANGE - Switch to a different pack type
   // This keeps the SAME physical items but applies the pricing of the NEW pack
   const handlePackDefinitionChange = (currentPackItems, newPackId) => {
+    console.log('[PackChange] Iniciando cambio de pack a:', newPackId);
+    console.log('[PackChange] Items actuales del pack:', currentPackItems.map(i => i.barcode));
+    
     // Find the new pack definition
     const newPack = packs.find(p => p._id === newPackId || p.id === newPackId);
     if (!newPack) {
@@ -1191,51 +1194,52 @@ export default function NewRental() {
       return;
     }
     
-    // Get the old pack to compare
-    const currentPackId = currentPackItems[0]?.forcedPackId;
-    if (currentPackId === newPackId || currentPackId === (newPack._id || newPack.id)) {
-      // Same pack selected, no change needed
-      return;
-    }
+    console.log('[PackChange] Pack encontrado:', newPack.name);
     
     // Get the barcodes of items in the current pack
     const packItemBarcodes = new Set(currentPackItems.map(i => i.barcode));
     
     // Update items: mark them as belonging to the new pack definition
-    // This forces the price calculation to use the new pack's tariff
     const updatedItems = items.map(item => {
       if (packItemBarcodes.has(item.barcode)) {
+        console.log('[PackChange] Actualizando item:', item.barcode);
         return {
           ...item,
-          forcedPackId: newPack._id || newPack.id,  // Force this pack's pricing
+          forcedPackId: newPack._id || newPack.id,
           forcedPackName: newPack.name,
-          customPackPrice: null,  // Clear any custom price to recalculate
+          customPackPrice: null,
           manualPriceEdit: false
         };
       }
       return item;
     });
     
-    setItems(updatedItems);
-    
-    // Also need to update detectedPacks to reflect the new pack
+    // Update detectedPacks - create NEW objects to ensure React detects changes
     const newDetectedPacks = detectedPacks.map(dp => {
-      // Check if this detected pack contains any of our items
       const hasOurItems = dp.items.some(barcode => packItemBarcodes.has(barcode));
+      console.log('[PackChange] DetectedPack check:', dp.pack.name, 'hasOurItems:', hasOurItems);
+      
       if (hasOurItems) {
+        // Create completely new object
         return {
-          ...dp,
-          pack: newPack,  // Replace pack definition with new one
-          instanceId: dp.instanceId  // Keep same instance ID
+          items: [...dp.items],  // New array
+          pack: { ...newPack },  // New pack object with spread
+          instanceId: dp.instanceId
         };
       }
       return dp;
     });
     
+    console.log('[PackChange] Setting new detectedPacks:', newDetectedPacks.map(dp => dp.pack.name));
+    console.log('[PackChange] Setting new items:', updatedItems.length);
+    
+    // Update both states - setDetectedPacks FIRST to ensure pack info is ready
     setDetectedPacks(newDetectedPacks);
+    setItems(updatedItems);
     
     // Get the new price for display
-    const newPrice = getPackPrice(newPack, currentPackItems[0]?.itemDays || numDays);
+    const packDays = currentPackItems[0]?.itemDays || numDays;
+    const newPrice = getPackPrice(newPack, packDays);
     toast.success(`Pack cambiado a "${newPack.name}" - Nuevo precio: €${newPrice.toFixed(2)}`);
   };
 
