@@ -104,10 +104,28 @@ export default function Customers() {
     { value: "notes", label: "Notas", required: false }
   ];
 
+  // ========== DEBOUNCE SEARCH ==========
   useEffect(() => {
-    loadCustomersWithStatus();
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // ========== LOAD INITIAL DATA ==========
+  useEffect(() => {
+    loadStats();
     loadProviders();
+    loadCustomers(true); // true = reset
   }, []);
+
+  // ========== RESET AND RELOAD when filters change ==========
+  useEffect(() => {
+    setCustomers([]);
+    setPage(1);
+    setHasMore(true);
+    loadCustomers(true);
+  }, [debouncedSearch, selectedProvider, selectedStatus]);
 
   const loadProviders = async () => {
     try {
@@ -120,28 +138,97 @@ export default function Customers() {
     }
   };
 
-  const loadCustomersWithStatus = async () => {
-    setLoading(true);
+  const loadStats = async () => {
     try {
-      const response = await axios.get(`${API}/customers/with-status`, {
+      const response = await axios.get(`${API}/customers/stats/summary`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
-      setAllCustomers(response.data.customers);
-      setCustomers(response.data.customers);
-      setStatusCounts(response.data.counts);
+      setStatusCounts(response.data);
+      setTotalCustomers(response.data.total);
     } catch (error) {
-      toast.error("Error al cargar clientes");
-      // Fallback to old method
-      try {
-        const fallbackResponse = await customerApi.getAll("");
-        setCustomers(fallbackResponse.data);
-        setAllCustomers(fallbackResponse.data);
-      } catch (e) {
-        console.error("Fallback also failed:", e);
+      console.error("Error loading stats:", error);
+    }
+  };
+
+  const loadCustomers = async (reset = false) => {
+    const currentPage = reset ? 1 : page;
+    
+    if (reset) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
+
+    try {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: '200',
+        status: selectedStatus,
+      });
+      
+      if (debouncedSearch) {
+        params.append('search', debouncedSearch);
       }
+      
+      if (selectedProvider && selectedProvider !== 'all') {
+        params.append('provider', selectedProvider);
+      }
+
+      const response = await axios.get(`${API}/customers/paginated/list?${params}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      const newCustomers = response.data.customers;
+      const pagination = response.data.pagination;
+
+      if (reset) {
+        setCustomers(newCustomers);
+        setPage(1);
+      } else {
+        setCustomers(prev => [...prev, ...newCustomers]);
+      }
+
+      setHasMore(pagination.has_next);
+      setTotalCustomers(pagination.total);
+      
+      if (!reset) {
+        setPage(currentPage + 1);
+      }
+    } catch (error) {
+      console.error("Error loading customers:", error);
+      toast.error("Error al cargar clientes");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
+  };
+
+  // ========== INFINITE SCROLL OBSERVER ==========
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
+          loadCustomers(false);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [hasMore, loading, loadingMore, page, debouncedSearch, selectedProvider, selectedStatus]);
+
+  const loadCustomersWithStatus = async () => {
+    // Deprecated - using loadCustomers now
+    loadStats();
+    loadCustomers(true);
   };
 
   const loadCustomers = async (search = "") => {
