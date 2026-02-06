@@ -403,7 +403,7 @@ export default function Inventory() {
 
   useEffect(() => {
     loadItems();
-  }, [filterStatus, filterType, showProfitability, sortBy]);
+  }, [filterStatus, filterType, showProfitability, sortBy, debouncedSearch]);
 
   // Load individual item profitability data
   const loadItemProfitability = async (item) => {
