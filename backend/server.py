@@ -513,6 +513,139 @@ async def get_customers_with_status(
         }
     }
 
+@api_router.get("/customers/paginated/list")
+async def get_customers_paginated(
+    page: int = Query(1, ge=1),
+    limit: int = Query(200, ge=10, le=500),
+    search: Optional[str] = None,
+    status: Optional[str] = Query("all", regex="^(all|active|inactive)$"),
+    provider: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get customers with server-side pagination for handling large datasets (50K+ records)
+    Optimized for scroll-infinite pattern with minimal data transfer
+    """
+    # Build base query
+    query = {}
+    
+    # Search filter
+    if search and search.strip():
+        query["$or"] = [
+            {"dni": {"$regex": search, "$options": "i"}},
+            {"name": {"$regex": search, "$options": "i"}},
+            {"phone": {"$regex": search, "$options": "i"}}
+        ]
+    
+    # Provider filter
+    if provider and provider != "all":
+        if provider == "none":
+            query["$or"] = [{"source": {"$exists": False}}, {"source": ""}]
+        else:
+            query["source"] = provider
+    
+    # Calculate total count (optimized - only when needed)
+    total = await db.customers.count_documents(query)
+    
+    # Get active customer IDs if status filter is needed
+    active_customer_ids = set()
+    active_customer_dnis = set()
+    if status in ["active", "inactive"]:
+        active_rentals = await db.rentals.find(
+            {"status": {"$in": ["active", "partial"]}},
+            {"customer_id": 1, "customer_dni": 1, "_id": 0}
+        ).to_list(None)
+        
+        for rental in active_rentals:
+            if rental.get("customer_id"):
+                active_customer_ids.add(rental["customer_id"])
+            if rental.get("customer_dni"):
+                active_customer_dnis.add(rental["customer_dni"].upper())
+    
+    # Get paginated customers - minimal fields for performance
+    skip = (page - 1) * limit
+    customers = await db.customers.find(
+        query,
+        {
+            "_id": 0,
+            "id": 1,
+            "dni": 1,
+            "name": 1,
+            "phone": 1,
+            "city": 1,
+            "source": 1,
+            "total_rentals": 1,
+            "created_at": 1
+        }
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    # Add active status if needed
+    if status in ["active", "inactive"]:
+        filtered_customers = []
+        for customer in customers:
+            is_active = (
+                customer.get("id") in active_customer_ids or 
+                customer.get("dni", "").upper() in active_customer_dnis
+            )
+            customer["has_active_rental"] = is_active
+            
+            # Filter by status
+            if status == "active" and is_active:
+                filtered_customers.append(customer)
+            elif status == "inactive" and not is_active:
+                filtered_customers.append(customer)
+        
+        customers = filtered_customers
+    else:
+        # Add has_active_rental for display purposes
+        for customer in customers:
+            is_active = (
+                customer.get("id") in active_customer_ids or 
+                customer.get("dni", "").upper() in active_customer_dnis
+            ) if active_customer_ids else False
+            customer["has_active_rental"] = is_active
+    
+    total_pages = (total + limit - 1) // limit
+    
+    return {
+        "customers": customers,
+        "pagination": {
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "total_pages": total_pages,
+            "has_next": page < total_pages,
+            "has_prev": page > 1
+        }
+    }
+
+@api_router.get("/customers/stats/summary")
+async def get_customers_stats(
+    current_user: dict = Depends(get_current_user)
+):
+    """Get customer statistics without loading all records - optimized for large datasets"""
+    total = await db.customers.count_documents({})
+    
+    # Get active rentals count
+    active_rentals = await db.rentals.distinct(
+        "customer_id",
+        {"status": {"$in": ["active", "partial"]}}
+    )
+    active_count = len(active_rentals)
+    
+    # Get active by DNI as fallback
+    active_dnis = await db.rentals.distinct(
+        "customer_dni",
+        {"status": {"$in": ["active", "partial"]}}
+    )
+    active_count += len(active_dnis)
+    
+    return {
+        "total": total,
+        "active": active_count,
+        "inactive": total - active_count
+    }
+
 @api_router.get("/customers/{customer_id}", response_model=CustomerResponse)
 async def get_customer(customer_id: str, current_user: dict = Depends(get_current_user)):
     customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
