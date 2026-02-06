@@ -232,8 +232,8 @@ class MultiTenantTester:
         try:
             pack_data = {
                 "name": "Pack Test Store 3",
-                "category": "SUPERIOR",
-                "components": ["ski", "boots"],
+                "description": "Pack de prueba para Store 3",
+                "items": ["ski", "boots"],
                 "day_1": 50.0,
                 "day_2": 45.0,
                 "day_3": 40.0,
