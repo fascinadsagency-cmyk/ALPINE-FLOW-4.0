@@ -5985,6 +5985,67 @@ async def fix_return_dates(current_user: dict = Depends(get_current_user)):
     }
 
 
+# ==================== BUSINESS SETTINGS/CONFIGURATION ====================
+
+class BusinessSettings(BaseModel):
+    company_logo: Optional[str] = None  # Base64 encoded image
+    ticket_header: Optional[str] = ""
+    ticket_footer: Optional[str] = ""
+    ticket_terms: Optional[str] = ""
+    show_dni_on_ticket: bool = True
+    show_vat_on_ticket: bool = False
+    default_vat: float = 21.0
+    vat_included_in_prices: bool = True
+    language: str = "es"
+    dark_mode: bool = False
+    auto_print: bool = False
+
+@api_router.get("/settings")
+async def get_settings(current_user: dict = Depends(get_current_user)):
+    """Get business settings from database"""
+    settings = await db.settings.find_one({"type": "business"}, {"_id": 0})
+    
+    if not settings:
+        # Return defaults
+        return {
+            "company_logo": None,
+            "ticket_header": "",
+            "ticket_footer": "",
+            "ticket_terms": "",
+            "show_dni_on_ticket": True,
+            "show_vat_on_ticket": False,
+            "default_vat": 21.0,
+            "vat_included_in_prices": True,
+            "language": "es",
+            "dark_mode": False,
+            "auto_print": False
+        }
+    
+    return settings
+
+@api_router.post("/settings")
+async def save_settings(settings: BusinessSettings, current_user: dict = Depends(get_current_user)):
+    """Save business settings to database"""
+    settings_dict = settings.dict()
+    settings_dict["type"] = "business"
+    settings_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
+    settings_dict["updated_by"] = current_user.get("username", "system")
+    
+    # Log logo size for debugging
+    if settings.company_logo:
+        logo_size_kb = len(settings.company_logo) * 0.75 / 1024
+        print(f"[Settings] Saving logo: {logo_size_kb:.1f}KB")
+    
+    # Upsert the settings document
+    await db.settings.update_one(
+        {"type": "business"},
+        {"$set": settings_dict},
+        upsert=True
+    )
+    
+    return {"success": True, "message": "Configuración guardada"}
+
+
 # Include router
 app.include_router(api_router)
 
