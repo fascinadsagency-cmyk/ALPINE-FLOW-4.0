@@ -1572,11 +1572,23 @@ export default function ActiveRentals() {
           ) : (
             /* SUCCESS STATE */
             <div className="text-center py-8">
-              <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="h-10 w-10 text-emerald-600" />
+              <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${
+                swapAction === 'return' ? 'bg-blue-100' : 'bg-emerald-100'
+              }`}>
+                <CheckCircle className={`h-10 w-10 ${
+                  swapAction === 'return' ? 'text-blue-600' : 'text-emerald-600'
+                }`} />
               </div>
-              <h3 className="text-xl font-bold text-emerald-800 mb-2">¡Cambio Completado!</h3>
-              <p className="text-slate-600">El material ha sido intercambiado y el inventario actualizado.</p>
+              <h3 className={`text-xl font-bold mb-2 ${
+                swapAction === 'return' ? 'text-blue-800' : 'text-emerald-800'
+              }`}>
+                {swapAction === 'return' ? '¡Devolución Completada!' : '¡Cambio Completado!'}
+              </h3>
+              <p className="text-slate-600">
+                {swapAction === 'return' 
+                  ? 'El artículo ha sido devuelto y el inventario actualizado.' 
+                  : 'El material ha sido intercambiado y el inventario actualizado.'}
+              </p>
             </div>
           )}
 
