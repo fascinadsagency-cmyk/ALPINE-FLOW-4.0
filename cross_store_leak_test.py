@@ -193,26 +193,31 @@ class CrossStoreLeakTester:
             
             created_customer = response.json()
             customer_id = created_customer["id"]
+            customer_dni = created_customer["dni"]
             
-            # Verify Store 1 can see it
-            store1_customers = requests.get(f"{BACKEND_URL}/customers", headers=self.store1_headers).json()
-            store1_has_customer = any(c.get('id') == customer_id for c in store1_customers)
+            # Verify Store 1 can see it by ID (more reliable than list search for large datasets)
+            store1_get_response = requests.get(f"{BACKEND_URL}/customers/{customer_id}", headers=self.store1_headers)
+            store1_has_customer = store1_get_response.status_code == 200
             
             if not store1_has_customer:
-                self.log_test("Create Unique Data Store 1", False, "Store 1 cannot see its own created customer")
+                self.log_test("Create Unique Data Store 1", False, "Store 1 cannot see its own created customer by ID")
                 return False
             
-            # CRITICAL TEST: Verify Store 3 CANNOT see it
-            store3_customers = requests.get(f"{BACKEND_URL}/customers", headers=self.store3_headers).json()
-            store3_has_customer = any(c.get('id') == customer_id for c in store3_customers)
+            # CRITICAL TEST: Verify Store 3 CANNOT see it by ID
+            store3_get_response = requests.get(f"{BACKEND_URL}/customers/{customer_id}", headers=self.store3_headers)
+            store3_has_customer = store3_get_response.status_code == 200
             
-            if store3_has_customer:
+            # Also test by DNI
+            store3_dni_response = requests.get(f"{BACKEND_URL}/customers/dni/{customer_dni}", headers=self.store3_headers)
+            store3_has_customer_by_dni = store3_dni_response.status_code == 200
+            
+            if store3_has_customer or store3_has_customer_by_dni:
                 self.log_test("Create Unique Data Store 1", False, 
-                            f"CRITICAL LEAK: Store 3 can see Store 1's customer {customer_id}")
+                            f"CRITICAL LEAK: Store 3 can see Store 1's customer {customer_id} (by ID: {store3_has_customer}, by DNI: {store3_has_customer_by_dni})")
                 return False
             else:
                 self.log_test("Create Unique Data Store 1", True, 
-                            f"Store 1 created customer {customer_id}, Store 3 cannot see it (isolation working)")
+                            f"Store 1 created customer {customer_id}, Store 3 cannot see it by ID or DNI (isolation working)")
                 return True
                 
         except Exception as e:
