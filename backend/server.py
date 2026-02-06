@@ -403,14 +403,17 @@ async def get_me(current_user: CurrentUser = Depends(get_current_user)):
 # ==================== CUSTOMER ROUTES ====================
 
 @api_router.post("/customers", response_model=CustomerResponse)
-async def create_customer(customer: CustomerCreate, current_user: dict = Depends(get_current_user)):
-    existing = await db.customers.find_one({"dni": customer.dni})
+async def create_customer(customer: CustomerCreate, current_user: CurrentUser = Depends(get_current_user)):
+    # Check for duplicate within the same store
+    query = {"dni": customer.dni, **current_user.get_store_filter()}
+    existing = await db.customers.find_one(query)
     if existing:
-        raise HTTPException(status_code=400, detail="Customer with this DNI already exists")
+        raise HTTPException(status_code=400, detail="Customer with this DNI already exists in your store")
     
     customer_id = str(uuid.uuid4())
     doc = {
         "id": customer_id,
+        "store_id": current_user.store_id,  # Multi-tenant: assign to user's store
         "dni": customer.dni.upper(),
         "name": customer.name,
         "phone": customer.phone or "",
