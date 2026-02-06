@@ -381,10 +381,15 @@ async def login(user: UserLogin):
     if not db_user or not verify_password(user.password, db_user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    token = create_token(db_user["id"], db_user["username"], db_user["role"])
+    token = create_token(
+        db_user["id"], 
+        db_user["username"], 
+        db_user.get("role", "employee"),
+        db_user.get("store_id")  # Can be None for SUPER_ADMIN
+    )
     return TokenResponse(
         access_token=token,
-        user=UserResponse(id=db_user["id"], username=db_user["username"], role=db_user["role"])
+        user=UserResponse(id=db_user["id"], username=db_user["username"], role=db_user.get("role", "employee"))
     )
 
 @api_router.get("/auth/me", response_model=UserResponse)
