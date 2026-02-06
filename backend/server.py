@@ -2318,6 +2318,7 @@ async def create_pack(pack: PackCreate, current_user: CurrentUser = Depends(get_
     pack_id = str(uuid.uuid4())
     doc = {
         "id": pack_id,
+        "store_id": current_user.store_id,  # Multi-tenant: Add store_id
         "name": pack.name,
         "description": pack.description or "",
         "category": pack.category,
@@ -2340,12 +2341,14 @@ async def create_pack(pack: PackCreate, current_user: CurrentUser = Depends(get_
 
 @api_router.get("/packs", response_model=List[PackResponse])
 async def get_packs(current_user: CurrentUser = Depends(get_current_user)):
-    packs = await db.packs.find({}, {"_id": 0}).to_list(50)
+    # Multi-tenant: Filter by store_id
+    packs = await db.packs.find(current_user.get_store_filter(), {"_id": 0}).to_list(50)
     return [PackResponse(**p) for p in packs]
 
 @api_router.put("/packs/{pack_id}", response_model=PackResponse)
 async def update_pack(pack_id: str, pack: PackCreate, current_user: CurrentUser = Depends(get_current_user)):
-    existing = await db.packs.find_one({"id": pack_id})
+    # Multi-tenant: Check pack exists in same store
+    existing = await db.packs.find_one({**current_user.get_store_filter(), "id": pack_id})
     if not existing:
         raise HTTPException(status_code=404, detail="Pack not found")
     
@@ -2366,14 +2369,16 @@ async def update_pack(pack_id: str, pack: PackCreate, current_user: CurrentUser 
         "day_10": pack.day_10,
         "day_11_plus": pack.day_11_plus
     }
-    await db.packs.update_one({"id": pack_id}, {"$set": update_doc})
+    # Multi-tenant: Update only in own store
+    await db.packs.update_one({**current_user.get_store_filter(), "id": pack_id}, {"$set": update_doc})
     
-    updated = await db.packs.find_one({"id": pack_id}, {"_id": 0})
+    updated = await db.packs.find_one({**current_user.get_store_filter(), "id": pack_id}, {"_id": 0})
     return PackResponse(**updated)
 
 @api_router.delete("/packs/{pack_id}")
 async def delete_pack(pack_id: str, current_user: CurrentUser = Depends(get_current_user)):
-    result = await db.packs.delete_one({"id": pack_id})
+    # Multi-tenant: Delete only from own store
+    result = await db.packs.delete_one({**current_user.get_store_filter(), "id": pack_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Pack not found")
     return {"message": "Pack deleted"}
