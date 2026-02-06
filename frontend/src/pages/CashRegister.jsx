@@ -1374,20 +1374,95 @@ export default function CashRegister() {
         <TabsContent value="closures">
           <Card className={`${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`}>
             <CardHeader>
-              <CardTitle className={`flex items-center gap-2 ${darkMode ? 'text-white' : ''}`}>
-                <Lock className="h-5 w-5" />
-                Histórico de Cierres de Caja
-              </CardTitle>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <CardTitle className={`flex items-center gap-2 ${darkMode ? 'text-white' : ''}`}>
+                  <Lock className="h-5 w-5" />
+                  Histórico de Cierres de Caja
+                </CardTitle>
+                
+                {/* Filtro de fechas */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Botones rápidos */}
+                  <div className="flex gap-1">
+                    <Button
+                      variant={closureFilterType === "today" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleClosureFilterTypeChange("today")}
+                      className="h-8"
+                    >
+                      Hoy
+                    </Button>
+                    <Button
+                      variant={closureFilterType === "week" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleClosureFilterTypeChange("week")}
+                      className="h-8"
+                    >
+                      7 días
+                    </Button>
+                    <Button
+                      variant={closureFilterType === "month" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleClosureFilterTypeChange("month")}
+                      className="h-8"
+                    >
+                      30 días
+                    </Button>
+                    <Button
+                      variant={closureFilterType === "range" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleClosureFilterTypeChange("range")}
+                      className="h-8"
+                    >
+                      <Calendar className="h-3 w-3 mr-1" />
+                      Rango
+                    </Button>
+                  </div>
+                  
+                  {/* Selector de rango personalizado */}
+                  {closureFilterType === "range" && (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="date"
+                        value={closureFilterFrom}
+                        onChange={(e) => setClosureFilterFrom(e.target.value)}
+                        className="h-8 w-36"
+                      />
+                      <span className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>-</span>
+                      <Input
+                        type="date"
+                        value={closureFilterTo}
+                        onChange={(e) => setClosureFilterTo(e.target.value)}
+                        className="h-8 w-36"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Indicador de filtro activo */}
+              <p className={`text-sm mt-2 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                {closureFilterType === "today" && `Mostrando cierres de hoy (${new Date().toLocaleDateString('es-ES')})`}
+                {closureFilterType === "week" && "Mostrando cierres de los últimos 7 días"}
+                {closureFilterType === "month" && "Mostrando cierres de los últimos 30 días"}
+                {closureFilterType === "range" && `Mostrando cierres del ${new Date(closureFilterFrom).toLocaleDateString('es-ES')} al ${new Date(closureFilterTo).toLocaleDateString('es-ES')}`}
+                {filteredClosures.length > 0 && ` • ${filteredClosures.length} cierre(s) encontrado(s)`}
+              </p>
             </CardHeader>
             <CardContent>
               {historicLoading ? (
                 <div className="flex justify-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
-              ) : closureHistory.length === 0 ? (
+              ) : filteredClosures.length === 0 ? (
                 <div className={`text-center py-12 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                   <Lock className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>No hay cierres registrados</p>
+                  <p className="font-medium">No hay cierres registrados para este período</p>
+                  <p className="text-sm mt-1">
+                    {closureFilterType === "today" 
+                      ? "No se han realizado cierres de caja hoy" 
+                      : "Prueba a ampliar el rango de fechas"}
+                  </p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -1404,9 +1479,16 @@ export default function CashRegister() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {closureHistory.map((c) => (
+                      {filteredClosures.map((c) => (
                         <TableRow key={c.id}>
-                          <TableCell className="font-semibold">{c.date}</TableCell>
+                          <TableCell className="font-semibold">
+                            {c.date ? new Date(c.date).toLocaleDateString('es-ES', { 
+                              weekday: 'short', 
+                              day: '2-digit', 
+                              month: '2-digit',
+                              year: '2-digit'
+                            }) : '-'}
+                          </TableCell>
                           <TableCell>
                             <Badge variant="outline">#{c.closure_number || 1}</Badge>
                           </TableCell>
