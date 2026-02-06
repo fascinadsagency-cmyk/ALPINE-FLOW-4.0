@@ -227,7 +227,7 @@ export default function Inventory() {
     }
     
     // Trigger search
-    loadItems();
+    loadItems(true);
   }, [showAddDialog, scannerMode]);
   
   const { isScanning: globalScannerActive, forceFocus: focusMainSearch } = useScannerListener({
