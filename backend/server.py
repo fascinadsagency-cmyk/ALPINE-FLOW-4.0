@@ -1665,8 +1665,8 @@ async def delete_item(item_id: str, force: bool = Query(False), current_user: Cu
 @api_router.get("/item-types", response_model=List[ItemTypeResponse])
 async def get_item_types(current_user: CurrentUser = Depends(get_current_user)):
     """Get all item types (only custom types from database)"""
-    # Get custom types from database only - no hardcoded defaults
-    custom_types = await db.item_types.find({}, {"_id": 0}).to_list(5000)
+    # Multi-tenant: Filter by store_id - Get custom types from database only
+    custom_types = await db.item_types.find(current_user.get_store_filter(), {"_id": 0}).to_list(5000)
     return [ItemTypeResponse(**t) for t in custom_types]
 
 @api_router.post("/item-types", response_model=ItemTypeResponse)
