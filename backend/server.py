@@ -6428,7 +6428,9 @@ async def get_all_stores(current_user: CurrentUser = Depends(require_super_admin
 
 @api_router.post("/stores", response_model=StoreResponse)
 async def create_store(store: StoreCreate, current_user: CurrentUser = Depends(require_super_admin)):
-    """Create new store - SUPER_ADMIN only"""
+    """Create new store - SUPER_ADMIN only
+    Automatically creates an admin user for the new store
+    """
     # Get next store_id
     last_store = await db.stores.find_one(sort=[("store_id", -1)])
     next_id = (last_store.get("store_id", 0) + 1) if last_store else 2
@@ -6452,6 +6454,39 @@ async def create_store(store: StoreCreate, current_user: CurrentUser = Depends(r
     }
     
     await db.stores.insert_one(store_doc)
+    
+    # ============ AUTO-CREATE ADMIN USER FOR NEW STORE ============
+    # Generate username from store name (lowercase, no spaces)
+    store_name_normalized = store.name.lower().replace(" ", "_").replace("-", "_")
+    username = f"{store_name_normalized}_admin"
+    default_password = "admin123"  # User should change this after first login
+    
+    # Check if username already exists
+    existing_user = await db.users.find_one({"username": username})
+    if not existing_user:
+        import bcrypt
+        user_id = str(uuid.uuid4())
+        hashed_pw = bcrypt.hashpw(default_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        admin_user = {
+            "id": user_id,
+            "username": username,
+            "password": hashed_pw,
+            "role": "admin",
+            "store_id": next_id,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.users.insert_one(admin_user)
+        
+        # Add admin credentials to response
+        store_doc["admin_credentials"] = {
+            "username": username,
+            "password": default_password,
+            "message": "IMPORTANTE: Cambia la contraseña después del primer login"
+        }
+    # ============================================================
+    
     return store_doc
 
 @api_router.get("/stores/{store_id}", response_model=StoreResponse)
