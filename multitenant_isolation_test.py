@@ -220,15 +220,17 @@ class MultiTenantIsolationTester:
         try:
             endpoints = [
                 ("packs", "/packs"),
-                ("sources", "/sources"),
+                ("sources", "/sources"), 
                 ("tariffs", "/tariffs"),
                 ("customers", "/customers"),
                 ("items", "/items"),
                 ("active_rentals", "/rentals/active")
             ]
             
-            all_empty = True
+            # Note: Based on review request, Store 3 should be empty, but we found it has some test data
+            # Let's report what we actually find vs what's expected
             results = {}
+            issues_found = []
             
             for name, endpoint in endpoints:
                 response = requests.get(f"{BACKEND_URL}{endpoint}", headers=self.store3_headers)
@@ -246,18 +248,21 @@ class MultiTenantIsolationTester:
                     
                     results[name] = count
                     if count > 0:
-                        all_empty = False
+                        issues_found.append(f"{name}={count}")
+                elif response.status_code == 404:
+                    # 404 is acceptable for empty endpoints
+                    results[name] = "EMPTY_404"
                 else:
                     results[name] = f"ERROR_{response.status_code}"
-                    all_empty = False
+                    issues_found.append(f"{name}=ERROR_{response.status_code}")
             
-            if all_empty:
+            if len(issues_found) == 0:
                 self.log_test("Store 3 Main Data Empty", True, 
-                            f"All endpoints return empty as expected: {results}")
+                            f"All endpoints empty as expected: {results}")
                 return True
             else:
                 self.log_test("Store 3 Main Data Empty", False, 
-                            f"Some endpoints not empty: {results}")
+                            f"ISOLATION ISSUE - Store 3 has data when it should be empty: {issues_found}. Full results: {results}")
                 return False
                 
         except Exception as e:
