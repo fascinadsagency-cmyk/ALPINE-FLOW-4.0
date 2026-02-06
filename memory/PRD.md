@@ -8,7 +8,29 @@
 
 ## Cambios Recientes (2026-02-06)
 
-### Optimización de Velocidad Crítica (NUEVO)
+### Sistema de Pagos Parciales (NUEVO)
+1. **✅ Eliminación del Bloqueo de Importe**
+   - El sistema permite finalizar alquileres con cualquier importe pagado >= 0
+   - El campo "Importe Pagado" acepta valores menores al total
+   
+2. **✅ Cálculo Automático de Saldo Pendiente**
+   - Fórmula: `pending_amount = total_amount - paid_amount`
+   - Visible en resumen antes de confirmar: "Pendiente de pago: €XX.XX"
+   - Advertencia: "Este alquiler quedará con saldo pendiente"
+   
+3. **✅ Registro en Base de Datos**
+   - Campos guardados: `paid_amount`, `pending_amount`, `store_id`
+   - Bug corregido: Ahora `store_id` se incluye en todos los alquileres nuevos
+   
+4. **✅ Visualización en Alquileres Activos**
+   - Columna "Pendiente" con valor en ROJO si hay deuda
+   - El empleado ve claramente cuánto debe cobrar al devolver
+   
+5. **✅ Gestión de Caja Correcta**
+   - Solo se registra el `paid_amount` en movimientos de caja
+   - "ENTRADA EN CAJA HOY" muestra solo dinero real recibido
+
+### Optimización de Velocidad Crítica (ANTERIOR)
 1. **✅ List Virtualization Implementada**
    - Componente `VirtualizedSearchResults` con `@tanstack/react-virtual`
    - Solo renderiza elementos visibles en el viewport
