@@ -620,7 +620,7 @@ async def get_customers_stats(
     current_user: CurrentUser = Depends(get_current_user)
 ):
     """Get customer statistics without loading all records - optimized for large datasets"""
-    total = await db.customers.count_documents({**current_user.get_store_filter(),})
+    total = await db.customers.count_documents({**current_user.get_store_filter(),}})
     
     # Get active rentals count
     active_rentals = await db.rentals.distinct(
@@ -962,7 +962,7 @@ async def export_all_customers(
     format: 'json' returns all data, 'count' returns just the count
     """
     if format == "count":
-        total = await db.customers.count_documents({**current_user.get_store_filter(),})
+        total = await db.customers.count_documents({**current_user.get_store_filter(),}})
         return {"total": total}
     
     # For full export, use cursor to stream data efficiently
