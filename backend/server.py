@@ -393,11 +393,11 @@ async def login(user: UserLogin):
     )
 
 @api_router.get("/auth/me", response_model=UserResponse)
-async def get_me(current_user: dict = Depends(get_current_user)):
+async def get_me(current_user: CurrentUser = Depends(get_current_user)):
     return UserResponse(
-        id=current_user["sub"],
-        username=current_user["username"],
-        role=current_user["role"]
+        id=current_user.user_id,
+        username=current_user.username,
+        role=current_user.role
     )
 
 # ==================== CUSTOMER ROUTES ====================
