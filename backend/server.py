@@ -409,7 +409,7 @@ async def get_me(current_user: CurrentUser = Depends(get_current_user)):
 @api_router.post("/customers", response_model=CustomerResponse)
 async def create_customer(customer: CustomerCreate, current_user: CurrentUser = Depends(get_current_user)):
     # Check for duplicate within the same store
-    query = {"dni": customer.dni, **current_user.get_store_filter()}
+    query ={**current_user.get_store_filter(),  {"dni": customer.dni, **current_user.get_store_filter()}
     existing = await db.customers.find_one(query)
     if existing:
         raise HTTPException(status_code=400, detail="Customer with this DNI already exists in your store")
@@ -457,7 +457,7 @@ async def get_customers_with_status(
     current_user: CurrentUser = Depends(get_current_user)
 ):
     """Get all customers with their active rental status"""
-    query = {}
+    query = {**current_user.get_store_filter()}
     if search:
         query = {
             "$or": [
@@ -525,7 +525,7 @@ async def get_customers_paginated(
     Optimized for scroll-infinite pattern with minimal data transfer
     """
     # Build base query
-    query = {}
+    query = {**current_user.get_store_filter()}
     
     # Search filter
     if search and search.strip():
@@ -1097,7 +1097,7 @@ async def get_items(
     include_deleted: bool = Query(False),
     current_user: CurrentUser = Depends(get_current_user)
 ):
-    query = {}
+    query = {**current_user.get_store_filter()}
     
     # CRITICAL: Always exclude deleted items unless explicitly requested
     if not include_deleted:
@@ -1149,7 +1149,7 @@ async def get_items_paginated(
     Get items with server-side pagination for handling large inventories (50K+ items)
     Optimized for scroll-infinite pattern with minimal data transfer
     """
-    query = {}
+    query = {**current_user.get_store_filter()}
     
     # CRITICAL: Always exclude deleted items unless explicitly requested
     if not include_deleted:
@@ -1251,7 +1251,7 @@ async def get_generic_items(
     current_user: CurrentUser = Depends(get_current_user)
 ):
     """Get all generic items with available stock"""
-    query = {"is_generic": True, "stock_available": {"$gt": 0}}
+    query ={**current_user.get_store_filter(),  {"is_generic": True, "stock_available": {"$gt": 0}}
     if item_type:
         query["item_type"] = item_type
     
@@ -1351,7 +1351,7 @@ async def get_items_with_profitability(
     current_user: CurrentUser = Depends(get_current_user)
 ):
     """Get all items with profitability metrics calculated from closed rentals"""
-    query = {}
+    query = {**current_user.get_store_filter()}
     
     # CRITICAL: Always exclude deleted items
     query["status"] = {"$nin": ["deleted"]}
@@ -2548,7 +2548,7 @@ async def get_rentals(
     customer_id: Optional[str] = None,
     current_user: CurrentUser = Depends(get_current_user)
 ):
-    query = {}
+    query = {**current_user.get_store_filter()}
     if status:
         query["status"] = status
     if customer_id:
@@ -3642,7 +3642,7 @@ async def get_maintenance(
     status: Optional[str] = None,
     current_user: CurrentUser = Depends(get_current_user)
 ):
-    query = {}
+    query = {**current_user.get_store_filter()}
     if status:
         query["status"] = status
     
@@ -3783,7 +3783,7 @@ async def get_external_repairs(
     status: Optional[str] = None,
     current_user: CurrentUser = Depends(get_current_user)
 ):
-    query = {}
+    query = {**current_user.get_store_filter()}
     if status and status != "all":
         query["status"] = status
     
@@ -5564,7 +5564,7 @@ async def get_cash_movements(
         return []  # No active session = no movements to show
     
     # Query movements by session_id
-    query = {"session_id": active_session["id"]}
+    query ={**current_user.get_store_filter(),  {"session_id": active_session["id"]}
     if movement_type:
         query["movement_type"] = movement_type
     
@@ -6101,7 +6101,7 @@ async def get_cash_movements_history(
     current_user: CurrentUser = Depends(get_current_user)
 ):
     """Get all cash movements with optional filters for historic view"""
-    query = {}
+    query = {**current_user.get_store_filter()}
     
     # Date range filter
     if date_from or date_to:
