@@ -1399,7 +1399,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
       
       // Reload types to update all dropdowns
       await loadItemTypes();
-      await loadItems();
+      await loadItems(true);
       
     } catch (error) {
       const errorDetail = error.response?.data?.detail;
