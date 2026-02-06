@@ -6387,23 +6387,39 @@ async def update_store(store_id: int, updates: StoreUpdate, current_user: Curren
         update_dict["status"] = updates.status
     if updates.plan is not None:
         update_dict["plan"] = updates.plan
+    if updates.company_logo is not None:
+        update_dict["company_logo"] = updates.company_logo
+    if updates.ticket_footer is not None:
+        update_dict["ticket_footer"] = updates.ticket_footer
     
     # Contact info
-    contact_fields = {}
-    if updates.contact_email is not None:
-        contact_fields["email"] = updates.contact_email
-    if updates.contact_phone is not None:
-        contact_fields["phone"] = updates.contact_phone
-    if updates.address is not None:
-        contact_fields["address"] = updates.address
+    if any([updates.contact_email is not None, updates.contact_phone is not None, updates.address is not None]):
+        # Get existing contact first
+        store = await db.stores.find_one({"store_id": store_id})
+        contact = store.get("contact", {})
+        
+        if updates.contact_email is not None:
+            contact["email"] = updates.contact_email
+        if updates.contact_phone is not None:
+            contact["phone"] = updates.contact_phone
+        if updates.address is not None:
+            contact["address"] = updates.address
+        
+        update_dict["contact"] = contact
     
-    if contact_fields:
-        update_dict["contact"] = contact_fields
-    
-    # Settings/limits - parse from request body
-    from fastapi import Request
-    # Note: StoreUpdate needs to be enhanced to include these fields
-    # For now, we'll accept them from the raw request
+    # Settings/limits
+    if any([updates.max_users is not None, updates.max_items is not None, updates.max_customers is not None]):
+        store = await db.stores.find_one({"store_id": store_id})
+        settings = store.get("settings", {})
+        
+        if updates.max_users is not None:
+            settings["max_users"] = updates.max_users
+        if updates.max_items is not None:
+            settings["max_items"] = updates.max_items
+        if updates.max_customers is not None:
+            settings["max_customers"] = updates.max_customers
+        
+        update_dict["settings"] = settings
     
     if update_dict:
         await db.stores.update_one(
@@ -6412,6 +6428,29 @@ async def update_store(store_id: int, updates: StoreUpdate, current_user: Curren
         )
     
     return {"message": "Store updated successfully"}
+
+@api_router.post("/stores/{store_id}/impersonate")
+async def impersonate_store(store_id: int, current_user: CurrentUser = Depends(require_super_admin)):
+    """Impersonate a store - SUPER_ADMIN only - Access as that store's admin"""
+    # Find any admin user of that store
+    admin_user = await db.users.find_one({"store_id": store_id, "role": "admin"})
+    
+    if not admin_user:
+        # Create a temporary admin for impersonation
+        raise HTTPException(status_code=404, detail="No admin user found for this store")
+    
+    # Create token for that user
+    token = create_token(
+        admin_user["id"],
+        admin_user["username"],
+        admin_user["role"],
+        store_id
+    )
+    
+    return {
+        "access_token": token,
+        "message": f"Impersonating store {store_id} as {admin_user['username']}"
+    }
 
 @api_router.get("/stores/{store_id}/stats")
 async def get_store_stats(store_id: int, current_user: CurrentUser = Depends(require_super_admin)):
