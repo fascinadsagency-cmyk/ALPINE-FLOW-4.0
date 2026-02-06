@@ -30,3 +30,8 @@ class StoreUpdate(BaseModel):
     contact_email: Optional[str] = None
     contact_phone: Optional[str] = None
     address: Optional[str] = None
+    company_logo: Optional[str] = None
+    ticket_footer: Optional[str] = None
+    max_users: Optional[int] = None
+    max_items: Optional[int] = None
+    max_customers: Optional[int] = None
