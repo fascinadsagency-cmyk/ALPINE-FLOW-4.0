@@ -1251,7 +1251,7 @@ async def get_generic_items(
     current_user: CurrentUser = Depends(get_current_user)
 ):
     """Get all generic items with available stock"""
-    query ={**current_user.get_store_filter(),  {"is_generic": True, "stock_available": {"$gt": 0}}
+    query = {**current_user.get_store_filter(), "is_generic": True, "stock_available": {"$gt": 0}}
     if item_type:
         query["item_type"] = item_type
     
@@ -5564,7 +5564,7 @@ async def get_cash_movements(
         return []  # No active session = no movements to show
     
     # Query movements by session_id
-    query ={**current_user.get_store_filter(),  {"session_id": active_session["id"]}
+    query = {**current_user.get_store_filter(), "session_id": active_session["id"]}
     if movement_type:
         query["movement_type"] = movement_type
     
