@@ -796,7 +796,7 @@ export default function Inventory() {
       }, 100);
       
       // Reload items list in background
-      loadItems();
+      loadItems(true);
       
     } catch (error) {
       showScannerFeedback('error');
