@@ -581,7 +581,7 @@ export default function Inventory() {
       toast.success(newItem.is_generic ? "Artículo genérico creado correctamente" : "Artículo creado correctamente");
       setShowAddDialog(false);
       resetNewItem();
-      loadItems();
+      loadItems(true);
     } catch (error) {
       // Handle Pydantic validation errors (array of objects) or string errors
       const detail = error.response?.data?.detail;
