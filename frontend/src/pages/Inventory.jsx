@@ -1224,7 +1224,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
       
       // CRITICAL: Force full refresh from server - clear local state first
       setItems([]);
-      await loadItems();
+      await loadItems(true);
       
       // VERIFICATION: Check if item still exists in the refreshed list
       const stillExists = items.find(i => i.id === deletingItem.id);
