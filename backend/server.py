@@ -4304,9 +4304,10 @@ async def get_range_report(
     cash_revenue = financial_summary["by_payment_method"]["cash"]["income"]
     card_revenue = financial_summary["by_payment_method"]["card"]["income"]
     
-    # Para online y other, buscar en cash_movements
+    # Para online y other, buscar en cash_movements - Multi-tenant: Filter by store
     other_methods = await db.cash_movements.aggregate([
         {"$match": {
+            **current_user.get_store_filter(),
             "created_at": {"$gte": start_dt, "$lte": end_dt},
             "movement_type": "income",
             "payment_method": {"$nin": ["cash", "card"]}
@@ -4325,13 +4326,15 @@ async def get_range_report(
         else:
             other_revenue += m["total"]
     
-    # Get rentals count in the range (operational data, not financial)
+    # Get rentals count in the range (operational data, not financial) - Multi-tenant: Filter by store
     rentals = await db.rentals.find({
+        **current_user.get_store_filter(),
         "created_at": {"$gte": start_dt, "$lte": end_dt}
     }, {"_id": 0, "id": 1, "customer_id": 1, "paid_amount": 1}).to_list(5000)
     
-    # Get returns in the range
+    # Get returns in the range - Multi-tenant: Filter by store
     returns_count = await db.rentals.count_documents({
+        **current_user.get_store_filter(),
         "status": "returned",
         "actual_return_date": {"$gte": start_dt, "$lte": end_dt}
     })
@@ -4339,23 +4342,24 @@ async def get_range_report(
     # Get external repairs revenue (ya está en cash_movements pero también lo mostramos)
     repairs_revenue = financial_summary["by_category"].get("external_repair", {}).get("total", 0)
     
-    # Calculate commissions by provider
-    sources = await db.sources.find({}, {"_id": 0}).to_list(5000)
+    # Calculate commissions by provider - Multi-tenant: Filter by store
+    sources = await db.sources.find(current_user.get_store_filter(), {"_id": 0}).to_list(5000)
     commissions_list = []
     
     for source in sources:
         if source.get("commission_percent", 0) > 0:
-            # Get customers from this source
+            # Get customers from this source - Multi-tenant: Filter by store
             source_customers = await db.customers.find(
-                {"source_id": source["id"]},
+                {**current_user.get_store_filter(), "source_id": source["id"]},
                 {"_id": 0, "id": 1}
             ).to_list(1000)
             
             customer_ids = [c["id"] for c in source_customers]
             
             if customer_ids:
-                # Get rentals from these customers in the date range
+                # Get rentals from these customers in the date range - Multi-tenant: Filter by store
                 source_rentals = await db.rentals.find({
+                    **current_user.get_store_filter(),
                     "customer_id": {"$in": customer_ids},
                     "created_at": {"$gte": start_dt, "$lte": end_dt}
                 }, {"_id": 0, "paid_amount": 1}).to_list(1000)
@@ -4374,9 +4378,9 @@ async def get_range_report(
                         commission_amount=commission_amount
                     ))
     
-    # Get pending returns (all active/partial rentals)
+    # Get pending returns (all active/partial rentals) - Multi-tenant: Filter by store
     pending_returns = await db.rentals.find(
-        {"status": {"$in": ["active", "partial"]}},
+        {**current_user.get_store_filter(), "status": {"$in": ["active", "partial"]}},
         {"_id": 0}
     ).to_list(200)
     
