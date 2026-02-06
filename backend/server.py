@@ -111,6 +111,7 @@ class ItemCreate(BaseModel):
     maintenance_interval: Optional[int] = 30  # days between maintenance
     category: Optional[str] = "MEDIA"  # SUPERIOR, ALTA, MEDIA
     acquisition_cost: Optional[float] = None  # Cost for profitability tracking
+    status: Optional[str] = None  # available, rented, maintenance, retired - for manual override
     # Generic item fields
     is_generic: Optional[bool] = False  # If true, managed by quantity not individual tracking
     name: Optional[str] = ""  # Display name for generic items (e.g., "Casco Adulto")
