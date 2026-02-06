@@ -5250,13 +5250,15 @@ class SourceResponse(BaseModel):
 
 @api_router.post("/sources", response_model=SourceResponse)
 async def create_source(source: SourceCreate, current_user: CurrentUser = Depends(get_current_user)):
-    existing = await db.sources.find_one({"name": source.name})
+    # Multi-tenant: Check existing within same store
+    existing = await db.sources.find_one({**current_user.get_store_filter(), "name": source.name})
     if existing:
         raise HTTPException(status_code=400, detail="Source already exists")
     
     source_id = str(uuid.uuid4())
     doc = {
         "id": source_id,
+        "store_id": current_user.store_id,  # Multi-tenant: Add store_id
         "name": source.name,
         "is_favorite": source.is_favorite,
         "discount_percent": source.discount_percent,
@@ -5274,27 +5276,30 @@ async def create_source(source: SourceCreate, current_user: CurrentUser = Depend
 
 @api_router.get("/sources", response_model=List[SourceResponse])
 async def get_sources(current_user: CurrentUser = Depends(get_current_user)):
-    sources = await db.sources.find({}, {"_id": 0}).sort([("is_favorite", -1), ("name", 1)]).to_list(5000)
+    # Multi-tenant: Filter by store_id
+    sources = await db.sources.find(current_user.get_store_filter(), {"_id": 0}).sort([("is_favorite", -1), ("name", 1)]).to_list(5000)
     
-    # Count customers per source
+    # Count customers per source (within same store)
     for source in sources:
-        count = await db.customers.count_documents({"source": source["name"]})
+        count = await db.customers.count_documents({**current_user.get_store_filter(), "source": source["name"]})
         source["customer_count"] = count
     
     return [SourceResponse(**s) for s in sources]
 
 @api_router.delete("/sources/{source_id}")
 async def delete_source(source_id: str, current_user: CurrentUser = Depends(get_current_user)):
-    source = await db.sources.find_one({"id": source_id})
+    # Multi-tenant: Check source exists in same store
+    source = await db.sources.find_one({**current_user.get_store_filter(), "id": source_id})
     if not source:
         raise HTTPException(status_code=404, detail="Source not found")
     
-    # Check if source is used
-    count = await db.customers.count_documents({"source": source["name"]})
+    # Check if source is used (within same store)
+    count = await db.customers.count_documents({**current_user.get_store_filter(), "source": source["name"]})
     if count > 0:
         raise HTTPException(status_code=400, detail=f"Cannot delete: {count} customers using this source")
     
-    await db.sources.delete_one({"id": source_id})
+    # Multi-tenant: Delete only from own store
+    await db.sources.delete_one({**current_user.get_store_filter(), "id": source_id})
     return {"message": "Source deleted"}
 
 @api_router.put("/sources/{source_id}", response_model=SourceResponse)
