@@ -499,6 +499,21 @@ POST /api/cash/close            - Cerrar caja con arqueo
     - `data-testid="component-type-label-{barcode}"` para cada input
 - **Testing:** 7/7 tests passed (iteration_26.json)
 
+### 2e. SERVICE WORKER CORREGIDO (NETWORK FIRST) - NUEVO 2026-02-06
+- **Problema:** El caché persistente bloqueaba las actualizaciones de código en desarrollo
+- **Solución Implementada:**
+  - **ESTRATEGIA NETWORK FIRST:** Siempre intenta descargar del servidor primero
+  - **`skipWaiting()` y `clients.claim()`:** Fuerza activación inmediata del nuevo SW
+  - **VERSIONADO DINÁMICO:** `SW_VERSION = 'v3-network-first-' + Date.now()`
+  - **AUTO-RELOAD:** Al detectar nueva versión, muestra toast y recarga automáticamente
+  - **LIMPIEZA DE CACHÉ:** Botón en OfflineIndicator para limpiar manualmente
+  - **VERIFICACIÓN PERIÓDICA:** Cada 30 segundos se verifica si hay actualizaciones
+- **Archivos Modificados:**
+  - `/app/frontend/public/sw.js` - Nueva estrategia Network First
+  - `/app/frontend/src/App.js` - Registro mejorado con auto-reload
+  - `/app/frontend/src/components/OfflineIndicator.jsx` - Botón "Limpiar caché"
+- **Resultado:** Los cambios de código ahora se reflejan inmediatamente sin vaciar caché manual
+
 ### 3. Corrección del Bug Crítico de Contabilidad
 - **Problema:** Los cobros de alquileres no se registraban en la caja
 - **Solución:**
