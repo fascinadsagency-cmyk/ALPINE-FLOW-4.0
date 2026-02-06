@@ -276,6 +276,49 @@ export default function Settings() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
+        {/* Store Identifier Card */}
+        {storeInfo && (
+          <div className="lg:col-span-2">
+            <Card className={`border-2 ${darkMode ? 'bg-gradient-to-r from-purple-900/20 to-blue-900/20 border-purple-500/50' : 'bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200'}`}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-lg ${darkMode ? 'bg-purple-500/20' : 'bg-purple-100'}`}>
+                      <Building2 className="h-6 w-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                        {storeInfo.name}
+                      </h3>
+                      <p className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                        ID de Tienda: <span className="font-mono font-semibold">{storeInfo.store_id}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    {storeInfo.status === "global" ? (
+                      <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
+                        🔑 SUPER ADMIN
+                      </Badge>
+                    ) : (
+                      <>
+                        <Badge className={storeInfo.status === "active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                          {storeInfo.status === "active" ? "✓ Activa" : "✗ Inactiva"}
+                        </Badge>
+                        {storeInfo.plan && (
+                          <Badge className="bg-purple-100 text-purple-800">
+                            Plan: {storeInfo.plan.toUpperCase()}
+                          </Badge>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+        
         {/* Left Column - Settings */}
         <div className="space-y-6">
           
