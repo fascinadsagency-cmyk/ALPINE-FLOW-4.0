@@ -2011,7 +2011,7 @@ async def create_items_bulk(data: BulkItemCreate, current_user: CurrentUser = De
 
 @api_router.post("/items/import-csv")
 async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUser = Depends(get_current_user)):
-    """Import items from CSV file with automatic tariff assignment"""
+    """Import items from CSV file with automatic tariff assignment and type normalization"""
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="File must be CSV")
     
@@ -2034,14 +2034,16 @@ async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUs
                 errors.append({"barcode": barcode, "error": "Already exists"})
                 continue
             
-            item_type = row.get('item_type', row.get('tipo', 'ski')).strip().lower()
+            # NORMALIZE ITEM_TYPE: lowercase, strip spaces, replace spaces with underscores
+            raw_item_type = row.get('item_type', row.get('tipo', 'ski')).strip()
+            item_type = raw_item_type.lower().replace(" ", "_")
             
             item_id = str(uuid.uuid4())
             doc = {
                 "id": item_id,
                 "store_id": current_user.store_id,  # Multi-tenant: Add store_id
                 "barcode": barcode,
-                "item_type": item_type,
+                "item_type": item_type,  # Normalized type
                 "brand": row.get('brand', row.get('marca', '')).strip(),
                 "model": row.get('model', row.get('modelo', '')).strip(),
                 "size": row.get('size', row.get('talla', '')).strip(),
@@ -2056,7 +2058,7 @@ async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUs
             }
             
             # ============ AUTO-ASSIGN TARIFF ============
-            # Find matching tariff for this item_type in current store
+            # Find matching tariff for this item_type in current store (normalized comparison)
             tariff = await db.tariffs.find_one({**current_user.get_store_filter(), "item_type": item_type}, {"_id": 0})
             if tariff:
                 doc["tariff_id"] = tariff.get("id", "")
@@ -2117,9 +2119,9 @@ async def import_items(request: ItemImportRequest, current_user: CurrentUser = D
                     duplicate_codes.append(f"{internal_code} (barcode)")
                     continue
             
-            # Generate barcode if not provided
-            barcode = item.barcode.strip() if item.barcode else internal_code
-            item_type = item.item_type.strip().lower()
+            # NORMALIZE ITEM_TYPE: lowercase, strip spaces, replace spaces with underscores
+            raw_item_type = item.item_type.strip() if item.item_type else "ski"
+            item_type = raw_item_type.lower().replace(" ", "_")
             
             item_id = str(uuid.uuid4())
             doc = {
@@ -2128,7 +2130,7 @@ async def import_items(request: ItemImportRequest, current_user: CurrentUser = D
                 "internal_code": internal_code,
                 "barcode": barcode,
                 "serial_number": item.serial_number.strip() if item.serial_number else "",
-                "item_type": item_type,
+                "item_type": item_type,  # Normalized type
                 "brand": item.brand.strip(),
                 "model": item.model.strip() if item.model else "",
                 "size": str(item.size).strip(),
