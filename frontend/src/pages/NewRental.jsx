@@ -48,6 +48,77 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+// COMPONENTE VIRTUALIZADO para listas de búsqueda
+const VirtualizedSearchResults = ({ items, onItemClick }) => {
+  const parentRef = useRef(null);
+  
+  const rowVirtualizer = useVirtualizer({
+    count: items.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 72, // Altura estimada de cada fila
+    overscan: 5, // Elementos extra a renderizar fuera del viewport
+  });
+
+  return (
+    <div 
+      ref={parentRef} 
+      className="h-full overflow-y-auto"
+      style={{ contain: 'strict' }}
+    >
+      <div
+        style={{
+          height: `${rowVirtualizer.getTotalSize()}px`,
+          width: '100%',
+          position: 'relative',
+        }}
+      >
+        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+          const item = items[virtualRow.index];
+          return (
+            <div
+              key={item.barcode || virtualRow.index}
+              data-index={virtualRow.index}
+              ref={rowVirtualizer.measureElement}
+              className="absolute top-0 left-0 w-full px-2"
+              style={{
+                transform: `translateY(${virtualRow.start}px)`,
+              }}
+            >
+              <div 
+                className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
+                onClick={() => onItemClick(item)}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                    <Package className="h-5 w-5 text-slate-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="outline" className="text-xs truncate max-w-[120px]">{item.item_type}</Badge>
+                      <span className="font-mono text-xs text-slate-400">{item.internal_code || item.barcode}</span>
+                    </div>
+                    <p className="font-medium text-slate-900 truncate">
+                      {item.brand} {item.model} - {item.size}
+                    </p>
+                  </div>
+                </div>
+                <Button size="sm" variant="ghost" className="flex-shrink-0">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {items.length > 50 && (
+        <p className="text-center text-xs text-slate-400 py-2">
+          Mostrando {Math.min(items.length, 50)} de {items.length} resultados
+        </p>
+      )}
+    </div>
+  );
+};
+
 const PAYMENT_METHODS = [
   { value: "cash", label: "Efectivo" },
   { value: "card", label: "Tarjeta" },
