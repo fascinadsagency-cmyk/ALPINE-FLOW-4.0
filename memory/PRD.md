@@ -8,7 +8,33 @@
 
 ## Cambios Recientes (2026-02-06)
 
-### Optimización de Búsqueda en Mostrador (NUEVO)
+### Optimización de Velocidad Crítica (NUEVO)
+1. **✅ List Virtualization Implementada**
+   - Componente `VirtualizedSearchResults` con `@tanstack/react-virtual`
+   - Solo renderiza elementos visibles en el viewport
+   - Overscan de 5 elementos para scroll suave
+   
+2. **✅ Debounce en Input de Búsqueda**
+   - Hook `useDebounce` creado en `/app/frontend/src/hooks/useDebounce.js`
+   - Debounce de 250ms en NewRental, 300ms en Inventory
+   - AbortController para cancelar peticiones anteriores
+   
+3. **✅ Paginación en Servidor**
+   - Endpoint `/api/items` ahora soporta `limit` (máx 500)
+   - Búsqueda en NewRental limitada a 50 resultados
+   - Inventory ya tenía paginación server-side
+   
+4. **✅ Optimización de Memoria**
+   - Limpieza de estados anteriores antes de nuevas búsquedas
+   - AbortController para cancelar peticiones pendientes
+   - Cleanup en useEffect para evitar memory leaks
+   
+5. **✅ Skeleton Loaders Añadidos**
+   - Componentes en `/app/frontend/src/components/ui/skeleton.jsx`
+   - `SearchResultsSkeleton` para resultados de búsqueda
+   - `LoadingSpinner` ligero para estados de carga
+
+### Optimización de Búsqueda en Mostrador (ANTERIOR)
 1. **✅ Búsqueda Multi-Campo Optimizada**
    - Endpoint `GET /api/items/barcode/{code}` ahora busca en:
      - `internal_code` (código interno)
