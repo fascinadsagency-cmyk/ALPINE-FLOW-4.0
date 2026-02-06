@@ -2235,25 +2235,33 @@ async def get_inventory_stats(current_user: CurrentUser = Depends(get_current_us
 
 @api_router.post("/tariffs", response_model=TariffResponse)
 async def create_tariff(tariff: TariffCreate, current_user: CurrentUser = Depends(get_current_user)):
-    existing = await db.tariffs.find_one({"item_type": tariff.item_type})
+    # Multi-tenant: Check existing within same store
+    existing = await db.tariffs.find_one({**current_user.get_store_filter(), "item_type": tariff.item_type})
     if existing:
-        await db.tariffs.update_one({"item_type": tariff.item_type}, {"$set": tariff.model_dump()})
-        updated = await db.tariffs.find_one({"item_type": tariff.item_type}, {"_id": 0})
+        # Update existing tariff in same store
+        await db.tariffs.update_one(
+            {**current_user.get_store_filter(), "item_type": tariff.item_type}, 
+            {"$set": tariff.model_dump()}
+        )
+        updated = await db.tariffs.find_one({**current_user.get_store_filter(), "item_type": tariff.item_type}, {"_id": 0})
         return TariffResponse(**updated)
     
+    # Create new tariff with store_id
     tariff_id = str(uuid.uuid4())
-    doc = {"id": tariff_id, **tariff.model_dump()}
+    doc = {"id": tariff_id, "store_id": current_user.store_id, **tariff.model_dump()}
     await db.tariffs.insert_one(doc)
     return TariffResponse(**doc)
 
 @api_router.get("/tariffs", response_model=List[TariffResponse])
 async def get_tariffs(current_user: CurrentUser = Depends(get_current_user)):
-    tariffs = await db.tariffs.find({}, {"_id": 0}).to_list(20)
+    # Multi-tenant: Filter by store_id
+    tariffs = await db.tariffs.find(current_user.get_store_filter(), {"_id": 0}).to_list(20)
     return [TariffResponse(**t) for t in tariffs]
 
 @api_router.get("/tariffs/{item_type}", response_model=TariffResponse)
 async def get_tariff(item_type: str, current_user: CurrentUser = Depends(get_current_user)):
-    tariff = await db.tariffs.find_one({"item_type": item_type}, {"_id": 0})
+    # Multi-tenant: Filter by store_id
+    tariff = await db.tariffs.find_one({**current_user.get_store_filter(), "item_type": item_type}, {"_id": 0})
     if not tariff:
         raise HTTPException(status_code=404, detail="Tariff not found")
     return TariffResponse(**tariff)
@@ -2261,7 +2269,8 @@ async def get_tariff(item_type: str, current_user: CurrentUser = Depends(get_cur
 @api_router.delete("/tariffs/{item_type}")
 async def delete_tariff(item_type: str, current_user: CurrentUser = Depends(get_current_user)):
     """Delete a tariff by item_type"""
-    result = await db.tariffs.delete_one({"item_type": item_type})
+    # Multi-tenant: Delete only from own store
+    result = await db.tariffs.delete_one({**current_user.get_store_filter(), "item_type": item_type})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Tariff not found")
     return {"status": "success", "deleted": item_type}
