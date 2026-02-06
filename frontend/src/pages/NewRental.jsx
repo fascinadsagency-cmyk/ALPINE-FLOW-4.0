@@ -820,30 +820,55 @@ export default function NewRental() {
   };
 
   // Item search functions
+  // OPTIMIZACIÓN: Debounce del término de búsqueda (250ms)
+  const debouncedSearchTerm = useDebounce(itemSearchTerm, 250);
+  
+  // OPTIMIZACIÓN: AbortController para cancelar peticiones anteriores
+  const searchAbortController = useRef(null);
+  
   const searchItems = async () => {
+    // Cancelar petición anterior si existe
+    if (searchAbortController.current) {
+      searchAbortController.current.abort();
+    }
+    searchAbortController.current = new AbortController();
+    
     setSearchingItems(true);
     try {
       const params = new URLSearchParams();
       params.append('status', 'available');
-      if (itemSearchTerm) params.append('search', itemSearchTerm);
+      if (debouncedSearchTerm) params.append('search', debouncedSearchTerm);
       if (itemSearchType && itemSearchType !== 'all') params.append('item_type', itemSearchType);
       
-      // Add timestamp to bypass any cache
+      // OPTIMIZACIÓN: Limitar resultados a 50 para rendimiento
+      params.append('limit', '50');
       params.append('_t', Date.now().toString());
       
       const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/items?${params.toString()}`, {
         headers: { 
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        }
+          'Cache-Control': 'no-cache'
+        },
+        signal: searchAbortController.current.signal
       });
       
       // Filter out already added items
-      const addedBarcodes = items.map(i => i.barcode);
-      setSearchResults(response.data.filter(i => !addedBarcodes.includes(i.barcode)));
+      const addedBarcodes = new Set(items.map(i => i.barcode));
+      const addedCodes = new Set(items.map(i => i.internal_code));
+      
+      // OPTIMIZACIÓN: Limpiar estado anterior antes de asignar nuevo
+      setSearchResults(prev => {
+        // Clear previous results from memory
+        prev.length = 0;
+        return response.data.filter(i => 
+          !addedBarcodes.has(i.barcode) && !addedCodes.has(i.internal_code)
+        );
+      });
     } catch (error) {
+      if (error.name === 'AbortError' || error.name === 'CanceledError') {
+        // Petición cancelada, ignorar
+        return;
+      }
       console.error("Error searching items:", error);
       toast.error("Error al buscar artículos");
     } finally {
@@ -851,11 +876,19 @@ export default function NewRental() {
     }
   };
 
+  // OPTIMIZACIÓN: Solo buscar cuando el debounce se completa
   useEffect(() => {
     if (showItemSearch) {
       searchItems();
     }
-  }, [showItemSearch, itemSearchTerm, itemSearchType]);
+    
+    // Cleanup: cancelar peticiones pendientes al cerrar
+    return () => {
+      if (searchAbortController.current) {
+        searchAbortController.current.abort();
+      }
+    };
+  }, [showItemSearch, debouncedSearchTerm, itemSearchType]);
 
   const addItemFromSearch = (item) => {
     setItems([...items, { ...item, customPrice: null, itemDays: numDays }]);
