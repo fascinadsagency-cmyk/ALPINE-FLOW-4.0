@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ const API = process.env.REACT_APP_BACKEND_URL;
 
 export default function StoreManagement() {
   const { darkMode } = useSettings();
+  const navigate = useNavigate();
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -323,7 +325,12 @@ export default function StoreManagement() {
 
                   {/* Actions */}
                   <div className="flex gap-2 pt-2">
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => navigate(`/tiendas/${store.store_id}/ajustes`)}
+                    >
                       <Settings className="h-3 w-3 mr-1" />
                       Configurar
                     </Button>
