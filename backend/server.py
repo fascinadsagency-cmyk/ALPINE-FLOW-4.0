@@ -621,20 +621,22 @@ async def get_customers_paginated(
 async def get_customers_stats(
     current_user: CurrentUser = Depends(get_current_user)
 ):
-    """Get customer statistics without loading all records - optimized for large datasets"""
+    """Get customer statistics without loading all records - optimized for large datasets
+    Multi-tenant: Filters by store_id
+    """
     total = await db.customers.count_documents(current_user.get_store_filter())
     
-    # Get active rentals count
+    # Get active rentals count - Multi-tenant: Filter by store
     active_rentals = await db.rentals.distinct(
         "customer_id",
-        {"status": {"$in": ["active", "partial"]}}
+        {**current_user.get_store_filter(), "status": {"$in": ["active", "partial"]}}
     )
     active_count = len(active_rentals)
     
-    # Get active by DNI as fallback
+    # Get active by DNI as fallback - Multi-tenant: Filter by store
     active_dnis = await db.rentals.distinct(
         "customer_dni",
-        {"status": {"$in": ["active", "partial"]}}
+        {**current_user.get_store_filter(), "status": {"$in": ["active", "partial"]}}
     )
     active_count += len(active_dnis)
     
