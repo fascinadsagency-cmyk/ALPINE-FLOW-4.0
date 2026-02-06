@@ -1597,6 +1597,9 @@ export default function NewRental() {
       
       const rentalData = JSON.parse(responseText);
       
+      // Calcular pendiente para mostrar en UI
+      const pendingToShow = cleanTotal - cleanPaidAmount;
+      
       // === ÉXITO ===
       setCompletedRental({
         ...rentalData,
@@ -1604,14 +1607,24 @@ export default function NewRental() {
         customer_dni: customer?.dni || '',
         items_detail: items,
         total_amount: cleanTotal,
-        paid_amount: paid,
-        change: paymentMethodSelected === "cash" ? Number((cashGivenAmount - cleanTotal).toFixed(2)) : 0
+        paid_amount: cleanPaidAmount,
+        pending_amount: pendingToShow,
+        deposit: cleanDeposit,
+        change: paymentMethodSelected === "cash" && cashGivenAmount > cleanPaidAmount + cleanDeposit 
+          ? Number((cashGivenAmount - cleanPaidAmount - cleanDeposit).toFixed(2)) 
+          : 0
       });
       
       setShowPaymentDialog(false);
       setCashGiven("");
       setShowSuccessDialog(true);
-      toast.success("✅ Alquiler completado");
+      
+      // Mensaje según estado
+      if (pendingToShow > 0) {
+        toast.success(`✅ Alquiler guardado. Pendiente: €${pendingToShow.toFixed(2)}`);
+      } else {
+        toast.success("✅ Alquiler completado - Pagado en su totalidad");
+      }
       
     } catch (error) {
       console.error("Error:", error);
