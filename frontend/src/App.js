@@ -164,6 +164,7 @@ function AppRoutes() {
           <Route path="caja" element={<CashRegister />} />
           <Route path="integraciones" element={<Integrations />} />
           <Route path="configuracion" element={<Settings />} />
+          <Route path="tiendas" element={<StoreManagement />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
