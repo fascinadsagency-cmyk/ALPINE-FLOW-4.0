@@ -4196,7 +4196,9 @@ async def get_daily_report(date: Optional[str] = None, current_user: CurrentUser
     end = f"{date}T23:59:59"
     
     # ===== USAR SERVICIO CENTRALIZADO (Single Source of Truth) =====
-    financial_summary = await financial_service.get_financial_summary(date, date)
+    financial_summary = await financial_service.get_financial_summary(
+        date, date, store_filter=current_user.get_store_filter()
+    )
     
     # Extraer totales por método de pago desde cash_movements
     cash_revenue = financial_summary["by_payment_method"]["cash"]["income"]
@@ -4302,7 +4304,9 @@ async def get_range_report(
     end_dt = f"{end_date}T23:59:59"
     
     # ===== USAR SERVICIO CENTRALIZADO (Single Source of Truth) =====
-    financial_summary = await financial_service.get_financial_summary(start_date, end_date)
+    financial_summary = await financial_service.get_financial_summary(
+        start_date, end_date, store_filter=current_user.get_store_filter()
+    )
     
     # Extraer totales por método de pago desde cash_movements
     cash_revenue = financial_summary["by_payment_method"]["cash"]["income"]
@@ -4459,7 +4463,8 @@ async def get_unified_financial_summary(
         start_date, 
         end_date,
         include_manual_movements=include_manual,
-        include_deposits=include_deposits
+        include_deposits=include_deposits,
+        store_filter=current_user.get_store_filter()  # Multi-tenant: Add store filter
     )
 
 # ==================== DAILY REPORT ENDPOINT ====================
