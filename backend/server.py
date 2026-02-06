@@ -6844,6 +6844,22 @@ async def startup_db_indexes():
         await db.rentals.create_index("start_date")
         await db.rentals.create_index("end_date")
         
+        # ITEM INDEXES: Multi-field search optimization for barcode scanner
+        # Compound indexes with store_id for multi-tenant performance
+        await db.items.create_index([("store_id", 1), ("internal_code", 1)])
+        await db.items.create_index([("store_id", 1), ("barcode", 1)])
+        await db.items.create_index([("store_id", 1), ("barcode_2", 1)])
+        await db.items.create_index([("store_id", 1), ("serial_number", 1)])
+        await db.items.create_index([("store_id", 1), ("status", 1)])
+        await db.items.create_index([("store_id", 1), ("item_type", 1)])
+        # Text index for general search
+        await db.items.create_index([
+            ("internal_code", "text"), 
+            ("barcode", "text"), 
+            ("brand", "text"), 
+            ("model", "text")
+        ], default_language="spanish")
+        
         logger.info("✅ Database indexes created successfully")
     except Exception as e:
         logger.warning(f"⚠️ Index creation error (may already exist): {e}")
