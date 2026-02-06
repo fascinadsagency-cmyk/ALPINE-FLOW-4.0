@@ -2754,7 +2754,8 @@ async def process_return(rental_id: str, return_input: ReturnInput, current_user
                 )
                 # Update amortization for regular items
                 if item_doc:
-                    tariff = await db.tariffs.find_one({"item_type": item_doc.get("item_type")})
+                    # Get tariff (within same store)
+                    tariff = await db.tariffs.find_one({**current_user.get_store_filter(), "item_type": item_doc.get("item_type")})
                     if tariff:
                         daily_rate = tariff.get("day_1", 0) or tariff.get("days_1", 0)
                         amortization = item_doc.get("days_used", 0) * daily_rate
