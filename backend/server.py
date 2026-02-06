@@ -2011,7 +2011,7 @@ async def create_items_bulk(data: BulkItemCreate, current_user: CurrentUser = De
 
 @api_router.post("/items/import-csv")
 async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUser = Depends(get_current_user)):
-    """Import items from CSV file"""
+    """Import items from CSV file with automatic tariff assignment"""
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="File must be CSV")
     
@@ -2034,11 +2034,14 @@ async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUs
                 errors.append({"barcode": barcode, "error": "Already exists"})
                 continue
             
+            item_type = row.get('item_type', row.get('tipo', 'ski')).strip().lower()
+            
             item_id = str(uuid.uuid4())
             doc = {
                 "id": item_id,
+                "store_id": current_user.store_id,  # Multi-tenant: Add store_id
                 "barcode": barcode,
-                "item_type": row.get('item_type', row.get('tipo', 'ski')).strip().lower(),
+                "item_type": item_type,
                 "brand": row.get('brand', row.get('marca', '')).strip(),
                 "model": row.get('model', row.get('modelo', '')).strip(),
                 "size": row.get('size', row.get('talla', '')).strip(),
@@ -2051,6 +2054,14 @@ async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUs
                 "amortization": 0,
                 "created_at": datetime.now(timezone.utc).isoformat()
             }
+            
+            # ============ AUTO-ASSIGN TARIFF ============
+            # Find matching tariff for this item_type in current store
+            tariff = await db.tariffs.find_one({**current_user.get_store_filter(), "item_type": item_type}, {"_id": 0})
+            if tariff:
+                doc["tariff_id"] = tariff.get("id", "")
+            # ============================================
+            
             await db.items.insert_one(doc)
             created.append({"barcode": barcode})
         except Exception as e:
@@ -2078,7 +2089,7 @@ class ItemImportRequest(BaseModel):
 
 @api_router.post("/items/import")
 async def import_items(request: ItemImportRequest, current_user: CurrentUser = Depends(get_current_user)):
-    """Import items with field mapping support"""
+    """Import items with field mapping support and automatic tariff assignment"""
     imported = 0
     duplicates = 0
     errors = 0
@@ -2108,14 +2119,16 @@ async def import_items(request: ItemImportRequest, current_user: CurrentUser = D
             
             # Generate barcode if not provided
             barcode = item.barcode.strip() if item.barcode else internal_code
+            item_type = item.item_type.strip().lower()
             
             item_id = str(uuid.uuid4())
             doc = {
                 "id": item_id,
+                "store_id": current_user.store_id,  # Multi-tenant: Add store_id
                 "internal_code": internal_code,
                 "barcode": barcode,
                 "serial_number": item.serial_number.strip() if item.serial_number else "",
-                "item_type": item.item_type.strip().lower(),
+                "item_type": item_type,
                 "brand": item.brand.strip(),
                 "model": item.model.strip() if item.model else "",
                 "size": str(item.size).strip(),
@@ -2130,6 +2143,13 @@ async def import_items(request: ItemImportRequest, current_user: CurrentUser = D
                 "amortization": 0,
                 "created_at": datetime.now(timezone.utc).isoformat()
             }
+            
+            # ============ AUTO-ASSIGN TARIFF ============
+            # Find matching tariff for this item_type in current store
+            tariff = await db.tariffs.find_one({**current_user.get_store_filter(), "item_type": item_type}, {"_id": 0})
+            if tariff:
+                doc["tariff_id"] = tariff.get("id", "")
+            # ============================================
             
             await db.items.insert_one(doc)
             imported += 1
