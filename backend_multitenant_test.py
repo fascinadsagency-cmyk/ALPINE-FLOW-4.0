@@ -209,13 +209,14 @@ class MultiTenantTester:
             if response3.status_code == 200:
                 store3_providers = response3.json()
                 store3_count = len(store3_providers)
+                expected_count = self.store3_initial_sources + 1  # Initial + newly created
                 
-                if store3_count == 1:
+                if store3_count == expected_count:
                     self.log_test("Store 3 Provider Visibility", True, 
-                                f"Store 3 sees 1 provider (its own)")
+                                f"Store 3 sees {store3_count} providers (expected {expected_count})")
                 else:
                     self.log_test("Store 3 Provider Visibility", False, 
-                                f"Store 3 sees {store3_count} providers, expected 1")
+                                f"Store 3 sees {store3_count} providers, expected {expected_count}")
                     return False
             else:
                 self.log_test("Store 3 Provider Visibility", False, 
