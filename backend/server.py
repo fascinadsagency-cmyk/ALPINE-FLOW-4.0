@@ -3684,6 +3684,7 @@ async def get_maintenance_fleet(current_user: CurrentUser = Depends(get_current_
     """
     Get ALL items that need maintenance or are currently in maintenance status.
     This endpoint uses the SAME query as the Dashboard for consistency.
+    Multi-tenant: Filters by store_id
     
     Returns items that:
     1. Have status 'maintenance' (currently being serviced)
@@ -3691,16 +3692,17 @@ async def get_maintenance_fleet(current_user: CurrentUser = Depends(get_current_
     3. Have status indicating repair: 'repair', 'broken'
     """
     
-    # 1. Items currently in maintenance status
+    # 1. Items currently in maintenance status - Multi-tenant: Filter by store
     in_maintenance = await db.items.find(
-        {"status": {"$in": ["maintenance", "repair", "broken"]}},
+        {**current_user.get_store_filter(), "status": {"$in": ["maintenance", "repair", "broken"]}},
         {"_id": 0}
     ).to_list(5000)
     
-    # 2. Items that NEED maintenance (same query as Dashboard)
+    # 2. Items that NEED maintenance (same query as Dashboard) - Multi-tenant: Filter by store
     # Exclude items with maintenance_interval <= 0 to avoid false positives with generic items
     needs_maintenance = await db.items.find(
         {
+            **current_user.get_store_filter(),
             "$expr": {
                 "$and": [
                     {"$gt": ["$maintenance_interval", 0]},
@@ -3713,9 +3715,10 @@ async def get_maintenance_fleet(current_user: CurrentUser = Depends(get_current_
     ).to_list(5000)
     
     # 3. Also include generic items with maintenance_interval = 0 that Dashboard shows
-    # (for consistency with what user sees)
+    # (for consistency with what user sees) - Multi-tenant: Filter by store
     generic_needs_maint = await db.items.find(
         {
+            **current_user.get_store_filter(),
             "is_generic": True,
             "maintenance_interval": 0,
             "status": {"$in": ["available", "rented"]}
