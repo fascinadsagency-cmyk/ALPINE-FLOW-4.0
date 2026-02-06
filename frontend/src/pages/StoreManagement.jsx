@@ -60,6 +60,79 @@ export default function StoreManagement() {
     }
   };
 
+  const handleImpersonate = async (storeId) => {
+    try {
+      const response = await axios.post(
+        `${API}/api/stores/${storeId}/impersonate`,
+        {},
+        { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
+      );
+      
+      // Save new token and reload
+      localStorage.setItem('token', response.data.access_token);
+      toast.success(`Accediendo a la tienda...`);
+      
+      // Redirect to dashboard
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1000);
+    } catch (error) {
+      toast.error("Error al acceder a la tienda");
+      console.error(error);
+    }
+  };
+
+  const handleToggleStatus = async (storeId, currentStatus) => {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    const action = newStatus === 'active' ? 'activar' : 'desactivar';
+    
+    if (!confirm(`¿Estás seguro de que deseas ${action} esta tienda?`)) {
+      return;
+    }
+
+    try {
+      await axios.put(
+        `${API}/api/stores/${storeId}`,
+        { status: newStatus },
+        { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
+      );
+      
+      toast.success(`Tienda ${action === 'activar' ? 'activada' : 'desactivada'} exitosamente`);
+      loadStores(); // Reload stores
+    } catch (error) {
+      toast.error(`Error al ${action} la tienda`);
+      console.error(error);
+    }
+  };
+
+  const handleDeleteStore = async (storeId, storeName) => {
+    if (storeId === 1) {
+      toast.error("No se puede eliminar la tienda principal");
+      return;
+    }
+
+    const confirmText = `¿ELIMINAR ${storeName}?`;
+    const userInput = prompt(`Esta acción es IRREVERSIBLE.\n\nSe eliminarán:\n- La tienda\n- Todos los usuarios asociados\n\nPara confirmar, escribe: ${confirmText}`);
+    
+    if (userInput !== confirmText) {
+      toast.error("Cancelado - Texto de confirmación incorrecto");
+      return;
+    }
+
+    try {
+      const response = await axios.delete(
+        `${API}/api/stores/${storeId}`,
+        { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
+      );
+      
+      toast.success(`Tienda eliminada: ${response.data.deleted_users} usuarios eliminados`);
+      loadStores(); // Reload stores
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al eliminar la tienda");
+      console.error(error);
+    }
+  };
+
   const loadStoreStats = async (storeId) => {
     try {
       const response = await axios.get(`${API}/api/stores/${storeId}/stats`, {
@@ -324,20 +397,48 @@ export default function StoreManagement() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex gap-2 pt-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => navigate(`/tiendas/${store.store_id}/ajustes`)}
-                    >
-                      <Settings className="h-3 w-3 mr-1" />
-                      Configurar
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      Estadísticas
-                    </Button>
+                  <div className="space-y-2 pt-2">
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => navigate(`/tiendas/${store.store_id}/ajustes`)}
+                      >
+                        <Settings className="h-3 w-3 mr-1" />
+                        Configurar
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => handleImpersonate(store.store_id)}
+                      >
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        Acceder
+                      </Button>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button 
+                        variant={store.status === 'active' ? 'destructive' : 'default'}
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => handleToggleStatus(store.store_id, store.status)}
+                      >
+                        {store.status === 'active' ? 'Desactivar' : 'Activar'}
+                      </Button>
+                      {store.store_id !== 1 && (
+                        <Button 
+                          variant="destructive" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => handleDeleteStore(store.store_id, store.name)}
+                        >
+                          Eliminar
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </CardContent>
