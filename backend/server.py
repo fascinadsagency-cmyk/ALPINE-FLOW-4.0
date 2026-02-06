@@ -2011,7 +2011,7 @@ async def create_items_bulk(data: BulkItemCreate, current_user: CurrentUser = De
 
 @api_router.post("/items/import-csv")
 async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUser = Depends(get_current_user)):
-    """Import items from CSV file with automatic tariff assignment and type normalization"""
+    """Import items from CSV file with automatic type creation and tariff assignment"""
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="File must be CSV")
     
@@ -2021,6 +2021,7 @@ async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUs
     
     created = []
     errors = []
+    types_created = []
     
     for row in reader:
         try:
@@ -2034,14 +2035,43 @@ async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUs
                 errors.append({"barcode": barcode, "error": "Already exists"})
                 continue
             
-            # NORMALIZE ITEM_TYPE: lowercase, strip spaces, replace spaces with underscores
-            raw_item_type = row.get('item_type', row.get('tipo', 'ski')).strip()
-            item_type = raw_item_type.lower().replace(" ", "_")
+            # ============ FIND OR CREATE ITEM TYPE ============
+            # Get type from Excel (column name can be 'tipo', 'type', 'item_type')
+            raw_item_type = row.get('item_type', row.get('tipo', row.get('type', 'ski'))).strip()
+            
+            if not raw_item_type:
+                raw_item_type = 'ski'  # Default fallback
+            
+            # Normalize: lowercase, replace spaces with underscores
+            normalized_value = raw_item_type.lower().replace(" ", "_")
+            
+            # Search if type exists for this store (by normalized value)
+            existing_type = await db.item_types.find_one({
+                **current_user.get_store_filter(),
+                "value": normalized_value
+            })
+            
+            if not existing_type:
+                # CREATE NEW TYPE AUTOMATICALLY
+                type_id = str(uuid.uuid4())
+                new_type = {
+                    "id": type_id,
+                    "store_id": current_user.store_id,
+                    "value": normalized_value,
+                    "label": raw_item_type.title(),  # "esquí adulto" → "Esquí Adulto"
+                    "is_default": False,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                await db.item_types.insert_one(new_type)
+                types_created.append(normalized_value)
+            
+            item_type = normalized_value
+            # ==================================================
             
             item_id = str(uuid.uuid4())
             doc = {
                 "id": item_id,
-                "store_id": current_user.store_id,  # Multi-tenant: Add store_id
+                "store_id": current_user.store_id,
                 "barcode": barcode,
                 "item_type": item_type,  # Normalized type
                 "brand": row.get('brand', row.get('marca', '')).strip(),
@@ -2057,19 +2087,24 @@ async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUs
                 "created_at": datetime.now(timezone.utc).isoformat()
             }
             
-            # ============ AUTO-ASSIGN TARIFF ============
-            # Find matching tariff for this item_type in current store (normalized comparison)
+            # ============ AUTO-ASSIGN TARIFF (if exists) ============
             tariff = await db.tariffs.find_one({**current_user.get_store_filter(), "item_type": item_type}, {"_id": 0})
             if tariff:
                 doc["tariff_id"] = tariff.get("id", "")
-            # ============================================
+            # ========================================================
             
             await db.items.insert_one(doc)
-            created.append({"barcode": barcode})
+            created.append({"barcode": barcode, "type": item_type})
         except Exception as e:
             errors.append({"barcode": row.get('barcode', 'unknown'), "error": str(e)})
     
-    return {"created": len(created), "errors": errors, "total_rows": len(created) + len(errors)}
+    return {
+        "created": len(created), 
+        "errors": errors, 
+        "total_rows": len(created) + len(errors),
+        "types_created": len(set(types_created)),
+        "new_types": list(set(types_created))
+    }
 
 # Universal import endpoint for inventory (with field mapping)
 class ItemImportItem(BaseModel):
@@ -2091,11 +2126,12 @@ class ItemImportRequest(BaseModel):
 
 @api_router.post("/items/import")
 async def import_items(request: ItemImportRequest, current_user: CurrentUser = Depends(get_current_user)):
-    """Import items with field mapping support and automatic tariff assignment"""
+    """Import items with field mapping support, automatic type creation and tariff assignment"""
     imported = 0
     duplicates = 0
     errors = 0
     duplicate_codes = []
+    types_created = []
     
     for item in request.items:
         try:
@@ -2119,14 +2155,42 @@ async def import_items(request: ItemImportRequest, current_user: CurrentUser = D
                     duplicate_codes.append(f"{internal_code} (barcode)")
                     continue
             
-            # NORMALIZE ITEM_TYPE: lowercase, strip spaces, replace spaces with underscores
+            # ============ FIND OR CREATE ITEM TYPE ============
             raw_item_type = item.item_type.strip() if item.item_type else "ski"
-            item_type = raw_item_type.lower().replace(" ", "_")
+            
+            # Normalize: lowercase, replace spaces with underscores
+            normalized_value = raw_item_type.lower().replace(" ", "_")
+            
+            # Search if type exists for this store
+            existing_type = await db.item_types.find_one({
+                **current_user.get_store_filter(),
+                "value": normalized_value
+            })
+            
+            if not existing_type:
+                # CREATE NEW TYPE AUTOMATICALLY
+                type_id = str(uuid.uuid4())
+                new_type = {
+                    "id": type_id,
+                    "store_id": current_user.store_id,
+                    "value": normalized_value,
+                    "label": raw_item_type.title(),  # "esquí adulto" → "Esquí Adulto"
+                    "is_default": False,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                await db.item_types.insert_one(new_type)
+                types_created.append(normalized_value)
+            
+            item_type = normalized_value
+            # ==================================================
+            
+            # Generate barcode if not provided
+            barcode = item.barcode.strip() if item.barcode else internal_code
             
             item_id = str(uuid.uuid4())
             doc = {
                 "id": item_id,
-                "store_id": current_user.store_id,  # Multi-tenant: Add store_id
+                "store_id": current_user.store_id,
                 "internal_code": internal_code,
                 "barcode": barcode,
                 "serial_number": item.serial_number.strip() if item.serial_number else "",
@@ -2135,7 +2199,7 @@ async def import_items(request: ItemImportRequest, current_user: CurrentUser = D
                 "model": item.model.strip() if item.model else "",
                 "size": str(item.size).strip(),
                 "binding": item.binding.strip() if item.binding else "",
-                "category": "STANDARD",  # All individual items are STANDARD
+                "category": "STANDARD",
                 "status": "available",
                 "purchase_price": float(item.purchase_price) if item.purchase_price else 0,
                 "purchase_date": item.purchase_date.strip() if item.purchase_date else datetime.now().strftime('%Y-%m-%d'),
@@ -2146,12 +2210,11 @@ async def import_items(request: ItemImportRequest, current_user: CurrentUser = D
                 "created_at": datetime.now(timezone.utc).isoformat()
             }
             
-            # ============ AUTO-ASSIGN TARIFF ============
-            # Find matching tariff for this item_type in current store
+            # ============ AUTO-ASSIGN TARIFF (if exists) ============
             tariff = await db.tariffs.find_one({**current_user.get_store_filter(), "item_type": item_type}, {"_id": 0})
             if tariff:
                 doc["tariff_id"] = tariff.get("id", "")
-            # ============================================
+            # ========================================================
             
             await db.items.insert_one(doc)
             imported += 1
@@ -2164,7 +2227,9 @@ async def import_items(request: ItemImportRequest, current_user: CurrentUser = D
         "imported": imported,
         "duplicates": duplicates,
         "errors": errors,
-        "duplicate_codes": duplicate_codes[:50]
+        "duplicate_codes": duplicate_codes[:50],
+        "types_created": len(set(types_created)),
+        "new_types": list(set(types_created))
     }
 
 @api_router.post("/items/generate-barcodes")
