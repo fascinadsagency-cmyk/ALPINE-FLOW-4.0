@@ -824,16 +824,23 @@ export default function NewRental() {
       if (itemSearchTerm) params.append('search', itemSearchTerm);
       if (itemSearchType && itemSearchType !== 'all') params.append('item_type', itemSearchType);
       
-      const response = await itemApi.getAll({
-        status: 'available',
-        search: itemSearchTerm || undefined,
-        item_type: (itemSearchType && itemSearchType !== 'all') ? itemSearchType : undefined
+      // Add timestamp to bypass any cache
+      params.append('_t', Date.now().toString());
+      
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/items?${params.toString()}`, {
+        headers: { 
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
       });
       
       // Filter out already added items
       const addedBarcodes = items.map(i => i.barcode);
       setSearchResults(response.data.filter(i => !addedBarcodes.includes(i.barcode)));
     } catch (error) {
+      console.error("Error searching items:", error);
       toast.error("Error al buscar artículos");
     } finally {
       setSearchingItems(false);
