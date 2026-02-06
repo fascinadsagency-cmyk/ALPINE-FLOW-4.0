@@ -2873,17 +2873,19 @@ async def central_swap_item(rental_id: str, data: CentralSwapRequest, current_us
         raise HTTPException(status_code=404, detail=f"Artículo '{data.old_item_barcode}' no encontrado en el alquiler activo")
     
     # Get old item from inventory (for updating status)
-    old_inventory_item = await db.items.find_one({**current_user.get_store_filter(), **{
+    old_inventory_item = await db.items.find_one({
+        **current_user.get_store_filter(),
         "$or": [
-            {"barcode": {"$regex": f"^{data.old_item_barcode}}$", "$options": "i"}},
+            {"barcode": {"$regex": f"^{data.old_item_barcode}$", "$options": "i"}},
             {"internal_code": {"$regex": f"^{data.old_item_barcode}$", "$options": "i"}}
         ]
     })
     
     # Get new item from inventory
-    new_item = await db.items.find_one({**current_user.get_store_filter(), **{
+    new_item = await db.items.find_one({
+        **current_user.get_store_filter(),
         "$or": [
-            {"barcode": {"$regex": f"^{data.new_item_barcode}}$", "$options": "i"}},
+            {"barcode": {"$regex": f"^{data.new_item_barcode}$", "$options": "i"}},
             {"internal_code": {"$regex": f"^{data.new_item_barcode}$", "$options": "i"}}
         ]
     })
