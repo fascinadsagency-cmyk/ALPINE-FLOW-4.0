@@ -435,7 +435,7 @@ async def create_customer(customer: CustomerCreate, current_user: CurrentUser = 
 @api_router.get("/customers", response_model=List[CustomerResponse])
 async def get_customers(
     search: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     query = {}
     if search:
@@ -452,7 +452,7 @@ async def get_customers(
 @api_router.get("/customers/with-status")
 async def get_customers_with_status(
     search: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """Get all customers with their active rental status"""
     query = {}
@@ -516,7 +516,7 @@ async def get_customers_paginated(
     search: Optional[str] = None,
     status: Optional[str] = Query("all", regex="^(all|active|inactive)$"),
     provider: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """
     Get customers with server-side pagination for handling large datasets (50K+ records)
@@ -617,7 +617,7 @@ async def get_customers_paginated(
 
 @api_router.get("/customers/stats/summary")
 async def get_customers_stats(
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """Get customer statistics without loading all records - optimized for large datasets"""
     total = await db.customers.count_documents({})
@@ -643,21 +643,21 @@ async def get_customers_stats(
     }
 
 @api_router.get("/customers/{customer_id}", response_model=CustomerResponse)
-async def get_customer(customer_id: str, current_user: dict = Depends(get_current_user)):
+async def get_customer(customer_id: str, current_user: CurrentUser = Depends(get_current_user)):
     customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     return CustomerResponse(**customer)
 
 @api_router.get("/customers/dni/{dni}", response_model=CustomerResponse)
-async def get_customer_by_dni(dni: str, current_user: dict = Depends(get_current_user)):
+async def get_customer_by_dni(dni: str, current_user: CurrentUser = Depends(get_current_user)):
     customer = await db.customers.find_one({"dni": dni.upper()}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     return CustomerResponse(**customer)
 
 @api_router.get("/customers/{customer_id}/history")
-async def get_customer_history(customer_id: str, current_user: dict = Depends(get_current_user)):
+async def get_customer_history(customer_id: str, current_user: CurrentUser = Depends(get_current_user)):
     # Get customer info first
     customer = await db.customers.find_one({"customer_id": customer_id}, {"_id": 0})
     
@@ -729,7 +729,7 @@ async def get_customer_history(customer_id: str, current_user: dict = Depends(ge
 async def update_customer(
     customer_id: str,
     customer: CustomerCreate,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     existing = await db.customers.find_one({"id": customer_id})
     if not existing:
@@ -771,7 +771,7 @@ class TechnicalDataUpdate(BaseModel):
 async def update_customer_technical_data(
     customer_id: str,
     data: TechnicalDataUpdate,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """Quick update endpoint for technical data (boot size, height, weight, level)"""
     existing = await db.customers.find_one({"id": customer_id})
@@ -795,7 +795,7 @@ async def update_customer_technical_data(
     return updated_customer
 
 @api_router.delete("/customers/{customer_id}")
-async def delete_customer(customer_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_customer(customer_id: str, current_user: CurrentUser = Depends(get_current_user)):
     existing = await db.customers.find_one({"id": customer_id})
     if not existing:
         raise HTTPException(status_code=404, detail="Customer not found")
@@ -821,7 +821,7 @@ class BulkCustomerIdsRequest(BaseModel):
     customer_ids: List[str]
 
 @api_router.post("/customers/check-active-rentals")
-async def check_customers_active_rentals(request: BulkCustomerIdsRequest, current_user: dict = Depends(get_current_user)):
+async def check_customers_active_rentals(request: BulkCustomerIdsRequest, current_user: CurrentUser = Depends(get_current_user)):
     """
     Verifica qué clientes tienen alquileres activos.
     Devuelve lista de clientes que NO pueden ser eliminados.
@@ -843,7 +843,7 @@ async def check_customers_active_rentals(request: BulkCustomerIdsRequest, curren
     return {"customers_with_rentals": customers_with_rentals}
 
 @api_router.post("/customers/bulk-delete")
-async def bulk_delete_customers(request: BulkCustomerIdsRequest, current_user: dict = Depends(get_current_user)):
+async def bulk_delete_customers(request: BulkCustomerIdsRequest, current_user: CurrentUser = Depends(get_current_user)):
     """
     Elimina múltiples clientes a la vez.
     Solo elimina clientes SIN alquileres activos.
@@ -894,7 +894,7 @@ class CustomerImportRequest(BaseModel):
     customers: List[CustomerImportItem]
 
 @api_router.post("/customers/import")
-async def import_customers(request: CustomerImportRequest, current_user: dict = Depends(get_current_user)):
+async def import_customers(request: CustomerImportRequest, current_user: CurrentUser = Depends(get_current_user)):
     imported = 0
     duplicates = 0
     errors = 0
@@ -954,7 +954,7 @@ async def import_customers(request: CustomerImportRequest, current_user: dict = 
 @api_router.get("/customers/export/all")
 async def export_all_customers(
     format: str = Query("json", regex="^(json|count)$"),
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """
     Export all customers optimized for large datasets (50K+)
@@ -997,7 +997,7 @@ async def export_all_customers(
 # ==================== INVENTORY ROUTES ====================
 
 @api_router.post("/items", response_model=ItemResponse)
-async def create_item(item: ItemCreate, current_user: dict = Depends(get_current_user)):
+async def create_item(item: ItemCreate, current_user: CurrentUser = Depends(get_current_user)):
     # For generic items, generate auto ID and skip duplicate checks for barcode/internal_code
     if item.is_generic:
         # Validate required fields for generic items
@@ -1093,7 +1093,7 @@ async def get_items(
     category: Optional[str] = None,
     search: Optional[str] = None,
     include_deleted: bool = Query(False),
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     query = {}
     
@@ -1141,7 +1141,7 @@ async def get_items_paginated(
     category: Optional[str] = None,
     search: Optional[str] = None,
     include_deleted: bool = Query(False),
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """
     Get items with server-side pagination for handling large inventories (50K+ items)
@@ -1226,7 +1226,7 @@ async def get_items_paginated(
 
 @api_router.get("/items/stats/summary")
 async def get_items_stats(
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """Get inventory statistics without loading all records - optimized for large datasets"""
     total = await db.items.count_documents({"status": {"$nin": ["deleted"]}})
@@ -1246,7 +1246,7 @@ async def get_items_stats(
 @api_router.get("/items/generic")
 async def get_generic_items(
     item_type: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """Get all generic items with available stock"""
     query = {"is_generic": True, "stock_available": {"$gt": 0}}
@@ -1260,7 +1260,7 @@ async def get_generic_items(
 async def adjust_generic_stock(
     item_id: str,
     adjustment: int,  # positive to add, negative to subtract
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """Adjust stock for a generic item"""
     item = await db.items.find_one({"id": item_id})
@@ -1292,7 +1292,7 @@ async def adjust_generic_stock(
 async def rent_generic_item(
     item_id: str,
     quantity: int = 1,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """Rent units from a generic item (decreases available stock)"""
     item = await db.items.find_one({"id": item_id})
@@ -1318,7 +1318,7 @@ async def rent_generic_item(
 async def return_generic_item(
     item_id: str,
     quantity: int = 1,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """Return units to a generic item (increases available stock)"""
     item = await db.items.find_one({"id": item_id})
@@ -1346,7 +1346,7 @@ async def get_items_with_profitability(
     category: Optional[str] = None,
     search: Optional[str] = None,
     sort_by: Optional[str] = None,  # "profit", "revenue", "amortization"
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """Get all items with profitability metrics calculated from closed rentals"""
     query = {}
@@ -1461,7 +1461,7 @@ async def get_items_with_profitability(
     }
 
 @api_router.get("/items/{item_id}/profitability")
-async def get_item_profitability(item_id: str, current_user: dict = Depends(get_current_user)):
+async def get_item_profitability(item_id: str, current_user: CurrentUser = Depends(get_current_user)):
     """
     Get detailed profitability data for a specific item.
     
@@ -1543,7 +1543,7 @@ async def get_item_profitability(item_id: str, current_user: dict = Depends(get_
     }
 
 @api_router.get("/items/barcode/{barcode}", response_model=ItemResponse)
-async def get_item_by_barcode(barcode: str, current_user: dict = Depends(get_current_user)):
+async def get_item_by_barcode(barcode: str, current_user: CurrentUser = Depends(get_current_user)):
     # Try internal_code first, then barcode
     item = await db.items.find_one({"internal_code": barcode}, {"_id": 0})
     if not item:
@@ -1556,7 +1556,7 @@ async def get_item_by_barcode(barcode: str, current_user: dict = Depends(get_cur
 
 
 @api_router.get("/items/check-barcode/{barcode}")
-async def check_barcode_exists(barcode: str, current_user: dict = Depends(get_current_user)):
+async def check_barcode_exists(barcode: str, current_user: CurrentUser = Depends(get_current_user)):
     """
     Check if a barcode/internal_code already exists. Returns the item if found, or null if not.
     Used for scanner quick-entry mode to avoid duplicates and open existing items.
@@ -1578,7 +1578,7 @@ async def check_barcode_exists(barcode: str, current_user: dict = Depends(get_cu
 
 
 @api_router.put("/items/{item_id}", response_model=ItemResponse)
-async def update_item(item_id: str, item: ItemCreate, current_user: dict = Depends(get_current_user)):
+async def update_item(item_id: str, item: ItemCreate, current_user: CurrentUser = Depends(get_current_user)):
     existing = await db.items.find_one({"id": item_id})
     if not existing:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -1618,7 +1618,7 @@ async def update_item(item_id: str, item: ItemCreate, current_user: dict = Depen
     return ItemResponse(**updated)
 
 @api_router.delete("/items/{item_id}")
-async def delete_item(item_id: str, force: bool = Query(False), current_user: dict = Depends(get_current_user)):
+async def delete_item(item_id: str, force: bool = Query(False), current_user: CurrentUser = Depends(get_current_user)):
     """Delete an item permanently or mark as deleted if has history"""
     item = await db.items.find_one({"id": item_id})
     if not item:
@@ -1661,14 +1661,14 @@ async def delete_item(item_id: str, force: bool = Query(False), current_user: di
 # ==================== ITEM TYPES ROUTES ====================
 
 @api_router.get("/item-types", response_model=List[ItemTypeResponse])
-async def get_item_types(current_user: dict = Depends(get_current_user)):
+async def get_item_types(current_user: CurrentUser = Depends(get_current_user)):
     """Get all item types (only custom types from database)"""
     # Get custom types from database only - no hardcoded defaults
     custom_types = await db.item_types.find({}, {"_id": 0}).to_list(5000)
     return [ItemTypeResponse(**t) for t in custom_types]
 
 @api_router.post("/item-types", response_model=ItemTypeResponse)
-async def create_item_type(item_type: ItemTypeCreate, current_user: dict = Depends(get_current_user)):
+async def create_item_type(item_type: ItemTypeCreate, current_user: CurrentUser = Depends(get_current_user)):
     """Create a new custom item type"""
     # Normalize value (lowercase, no spaces)
     normalized_value = item_type.value.lower().replace(" ", "_")
@@ -1694,7 +1694,7 @@ async def delete_item_type(
     type_id: str, 
     force: bool = Query(False, description="Forzar eliminación incluyendo artículos archivados/retirados"),
     reassign_to: str = Query(None, description="Reasignar artículos activos a este tipo antes de eliminar"),
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """Delete a custom item type with smart handling of linked items"""
     item_type = await db.item_types.find_one({"id": type_id})
@@ -1799,7 +1799,7 @@ async def delete_item_type(
     )
 
 @api_router.post("/item-types/{type_id}/cleanup")
-async def cleanup_item_type(type_id: str, current_user: dict = Depends(get_current_user)):
+async def cleanup_item_type(type_id: str, current_user: CurrentUser = Depends(get_current_user)):
     """Clean up ghost items for a type (retired, deleted, archived, soft-deleted)"""
     item_type = await db.item_types.find_one({"id": type_id})
     if not item_type:
@@ -1828,7 +1828,7 @@ async def cleanup_item_type(type_id: str, current_user: dict = Depends(get_curre
     }
 
 @api_router.post("/items/cleanup-orphans")
-async def cleanup_orphan_items(current_user: dict = Depends(get_current_user)):
+async def cleanup_orphan_items(current_user: CurrentUser = Depends(get_current_user)):
     """Find and clean up items with types that no longer exist"""
     # Get all valid type values
     valid_types = await db.item_types.distinct("value")
@@ -1853,7 +1853,7 @@ async def cleanup_orphan_items(current_user: dict = Depends(get_current_user)):
     }
 
 @api_router.post("/item-types/migrate-legacy")
-async def migrate_legacy_types(current_user: dict = Depends(get_current_user)):
+async def migrate_legacy_types(current_user: CurrentUser = Depends(get_current_user)):
     """Migrate items with legacy hardcoded types to 'sin_categoria' or create new custom types"""
     legacy_types = ["ski", "snowboard", "boots", "helmet", "poles", "goggles"]
     legacy_labels = {
@@ -1890,7 +1890,7 @@ async def migrate_legacy_types(current_user: dict = Depends(get_current_user)):
 async def reassign_item_types(
     old_type: str,
     new_type: str,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """Reassign all items from one type to another"""
     # Verify new type exists
@@ -1907,14 +1907,14 @@ async def reassign_item_types(
     return {"updated_count": result.modified_count, "message": f"{result.modified_count} artículos reasignados"}
 
 @api_router.put("/items/{item_id}/status")
-async def update_item_status(item_id: str, status: str = Query(...), current_user: dict = Depends(get_current_user)):
+async def update_item_status(item_id: str, status: str = Query(...), current_user: CurrentUser = Depends(get_current_user)):
     result = await db.items.update_one({"id": item_id}, {"$set": {"status": status}})
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Item not found")
     return {"message": "Status updated"}
 
 @api_router.post("/items/{item_id}/complete-maintenance")
-async def complete_item_maintenance(item_id: str, current_user: dict = Depends(get_current_user)):
+async def complete_item_maintenance(item_id: str, current_user: CurrentUser = Depends(get_current_user)):
     """
     Complete maintenance for an item - RESETS ALL USAGE COUNTERS
     
@@ -1963,7 +1963,7 @@ async def complete_item_maintenance(item_id: str, current_user: dict = Depends(g
     }
 
 @api_router.post("/items/bulk")
-async def create_items_bulk(data: BulkItemCreate, current_user: dict = Depends(get_current_user)):
+async def create_items_bulk(data: BulkItemCreate, current_user: CurrentUser = Depends(get_current_user)):
     """Create multiple items at once"""
     created = []
     errors = []
@@ -1997,7 +1997,7 @@ async def create_items_bulk(data: BulkItemCreate, current_user: dict = Depends(g
     return {"created": len(created), "errors": errors}
 
 @api_router.post("/items/import-csv")
-async def import_items_csv(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUser = Depends(get_current_user)):
     """Import items from CSV file"""
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="File must be CSV")
@@ -2064,7 +2064,7 @@ class ItemImportRequest(BaseModel):
     items: List[ItemImportItem]
 
 @api_router.post("/items/import")
-async def import_items(request: ItemImportRequest, current_user: dict = Depends(get_current_user)):
+async def import_items(request: ItemImportRequest, current_user: CurrentUser = Depends(get_current_user)):
     """Import items with field mapping support"""
     imported = 0
     duplicates = 0
@@ -2133,7 +2133,7 @@ async def import_items(request: ItemImportRequest, current_user: dict = Depends(
     }
 
 @api_router.post("/items/generate-barcodes")
-async def generate_barcodes(data: GenerateBarcodeRequest, current_user: dict = Depends(get_current_user)):
+async def generate_barcodes(data: GenerateBarcodeRequest, current_user: CurrentUser = Depends(get_current_user)):
     """Generate unique barcodes"""
     barcodes = []
     timestamp = datetime.now().strftime('%y%m%d')
@@ -2160,7 +2160,7 @@ async def generate_barcodes(data: GenerateBarcodeRequest, current_user: dict = D
     return {"barcodes": barcodes}
 
 @api_router.get("/items/export-csv")
-async def export_items_csv(current_user: dict = Depends(get_current_user)):
+async def export_items_csv(current_user: CurrentUser = Depends(get_current_user)):
     """Export all items as CSV"""
     items = await db.items.find({}, {"_id": 0}).to_list(10000)
     
@@ -2181,7 +2181,7 @@ async def export_items_csv(current_user: dict = Depends(get_current_user)):
     )
 
 @api_router.get("/items/stats")
-async def get_inventory_stats(current_user: dict = Depends(get_current_user)):
+async def get_inventory_stats(current_user: CurrentUser = Depends(get_current_user)):
     """
     Calculate inventory stats with proper business logic:
     - Excludes 'retired', 'deleted', 'lost' (baja/perdido) from rentable total
@@ -2232,7 +2232,7 @@ async def get_inventory_stats(current_user: dict = Depends(get_current_user)):
 # ==================== TARIFF ROUTES ====================
 
 @api_router.post("/tariffs", response_model=TariffResponse)
-async def create_tariff(tariff: TariffCreate, current_user: dict = Depends(get_current_user)):
+async def create_tariff(tariff: TariffCreate, current_user: CurrentUser = Depends(get_current_user)):
     existing = await db.tariffs.find_one({"item_type": tariff.item_type})
     if existing:
         await db.tariffs.update_one({"item_type": tariff.item_type}, {"$set": tariff.model_dump()})
@@ -2245,19 +2245,19 @@ async def create_tariff(tariff: TariffCreate, current_user: dict = Depends(get_c
     return TariffResponse(**doc)
 
 @api_router.get("/tariffs", response_model=List[TariffResponse])
-async def get_tariffs(current_user: dict = Depends(get_current_user)):
+async def get_tariffs(current_user: CurrentUser = Depends(get_current_user)):
     tariffs = await db.tariffs.find({}, {"_id": 0}).to_list(20)
     return [TariffResponse(**t) for t in tariffs]
 
 @api_router.get("/tariffs/{item_type}", response_model=TariffResponse)
-async def get_tariff(item_type: str, current_user: dict = Depends(get_current_user)):
+async def get_tariff(item_type: str, current_user: CurrentUser = Depends(get_current_user)):
     tariff = await db.tariffs.find_one({"item_type": item_type}, {"_id": 0})
     if not tariff:
         raise HTTPException(status_code=404, detail="Tariff not found")
     return TariffResponse(**tariff)
 
 @api_router.delete("/tariffs/{item_type}")
-async def delete_tariff(item_type: str, current_user: dict = Depends(get_current_user)):
+async def delete_tariff(item_type: str, current_user: CurrentUser = Depends(get_current_user)):
     """Delete a tariff by item_type"""
     result = await db.tariffs.delete_one({"item_type": item_type})
     if result.deleted_count == 0:
@@ -2303,7 +2303,7 @@ class PackResponse(BaseModel):
     day_11_plus: float = 0
 
 @api_router.post("/packs", response_model=PackResponse)
-async def create_pack(pack: PackCreate, current_user: dict = Depends(get_current_user)):
+async def create_pack(pack: PackCreate, current_user: CurrentUser = Depends(get_current_user)):
     pack_id = str(uuid.uuid4())
     doc = {
         "id": pack_id,
@@ -2328,12 +2328,12 @@ async def create_pack(pack: PackCreate, current_user: dict = Depends(get_current
     return PackResponse(**doc)
 
 @api_router.get("/packs", response_model=List[PackResponse])
-async def get_packs(current_user: dict = Depends(get_current_user)):
+async def get_packs(current_user: CurrentUser = Depends(get_current_user)):
     packs = await db.packs.find({}, {"_id": 0}).to_list(50)
     return [PackResponse(**p) for p in packs]
 
 @api_router.put("/packs/{pack_id}", response_model=PackResponse)
-async def update_pack(pack_id: str, pack: PackCreate, current_user: dict = Depends(get_current_user)):
+async def update_pack(pack_id: str, pack: PackCreate, current_user: CurrentUser = Depends(get_current_user)):
     existing = await db.packs.find_one({"id": pack_id})
     if not existing:
         raise HTTPException(status_code=404, detail="Pack not found")
@@ -2361,7 +2361,7 @@ async def update_pack(pack_id: str, pack: PackCreate, current_user: dict = Depen
     return PackResponse(**updated)
 
 @api_router.delete("/packs/{pack_id}")
-async def delete_pack(pack_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_pack(pack_id: str, current_user: CurrentUser = Depends(get_current_user)):
     result = await db.packs.delete_one({"id": pack_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Pack not found")
@@ -2375,7 +2375,7 @@ def calculate_days(start_date: str, end_date: str) -> int:
     return max(1, (end - start).days + 1)
 
 @api_router.post("/rentals", response_model=RentalResponse)
-async def create_rental(rental: RentalCreate, current_user: dict = Depends(get_current_user)):
+async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depends(get_current_user)):
     # CRITICAL: Validate active cash session FIRST (if payment is being made)
     if rental.paid_amount > 0:
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -2523,7 +2523,7 @@ async def create_rental(rental: RentalCreate, current_user: dict = Depends(get_c
             "customer_name": customer["name"],
             "notes": f"Alquiler {days} días ({rental.start_date} a {rental.end_date})",
             "created_at": datetime.now(timezone.utc).isoformat(),
-            "created_by": current_user["username"],
+            "created_by": current_user.username,
             # NEW: Store rental details for ticket printing
             "rental_items": rental_items_for_ticket,
             "rental_days": days,
@@ -2544,7 +2544,7 @@ async def create_rental(rental: RentalCreate, current_user: dict = Depends(get_c
 async def get_rentals(
     status: Optional[str] = None,
     customer_id: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     query = {}
     if status:
@@ -2556,14 +2556,14 @@ async def get_rentals(
     return [RentalResponse(**r) for r in rentals]
 
 @api_router.get("/rentals/{rental_id}", response_model=RentalResponse)
-async def get_rental(rental_id: str, current_user: dict = Depends(get_current_user)):
+async def get_rental(rental_id: str, current_user: CurrentUser = Depends(get_current_user)):
     rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
     if not rental:
         raise HTTPException(status_code=404, detail="Rental not found")
     return RentalResponse(**rental)
 
 @api_router.get("/rentals/barcode/{barcode}")
-async def get_rental_by_barcode(barcode: str, current_user: dict = Depends(get_current_user)):
+async def get_rental_by_barcode(barcode: str, current_user: CurrentUser = Depends(get_current_user)):
     """
     Search for active rental by item barcode, internal_code, or item_id.
     This enables scanner-friendly workflow with any type of code.
@@ -2588,7 +2588,7 @@ async def get_rental_by_barcode(barcode: str, current_user: dict = Depends(get_c
     return RentalResponse(**rental)
 
 @api_router.get("/rentals/pending/returns")
-async def get_pending_returns(current_user: dict = Depends(get_current_user)):
+async def get_pending_returns(current_user: CurrentUser = Depends(get_current_user)):
     """Get all rentals with pending returns, grouped by date"""
     today = datetime.now(timezone.utc).date().isoformat()
     
@@ -2667,7 +2667,7 @@ async def get_pending_returns(current_user: dict = Depends(get_current_user)):
     }
 
 @api_router.post("/rentals/{rental_id}/return")
-async def process_return(rental_id: str, return_input: ReturnInput, current_user: dict = Depends(get_current_user)):
+async def process_return(rental_id: str, return_input: ReturnInput, current_user: CurrentUser = Depends(get_current_user)):
     rental = await db.rentals.find_one({"id": rental_id}, {"_id": 0})
     if not rental:
         raise HTTPException(status_code=404, detail="Rental not found")
@@ -2767,7 +2767,7 @@ class PaymentRequest(BaseModel):
     payment_method: str = "cash"
 
 @api_router.post("/rentals/{rental_id}/payment")
-async def process_payment(rental_id: str, payment: PaymentRequest, current_user: dict = Depends(get_current_user)):
+async def process_payment(rental_id: str, payment: PaymentRequest, current_user: CurrentUser = Depends(get_current_user)):
     """
     Procesar un pago adicional para un alquiler existente.
     SIEMPRE crea un movimiento de caja vinculado a la sesión activa.
@@ -2813,7 +2813,7 @@ async def process_payment(rental_id: str, payment: PaymentRequest, current_user:
         "customer_name": customer_name,
         "notes": f"Pago de €{payment.amount:.2f} sobre deuda pendiente",
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "created_by": current_user["username"]
+        "created_by": current_user.username
     }
     await db.cash_movements.insert_one(cash_doc)
     
@@ -2834,7 +2834,7 @@ class CentralSwapRequest(BaseModel):
     delta_amount: float = 0
 
 @api_router.post("/rentals/{rental_id}/central-swap")
-async def central_swap_item(rental_id: str, data: CentralSwapRequest, current_user: dict = Depends(get_current_user)):
+async def central_swap_item(rental_id: str, data: CentralSwapRequest, current_user: CurrentUser = Depends(get_current_user)):
     """
     CENTRALIZED SWAP: Intelligent item replacement with automatic detection.
     
@@ -2965,7 +2965,7 @@ async def central_swap_item(rental_id: str, data: CentralSwapRequest, current_us
         "days_remaining": data.days_remaining,
         "delta_amount": data.delta_amount,
         "payment_method": data.payment_method,
-        "performed_by": current_user["username"]
+        "performed_by": current_user.username
     }
     
     swap_history = rental.get("swap_history", [])
@@ -3022,7 +3022,7 @@ async def central_swap_item(rental_id: str, data: CentralSwapRequest, current_us
                 "reference_id": rental_id,
                 "customer_name": rental.get("customer_name"),
                 "created_at": datetime.now(timezone.utc).isoformat(),
-                "created_by": current_user["username"],
+                "created_by": current_user.username,
                 "operation_number": operation_number
             }
             await db.cash_movements.insert_one(cash_doc)
@@ -3064,7 +3064,7 @@ class ModifyDurationRequest(BaseModel):
     difference_amount: float
 
 @api_router.patch("/rentals/{rental_id}/modify-duration")
-async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, current_user: dict = Depends(get_current_user)):
+async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, current_user: CurrentUser = Depends(get_current_user)):
     """
     Modify rental duration with mandatory cash register entry.
     Creates a cash movement for any price difference (income for extensions, refund for reductions).
@@ -3170,7 +3170,7 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
             "notes": f"Modificación de duración: {old_days}→{data.new_days} días. Total: €{old_total:.2f}→€{data.new_total:.2f}",
             "rental_id": rental_id,
             "customer_name": customer_name,
-            "created_by": current_user["username"],
+            "created_by": current_user.username,
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.cash_movements.insert_one(cash_doc)
@@ -3188,7 +3188,7 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
     }
 
 @api_router.patch("/rentals/{rental_id}/days")
-async def update_rental_days(rental_id: str, update_data: UpdateRentalDaysRequest, current_user: dict = Depends(get_current_user)):
+async def update_rental_days(rental_id: str, update_data: UpdateRentalDaysRequest, current_user: CurrentUser = Depends(get_current_user)):
     rental = await db.rentals.find_one({"id": rental_id})
     if not rental:
         raise HTTPException(status_code=404, detail="Rental not found")
@@ -3248,7 +3248,7 @@ async def update_rental_days(rental_id: str, update_data: UpdateRentalDaysReques
             "notes": f"Modificación de {rental['days']} a {update_data.days} días",
             "rental_id": rental_id,
             "customer_name": customer_name,
-            "created_by": current_user["username"],
+            "created_by": current_user.username,
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.cash_movements.insert_one(cash_doc)
@@ -3282,7 +3282,7 @@ def is_unpaid_method(method: str) -> bool:
 async def update_rental_payment_method(
     rental_id: str, 
     data: UpdatePaymentMethodRequest, 
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """
     Update payment method for a rental with automatic financial reconciliation.
@@ -3459,7 +3459,7 @@ class RefundRequest(BaseModel):
     reason: str = ""
 
 @api_router.post("/rentals/{rental_id}/refund")
-async def process_refund(rental_id: str, refund: RefundRequest, current_user: dict = Depends(get_current_user)):
+async def process_refund(rental_id: str, refund: RefundRequest, current_user: CurrentUser = Depends(get_current_user)):
     """
     Process a partial refund for unused days.
     Creates a negative entry in the cash register.
@@ -3535,7 +3535,7 @@ async def process_refund(rental_id: str, refund: RefundRequest, current_user: di
         "customer_name": customer_name,
         "notes": f"Reembolso {refund.days_to_refund} día(s) no disfrutado(s). {refund.reason}".strip(),
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "created_by": current_user["username"]
+        "created_by": current_user.username
     }
     await db.cash_movements.insert_one(refund_doc)
     
@@ -3552,7 +3552,7 @@ async def process_refund(rental_id: str, refund: RefundRequest, current_user: di
     }
 
 @api_router.post("/rentals/{rental_id}/quick-return")
-async def quick_return(rental_id: str, current_user: dict = Depends(get_current_user)):
+async def quick_return(rental_id: str, current_user: CurrentUser = Depends(get_current_user)):
     """
     Quick return: Mark ALL items as returned with one click
     Perfect for when staff receives all items physically
@@ -3610,7 +3610,7 @@ async def quick_return(rental_id: str, current_user: dict = Depends(get_current_
 # ==================== MAINTENANCE ROUTES ====================
 
 @api_router.post("/maintenance", response_model=MaintenanceResponse)
-async def create_maintenance(maintenance: MaintenanceCreate, current_user: dict = Depends(get_current_user)):
+async def create_maintenance(maintenance: MaintenanceCreate, current_user: CurrentUser = Depends(get_current_user)):
     item = await db.items.find_one({"id": maintenance.item_id}, {"_id": 0})
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -3638,7 +3638,7 @@ async def create_maintenance(maintenance: MaintenanceCreate, current_user: dict 
 @api_router.get("/maintenance", response_model=List[MaintenanceResponse])
 async def get_maintenance(
     status: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     query = {}
     if status:
@@ -3648,7 +3648,7 @@ async def get_maintenance(
     return [MaintenanceResponse(**r) for r in records]
 
 @api_router.get("/maintenance/fleet")
-async def get_maintenance_fleet(current_user: dict = Depends(get_current_user)):
+async def get_maintenance_fleet(current_user: CurrentUser = Depends(get_current_user)):
     """
     Get ALL items that need maintenance or are currently in maintenance status.
     This endpoint uses the SAME query as the Dashboard for consistency.
@@ -3726,7 +3726,7 @@ async def get_maintenance_fleet(current_user: dict = Depends(get_current_user)):
     return result
 
 @api_router.post("/maintenance/{maintenance_id}/complete")
-async def complete_maintenance(maintenance_id: str, current_user: dict = Depends(get_current_user)):
+async def complete_maintenance(maintenance_id: str, current_user: CurrentUser = Depends(get_current_user)):
     maintenance = await db.maintenance.find_one({"id": maintenance_id})
     if not maintenance:
         raise HTTPException(status_code=404, detail="Maintenance not found")
@@ -3751,7 +3751,7 @@ EXTERNAL_SERVICES = {
 }
 
 @api_router.post("/external-repairs", response_model=ExternalRepairResponse)
-async def create_external_repair(repair: ExternalRepairCreate, current_user: dict = Depends(get_current_user)):
+async def create_external_repair(repair: ExternalRepairCreate, current_user: CurrentUser = Depends(get_current_user)):
     repair_id = str(uuid.uuid4())
     
     doc = {
@@ -3779,7 +3779,7 @@ async def create_external_repair(repair: ExternalRepairCreate, current_user: dic
 @api_router.get("/external-repairs", response_model=List[ExternalRepairResponse])
 async def get_external_repairs(
     status: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     query = {}
     if status and status != "all":
@@ -3789,14 +3789,14 @@ async def get_external_repairs(
     return [ExternalRepairResponse(**r) for r in repairs]
 
 @api_router.get("/external-repairs/{repair_id}", response_model=ExternalRepairResponse)
-async def get_external_repair(repair_id: str, current_user: dict = Depends(get_current_user)):
+async def get_external_repair(repair_id: str, current_user: CurrentUser = Depends(get_current_user)):
     repair = await db.external_repairs.find_one({"id": repair_id}, {"_id": 0})
     if not repair:
         raise HTTPException(status_code=404, detail="Repair not found")
     return ExternalRepairResponse(**repair)
 
 @api_router.put("/external-repairs/{repair_id}")
-async def update_external_repair(repair_id: str, repair: ExternalRepairCreate, current_user: dict = Depends(get_current_user)):
+async def update_external_repair(repair_id: str, repair: ExternalRepairCreate, current_user: CurrentUser = Depends(get_current_user)):
     existing = await db.external_repairs.find_one({"id": repair_id}, {"_id": 0})
     if not existing:
         raise HTTPException(status_code=404, detail="Repair not found")
@@ -3819,7 +3819,7 @@ async def update_external_repair(repair_id: str, repair: ExternalRepairCreate, c
     return ExternalRepairResponse(**updated)
 
 @api_router.post("/external-repairs/{repair_id}/complete")
-async def complete_external_repair(repair_id: str, current_user: dict = Depends(get_current_user)):
+async def complete_external_repair(repair_id: str, current_user: CurrentUser = Depends(get_current_user)):
     repair = await db.external_repairs.find_one({"id": repair_id}, {"_id": 0})
     if not repair:
         raise HTTPException(status_code=404, detail="Repair not found")
@@ -3838,7 +3838,7 @@ class DeliverAndChargeRequest(BaseModel):
 async def deliver_external_repair(
     repair_id: str, 
     delivery: DeliverAndChargeRequest,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     repair = await db.external_repairs.find_one({"id": repair_id}, {"_id": 0})
     if not repair:
@@ -3885,21 +3885,21 @@ async def deliver_external_repair(
             "customer_name": repair["customer_name"],
             "notes": f"{repair['equipment_description']} - {work_desc[:50]}",
             "created_at": now,
-            "created_by": current_user["username"]
+            "created_by": current_user.username
         }
         await db.cash_movements.insert_one(cash_doc)
     
     return {"message": "Repair delivered and charged", "amount": repair["price"], "operation_number": operation_number if repair["price"] > 0 else None}
 
 @api_router.delete("/external-repairs/{repair_id}")
-async def delete_external_repair(repair_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_external_repair(repair_id: str, current_user: CurrentUser = Depends(get_current_user)):
     result = await db.external_repairs.delete_one({"id": repair_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Repair not found")
     return {"message": "Repair deleted"}
 
 @api_router.get("/external-services")
-async def get_external_services(current_user: dict = Depends(get_current_user)):
+async def get_external_services(current_user: CurrentUser = Depends(get_current_user)):
     """Returns available services and their default prices"""
     return EXTERNAL_SERVICES
 
@@ -4143,7 +4143,7 @@ financial_service = FinancialCalculatorService()
 # ==================== REPORTS ROUTES ====================
 
 @api_router.get("/reports/daily", response_model=DailyReportResponse)
-async def get_daily_report(date: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+async def get_daily_report(date: Optional[str] = None, current_user: CurrentUser = Depends(get_current_user)):
     """
     Reporte diario usando el servicio financiero centralizado.
     GARANTIZA coincidencia con la vista de Caja.
@@ -4240,7 +4240,7 @@ async def get_daily_report(date: Optional[str] = None, current_user: dict = Depe
 async def get_range_report(
     start_date: str,
     end_date: str,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """
     Reporte por rango de fechas usando el servicio financiero centralizado.
@@ -4373,7 +4373,7 @@ async def get_range_report(
 async def get_reconciliation_report(
     start_date: str,
     end_date: str,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """
     Endpoint de reconciliación para depurar discrepancias entre Caja y Reportes.
@@ -4393,7 +4393,7 @@ async def get_unified_financial_summary(
     end_date: str,
     include_manual: bool = True,
     include_deposits: bool = True,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """
     Resumen financiero unificado usando el servicio centralizado.
@@ -4416,7 +4416,7 @@ async def get_unified_financial_summary(
 # ==================== DAILY REPORT ENDPOINT ====================
 
 @api_router.get("/reports/stats")
-async def get_stats(current_user: dict = Depends(get_current_user)):
+async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
     """
     Dashboard stats - revenue_today now comes from cash_movements (Single Source of Truth)
     This ensures Dashboard shows same value as Cash Register.
@@ -4573,7 +4573,7 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
 # ==================== GLOBAL LOOKUP / REVERSE SEARCH ====================
 
 @api_router.get("/lookup/{code}")
-async def global_lookup(code: str, current_user: dict = Depends(get_current_user)):
+async def global_lookup(code: str, current_user: CurrentUser = Depends(get_current_user)):
     """
     GLOBAL REVERSE LOOKUP - Scan-to-Action
     
@@ -4770,7 +4770,7 @@ async def global_lookup(code: str, current_user: dict = Depends(get_current_user
 # ==================== DASHBOARD ROUTES ====================
 
 @api_router.get("/dashboard")
-async def get_dashboard(current_user: dict = Depends(get_current_user)):
+async def get_dashboard(current_user: CurrentUser = Depends(get_current_user)):
     stats = await get_stats(current_user)
     
     # Recent activity
@@ -4908,7 +4908,7 @@ async def get_dashboard(current_user: dict = Depends(get_current_user)):
     }
 
 @api_router.get("/dashboard/returns-control")
-async def get_returns_control(current_user: dict = Depends(get_current_user)):
+async def get_returns_control(current_user: CurrentUser = Depends(get_current_user)):
     """
     Get pending returns by item type for today - the 'control tower' for end of day
     """
@@ -4996,7 +4996,7 @@ async def get_dashboard_analytics(
     period: Optional[str] = None,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """
     Get advanced analytics for dashboard:
@@ -5233,7 +5233,7 @@ class SourceResponse(BaseModel):
     created_at: str = ""
 
 @api_router.post("/sources", response_model=SourceResponse)
-async def create_source(source: SourceCreate, current_user: dict = Depends(get_current_user)):
+async def create_source(source: SourceCreate, current_user: CurrentUser = Depends(get_current_user)):
     existing = await db.sources.find_one({"name": source.name})
     if existing:
         raise HTTPException(status_code=400, detail="Source already exists")
@@ -5257,7 +5257,7 @@ async def create_source(source: SourceCreate, current_user: dict = Depends(get_c
     return SourceResponse(**doc)
 
 @api_router.get("/sources", response_model=List[SourceResponse])
-async def get_sources(current_user: dict = Depends(get_current_user)):
+async def get_sources(current_user: CurrentUser = Depends(get_current_user)):
     sources = await db.sources.find({}, {"_id": 0}).sort([("is_favorite", -1), ("name", 1)]).to_list(5000)
     
     # Count customers per source
@@ -5268,7 +5268,7 @@ async def get_sources(current_user: dict = Depends(get_current_user)):
     return [SourceResponse(**s) for s in sources]
 
 @api_router.delete("/sources/{source_id}")
-async def delete_source(source_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_source(source_id: str, current_user: CurrentUser = Depends(get_current_user)):
     source = await db.sources.find_one({"id": source_id})
     if not source:
         raise HTTPException(status_code=404, detail="Source not found")
@@ -5282,7 +5282,7 @@ async def delete_source(source_id: str, current_user: dict = Depends(get_current
     return {"message": "Source deleted"}
 
 @api_router.put("/sources/{source_id}", response_model=SourceResponse)
-async def update_source(source_id: str, source: SourceCreate, current_user: dict = Depends(get_current_user)):
+async def update_source(source_id: str, source: SourceCreate, current_user: CurrentUser = Depends(get_current_user)):
     existing = await db.sources.find_one({"id": source_id})
     if not existing:
         raise HTTPException(status_code=404, detail="Source not found")
@@ -5312,7 +5312,7 @@ async def update_source(source_id: str, source: SourceCreate, current_user: dict
     return SourceResponse(**updated)
 
 @api_router.get("/sources/{source_id}/stats")
-async def get_source_stats(source_id: str, current_user: dict = Depends(get_current_user)):
+async def get_source_stats(source_id: str, current_user: CurrentUser = Depends(get_current_user)):
     """Get statistics for a specific provider/source"""
     source = await db.sources.find_one({"id": source_id}, {"_id": 0})
     if not source:
@@ -5445,7 +5445,7 @@ class CashClosingResponse(BaseModel):
 # ==================== CASH SESSIONS ROUTES ====================
 
 @api_router.post("/cash/sessions")
-async def create_cash_session(session: CashSessionCreate, current_user: dict = Depends(get_current_user)):
+async def create_cash_session(session: CashSessionCreate, current_user: CurrentUser = Depends(get_current_user)):
     """Open a new cash session/shift (simple state change in DB)"""
     date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
@@ -5465,7 +5465,7 @@ async def create_cash_session(session: CashSessionCreate, current_user: dict = D
         "date": date,
         "session_number": session_number,
         "opened_at": datetime.now(timezone.utc).isoformat(),
-        "opened_by": current_user["username"],
+        "opened_by": current_user.username,
         "opening_balance": session.opening_balance or 0,
         "status": "open",
         "closed_at": None,
@@ -5476,12 +5476,12 @@ async def create_cash_session(session: CashSessionCreate, current_user: dict = D
     return CashSessionResponse(**doc)
 
 @api_router.post("/cash/sessions/open")
-async def open_cash_session(session: CashSessionCreate, current_user: dict = Depends(get_current_user)):
+async def open_cash_session(session: CashSessionCreate, current_user: CurrentUser = Depends(get_current_user)):
     """Open a new cash session/shift (alias for compatibility)"""
     return await create_cash_session(session, current_user)
 
 @api_router.get("/cash/sessions/active")
-async def get_active_session(current_user: dict = Depends(get_current_user)):
+async def get_active_session(current_user: CurrentUser = Depends(get_current_user)):
     """Get the currently active (open) cash session"""
     date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     session = await db.cash_sessions.find_one({"date": date, "status": "open"}, {"_id": 0})
@@ -5492,7 +5492,7 @@ async def get_active_session(current_user: dict = Depends(get_current_user)):
     return CashSessionResponse(**session)
 
 @api_router.get("/cash/sessions")
-async def get_cash_sessions(current_user: dict = Depends(get_current_user)):
+async def get_cash_sessions(current_user: CurrentUser = Depends(get_current_user)):
     """Get all cash sessions (history)"""
     sessions = await db.cash_sessions.find({}, {"_id": 0}).sort("opened_at", -1).to_list(5000)
     return [CashSessionResponse(**s) for s in sessions]
@@ -5517,7 +5517,7 @@ async def get_next_operation_number():
     return f"A{sequence:06d}"
 
 @api_router.post("/cash/movements")
-async def create_cash_movement(movement: CashMovementCreate, current_user: dict = Depends(get_current_user)):
+async def create_cash_movement(movement: CashMovementCreate, current_user: CurrentUser = Depends(get_current_user)):
     # Check if there's an active session
     date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     active_session = await db.cash_sessions.find_one({"date": date, "status": "open"})
@@ -5540,7 +5540,7 @@ async def create_cash_movement(movement: CashMovementCreate, current_user: dict 
         "reference_id": movement.reference_id,
         "notes": movement.notes or "",
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "created_by": current_user["username"]
+        "created_by": current_user.username
     }
     await db.cash_movements.insert_one(doc)
     return CashMovementResponse(**doc)
@@ -5549,7 +5549,7 @@ async def create_cash_movement(movement: CashMovementCreate, current_user: dict 
 async def get_cash_movements(
     date: Optional[str] = None,
     movement_type: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """Get movements for ACTIVE SESSION only"""
     if not date:
@@ -5573,7 +5573,7 @@ async def get_cash_movements(
 async def update_cash_movement(
     movement_id: str, 
     update_data: dict, 
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """Update a cash movement (e.g., change payment method)"""
     # Find the movement
@@ -5603,7 +5603,7 @@ async def update_cash_movement(
     return {"status": "success", "updated_fields": list(filtered_update.keys())}
 
 @api_router.get("/cash/summary")
-async def get_cash_summary(date: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+async def get_cash_summary(date: Optional[str] = None, current_user: CurrentUser = Depends(get_current_user)):
     """Get cash summary for ACTIVE SESSION only (not full day)"""
     if not date:
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -5666,7 +5666,7 @@ async def get_cash_summary(date: Optional[str] = None, current_user: dict = Depe
     }
 
 @api_router.post("/cash/audit-sync")
-async def audit_and_sync_cash_movements(current_user: dict = Depends(get_current_user)):
+async def audit_and_sync_cash_movements(current_user: CurrentUser = Depends(get_current_user)):
     """
     AUDITORÍA Y SINCRONIZACIÓN FORZADA DE CAJA
     Detecta alquileres/servicios pagados sin movimiento de caja y los crea automáticamente.
@@ -5716,7 +5716,7 @@ async def audit_and_sync_cash_movements(current_user: dict = Depends(get_current
                 "customer_name": rental.get("customer_name", ""),
                 "notes": f"Movimiento sincronizado automáticamente. Alquiler del {rental.get('start_date', date)}",
                 "created_at": datetime.now(timezone.utc).isoformat(),
-                "created_by": current_user["username"]
+                "created_by": current_user.username
             }
             await db.cash_movements.insert_one(cash_doc)
             created_movements.append({
@@ -5752,7 +5752,7 @@ async def audit_and_sync_cash_movements(current_user: dict = Depends(get_current
                 "customer_name": repair.get("customer_name", ""),
                 "notes": f"Movimiento sincronizado automáticamente. Reparación: {repair.get('description', '')[:50]}",
                 "created_at": datetime.now(timezone.utc).isoformat(),
-                "created_by": current_user["username"]
+                "created_by": current_user.username
             }
             await db.cash_movements.insert_one(cash_doc)
             created_movements.append({
@@ -5780,7 +5780,7 @@ async def audit_and_sync_cash_movements(current_user: dict = Depends(get_current
     }
 
 @api_router.get("/cash/summary/realtime")
-async def get_cash_summary_realtime(date: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+async def get_cash_summary_realtime(date: Optional[str] = None, current_user: CurrentUser = Depends(get_current_user)):
     """
     RESUMEN DE CAJA EN TIEMPO REAL - LÓGICA CORREGIDA
     
@@ -5943,7 +5943,7 @@ async def get_next_closure_number(date: str) -> int:
     return 1
 
 @api_router.post("/cash/close")
-async def close_cash_register(closing: CashClosingCreate, current_user: dict = Depends(get_current_user)):
+async def close_cash_register(closing: CashClosingCreate, current_user: CurrentUser = Depends(get_current_user)):
     """Close the active cash session and create closing record with corrected financial logic"""
     
     # Find active session
@@ -5992,7 +5992,7 @@ async def close_cash_register(closing: CashClosingCreate, current_user: dict = D
         
         # Metadata
         "notes": closing.notes or "",
-        "closed_by": current_user["username"],
+        "closed_by": current_user.username,
         "closed_at": datetime.now(timezone.utc).isoformat(),
         "movements_count": summary.get("movements_count", 0),
         "by_payment_method": summary.get("by_payment_method", {}),
@@ -6022,7 +6022,7 @@ async def close_cash_register(closing: CashClosingCreate, current_user: dict = D
     return CashClosingResponse(**closing_doc)
 
 @api_router.get("/cash/closings")
-async def get_cash_closings(current_user: dict = Depends(get_current_user)):
+async def get_cash_closings(current_user: CurrentUser = Depends(get_current_user)):
     closings = await db.cash_closings.find({}, {"_id": 0}).sort("date", -1).to_list(5000)
     return [CashClosingResponse(**c) for c in closings]
 
@@ -6034,7 +6034,7 @@ async def search_cash_movements(
     payment_method: Optional[str] = Query(None, description="Filtrar por método de pago"),
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """
     Advanced search for cash movements with pagination.
@@ -6096,7 +6096,7 @@ async def get_cash_movements_history(
     date_to: Optional[str] = None,
     movement_type: Optional[str] = None,
     search: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
     """Get all cash movements with optional filters for historic view"""
     query = {}
@@ -6127,7 +6127,7 @@ async def get_cash_movements_history(
     return movements
 
 @api_router.post("/cash/validate-orphans")
-async def validate_and_fix_orphan_movements(current_user: dict = Depends(get_current_user)):
+async def validate_and_fix_orphan_movements(current_user: CurrentUser = Depends(get_current_user)):
     """
     Validate and fix orphan movements (movements without session_id).
     Links them to the appropriate session or reports them.
@@ -6183,7 +6183,7 @@ async def validate_and_fix_orphan_movements(current_user: dict = Depends(get_cur
     }
 
 @api_router.delete("/cash/closings/{closing_id}")
-async def revert_cash_closing(closing_id: str, current_user: dict = Depends(get_current_user)):
+async def revert_cash_closing(closing_id: str, current_user: CurrentUser = Depends(get_current_user)):
     """Revert/delete a specific cash closing to allow a new closure"""
     existing = await db.cash_closings.find_one({"id": closing_id})
     if not existing:
@@ -6200,7 +6200,7 @@ class IntegrationConfig(BaseModel):
     config: dict = {}
 
 @api_router.post("/integrations/config")
-async def save_integration_config(config: IntegrationConfig, current_user: dict = Depends(get_current_user)):
+async def save_integration_config(config: IntegrationConfig, current_user: CurrentUser = Depends(get_current_user)):
     existing = await db.integrations.find_one({"integration_type": config.integration_type})
     
     doc = {
@@ -6208,7 +6208,7 @@ async def save_integration_config(config: IntegrationConfig, current_user: dict 
         "enabled": config.enabled,
         "config": config.config,
         "updated_at": datetime.now(timezone.utc).isoformat(),
-        "updated_by": current_user["username"]
+        "updated_by": current_user.username
     }
     
     if existing:
@@ -6224,12 +6224,12 @@ async def save_integration_config(config: IntegrationConfig, current_user: dict 
     return {"message": "Configuration saved", "integration_type": config.integration_type}
 
 @api_router.get("/integrations/config")
-async def get_integrations_config(current_user: dict = Depends(get_current_user)):
+async def get_integrations_config(current_user: CurrentUser = Depends(get_current_user)):
     configs = await db.integrations.find({}, {"_id": 0}).to_list(20)
     return configs
 
 @api_router.get("/integrations/config/{integration_type}")
-async def get_integration_config(integration_type: str, current_user: dict = Depends(get_current_user)):
+async def get_integration_config(integration_type: str, current_user: CurrentUser = Depends(get_current_user)):
     config = await db.integrations.find_one({"integration_type": integration_type}, {"_id": 0})
     if not config:
         return {"integration_type": integration_type, "enabled": False, "config": {}}
@@ -6237,7 +6237,7 @@ async def get_integration_config(integration_type: str, current_user: dict = Dep
 
 
 @api_router.post("/admin/fix-return-dates")
-async def fix_return_dates(current_user: dict = Depends(get_current_user)):
+async def fix_return_dates(current_user: CurrentUser = Depends(get_current_user)):
     """
     MIGRATION UTILITY: Fix rentals that are 'returned' but missing actual_return_date.
     This sets actual_return_date to end_date for historical rentals.
@@ -6284,7 +6284,7 @@ class BusinessSettings(BaseModel):
     auto_print: bool = False
 
 @api_router.get("/settings")
-async def get_settings(current_user: dict = Depends(get_current_user)):
+async def get_settings(current_user: CurrentUser = Depends(get_current_user)):
     """Get business settings from database"""
     settings = await db.settings.find_one({"type": "business"}, {"_id": 0})
     
@@ -6307,7 +6307,7 @@ async def get_settings(current_user: dict = Depends(get_current_user)):
     return settings
 
 @api_router.post("/settings")
-async def save_settings(settings: BusinessSettings, current_user: dict = Depends(get_current_user)):
+async def save_settings(settings: BusinessSettings, current_user: CurrentUser = Depends(get_current_user)):
     """Save business settings to database"""
     settings_dict = settings.dict()
     settings_dict["type"] = "business"
