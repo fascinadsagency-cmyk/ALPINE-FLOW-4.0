@@ -540,16 +540,16 @@ export default function ActiveRentals() {
       const result = response.data;
       
       if (result.found && result.type === "rented_item") {
-        // Item is currently rented - auto-open swap modal
+        // Item is currently rented - auto-open CHANGE modal (same as Returns)
         toast.success(`✓ ${result.item?.internal_code || result.item?.barcode}: Cliente ${result.rental?.customer_name}`);
         
         // Find the rental in our list
         const rental = rentals.find(r => r.id === result.rental?.id);
         if (rental) {
-          openSwapModalWithItem(rental, result.item);
+          openChangeModal(rental);
         } else {
           // Use the rental data from lookup
-          openSwapModalWithItem(result.rental, result.item);
+          openChangeModal(result.rental);
         }
         setSearchQuery("");
       } else if (result.found && result.type === "customer") {
@@ -557,7 +557,7 @@ export default function ActiveRentals() {
         toast.success(`✓ Cliente: ${result.customer?.name}`);
         const rental = rentals.find(r => r.id === result.rental?.id);
         if (rental) {
-          openSwapModalWithItem(rental, null);
+          openChangeModal(rental);
         }
         setSearchQuery("");
       } else if (result.found && result.type === "available_item") {
