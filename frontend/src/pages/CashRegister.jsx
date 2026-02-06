@@ -182,14 +182,14 @@ export default function CashRegister() {
 
   useEffect(() => {
     loadData();
-  }, [date]);
+  }, []); // Load data once on mount
 
   useEffect(() => {
     const interval = setInterval(() => {
       if (activeTab === "today") loadData();
     }, 10000);
     return () => clearInterval(interval);
-  }, [activeTab, date]);
+  }, [activeTab]); // Removed date dependency
 
   useEffect(() => {
     if (activeTab === "closures") loadClosureHistory();
