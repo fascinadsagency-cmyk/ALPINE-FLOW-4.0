@@ -2202,6 +2202,7 @@ export default function NewRental() {
                               <div className="flex items-center gap-2">
                                 <Package className="h-5 w-5 text-amber-600 flex-shrink-0" />
                                 <input
+                                  key={`pack-name-${group.packId}-${group.displayName}`}
                                   type="text"
                                   defaultValue={group.displayName}
                                   placeholder="Nombre del pack"
@@ -2212,6 +2213,10 @@ export default function NewRental() {
                                   }}
                                   onFocus={(e) => {
                                     e.stopPropagation(); // Prevent accordion interference
+                                  }}
+                                  onChange={(e) => {
+                                    // Update in real-time as user types
+                                    e.stopPropagation();
                                   }}
                                   onBlur={(e) => {
                                     const newName = e.target.value.trim();
