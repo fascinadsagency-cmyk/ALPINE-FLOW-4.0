@@ -2656,6 +2656,7 @@ async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depend
     
     doc = {
         "id": rental_id,
+        "store_id": current_user.store_id,  # CRITICAL: Multi-tenant isolation
         "customer_id": rental.customer_id,
         "customer_name": customer["name"],
         "customer_dni": customer["dni"],
@@ -2673,7 +2674,7 @@ async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depend
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
-    await db.rentals.insert_one(doc)
+    await db.rentals.insert_one({**current_user.get_store_filter(), **doc})
     await db.customers.update_one({**current_user.get_store_filter(), "id": rental.customer_id}, {"$inc": {"total_rentals": 1}})
     
     # AUTO-REGISTER in CAJA: Create cash movement for the paid amount
