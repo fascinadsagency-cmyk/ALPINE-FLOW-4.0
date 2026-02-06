@@ -150,7 +150,7 @@ export default function Customers() {
     }
   };
 
-  const filterCustomers = () => {
+  const filterCustomers = useCallback(() => {
     let filtered = [...allCustomers];
 
     // Filter by search term
@@ -178,11 +178,11 @@ export default function Customers() {
     }
 
     setCustomers(filtered);
-  };
+  }, [searchTerm, selectedProvider, selectedStatus, allCustomers]);
 
   useEffect(() => {
     filterCustomers();
-  }, [searchTerm, selectedProvider, selectedStatus, allCustomers]);
+  }, [filterCustomers]);
 
   // ========== BULK SELECTION FUNCTIONS ==========
   
