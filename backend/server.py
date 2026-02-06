@@ -1675,13 +1675,15 @@ async def create_item_type(item_type: ItemTypeCreate, current_user: CurrentUser 
     # Normalize value (lowercase, no spaces)
     normalized_value = item_type.value.lower().replace(" ", "_")
     
-    existing = await db.item_types.find_one({"value": normalized_value})
+    # Multi-tenant: Check existing within same store
+    existing = await db.item_types.find_one({**current_user.get_store_filter(), "value": normalized_value})
     if existing:
         raise HTTPException(status_code=400, detail="Este tipo ya existe")
     
     type_id = str(uuid.uuid4())
     doc = {
         "id": type_id,
+        "store_id": current_user.store_id,  # Multi-tenant: Add store_id
         "value": normalized_value,
         "label": item_type.label,
         "is_default": False,
