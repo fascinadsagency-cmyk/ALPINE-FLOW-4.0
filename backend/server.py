@@ -6378,7 +6378,32 @@ async def get_store(store_id: int, current_user: CurrentUser = Depends(require_s
 @api_router.put("/stores/{store_id}")
 async def update_store(store_id: int, updates: StoreUpdate, current_user: CurrentUser = Depends(require_super_admin)):
     """Update store - SUPER_ADMIN only"""
-    update_dict = {k: v for k, v in updates.dict().items() if v is not None}
+    update_dict = {}
+    
+    # Basic fields
+    if updates.name is not None:
+        update_dict["name"] = updates.name
+    if updates.status is not None:
+        update_dict["status"] = updates.status
+    if updates.plan is not None:
+        update_dict["plan"] = updates.plan
+    
+    # Contact info
+    contact_fields = {}
+    if updates.contact_email is not None:
+        contact_fields["email"] = updates.contact_email
+    if updates.contact_phone is not None:
+        contact_fields["phone"] = updates.contact_phone
+    if updates.address is not None:
+        contact_fields["address"] = updates.address
+    
+    if contact_fields:
+        update_dict["contact"] = contact_fields
+    
+    # Settings/limits - parse from request body
+    from fastapi import Request
+    # Note: StoreUpdate needs to be enhanced to include these fields
+    # For now, we'll accept them from the raw request
     
     if update_dict:
         await db.stores.update_one(
