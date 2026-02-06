@@ -866,18 +866,32 @@ export default function NewRental() {
   const addItemByBarcode = async (e) => {
     if (e.key !== 'Enter' || !barcodeInput.trim()) return;
     
+    // SANITIZACIÓN: Limpiar entrada (espacios, caracteres invisibles)
+    const cleanCode = barcodeInput.trim().replace(/[\s\u200B-\u200D\uFEFF]/g, '');
+    if (!cleanCode) {
+      setBarcodeInput("");
+      refocusBarcodeInput();
+      return;
+    }
+    
     try {
-      const response = await itemApi.getByBarcode(barcodeInput);
+      const response = await itemApi.getByBarcode(cleanCode);
       const item = response.data;
       
       if (item.status !== 'available') {
-        toast.error(`Artículo no disponible (${item.status})`);
+        const statusLabels = {
+          'rented': 'Alquilado',
+          'maintenance': 'En mantenimiento', 
+          'retired': 'Retirado'
+        };
+        toast.error(`Artículo no disponible (${statusLabels[item.status] || item.status})`);
         setBarcodeInput("");
         refocusBarcodeInput();
         return;
       }
       
-      if (items.find(i => i.barcode === item.barcode)) {
+      // Check by both barcode and internal_code to avoid duplicates
+      if (items.find(i => i.barcode === item.barcode || i.internal_code === item.internal_code)) {
         toast.error("Artículo ya añadido");
         setBarcodeInput("");
         refocusBarcodeInput();
@@ -885,11 +899,12 @@ export default function NewRental() {
       }
       
       setItems([...items, { ...item, customPrice: null, itemDays: numDays }]);
-      toast.success(`${item.brand} ${item.model} añadido`);
+      toast.success(`✓ ${item.internal_code} - ${item.brand} ${item.model}`);
       setBarcodeInput("");
       refocusBarcodeInput();
     } catch (error) {
-      toast.error("Artículo no encontrado");
+      // Show more helpful error
+      toast.error(`No encontrado: "${cleanCode}"`);
       setBarcodeInput("");
       refocusBarcodeInput();
     }
