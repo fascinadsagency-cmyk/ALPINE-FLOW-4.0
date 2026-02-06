@@ -4952,12 +4952,14 @@ async def get_dashboard(current_user: CurrentUser = Depends(get_current_user)):
 async def get_returns_control(current_user: CurrentUser = Depends(get_current_user)):
     """
     Get pending returns by item type for today - the 'control tower' for end of day
+    Multi-tenant: Filters by store_id
     """
     today = datetime.now(timezone.utc)
     today_str = today.strftime("%Y-%m-%d")
     
-    # Get all rentals that should return today and are not yet returned
+    # Get all rentals that should return today and are not yet returned - Multi-tenant: Filter by store
     pending_returns = await db.rentals.find({
+        **current_user.get_store_filter(),
         "end_date": today_str,
         "status": {"$in": ["active", "pending"]}
     }, {"_id": 0}).to_list(10000)
@@ -4970,15 +4972,16 @@ async def get_returns_control(current_user: CurrentUser = Depends(get_current_us
     
     items_data = {}
     if item_ids:
+        # Multi-tenant: Filter items by store
         items_cursor = await db.items.find(
-            {"id": {"$in": item_ids}},
+            {**current_user.get_store_filter(), "id": {"$in": item_ids}},
             {"_id": 0, "id": 1, "item_type": 1, "brand": 1, "model": 1, "internal_code": 1}
         ).to_list(10000)
         for item in items_cursor:
             items_data[item["id"]] = item
     
-    # Get all item types (dynamic categories)
-    item_types = await db.item_types.find({}, {"_id": 0}).to_list(5000)
+    # Get all item types (dynamic categories) - Multi-tenant: Filter by store
+    item_types = await db.item_types.find(current_user.get_store_filter(), {"_id": 0}).to_list(5000)
     type_labels = {t["value"]: t["label"] for t in item_types}
     
     # Count by item type
