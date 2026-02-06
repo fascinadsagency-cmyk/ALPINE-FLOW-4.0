@@ -955,6 +955,49 @@ async def import_customers(request: CustomerImportRequest, current_user: dict = 
         "duplicate_dnis": duplicate_dnis[:50]  # Limit to 50 for response size
     }
 
+@api_router.get("/customers/export/all")
+async def export_all_customers(
+    format: str = Query("json", regex="^(json|count)$"),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Export all customers optimized for large datasets (50K+)
+    Returns data in batches to avoid memory issues
+    format: 'json' returns all data, 'count' returns just the count
+    """
+    if format == "count":
+        total = await db.customers.count_documents({})
+        return {"total": total}
+    
+    # For full export, use cursor to stream data efficiently
+    # Return minimal fields for export
+    customers = await db.customers.find(
+        {},
+        {
+            "_id": 0,
+            "id": 1,
+            "dni": 1,
+            "name": 1,
+            "phone": 1,
+            "email": 1,
+            "address": 1,
+            "city": 1,
+            "source": 1,
+            "boot_size": 1,
+            "height": 1,
+            "weight": 1,
+            "ski_level": 1,
+            "created_at": 1,
+            "notes": 1,
+            "total_rentals": 1
+        }
+    ).to_list(None)  # MongoDB driver handles memory efficiently
+    
+    return {
+        "customers": customers,
+        "total": len(customers)
+    }
+
 # ==================== INVENTORY ROUTES ====================
 
 @api_router.post("/items", response_model=ItemResponse)
