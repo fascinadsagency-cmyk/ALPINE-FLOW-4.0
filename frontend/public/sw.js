@@ -1,20 +1,22 @@
 /**
  * AlpineFlow Service Worker
  * 
- * Cachea archivos estáticos (HTML, CSS, JS, iconos) para permitir
- * que la aplicación cargue sin conexión a internet.
+ * ESTRATEGIA: NETWORK FIRST para todos los archivos principales
+ * Esto garantiza que siempre se descargue la última versión del servidor.
+ * Solo usa caché como fallback cuando no hay conexión.
+ * 
+ * VERSIÓN: Se incrementa automáticamente para forzar actualización
  */
 
-const CACHE_NAME = 'alpineflow-v2-no-category';
-const STATIC_CACHE = 'alpineflow-static-v2-no-category';
-const API_CACHE = 'alpineflow-api-v2-no-category';
+const SW_VERSION = 'v3-network-first-' + Date.now();
+const CACHE_NAME = 'alpineflow-' + SW_VERSION;
+const API_CACHE = 'alpineflow-api-' + SW_VERSION;
 
-// Archivos estáticos a cachear en la instalación
-const STATIC_ASSETS = [
+// Archivos estáticos mínimos para offline
+const OFFLINE_FALLBACK = [
   '/',
   '/index.html',
   '/manifest.json'
-  // Los archivos JS y CSS con hash se cachearán en runtime
 ];
 
 // Rutas de API que se pueden cachear para uso offline
@@ -25,123 +27,98 @@ const CACHEABLE_API_ROUTES = [
   '/api/item-types'
 ];
 
-// Instalación del Service Worker
+// ============================================================
+// INSTALACIÓN - Forzar activación inmediata
+// ============================================================
 self.addEventListener('install', (event) => {
-  console.log('[SW] Instalando Service Worker...');
+  console.log('[SW] Instalando nueva versión:', SW_VERSION);
   
   event.waitUntil(
-    caches.open(STATIC_CACHE)
+    caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('[SW] Cacheando archivos estáticos');
-        return cache.addAll(STATIC_ASSETS);
+        console.log('[SW] Pre-cacheando fallbacks offline');
+        return cache.addAll(OFFLINE_FALLBACK);
       })
       .then(() => {
-        // Activar inmediatamente sin esperar
+        console.log('[SW] Forzando skipWaiting()');
         return self.skipWaiting();
       })
   );
 });
 
-// Activación del Service Worker
+// ============================================================
+// ACTIVACIÓN - Limpiar cachés antiguas y tomar control
+// ============================================================
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Service Worker activado');
+  console.log('[SW] Activando nueva versión:', SW_VERSION);
   
   event.waitUntil(
-    // Limpiar caches antiguas
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== STATIC_CACHE && cacheName !== API_CACHE && cacheName !== CACHE_NAME) {
-            console.log('[SW] Eliminando cache antigua:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => {
-      // Tomar control de todas las páginas inmediatamente
-      return self.clients.claim();
-    })
+    caches.keys()
+      .then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            // Eliminar TODAS las cachés que no sean la versión actual
+            if (!cacheName.includes(SW_VERSION)) {
+              console.log('[SW] Eliminando caché antigua:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      })
+      .then(() => {
+        console.log('[SW] Tomando control con clients.claim()');
+        return self.clients.claim();
+      })
+      .then(() => {
+        // Notificar a los clientes que hay una nueva versión
+        return notifyClientsOfUpdate();
+      })
   );
 });
 
-// Interceptar peticiones de red
+// ============================================================
+// FETCH - Estrategia NETWORK FIRST para todo
+// ============================================================
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Ignorar peticiones a otros dominios
-  if (url.origin !== location.origin && !url.pathname.startsWith('/api')) {
+  // Ignorar peticiones a otros dominios (excepto API)
+  if (url.origin !== location.origin && !url.hostname.includes('emergentagent.com')) {
     return;
   }
 
-  // NO interceptar peticiones POST, PUT, DELETE (dejar que vayan directamente a la red)
+  // NO interceptar peticiones POST, PUT, DELETE
   if (request.method !== 'GET') {
     return;
   }
 
-  // Estrategia para archivos estáticos: Cache First
-  if (isStaticAsset(request)) {
-    event.respondWith(cacheFirst(request, STATIC_CACHE));
+  // Ignorar peticiones a hot-reload de desarrollo
+  if (url.pathname.includes('hot-update') || url.pathname.includes('sockjs-node')) {
     return;
   }
 
-  // Estrategia para API: Network First con fallback a cache
-  if (url.pathname.startsWith('/api')) {
-    event.respondWith(networkFirstWithCache(request, API_CACHE));
-    return;
-  }
-
-  // Para navegación (HTML): Network First
-  if (request.mode === 'navigate') {
-    event.respondWith(networkFirstWithCache(request, STATIC_CACHE));
-    return;
-  }
+  // ESTRATEGIA ÚNICA: Network First para TODO
+  event.respondWith(networkFirst(request));
 });
 
-// Determinar si es un archivo estático
-function isStaticAsset(request) {
+// ============================================================
+// NETWORK FIRST - Siempre intenta la red primero
+// ============================================================
+async function networkFirst(request) {
   const url = new URL(request.url);
-  return (
-    url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/) ||
-    url.pathname === '/manifest.json'
-  );
-}
-
-// Estrategia Cache First: buscar en cache, si no existe ir a red
-async function cacheFirst(request, cacheName) {
-  const cache = await caches.open(cacheName);
-  const cached = await cache.match(request);
-  
-  if (cached) {
-    return cached;
-  }
+  const cacheName = url.pathname.startsWith('/api') ? API_CACHE : CACHE_NAME;
   
   try {
-    const response = await fetch(request);
-    if (response.ok) {
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch (error) {
-    console.log('[SW] Error en cache first:', error);
-    // Devolver página offline si es HTML
-    if (request.mode === 'navigate') {
-      return cache.match('/index.html');
-    }
-    throw error;
-  }
-}
-
-// Estrategia Network First: intentar red, si falla usar cache
-async function networkFirstWithCache(request, cacheName) {
-  const cache = await caches.open(cacheName);
-  
-  try {
-    const response = await fetch(request);
+    // SIEMPRE intentar la red primero
+    const networkResponse = await fetch(request, {
+      // Añadir timestamp para evitar caché del navegador
+      cache: 'no-store'
+    });
     
-    // Cachear respuestas exitosas de GET
-    if (response.ok && request.method === 'GET') {
-      const url = new URL(request.url);
+    // Si la respuesta es exitosa, cachearla para offline
+    if (networkResponse.ok) {
+      const cache = await caches.open(cacheName);
       
       // Solo cachear ciertas rutas de API
       if (url.pathname.startsWith('/api')) {
@@ -149,33 +126,39 @@ async function networkFirstWithCache(request, cacheName) {
           url.pathname.includes(route)
         );
         if (shouldCache) {
-          cache.put(request, response.clone());
+          cache.put(request, networkResponse.clone());
         }
       } else {
-        cache.put(request, response.clone());
+        // Cachear archivos estáticos para fallback offline
+        cache.put(request, networkResponse.clone());
       }
     }
     
-    return response;
-  } catch (error) {
-    console.log('[SW] Red no disponible, buscando en cache:', request.url);
+    return networkResponse;
     
-    const cached = await cache.match(request);
-    if (cached) {
-      return cached;
+  } catch (error) {
+    // La red falló - intentar usar caché como fallback
+    console.log('[SW] Red no disponible, usando caché para:', request.url);
+    
+    const cache = await caches.open(cacheName);
+    const cachedResponse = await cache.match(request);
+    
+    if (cachedResponse) {
+      return cachedResponse;
     }
     
     // Para navegación, devolver index.html
     if (request.mode === 'navigate') {
-      return cache.match('/index.html');
+      const fallback = await cache.match('/index.html');
+      if (fallback) return fallback;
     }
     
-    // Para API sin cache, devolver error offline
-    if (request.url.includes('/api')) {
+    // Para API sin caché, devolver error offline
+    if (url.pathname.startsWith('/api')) {
       return new Response(
         JSON.stringify({ 
           error: 'offline', 
-          message: 'No hay conexión a internet y no hay datos en cache' 
+          message: 'Sin conexión y sin datos en caché' 
         }),
         { 
           status: 503, 
@@ -188,31 +171,55 @@ async function networkFirstWithCache(request, cacheName) {
   }
 }
 
+// ============================================================
+// COMUNICACIÓN CON CLIENTES
+// ============================================================
+
+// Notificar a todos los clientes que hay una actualización
+async function notifyClientsOfUpdate() {
+  const clients = await self.clients.matchAll({ type: 'window' });
+  clients.forEach((client) => {
+    client.postMessage({ 
+      type: 'SW_UPDATED',
+      version: SW_VERSION
+    });
+  });
+}
+
 // Escuchar mensajes del cliente
 self.addEventListener('message', (event) => {
+  console.log('[SW] Mensaje recibido:', event.data);
+  
   if (event.data === 'skipWaiting') {
     self.skipWaiting();
   }
   
   if (event.data.type === 'CLEAR_CACHE') {
+    console.log('[SW] Limpiando todas las cachés');
     caches.keys().then((names) => {
-      names.forEach((name) => caches.delete(name));
+      return Promise.all(names.map((name) => caches.delete(name)));
+    }).then(() => {
+      event.source.postMessage({ type: 'CACHE_CLEARED' });
     });
+  }
+  
+  if (event.data.type === 'GET_VERSION') {
+    event.source.postMessage({ type: 'VERSION', version: SW_VERSION });
   }
 });
 
-// Sincronización en segundo plano (Background Sync API)
+// ============================================================
+// BACKGROUND SYNC
+// ============================================================
 self.addEventListener('sync', (event) => {
   if (event.tag === 'sync-pending-operations') {
     console.log('[SW] Ejecutando sincronización en segundo plano');
-    event.waitUntil(notifyClientsToSync());
+    event.waitUntil(
+      self.clients.matchAll().then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({ type: 'SYNC_REQUIRED' });
+        });
+      })
+    );
   }
 });
-
-// Notificar a los clientes que deben sincronizar
-async function notifyClientsToSync() {
-  const clients = await self.clients.matchAll();
-  clients.forEach((client) => {
-    client.postMessage({ type: 'SYNC_REQUIRED' });
-  });
-}
