@@ -30,8 +30,6 @@ import {
   CreditCard,
   Banknote,
   Filter,
-  ChevronLeft,
-  ChevronRight,
   TrendingUp,
   TrendingDown,
   Scale,
