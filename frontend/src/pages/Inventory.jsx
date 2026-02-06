@@ -1189,12 +1189,16 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
         location: editingItem.location || "",
         maintenance_interval: parseInt(editingItem.maintenance_interval) || 30,
         category: "STANDARD"  // Always STANDARD for individual items
+      }, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       toast.success("Artículo actualizado correctamente");
       setShowEditDialog(false);
       setEditingItem(null);
       loadItems(true);
     } catch (error) {
+      console.error("Error al actualizar artículo:", error);
+      console.error("Detalles del error:", error.response?.data);
       toast.error(error.response?.data?.detail || "Error al actualizar artículo");
     }
   };
