@@ -196,6 +196,87 @@ export default function CashRegister() {
     if (activeTab === "closures") loadClosureHistory();
   }, [activeTab]);
 
+  // Filtrar cierres cuando cambian los filtros o los datos
+  useEffect(() => {
+    if (!closureHistory || closureHistory.length === 0) {
+      setFilteredClosures([]);
+      return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    let fromDate, toDate;
+    
+    switch (closureFilterType) {
+      case "today":
+        fromDate = today;
+        toDate = today;
+        break;
+      case "week":
+        fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        toDate = today;
+        break;
+      case "month":
+        fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+        toDate = today;
+        break;
+      case "range":
+        fromDate = new Date(closureFilterFrom);
+        toDate = new Date(closureFilterTo);
+        break;
+      default:
+        fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        toDate = today;
+    }
+    
+    // Asegurar que toDate incluya todo el día (hasta 23:59:59)
+    toDate.setHours(23, 59, 59, 999);
+    fromDate.setHours(0, 0, 0, 0);
+    
+    const filtered = closureHistory.filter(closure => {
+      // Normalizar la fecha del cierre - extraer solo YYYY-MM-DD
+      const closureDateStr = closure.date || closure.closed_at || '';
+      const closureDatePart = closureDateStr.substring(0, 10); // YYYY-MM-DD
+      const closureDate = new Date(closureDatePart + 'T12:00:00'); // Usar mediodía para evitar problemas de timezone
+      
+      return closureDate >= fromDate && closureDate <= toDate;
+    });
+    
+    // Ordenar por fecha descendente
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.date || a.closed_at || '');
+      const dateB = new Date(b.date || b.closed_at || '');
+      return dateB - dateA;
+    });
+    
+    setFilteredClosures(filtered);
+  }, [closureHistory, closureFilterType, closureFilterFrom, closureFilterTo]);
+
+  // Handler para cambio rápido de filtro
+  const handleClosureFilterTypeChange = (type) => {
+    setClosureFilterType(type);
+    const today = new Date();
+    
+    switch (type) {
+      case "today":
+        setClosureFilterFrom(today.toISOString().split('T')[0]);
+        setClosureFilterTo(today.toISOString().split('T')[0]);
+        break;
+      case "week":
+        setClosureFilterFrom(new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
+        setClosureFilterTo(today.toISOString().split('T')[0]);
+        break;
+      case "month":
+        setClosureFilterFrom(new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
+        setClosureFilterTo(today.toISOString().split('T')[0]);
+        break;
+      case "range":
+        // Keep current dates for manual selection
+        break;
+    }
+  };
+
   const loadData = async () => {
     setLoading(true);
     try {
