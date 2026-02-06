@@ -1367,7 +1367,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => setShowImportDialog(true)} data-testid="import-csv-btn">
             <Upload className="h-4 w-4 mr-2" />
-            Importar CSV
+            Importar
           </Button>
           <Button variant="outline" onClick={exportCSV} data-testid="export-csv-btn">
             <Download className="h-4 w-4 mr-2" />
