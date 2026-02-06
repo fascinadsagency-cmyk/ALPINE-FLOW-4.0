@@ -3985,10 +3985,14 @@ class FinancialCalculatorService:
         start_dt = f"{start_date}T00:00:00"
         end_dt = f"{end_date}T23:59:59"
         
-        # Construir filtro base
+        # Construir filtro base - Multi-tenant: Include store_filter if provided
         match_filter = {
             "created_at": {"$gte": start_dt, "$lte": end_dt}
         }
+        
+        # Multi-tenant: Add store filter if provided
+        if store_filter:
+            match_filter.update(store_filter)
         
         # Filtrar por sesión si se proporciona
         if session_id:
