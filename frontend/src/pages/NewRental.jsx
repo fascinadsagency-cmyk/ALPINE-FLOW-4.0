@@ -2259,163 +2259,219 @@ export default function NewRental() {
                     {/* Los HIJOS ya fueron filtrados en getGroupedCartItems() */}
                     {getGroupedCartItems().map((group, groupIndex) => {
                       if (group.type === 'pack') {
-                        // PACK (PADRE): Una sola línea con códigos de hijos incrustados
-                        const packTotal = group.price;  // Precio TOTAL (no multiplicar por días)
+                        // PACK: Línea principal con selector + componentes expandibles
+                        const packTotal = group.price;
+                        const isExpanded = expandedPackId === group.packId;
                         
                         return (
                           <div 
                             key={group.packId}
-                            className="grid grid-cols-12 gap-2 items-center py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-400 animate-fade-in"
+                            className="rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-400 animate-fade-in overflow-hidden"
                           >
-                            {/* Nombre FUSIONADO: Always-on editable input */}
-                            <div className="col-span-5">
-                              <div className="flex items-center gap-2">
-                                <Package className="h-5 w-5 text-amber-600 flex-shrink-0" />
-                                <input
-                                  key={`pack-name-${group.packId}-${group.displayName}`}
-                                  type="text"
-                                  defaultValue={group.displayName}
-                                  placeholder="Nombre del pack"
-                                  className="flex-1 font-bold text-amber-800 text-sm leading-tight bg-transparent border-b border-transparent hover:border-amber-400 focus:border-amber-600 focus:outline-none transition-colors px-1 py-0.5 cursor-text"
-                                  onClick={(e) => {
-                                    e.stopPropagation(); // Prevent accordion toggle
-                                    e.target.focus();
-                                  }}
-                                  onFocus={(e) => {
-                                    e.stopPropagation(); // Prevent accordion interference
-                                  }}
-                                  onChange={(e) => {
-                                    // Update in real-time as user types
-                                    e.stopPropagation();
-                                  }}
-                                  onBlur={(e) => {
-                                    const newName = e.target.value.trim();
-                                    if (newName && newName !== group.displayName) {
-                                      handlePackNameChange(group.packId, newName);
-                                    } else if (!newName) {
-                                      // Restore original name if empty
-                                      e.target.value = group.displayName;
-                                    }
-                                  }}
-                                  onKeyDown={(e) => {
-                                    e.stopPropagation(); // Prevent keyboard shortcuts
-                                    if (e.key === 'Enter') {
-                                      e.target.blur();
-                                    } else if (e.key === 'Escape') {
-                                      e.target.value = group.displayName;
-                                      e.target.blur();
-                                    }
-                                  }}
-                                  title="Click para editar nombre del pack"
-                                />
-                                <span className="text-xs text-amber-600">({group.childCodes})</span>
+                            {/* LÍNEA PRINCIPAL DEL PACK - Con Selector de Definición */}
+                            <div className="grid grid-cols-12 gap-2 items-center py-2.5 px-3">
+                              {/* Selector de Pack (Dropdown) */}
+                              <div className="col-span-5">
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => setExpandedPackId(isExpanded ? null : group.packId)}
+                                    className="p-1 hover:bg-amber-200 rounded transition-colors"
+                                    title={isExpanded ? "Colapsar componentes" : "Expandir componentes"}
+                                  >
+                                    <ChevronDown className={`h-5 w-5 text-amber-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                  </button>
+                                  <Select
+                                    value={group.pack._id || group.pack.id}
+                                    onValueChange={(newPackId) => handlePackDefinitionChange(group.items, newPackId)}
+                                  >
+                                    <SelectTrigger 
+                                      className="flex-1 h-9 bg-white border-amber-300 font-bold text-amber-800"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <SelectValue placeholder="Seleccionar pack" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {packs.map(p => (
+                                        <SelectItem key={p._id || p.id} value={p._id || p.id}>
+                                          {p.name}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <span className="text-xs text-amber-600 whitespace-nowrap">({group.childCodes})</span>
+                                </div>
+                              </div>
+                              
+                              {/* Días del Pack - Editable */}
+                              <div className="col-span-3 text-center">
+                                {editingItemDays === group.packId ? (
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    step="1"
+                                    defaultValue={group.days}
+                                    className="h-8 w-20 text-center text-sm font-bold mx-auto border-2 border-amber-500 bg-amber-50"
+                                    autoFocus
+                                    onClick={(e) => e.stopPropagation()}
+                                    onKeyDown={(e) => {
+                                      e.stopPropagation();
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        updatePackDays(group.items, e.target.value);
+                                      }
+                                      if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        setEditingItemDays(null);
+                                      }
+                                    }}
+                                    onBlur={(e) => updatePackDays(group.items, e.target.value)}
+                                    data-testid={`edit-pack-days-${group.packId}`}
+                                  />
+                                ) : (
+                                  <Badge 
+                                    className="cursor-pointer bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm px-4 py-1"
+                                    onClick={() => setEditingItemDays(group.packId)}
+                                  >
+                                    {group.days} días <Edit2 className="h-3 w-3 ml-1 inline" />
+                                  </Badge>
+                                )}
+                              </div>
+                              
+                              {/* Precio Total Pack (IVA incluido) - EDITABLE */}
+                              <div className="col-span-3 text-right">
+                                <p className="text-xs text-amber-700 uppercase">Total (IVA inc.)</p>
+                                {editingPackPrice === group.packId ? (
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    defaultValue={packTotal.toFixed(2)}
+                                    className="h-8 w-24 text-right text-lg font-bold ml-auto border-2 border-orange-500 bg-orange-50"
+                                    autoFocus
+                                    onClick={(e) => e.stopPropagation()}
+                                    onKeyDown={(e) => {
+                                      e.stopPropagation();
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        updatePackPrice(group.items, e.target.value);
+                                      }
+                                      if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        setEditingPackPrice(null);
+                                      }
+                                    }}
+                                    onBlur={(e) => updatePackPrice(group.items, e.target.value)}
+                                    data-testid={`edit-pack-price-${group.packId}`}
+                                  />
+                                ) : (
+                                  <div 
+                                    className="cursor-pointer hover:bg-amber-100 rounded px-2 py-1 inline-block"
+                                    onClick={() => setEditingPackPrice(group.packId)}
+                                  >
+                                    <p className={`text-xl font-bold ${group.isEdited ? 'text-orange-600' : 'text-amber-700'}`}>
+                                      €{packTotal.toFixed(2)}
+                                      <Edit2 className="h-3 w-3 ml-1 inline opacity-50" />
+                                    </p>
+                                    {group.isEdited && (
+                                      <div className="flex items-center gap-1 mt-1">
+                                        <Badge className="bg-orange-500 text-white text-xs">EDITADO</Badge>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-5 px-1 text-xs text-slate-500 hover:text-blue-600"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            resetPackPrice(group.items);
+                                          }}
+                                          title="Restaurar precio de tarifa"
+                                        >
+                                          <RotateCcw className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {/* Remove Pack Button */}
+                              <div className="col-span-1 text-right">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                  onClick={() => removePackComplete(group.items)}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
                               </div>
                             </div>
                             
-                            {/* Días del Pack - Editable */}
-                            <div className="col-span-3 text-center">
-                              {editingItemDays === group.packId ? (
-                                <Input
-                                  type="number"
-                                  min="1"
-                                  step="1"
-                                  defaultValue={group.days}
-                                  className="h-8 w-20 text-center text-sm font-bold mx-auto border-2 border-amber-500 bg-amber-50"
-                                  autoFocus
-                                  onClick={(e) => e.stopPropagation()}
-                                  onKeyDown={(e) => {
-                                    e.stopPropagation(); // Prevent scanner
-                                    if (e.key === 'Enter') {
-                                      e.preventDefault();
-                                      updatePackDays(group.items, e.target.value);
-                                    }
-                                    if (e.key === 'Escape') {
-                                      e.preventDefault();
-                                      setEditingItemDays(null);
-                                    }
-                                  }}
-                                  onBlur={(e) => updatePackDays(group.items, e.target.value)}
-                                  data-testid={`edit-pack-days-${group.packId}`}
-                                />
-                              ) : (
-                                <Badge 
-                                  className="cursor-pointer bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm px-4 py-1"
-                                  onClick={() => setEditingItemDays(group.packId)}
-                                >
-                                  {group.days} días <Edit2 className="h-3 w-3 ml-1 inline" />
-                                </Badge>
-                              )}
-                            </div>
-                            
-                            {/* Precio Total Pack (IVA incluido) - EDITABLE */}
-                            <div className="col-span-3 text-right">
-                              <p className="text-xs text-amber-700 uppercase">Total (IVA inc.)</p>
-                              {editingPackPrice === group.packId ? (
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  min="0"
-                                  defaultValue={packTotal.toFixed(2)}
-                                  className="h-8 w-24 text-right text-lg font-bold ml-auto border-2 border-orange-500 bg-orange-50"
-                                  autoFocus
-                                  onClick={(e) => e.stopPropagation()}
-                                  onKeyDown={(e) => {
-                                    e.stopPropagation(); // Prevent scanner
-                                    if (e.key === 'Enter') {
-                                      e.preventDefault();
-                                      updatePackPrice(group.items, e.target.value);
-                                    }
-                                    if (e.key === 'Escape') {
-                                      e.preventDefault();
-                                      setEditingPackPrice(null);
-                                    }
-                                  }}
-                                  onBlur={(e) => {
-                                    updatePackPrice(group.items, e.target.value);
-                                  }}
-                                  data-testid={`edit-pack-price-${group.packId}`}
-                                />
-                              ) : (
-                                <div 
-                                  className="cursor-pointer hover:bg-amber-100 rounded px-2 py-1 inline-block"
-                                  onClick={() => setEditingPackPrice(group.packId)}
-                                >
-                                  <p className={`text-xl font-bold ${group.isEdited ? 'text-orange-600' : 'text-amber-700'}`}>
-                                    €{packTotal.toFixed(2)}
-                                    <Edit2 className="h-3 w-3 ml-1 inline opacity-50" />
-                                  </p>
-                                  {group.isEdited && (
-                                    <div className="flex items-center gap-1 mt-1">
-                                      <Badge className="bg-orange-500 text-white text-xs">EDITADO</Badge>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-5 px-1 text-xs text-slate-500 hover:text-blue-600"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          resetPackPrice(group.items);
-                                        }}
-                                        title="Restaurar precio de tarifa"
-                                      >
-                                        <RotateCcw className="h-3 w-3" />
-                                      </Button>
+                            {/* COMPONENTES INTERNOS (Expandibles) */}
+                            {isExpanded && (
+                              <div className="border-t border-amber-300 bg-amber-50/50 px-3 py-2 space-y-2">
+                                <p className="text-xs text-amber-700 font-semibold uppercase mb-2">
+                                  Componentes del Pack (edita la etiqueta para el ticket)
+                                </p>
+                                {group.items.map((componentItem, idx) => {
+                                  // Usar customTypeLabel si existe, sino el label del tipo
+                                  const typeLabel = componentItem.customTypeLabel || 
+                                    itemTypes.find(t => t.value === componentItem.item_type)?.label || 
+                                    componentItem.item_type;
+                                  
+                                  return (
+                                    <div 
+                                      key={componentItem.barcode}
+                                      className="grid grid-cols-12 gap-2 items-center py-1.5 px-2 bg-white/60 rounded-lg border border-amber-200"
+                                    >
+                                      {/* Código del componente */}
+                                      <div className="col-span-3">
+                                        <p className="text-[10px] text-slate-500 uppercase">Código</p>
+                                        <p className="font-mono font-bold text-slate-800 text-sm">
+                                          {componentItem.internal_code || componentItem.barcode}
+                                        </p>
+                                      </div>
+                                      
+                                      {/* Tipo - INPUT DE TEXTO EDITABLE (solo para el ticket) */}
+                                      <div className="col-span-5">
+                                        <p className="text-[10px] text-amber-700 uppercase">Tipo (etiqueta ticket)</p>
+                                        <input
+                                          type="text"
+                                          defaultValue={typeLabel}
+                                          placeholder="Ej: Botas (Traídas por cliente)"
+                                          className="w-full h-7 px-2 text-sm font-semibold text-slate-800 bg-white border border-amber-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none transition-colors"
+                                          onClick={(e) => e.stopPropagation()}
+                                          onKeyDown={(e) => {
+                                            e.stopPropagation();
+                                            if (e.key === 'Enter') {
+                                              e.target.blur();
+                                            }
+                                            if (e.key === 'Escape') {
+                                              e.target.value = typeLabel;
+                                              e.target.blur();
+                                            }
+                                          }}
+                                          onBlur={(e) => {
+                                            const newLabel = e.target.value.trim();
+                                            if (newLabel !== typeLabel) {
+                                              handleComponentTypeLabelChange(componentItem.barcode, newLabel);
+                                            }
+                                          }}
+                                          data-testid={`component-type-label-${componentItem.barcode}`}
+                                        />
+                                      </div>
+                                      
+                                      {/* Info adicional */}
+                                      <div className="col-span-4 text-right">
+                                        <p className="text-[10px] text-slate-500 uppercase">Artículo</p>
+                                        <p className="text-xs text-slate-600 truncate">
+                                          {componentItem.brand} {componentItem.model} {componentItem.size && `(${componentItem.size})`}
+                                        </p>
+                                      </div>
                                     </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                            
-                            {/* Remove Pack Button - BORRADO EN CASCADA */}
-                            <div className="col-span-1 text-right">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                onClick={() => removePackComplete(group.items)}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
                         );
                       } else {
