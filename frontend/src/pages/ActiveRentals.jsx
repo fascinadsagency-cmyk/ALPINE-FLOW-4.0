@@ -100,7 +100,28 @@ export default function ActiveRentals() {
   });
   const [savingTechnicalData, setSavingTechnicalData] = useState(false);
 
-  // ============ UNIVERSAL SWAP MODAL STATE ============
+  // ============ GESTIÓN DE CAMBIOS MODAL STATE (Idéntico a Devoluciones) ============
+  const [changeModalOpen, setChangeModalOpen] = useState(false);
+  const [changeRental, setChangeRental] = useState(null);
+  const [changeItems, setChangeItems] = useState([]); // Array of items with swap info
+  const [activeSwapIndex, setActiveSwapIndex] = useState(null);
+  const [changeNewBarcode, setChangeNewBarcode] = useState("");
+  const [changeLoading, setChangeLoading] = useState(false);
+  const [changeComplete, setChangeComplete] = useState(false);
+  const [changePaymentMethod, setChangePaymentMethod] = useState("cash");
+  const changeInputRef = useRef(null);
+  
+  // Date adjustment state for change modal
+  const [changeAdjustDate, setChangeAdjustDate] = useState(false);
+  const [changeNewEndDate, setChangeNewEndDate] = useState("");
+  const [changeDaysRemaining, setChangeDaysRemaining] = useState(0);
+  const [changeOriginalDays, setChangeOriginalDays] = useState(0);
+  const [changeNewTotalDays, setChangeNewTotalDays] = useState(0);
+  const [changeDateDelta, setChangeDateDelta] = useState(0);
+  const [changeTotalDelta, setChangeTotalDelta] = useState(0);
+  const [changeMaterialDelta, setChangeMaterialDelta] = useState(0);
+
+  // ============ LEGACY SWAP MODAL STATE (keeping for backward compatibility) ============
   const [swapModalOpen, setSwapModalOpen] = useState(false);
   const [swapRental, setSwapRental] = useState(null); // The rental being swapped
   const [swapBarcode, setSwapBarcode] = useState(""); // Scanned barcode
