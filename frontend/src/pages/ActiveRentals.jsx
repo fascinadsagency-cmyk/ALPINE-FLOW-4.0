@@ -2664,6 +2664,383 @@ export default function ActiveRentals() {
         </DialogContent>
       </Dialog>
 
+      {/* ============ MODAL DE GESTIÓN DE CAMBIOS (Idéntico a Devoluciones) ============ */}
+      <Dialog open={changeModalOpen} onOpenChange={closeChangeModal}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <ArrowLeftRight className="h-6 w-6 text-orange-500" />
+              Gestión de Contrato Completo
+            </DialogTitle>
+            <DialogDescription>
+              Gestiona todos los artículos del cliente - Cambios de material y ajuste de fecha
+            </DialogDescription>
+          </DialogHeader>
+          
+          {changeRental && !changeComplete && (
+            <div className="space-y-4 py-4">
+              {/* Customer Info Header */}
+              <div className="p-4 rounded-xl bg-gradient-to-r from-slate-50 to-blue-50 border border-slate-200">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-lg font-bold text-slate-900">{changeRental.customer_name}</p>
+                    <p className="text-sm text-slate-500">{changeRental.customer_dni}</p>
+                  </div>
+                  <div className="text-right">
+                    <Badge className="bg-blue-100 text-blue-700 mb-1">
+                      {changeDaysRemaining} días restantes
+                    </Badge>
+                    <p className="text-xs text-slate-500">Total: €{changeRental.total_amount?.toFixed(2) || '0.00'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ALL ITEMS FROM CONTRACT */}
+              <div className="space-y-2">
+                <Label className="text-base font-semibold flex items-center gap-2">
+                  <Package className="h-5 w-5 text-slate-500" />
+                  Artículos del Contrato ({changeItems.length})
+                </Label>
+                
+                <div className="space-y-2 max-h-64 overflow-y-auto p-2 bg-slate-50 rounded-lg">
+                  {changeItems.map((item, index) => (
+                    <div 
+                      key={index}
+                      className={`p-3 rounded-lg border-2 transition-all ${
+                        item.isSwapping 
+                          ? 'bg-orange-50 border-orange-300' 
+                          : activeSwapIndex === index
+                          ? 'bg-blue-50 border-blue-300'
+                          : 'bg-white border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-sm">
+                              {item.internal_code || item.barcode}
+                            </span>
+                            <Badge variant="outline" className="text-xs">
+                              {item.item_type}
+                            </Badge>
+                            {item.size && (
+                              <span className="text-xs text-slate-500">Talla {item.size}</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1">
+                            {item.brand} {item.model}
+                          </p>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          {item.isSwapping ? (
+                            <>
+                              <div className="text-right mr-2">
+                                <p className="text-xs text-orange-600 font-medium">→ {item.swapNewItem?.internal_code}</p>
+                                <p className="text-xs text-slate-500">
+                                  Delta: {item.swapDelta >= 0 ? '+' : ''}€{item.swapDelta?.toFixed(2)}
+                                </p>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => cancelItemSwap(index)}
+                                className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </>
+                          ) : activeSwapIndex === index ? (
+                            <div className="flex gap-2 items-center">
+                              <Input
+                                ref={changeInputRef}
+                                value={changeNewBarcode}
+                                onChange={(e) => setChangeNewBarcode(e.target.value.toUpperCase())}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    if (changeNewBarcode.trim() && !changeLoading) {
+                                      searchChangeSwapItem(changeNewBarcode);
+                                    }
+                                  } else if (e.key === 'Escape') {
+                                    setActiveSwapIndex(null);
+                                  }
+                                }}
+                                placeholder="Escanear código..."
+                                className="h-8 w-40 text-sm font-mono"
+                                autoFocus
+                              />
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => {
+                                  if (changeNewBarcode.trim()) {
+                                    searchChangeSwapItem(changeNewBarcode);
+                                  }
+                                }}
+                                disabled={!changeNewBarcode.trim() || changeLoading}
+                                className="h-8 px-2 bg-blue-600 hover:bg-blue-700"
+                              >
+                                {changeLoading ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <Check className="h-3 w-3" />
+                                )}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setActiveSwapIndex(null)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => startItemSwap(index)}
+                              className="gap-1 text-orange-600 border-orange-200 hover:bg-orange-50"
+                            >
+                              <Scan className="h-3 w-3" />
+                              Sustituir
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* DATE ADJUSTMENT */}
+              <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <CalendarPlus className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <p className="font-medium text-slate-900">Ajuste de Fecha</p>
+                      <p className="text-xs text-slate-500">Extensión o devolución anticipada</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant={changeAdjustDate ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setChangeAdjustDate(!changeAdjustDate)}
+                      className={changeAdjustDate ? "bg-blue-600" : ""}
+                    >
+                      {changeAdjustDate ? 'Activado' : 'Activar'}
+                    </Button>
+                  </div>
+                </div>
+                
+                {changeAdjustDate && (
+                  <div className="mt-4 space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm text-slate-600">Fecha fin original</Label>
+                        <p className="text-lg font-semibold text-slate-700">
+                          {changeRental?.end_date ? new Date(changeRental.end_date).toLocaleDateString('es-ES') : '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-sm text-slate-600">Nueva fecha de fin</Label>
+                        <Input
+                          type="date"
+                          value={changeNewEndDate}
+                          onChange={(e) => handleChangeDateAdjustment(e.target.value)}
+                          className="h-10 font-semibold"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="p-3 rounded-lg bg-white border border-blue-200">
+                      <div className="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                          <p className="text-xs text-slate-500 uppercase font-medium">Días Originales</p>
+                          <p className="text-2xl font-bold text-slate-700">{changeOriginalDays}</p>
+                        </div>
+                        <div className="flex items-center justify-center">
+                          <ArrowRight className="h-6 w-6 text-slate-400" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-500 uppercase font-medium">Días Nuevos</p>
+                          <p className={`text-2xl font-bold ${
+                            changeNewTotalDays > changeOriginalDays ? 'text-orange-600' :
+                            changeNewTotalDays < changeOriginalDays ? 'text-emerald-600' : 'text-slate-700'
+                          }`}>{changeNewTotalDays}</p>
+                        </div>
+                      </div>
+                      
+                      {changeDateDelta !== 0 && (
+                        <div className={`mt-3 p-2 rounded text-center ${
+                          changeDateDelta > 0 ? 'bg-orange-100' : 'bg-emerald-100'
+                        }`}>
+                          <p className="text-xs text-slate-600">
+                            {changeDateDelta > 0 ? 'Suplemento por extensión' : 'Abono por devolución anticipada'}
+                          </p>
+                          <p className={`text-lg font-bold ${
+                            changeDateDelta > 0 ? 'text-orange-700' : 'text-emerald-700'
+                          }`}>
+                            {changeDateDelta > 0 ? '+' : ''}€{changeDateDelta.toFixed(2)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* TOTAL DELTA SUMMARY */}
+              <div className={`p-5 rounded-xl border-2 ${
+                changeTotalDelta > 0 
+                  ? 'bg-orange-50 border-orange-300' 
+                  : changeTotalDelta < 0 
+                  ? 'bg-emerald-50 border-emerald-300'
+                  : 'bg-slate-50 border-slate-200'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-600">
+                      {changeTotalDelta > 0 ? '⬆️ TOTAL A COBRAR' : 
+                       changeTotalDelta < 0 ? '⬇️ TOTAL A ABONAR' : 
+                       '↔️ SIN DIFERENCIA'}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {changeItems.filter(i => i.isSwapping).length > 0 && 
+                        `${changeItems.filter(i => i.isSwapping).length} cambio(s) de material`}
+                      {changeItems.filter(i => i.isSwapping).length > 0 && changeAdjustDate && changeDateDelta !== 0 && ' + '}
+                      {changeAdjustDate && changeDateDelta !== 0 && 
+                        (changeDateDelta > 0 ? 'extensión de fecha' : 'devolución anticipada')}
+                    </p>
+                  </div>
+                  <p className={`text-3xl font-bold ${
+                    changeTotalDelta > 0 ? 'text-orange-600' : 
+                    changeTotalDelta < 0 ? 'text-emerald-600' : 'text-slate-500'
+                  }`}>
+                    {changeTotalDelta > 0 ? '+' : changeTotalDelta < 0 ? '-' : ''}€{Math.abs(changeTotalDelta).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Payment Method */}
+              {changeTotalDelta !== 0 && (
+                <div className="space-y-2">
+                  <Label className="shrink-0">Método de {changeTotalDelta > 0 ? 'cobro' : 'abono'}:</Label>
+                  
+                  {changeTotalDelta > 0 ? (
+                    <div className="flex gap-2">
+                      <Button
+                        variant={changePaymentMethod === "cash" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setChangePaymentMethod("cash")}
+                        className="gap-1"
+                      >
+                        <Banknote className="h-4 w-4" />
+                        Efectivo
+                      </Button>
+                      <Button
+                        variant={changePaymentMethod === "card" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setChangePaymentMethod("card")}
+                        className="gap-1"
+                      >
+                        <CreditCard className="h-4 w-4" />
+                        Tarjeta
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="h-10 px-3 flex items-center justify-between rounded-md border border-slate-300 bg-slate-100 cursor-not-allowed max-w-xs">
+                        <div className="flex items-center gap-2">
+                          {(changeRental?.payment_method || 'cash') === 'cash' ? (
+                            <>
+                              <Banknote className="h-4 w-4 text-emerald-600" />
+                              <span className="font-medium text-slate-700">Efectivo</span>
+                            </>
+                          ) : (
+                            <>
+                              <CreditCard className="h-4 w-4 text-blue-600" />
+                              <span className="font-medium text-slate-700">Tarjeta</span>
+                            </>
+                          )}
+                        </div>
+                        <Lock className="h-4 w-4 text-slate-400" />
+                      </div>
+                      <div className="p-2 rounded-lg bg-amber-50 border border-amber-200 max-w-md">
+                        <p className="text-xs text-amber-800 flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3 flex-shrink-0" />
+                          <span>Por seguridad, el abono se realiza al mismo método de pago original.</span>
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Success State */}
+          {changeComplete && (
+            <div className="py-8 text-center">
+              <CheckCircle className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-slate-900 mb-2">
+                ¡Cambios Procesados!
+              </h3>
+              <p className="text-slate-600 mb-6">
+                {changeItems.filter(i => i.isSwapping).length > 0 && 
+                  `${changeItems.filter(i => i.isSwapping).length} artículo(s) sustituido(s)`}
+                {changeItems.filter(i => i.isSwapping).length > 0 && changeAdjustDate && changeDateDelta !== 0 && ' + '}
+                {changeAdjustDate && changeDateDelta !== 0 && 'ajuste de fecha aplicado'}
+              </p>
+              <div className="flex gap-3 justify-center">
+                <Button
+                  variant="outline"
+                  onClick={printChangeTicket}
+                  className="gap-2"
+                >
+                  <Printer className="h-4 w-4" />
+                  Imprimir Ticket
+                </Button>
+                <Button onClick={closeChangeModal}>
+                  Cerrar
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            {!changeComplete && (
+              <>
+                <Button variant="outline" onClick={closeChangeModal}>
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={executeAllChanges}
+                  disabled={changeLoading || (changeItems.filter(i => i.isSwapping).length === 0 && (!changeAdjustDate || changeDateDelta === 0))}
+                  className={`min-w-[180px] ${
+                    changeTotalDelta > 0 ? 'bg-orange-600 hover:bg-orange-700' :
+                    changeTotalDelta < 0 ? 'bg-emerald-600 hover:bg-emerald-700' :
+                    'bg-blue-600 hover:bg-blue-700'
+                  }`}
+                >
+                  {changeLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Zap className="h-4 w-4 mr-2" />
+                  )}
+                  {changeTotalDelta > 0 ? `Cobrar €${changeTotalDelta.toFixed(2)}` :
+                   changeTotalDelta < 0 ? `Abonar €${Math.abs(changeTotalDelta).toFixed(2)}` :
+                   'Confirmar Cambio'}
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
