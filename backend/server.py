@@ -2617,12 +2617,14 @@ async def get_rental_by_barcode(barcode: str, current_user: CurrentUser = Depend
 
 @api_router.get("/rentals/pending/returns")
 async def get_pending_returns(current_user: CurrentUser = Depends(get_current_user)):
-    """Get all rentals with pending returns, grouped by date"""
+    """Get all rentals with pending returns, grouped by date
+    Multi-tenant: Filters by store_id
+    """
     today = datetime.now(timezone.utc).date().isoformat()
     
-    # Get all active and partial rentals
+    # Get all active and partial rentals - Multi-tenant: Filter by store
     rentals = await db.rentals.find(
-        {"status": {"$in": ["active", "partial"]}},
+        {**current_user.get_store_filter(), "status": {"$in": ["active", "partial"]}},
         {"_id": 0}
     ).sort("end_date", 1).to_list(200)
     
@@ -2634,8 +2636,9 @@ async def get_pending_returns(current_user: CurrentUser = Depends(get_current_us
     
     items_map = {}
     if all_item_ids:
+        # Multi-tenant: Filter items by store
         items_cursor = await db.items.find(
-            {"id": {"$in": all_item_ids}},
+            {**current_user.get_store_filter(), "id": {"$in": all_item_ids}},
             {"_id": 0, "id": 1, "item_type": 1}
         ).to_list(10000)
         for item in items_cursor:
