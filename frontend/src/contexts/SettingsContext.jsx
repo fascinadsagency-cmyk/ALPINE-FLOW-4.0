@@ -301,7 +301,19 @@ export function SettingsProvider({ children }) {
 
   // ========== BRAND IDENTITY ==========
   const [companyLogo, setCompanyLogo] = useState(() => {
-    return localStorage.getItem('company_logo') || null;
+    try {
+      const savedLogo = localStorage.getItem('company_logo');
+      if (savedLogo) {
+        const sizeKB = Math.round((savedLogo.length * 0.75) / 1024);
+        console.log(`[Settings] Logo cargado desde localStorage (${sizeKB}KB)`);
+        return savedLogo;
+      }
+      console.log('[Settings] No hay logo guardado en localStorage');
+      return null;
+    } catch (error) {
+      console.error('[Settings] Error cargando logo desde localStorage:', error);
+      return null;
+    }
   });
 
   // ========== TICKET DESIGN ==========
