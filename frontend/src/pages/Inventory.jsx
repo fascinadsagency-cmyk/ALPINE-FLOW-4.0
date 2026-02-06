@@ -378,7 +378,7 @@ export default function Inventory() {
       const params = {};
       if (filterStatus && filterStatus !== "all") params.status = filterStatus;
       if (filterType && filterType !== "all") params.item_type = filterType;
-      if (searchTerm) params.search = searchTerm;
+      if (debouncedSearch) params.search = debouncedSearch;
       if (sortBy) params.sort_by = sortBy;
       
       // Use profitability endpoint if enabled
