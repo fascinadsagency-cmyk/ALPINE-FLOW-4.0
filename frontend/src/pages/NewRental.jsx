@@ -1221,7 +1221,6 @@ export default function NewRental() {
   // This keeps the SAME physical items but applies the pricing of the NEW pack
   const handlePackDefinitionChange = (currentPackItems, newPackId) => {
     console.log('[PackChange] Iniciando cambio de pack a:', newPackId);
-    console.log('[PackChange] Items actuales del pack:', currentPackItems.map(i => i.barcode));
     
     // Find the new pack definition
     const newPack = packs.find(p => p._id === newPackId || p.id === newPackId);
@@ -1236,6 +1235,7 @@ export default function NewRental() {
     const packItemBarcodes = new Set(currentPackItems.map(i => i.barcode));
     
     // Update items: mark them as belonging to the new pack definition
+    // The useEffect will detect forcedPackId and use the correct pack
     const updatedItems = items.map(item => {
       if (packItemBarcodes.has(item.barcode)) {
         console.log('[PackChange] Actualizando item:', item.barcode);
@@ -1250,30 +1250,10 @@ export default function NewRental() {
       return item;
     });
     
-    // Update detectedPacks - create NEW objects to ensure React detects changes
-    const newDetectedPacks = detectedPacks.map(dp => {
-      const hasOurItems = dp.items.some(barcode => packItemBarcodes.has(barcode));
-      console.log('[PackChange] DetectedPack check:', dp.pack.name, 'hasOurItems:', hasOurItems);
-      
-      if (hasOurItems) {
-        // Create completely new object
-        return {
-          items: [...dp.items],  // New array
-          pack: { ...newPack },  // New pack object with spread
-          instanceId: dp.instanceId
-        };
-      }
-      return dp;
-    });
-    
-    console.log('[PackChange] Setting new detectedPacks:', newDetectedPacks.map(dp => dp.pack.name));
-    console.log('[PackChange] Setting new items:', updatedItems.length);
-    
-    // Update both states - setDetectedPacks FIRST to ensure pack info is ready
-    setDetectedPacks(newDetectedPacks);
+    // Update items - the useEffect will handle updating detectedPacks
     setItems(updatedItems);
     
-    // Get the new price for display
+    // Show success message with new price
     const packDays = currentPackItems[0]?.itemDays || numDays;
     const newPrice = getPackPrice(newPack, packDays);
     toast.success(`Pack cambiado a "${newPack.name}" - Nuevo precio: €${newPrice.toFixed(2)}`);
