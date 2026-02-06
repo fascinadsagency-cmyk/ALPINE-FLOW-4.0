@@ -2198,8 +2198,11 @@ async def get_inventory_stats(current_user: CurrentUser = Depends(get_current_us
     - Excludes 'retired', 'deleted', 'lost' (baja/perdido) from rentable total
     - Calculates occupancy_percent based on rentable inventory only
     - Does NOT double-count Pack components (counts real physical units)
+    
+    Multi-tenant: Filters by store_id
     """
     pipeline = [
+        {"$match": current_user.get_store_filter()},  # Multi-tenant: Filter by store
         {"$group": {
             "_id": "$status",
             "count": {"$sum": 1}
