@@ -1193,7 +1193,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
       toast.success("Artículo actualizado correctamente");
       setShowEditDialog(false);
       setEditingItem(null);
-      loadItems();
+      loadItems(true);
     } catch (error) {
       toast.error(error.response?.data?.detail || "Error al actualizar artículo");
     }
