@@ -1181,22 +1181,89 @@ export default function NewRental() {
     toast.success("Tipo actualizado - Precio ajustado automáticamente");
   };
 
-  // Handle pack name change - custom label for this rental only
-  const handlePackNameChange = (packId, newName) => {
-    // Update the custom name in the items that belong to this pack
+  // Handle PACK DEFINITION CHANGE - Switch to a different pack type
+  // This replaces the items in the pack with components from the new pack definition
+  const handlePackDefinitionChange = (currentPackItems, newPackId) => {
+    // Find the new pack definition
+    const newPack = packs.find(p => p._id === newPackId || p.id === newPackId);
+    if (!newPack) {
+      toast.error("Pack no encontrado");
+      return;
+    }
+    
+    // Get the current pack items' barcodes to remove them
+    const currentItemBarcodes = new Set(currentPackItems.map(i => i.barcode));
+    
+    // Remove current pack items from the cart
+    const remainingItems = items.filter(item => !currentItemBarcodes.has(item.barcode));
+    
+    // For each component type in the new pack, we need to find an available item
+    // First, let's search for available items matching each required type
+    const fetchNewPackItems = async () => {
+      try {
+        const newPackItems = [];
+        
+        for (const requiredType of newPack.items) {
+          // Search for an available item of this type
+          const response = await fetch(
+            `${process.env.REACT_APP_BACKEND_URL}/api/inventory/search?type=${requiredType}&status=available&limit=1`,
+            { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
+          );
+          
+          if (response.ok) {
+            const searchResults = await response.json();
+            if (searchResults.length > 0) {
+              const item = searchResults[0];
+              // Check if this item is not already in the cart
+              const isAlreadyInCart = remainingItems.some(i => i.barcode === item.barcode) ||
+                                      newPackItems.some(i => i.barcode === item.barcode);
+              if (!isAlreadyInCart) {
+                newPackItems.push({
+                  ...item,
+                  itemDays: numDays,
+                  customPrice: null,
+                  customTypeLabel: null  // For custom type text display
+                });
+              }
+            }
+          }
+        }
+        
+        if (newPackItems.length === newPack.items.length) {
+          // Successfully found all components - update the cart
+          setItems([...remainingItems, ...newPackItems]);
+          toast.success(`Pack cambiado a "${newPack.name}"`);
+        } else {
+          toast.warning(`Solo se encontraron ${newPackItems.length}/${newPack.items.length} componentes disponibles para "${newPack.name}"`);
+          // Still add what we found
+          if (newPackItems.length > 0) {
+            setItems([...remainingItems, ...newPackItems]);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching new pack items:", error);
+        toast.error("Error al buscar componentes del nuevo pack");
+      }
+    };
+    
+    fetchNewPackItems();
+  };
+
+  // Handle COMPONENT TYPE TEXT CHANGE - Custom label for this rental ONLY
+  // This does NOT update the database - it's a LOCAL display override
+  const handleComponentTypeLabelChange = (itemBarcode, newLabel) => {
     const updatedItems = items.map(item => {
-      if (item.packId === packId) {
+      if (item.barcode === itemBarcode) {
         return {
           ...item,
-          customPackName: newName  // Store custom name for this rental
+          customTypeLabel: newLabel  // Store custom label for this rental ONLY
         };
       }
       return item;
     });
     
     setItems(updatedItems);
-    setEditingPackName(null);
-    toast.success("Nombre del pack actualizado");
+    toast.success("Etiqueta personalizada guardada");
   };
 
   // Update days for all items in a pack - RECALCULATE pack price using scaled tariff
