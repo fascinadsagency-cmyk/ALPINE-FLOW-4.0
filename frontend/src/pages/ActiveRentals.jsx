@@ -626,6 +626,40 @@ export default function ActiveRentals() {
     }
   };
 
+  // ============ SOLO DEVOLUCIÓN - Devolver un artículo sin reemplazarlo ============
+  const executeReturnOnly = async () => {
+    if (!swapRental || !swapOldItem) {
+      toast.error("No hay artículo seleccionado para devolver");
+      return;
+    }
+
+    setSwapLoading(true);
+    try {
+      // Call the return endpoint for the single item
+      const itemBarcode = swapOldItem.barcode || swapOldItem.internal_code;
+      
+      await axios.post(`${API}/rentals/${swapRental.id}/return-items`, {
+        returned_items: [itemBarcode],
+        payment_method: swapPaymentMethod
+      }, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      // Success
+      setSwapComplete(true);
+      setSwapAction("return");
+      toast.success(`✅ Artículo ${itemBarcode} devuelto correctamente`);
+
+      // Reload rentals
+      loadActiveRentals();
+
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error al procesar la devolución");
+    } finally {
+      setSwapLoading(false);
+    }
+  };
+
   // Print swap ticket
   const printSwapTicket = () => {
     if (!swapRental) return;
