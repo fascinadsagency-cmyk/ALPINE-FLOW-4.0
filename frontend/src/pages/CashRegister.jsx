@@ -656,12 +656,6 @@ export default function CashRegister() {
     toast.success("Exportado correctamente");
   };
 
-  const changeDate = (days) => {
-    const current = new Date(date);
-    current.setDate(current.getDate() + days);
-    setDate(current.toISOString().split('T')[0]);
-  };
-
   const getMovementTypeBadge = (type) => {
     switch(type) {
       case 'income': return <Badge className="bg-emerald-100 text-emerald-700">Entrada</Badge>;
