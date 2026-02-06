@@ -67,6 +67,35 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const fileInputRef = useRef(null);
+  const [storeInfo, setStoreInfo] = useState(null);
+
+  // Load store info
+  useEffect(() => {
+    const loadStoreInfo = async () => {
+      if (user?.role === "super_admin") {
+        setStoreInfo({ name: "SUPER ADMIN", id: "N/A", status: "global" });
+        return;
+      }
+      
+      // Decode JWT to get store_id
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          if (payload.store_id) {
+            const response = await axios.get(`${API}/api/stores/${payload.store_id}`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setStoreInfo(response.data);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading store info:", error);
+      }
+    };
+    
+    loadStoreInfo();
+  }, [user]);
 
   // Sample data for ticket preview
   const sampleTicket = {
