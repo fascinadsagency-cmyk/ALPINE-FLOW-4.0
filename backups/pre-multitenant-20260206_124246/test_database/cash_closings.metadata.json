@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"5d83e9d0cf7346a9a6ade9f214681f60","collectionName":"cash_closings","type":"collection"}
