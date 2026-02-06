@@ -4600,9 +4600,10 @@ async def global_lookup(code: str, current_user: CurrentUser = Depends(get_curre
     
     # STEP 1: Check if it's an item barcode/internal_code
     # Search in items collection
-    item = await db.items.find_one({**current_user.get_store_filter(), {
+    item = await db.items.find_one({
+        **current_user.get_store_filter(),
         "$or": [
-            {"barcode": {"$regex": f"^{code}}$", "$options": "i"}},
+            {"barcode": {"$regex": f"^{code}$", "$options": "i"}},
             {"internal_code": {"$regex": f"^{code}$", "$options": "i"}}
         ]
     }, {"_id": 0})
@@ -4611,8 +4612,9 @@ async def global_lookup(code: str, current_user: CurrentUser = Depends(get_curre
         # Found an item - check if it's currently rented
         if item.get("status") == "rented":
             # Find the active rental that contains this item
-            rental = await db.rentals.find_one({**current_user.get_store_filter(), {
-                "status": {"$in": ["active", "partial"]}},
+            rental = await db.rentals.find_one({
+                **current_user.get_store_filter(),
+                "status": {"$in": ["active", "partial"]},
                 "$or": [
                     {"items.barcode": {"$regex": f"^{code}$", "$options": "i"}},
                     {"items.internal_code": {"$regex": f"^{code}$", "$options": "i"}}
