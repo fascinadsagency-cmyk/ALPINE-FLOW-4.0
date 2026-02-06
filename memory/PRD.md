@@ -514,6 +514,28 @@ POST /api/cash/close            - Cerrar caja con arqueo
   - `/app/frontend/src/components/OfflineIndicator.jsx` - Botón "Limpiar caché"
 - **Resultado:** Los cambios de código ahora se reflejan inmediatamente sin vaciar caché manual
 
+### 2f. UNIFICACIÓN GESTIÓN CAMBIOS Y SUSTITUCIONES - NUEVO 2026-02-06
+- **Solicitud:** Unificar el pop-up de cambio/devolución entre Alquileres Activos y Devoluciones
+- **Implementación:**
+  - **TRIGGER 1 - BUSCADOR/ESCÁNER:**
+    - Al escanear un código en el buscador de Alquileres Activos
+    - Si el artículo está alquilado, abre el modal "Gestor Universal de Cambios"
+    - Muestra el cliente y artículo identificados automáticamente
+  - **TRIGGER 2 - BOTÓN CAMBIAR:**
+    - El botón "CAMBIOS" en cada fila abre el mismo modal
+    - Precarga el contrato del cliente
+  - **OPCIÓN "SOLO DEVOLVER":**
+    - Nueva función `executeReturnOnly()` para devolución sin reemplazo
+    - Botón verde "Solo DEVOLVER sin reemplazo" visible cuando hay artículo identificado
+    - Si el usuario no escanea nuevo artículo y pulsa "Solo Devolver", procesa como devolución simple
+  - **CONSISTENCIA DE DATOS:**
+    - Actualiza inventario (entra el viejo, sale el nuevo)
+    - Calcula delta de precio entre artículos
+    - Soporta ajuste de fecha (extensión/reducción)
+- **Archivos Modificados:**
+  - `/app/frontend/src/pages/ActiveRentals.jsx`
+- **Resultado:** Flujo unificado entre Alquileres Activos y Devoluciones
+
 ### 3. Corrección del Bug Crítico de Contabilidad
 - **Problema:** Los cobros de alquileres no se registraban en la caja
 - **Solución:**
