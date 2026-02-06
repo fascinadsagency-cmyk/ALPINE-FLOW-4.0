@@ -396,12 +396,30 @@ export function SettingsProvider({ children }) {
     localStorage.setItem('auto_print_enabled', autoPrint.toString());
   }, [autoPrint]);
 
-  // Company logo
+  // Company logo - con manejo de errores para localStorage
   useEffect(() => {
-    if (companyLogo) {
-      localStorage.setItem('company_logo', companyLogo);
-    } else {
-      localStorage.removeItem('company_logo');
+    try {
+      if (companyLogo) {
+        // Verificar tamaño antes de guardar
+        const sizeKB = (companyLogo.length * 0.75) / 1024;
+        console.log(`[Settings] Guardando logo (${Math.round(sizeKB)}KB)`);
+        
+        if (sizeKB > 500) {
+          console.warn('[Settings] Logo demasiado grande para localStorage, podría fallar');
+        }
+        
+        localStorage.setItem('company_logo', companyLogo);
+        console.log('[Settings] Logo guardado en localStorage correctamente');
+      } else {
+        localStorage.removeItem('company_logo');
+        console.log('[Settings] Logo eliminado de localStorage');
+      }
+    } catch (error) {
+      console.error('[Settings] Error guardando logo en localStorage:', error);
+      // Si es error de cuota, intentar con una versión más comprimida podría ayudar
+      if (error.name === 'QuotaExceededError') {
+        console.error('[Settings] localStorage lleno - no se puede guardar el logo');
+      }
     }
   }, [companyLogo]);
 
