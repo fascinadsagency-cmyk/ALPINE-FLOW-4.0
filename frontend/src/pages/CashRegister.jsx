@@ -1262,7 +1262,7 @@ export default function CashRegister() {
               ) : historyResults.length === 0 ? (
                 <div className={`text-center py-12 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                   <Search className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>Usa los filtros y pulsa "Buscar" para encontrar movimientos</p>
+                  <p>Usa los filtros y pulsa Buscar para encontrar movimientos</p>
                   <p className="text-sm mt-1">Puedes buscar por nombre de cliente, número de ticket o concepto</p>
                 </div>
               ) : (
