@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { OfflineProvider, useOffline } from "@/contexts/OfflineContext";
@@ -20,28 +21,86 @@ import Providers from "@/pages/Providers";
 import Settings from "@/pages/Settings";
 import Layout from "@/components/Layout";
 
-// Registrar Service Worker para PWA
+// ============================================================
+// SERVICE WORKER REGISTRATION CON AUTO-RELOAD
+// ============================================================
 const registerServiceWorker = async () => {
-  if ('serviceWorker' in navigator) {
-    try {
-      const registration = await navigator.serviceWorker.register('/sw.js', {
-        scope: '/'
-      });
-      console.log('[App] Service Worker registrado:', registration.scope);
+  if (!('serviceWorker' in navigator)) {
+    console.log('[App] Service Worker no soportado');
+    return;
+  }
+
+  try {
+    // Registrar el Service Worker
+    const registration = await navigator.serviceWorker.register('/sw.js', {
+      scope: '/',
+      updateViaCache: 'none' // Nunca usar caché del navegador para sw.js
+    });
+    
+    console.log('[App] Service Worker registrado:', registration.scope);
+    
+    // Forzar verificación de actualizaciones
+    registration.update();
+    
+    // Verificar actualizaciones periódicamente (cada 30 segundos en desarrollo)
+    setInterval(() => {
+      registration.update();
+    }, 30000);
+
+    // Escuchar cuando hay un nuevo Service Worker instalado
+    registration.addEventListener('updatefound', () => {
+      const newWorker = registration.installing;
+      console.log('[App] Nueva versión del SW detectada, estado:', newWorker?.state);
       
-      // Escuchar actualizaciones
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        newWorker?.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            console.log('[App] Nueva versión disponible');
-            // Aquí se podría mostrar un toast para recargar
-          }
-        });
+      if (!newWorker) return;
+      
+      newWorker.addEventListener('statechange', () => {
+        console.log('[App] SW nuevo estado:', newWorker.state);
+        
+        // Cuando el nuevo SW está instalado y hay un SW controlando
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          console.log('[App] Nueva versión lista, recargando...');
+          
+          // Notificar al usuario y recargar
+          toast.info('Nueva versión disponible. Actualizando...', {
+            duration: 2000
+          });
+          
+          // Forzar al nuevo SW a tomar control
+          newWorker.postMessage('skipWaiting');
+          
+          // Recargar la página después de un breve delay
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        }
       });
-    } catch (error) {
-      console.error('[App] Error registrando Service Worker:', error);
+    });
+
+    // Escuchar mensajes del Service Worker
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      console.log('[App] Mensaje del SW:', event.data);
+      
+      if (event.data.type === 'SW_UPDATED') {
+        console.log('[App] SW actualizado a versión:', event.data.version);
+        // El SW ya se activó, recargar para usar la nueva versión
+        window.location.reload();
+      }
+      
+      if (event.data.type === 'CACHE_CLEARED') {
+        console.log('[App] Caché limpiada');
+        toast.success('Caché limpiada');
+      }
+    });
+
+    // Si ya hay un SW esperando, activarlo
+    if (registration.waiting) {
+      console.log('[App] SW esperando, activando...');
+      registration.waiting.postMessage('skipWaiting');
     }
+
+  } catch (error) {
+    console.error('[App] Error registrando Service Worker:', error);
   }
 };
 
