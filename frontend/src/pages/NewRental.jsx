@@ -1598,9 +1598,13 @@ export default function NewRental() {
     if (!completedRental) return;
     
     // Helper to get item type label
-    const getTypeLabel = (itemType) => {
-      const type = itemTypes.find(t => t.value === itemType);
-      return type?.label || itemType || 'Artículo';
+    const getTypeLabel = (item) => {
+      // Priority: customTypeLabel > itemTypes lookup > item_type
+      if (item.customTypeLabel || item.custom_type_label) {
+        return item.customTypeLabel || item.custom_type_label;
+      }
+      const type = itemTypes.find(t => t.value === item.item_type);
+      return type?.label || item.item_type || 'Artículo';
     };
     
     // Prepare items for the ticket
@@ -1610,7 +1614,17 @@ export default function NewRental() {
     const packItems = {};
     const standaloneItems = [];
     
-    (completedRental.items_detail || []).forEach(item => {
+    // Merge items with their custom labels from the cart
+    const itemsWithLabels = (completedRental.items_detail || []).map(item => {
+      // Find the original cart item to get customTypeLabel
+      const cartItem = items.find(i => i.barcode === item.barcode);
+      return {
+        ...item,
+        customTypeLabel: cartItem?.customTypeLabel || item.custom_type_label || null
+      };
+    });
+    
+    itemsWithLabels.forEach(item => {
       const inPack = detectedPacks.find(dp => dp.items.includes(item.barcode));
       if (inPack) {
         const packId = inPack.pack.id;
@@ -1625,7 +1639,7 @@ export default function NewRental() {
     
     // Add standalone items
     standaloneItems.forEach(item => {
-      const typeLabel = getTypeLabel(item.item_type);
+      const typeLabel = getTypeLabel(item);  // Now uses custom label if available
       const days = item.itemDays || numDays;
       const tariff = tariffs.find(t => t.item_type === item.item_type);
       const dayField = days <= 10 ? `day_${days}` : 'day_11_plus';
@@ -1644,17 +1658,21 @@ export default function NewRental() {
       });
     });
     
-    // Add pack items as single lines
+    // Add pack items - show individual components with their custom labels
     Object.values(packItems).forEach(packData => {
       const packDays = packData.days;
       const packTotal = getPackPrice(packData.pack, packDays);
-      const childCodes = packData.items.map(item => 
-        item.internal_code || item.barcode?.substring(0, 10) || 'N/A'
-      ).join(' / ');
+      
+      // Build component list with custom labels for the ticket
+      const componentDescriptions = packData.items.map(item => {
+        const label = getTypeLabel(item);
+        const code = item.internal_code || item.barcode?.substring(0, 10) || '';
+        return `${label}${code ? ` (${code})` : ''}`;
+      }).join(' + ');
       
       ticketItems.push({
         name: `${packData.pack.name}`,
-        internal_code: childCodes,
+        internal_code: componentDescriptions,  // Show custom labels in description
         item_type: 'pack',
         days: packDays,
         price: packTotal,
