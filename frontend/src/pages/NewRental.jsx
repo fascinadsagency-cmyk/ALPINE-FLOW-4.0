@@ -297,9 +297,45 @@ export default function NewRental() {
   }, [customer]);
 
   // AUTO-COMBO: Detect packs whenever items change
+  // BUT: Respect manually forced pack selections (forcedPackId)
   useEffect(() => {
-    const detected = detectPacks(items);
-    setDetectedPacks(detected);
+    // Check if any item has a forcedPackId - if so, use that instead of auto-detection
+    const itemsWithForcedPack = items.filter(i => i.forcedPackId);
+    
+    if (itemsWithForcedPack.length > 0) {
+      // Group items by their forcedPackId
+      const forcedPackGroups = {};
+      itemsWithForcedPack.forEach(item => {
+        const packId = item.forcedPackId;
+        if (!forcedPackGroups[packId]) {
+          const pack = packs.find(p => (p._id || p.id) === packId);
+          if (pack) {
+            forcedPackGroups[packId] = {
+              pack: pack,
+              items: [],
+              instanceId: `forced-pack-${packId}-${Date.now()}`
+            };
+          }
+        }
+        if (forcedPackGroups[packId]) {
+          forcedPackGroups[packId].items.push(item.barcode);
+        }
+      });
+      
+      // Items without forcedPackId - detect their packs normally
+      const itemsWithoutForcedPack = items.filter(i => !i.forcedPackId);
+      const autoDetected = detectPacks(itemsWithoutForcedPack);
+      
+      // Combine forced packs with auto-detected packs
+      const allPacks = [...Object.values(forcedPackGroups), ...autoDetected];
+      
+      console.log('[PackDetection] Using forced packs:', Object.values(forcedPackGroups).map(p => p.pack.name));
+      setDetectedPacks(allPacks);
+    } else {
+      // No forced packs - use automatic detection
+      const detected = detectPacks(items);
+      setDetectedPacks(detected);
+    }
     // Silent detection - no toasts or interruptions
   }, [items, packs, numDays]);
 
