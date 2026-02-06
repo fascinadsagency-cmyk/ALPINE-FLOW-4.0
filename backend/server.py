@@ -441,15 +441,13 @@ async def get_customers(
     search: Optional[str] = None,
     current_user: CurrentUser = Depends(get_current_user)
 ):
-    query = {}
+    query = {**current_user.get_store_filter()}
     if search:
-        query = {
-            "$or": [
-                {"dni": {"$regex": search, "$options": "i"}},
-                {"name": {"$regex": search, "$options": "i"}},
-                {"phone": {"$regex": search, "$options": "i"}}
-            ]
-        }
+        query["$or"] = [
+            {"dni": {"$regex": search, "$options": "i"}},
+            {"name": {"$regex": search, "$options": "i"}},
+            {"phone": {"$regex": search, "$options": "i"}}
+        ]
     customers = await db.customers.find(query, {"_id": 0}).to_list(5000)
     return [CustomerResponse(**c) for c in customers]
 
