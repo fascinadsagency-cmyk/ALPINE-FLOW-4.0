@@ -20,6 +20,7 @@ import ActiveRentals from "@/pages/ActiveRentals";
 import Providers from "@/pages/Providers";
 import Settings from "@/pages/Settings";
 import StoreManagement from "@/pages/StoreManagement";
+import StoreSettings from "@/pages/StoreSettings";
 import Layout from "@/components/Layout";
 
 // ============================================================
@@ -165,6 +166,7 @@ function AppRoutes() {
           <Route path="integraciones" element={<Integrations />} />
           <Route path="configuracion" element={<Settings />} />
           <Route path="tiendas" element={<StoreManagement />} />
+          <Route path="tiendas/:storeId/ajustes" element={<StoreSettings />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
