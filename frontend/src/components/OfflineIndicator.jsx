@@ -196,6 +196,32 @@ export default function OfflineIndicator() {
               Sincronizar
             </Button>
           </div>
+          
+          {/* Botón para limpiar caché y forzar actualización */}
+          <div className="pt-2 border-t">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full text-slate-500 hover:text-slate-700"
+              onClick={async () => {
+                try {
+                  // Enviar mensaje al SW para limpiar caché
+                  if (navigator.serviceWorker?.controller) {
+                    navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' });
+                  }
+                  // También limpiar cachés directamente
+                  const cacheNames = await caches.keys();
+                  await Promise.all(cacheNames.map(name => caches.delete(name)));
+                  // Recargar la página
+                  setTimeout(() => window.location.reload(), 500);
+                } catch (error) {
+                  console.error('Error limpiando caché:', error);
+                }
+              }}
+            >
+              🔄 Limpiar caché y actualizar
+            </Button>
+          </div>
         </div>
       </PopoverContent>
     </Popover>
