@@ -5193,10 +5193,10 @@ async def get_dashboard_analytics(
         })
     
     # ============ TOP RENTED ITEMS ============
-    # Get rental counts based on analysis period
+    # Get rental counts based on analysis period - Multi-tenant: Filter by store
     rental_item_counts = {}
     rentals_for_stats = await db.rentals.find(
-        {"created_at": {"$gte": analysis_start, "$lte": analysis_end}},
+        {**current_user.get_store_filter(), "created_at": {"$gte": analysis_start, "$lte": analysis_end}},
         {"_id": 0, "items": 1, "total_amount": 1, "days": 1}
     ).to_list(10000)
     
@@ -5235,8 +5235,9 @@ async def get_dashboard_analytics(
     
     stale_items = []
     if stale_barcodes:
+        # Multi-tenant: Filter by store
         stale_item_data = await db.items.find(
-            {"barcode": {"$in": list(stale_barcodes)}, "status": "available"},
+            {**current_user.get_store_filter(), "barcode": {"$in": list(stale_barcodes)}, "status": "available"},
             {"_id": 0}
         ).to_list(10)
         
