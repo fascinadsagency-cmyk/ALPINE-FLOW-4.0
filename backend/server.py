@@ -6331,6 +6331,80 @@ async def save_settings(settings: BusinessSettings, current_user: CurrentUser = 
     return {"success": True, "message": "Configuración guardada"}
 
 
+# ==================== STORE MANAGEMENT ROUTES (SUPER_ADMIN ONLY) ====================
+
+@api_router.get("/stores", response_model=List[StoreResponse])
+async def get_all_stores(current_user: CurrentUser = Depends(require_super_admin)):
+    """Get all stores - SUPER_ADMIN only"""
+    stores = await db.stores.find({}, {"_id": 0}).to_list(1000)
+    return stores
+
+@api_router.post("/stores", response_model=StoreResponse)
+async def create_store(store: StoreCreate, current_user: CurrentUser = Depends(require_super_admin)):
+    """Create new store - SUPER_ADMIN only"""
+    # Get next store_id
+    last_store = await db.stores.find_one(sort=[("store_id", -1)])
+    next_id = (last_store.get("store_id", 0) + 1) if last_store else 2
+    
+    store_doc = {
+        "store_id": next_id,
+        "name": store.name,
+        "status": "active",
+        "plan": store.plan,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "settings": {
+            "max_users": store.max_users,
+            "max_items": store.max_items,
+            "max_customers": store.max_customers
+        },
+        "contact": {
+            "email": store.contact_email or "",
+            "phone": store.contact_phone or "",
+            "address": store.address or ""
+        }
+    }
+    
+    await db.stores.insert_one(store_doc)
+    return store_doc
+
+@api_router.get("/stores/{store_id}", response_model=StoreResponse)
+async def get_store(store_id: int, current_user: CurrentUser = Depends(require_super_admin)):
+    """Get specific store - SUPER_ADMIN only"""
+    store = await db.stores.find_one({"store_id": store_id}, {"_id": 0})
+    if not store:
+        raise HTTPException(status_code=404, detail="Store not found")
+    return store
+
+@api_router.put("/stores/{store_id}")
+async def update_store(store_id: int, updates: StoreUpdate, current_user: CurrentUser = Depends(require_super_admin)):
+    """Update store - SUPER_ADMIN only"""
+    update_dict = {k: v for k, v in updates.dict().items() if v is not None}
+    
+    if update_dict:
+        await db.stores.update_one(
+            {"store_id": store_id},
+            {"$set": update_dict}
+        )
+    
+    return {"message": "Store updated successfully"}
+
+@api_router.get("/stores/{store_id}/stats")
+async def get_store_stats(store_id: int, current_user: CurrentUser = Depends(require_super_admin)):
+    """Get store statistics - SUPER_ADMIN only"""
+    customers = await db.customers.count_documents({"store_id": store_id})
+    items = await db.items.count_documents({"store_id": store_id, "status": {"$ne": "deleted"}})
+    rentals = await db.rentals.count_documents({"store_id": store_id})
+    users = await db.users.count_documents({"store_id": store_id})
+    
+    return {
+        "store_id": store_id,
+        "customers": customers,
+        "items": items,
+        "rentals": rentals,
+        "users": users
+    }
+
+
 # Include router
 app.include_router(api_router)
 
