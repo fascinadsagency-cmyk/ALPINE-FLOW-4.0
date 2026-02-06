@@ -513,7 +513,7 @@ export default function Inventory() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    loadItems();
+    loadItems(true);
   };
 
   const createItem = async () => {
