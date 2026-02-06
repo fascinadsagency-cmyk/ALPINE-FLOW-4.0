@@ -663,7 +663,7 @@ async def get_customer_history(customer_id: str, current_user: CurrentUser = Dep
     # Get customer info first
     customer = await db.customers.find_one({**current_user.get_store_filter(), **{"customer_id": customer_id}}, {"_id": 0})
     
-    rentals = await db.rentals.find({"customer_id": customer_id}, {"_id": 0}).sort("created_at", -1).to_list(50)
+    rentals = await db.rentals.find({**current_user.get_store_filter(), "customer_id": customer_id}, {"_id": 0}).sort("created_at", -1).to_list(50)
     
     # Check for active/pending rentals (for alerts)
     active_rentals = [r for r in rentals if r.get("status") in ["active", "partial"]]
@@ -758,7 +758,7 @@ async def update_customer(
         "ski_level": customer.ski_level or ""
     }
     
-    await db.customers.update_one({"id": customer_id}, {"$set": update_doc})
+    await db.customers.update_one({**current_user.get_store_filter(), "id": customer_id}, {"$set": update_doc})
     updated_customer = await db.customers.find_one({**current_user.get_store_filter(), **{"id": customer_id}}, {"_id": 0})
     return CustomerResponse(**updated_customer)
 
@@ -791,7 +791,7 @@ async def update_customer_technical_data(
         update_doc["ski_level"] = data.ski_level
     
     if update_doc:
-        await db.customers.update_one({"id": customer_id}, {"$set": update_doc})
+        await db.customers.update_one({**current_user.get_store_filter(), "id": customer_id}, {"$set": update_doc})
     
     updated_customer = await db.customers.find_one({**current_user.get_store_filter(), **{"id": customer_id}}, {"_id": 0})
     return updated_customer
@@ -814,7 +814,7 @@ async def delete_customer(customer_id: str, current_user: CurrentUser = Depends(
             detail=f"Cannot delete customer with {active_rentals} active rental(s). Please complete or cancel them first."
         )
     
-    await db.customers.delete_one({"id": customer_id})
+    await db.customers.delete_one({**current_user.get_store_filter(), "id": customer_id})
     return {"message": "Customer deleted successfully"}
 
 # ========== BULK OPERATIONS ==========
@@ -869,7 +869,7 @@ async def bulk_delete_customers(request: BulkCustomerIdsRequest, current_user: C
             continue
         
         # Safe to delete
-        result = await db.customers.delete_one({"id": customer_id})
+        result = await db.customers.delete_one({**current_user.get_store_filter(), "id": customer_id})
         if result.deleted_count > 0:
             deleted += 1
         else:
@@ -1614,7 +1614,7 @@ async def update_item(item_id: str, item: ItemCreate, current_user: CurrentUser 
         "category": "STANDARD",  # All individual items are STANDARD
         "maintenance_interval": item.maintenance_interval or 30
     }
-    await db.items.update_one({"id": item_id}, {"$set": update_doc})
+    await db.items.update_one({**current_user.get_store_filter(), "id": item_id}, {"$set": update_doc})
     
     updated = await db.items.find_one({**current_user.get_store_filter(), **{"id": item_id}}, {"_id": 0})
     return ItemResponse(**updated)
@@ -1653,7 +1653,7 @@ async def delete_item(item_id: str, force: bool = Query(False), current_user: Cu
         return {"message": "Artículo dado de baja (tiene historial)", "action": "soft_delete", "deleted": True}
     
     # No history or force=True - physical delete
-    result = await db.items.delete_one({"id": item_id})
+    result = await db.items.delete_one({**current_user.get_store_filter(), "id": item_id})
     
     if result.deleted_count == 0:
         raise HTTPException(status_code=500, detail="Error al eliminar el artículo")
@@ -1910,7 +1910,7 @@ async def reassign_item_types(
 
 @api_router.put("/items/{item_id}/status")
 async def update_item_status(item_id: str, status: str = Query(...), current_user: CurrentUser = Depends(get_current_user)):
-    result = await db.items.update_one({"id": item_id}, {"$set": {"status": status}})
+    result = await db.items.update_one({**current_user.get_store_filter(), "id": item_id}, {"$set": {"status": status}})
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Item not found")
     return {"message": "Status updated"}
@@ -1944,7 +1944,7 @@ async def complete_item_maintenance(item_id: str, current_user: CurrentUser = De
         "last_maintenance_by": current_user.get("username", "system")
     }
     
-    result = await db.items.update_one({"id": item_id}, {"$set": update_doc})
+    result = await db.items.update_one({**current_user.get_store_filter(), "id": item_id}, {"$set": update_doc})
     
     if result.modified_count == 0:
         raise HTTPException(status_code=500, detail="Error al actualizar el artículo")
@@ -2164,7 +2164,7 @@ async def generate_barcodes(data: GenerateBarcodeRequest, current_user: CurrentU
 @api_router.get("/items/export-csv")
 async def export_items_csv(current_user: CurrentUser = Depends(get_current_user)):
     """Export all items as CSV"""
-    items = await db.items.find({}, {"_id": 0}).to_list(10000)
+    items = await db.items.find({**current_user.get_store_filter(), }, {"_id": 0}).to_list(10000)
     
     output = io.StringIO()
     fieldnames = ['barcode', 'item_type', 'brand', 'model', 'size', 'status', 
@@ -2458,7 +2458,7 @@ async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depend
             })
             
             # Mark regular item as rented
-            await db.items.update_one({"id": item["id"]}, {"$set": {"status": "rented"}})
+            await db.items.update_one({**current_user.get_store_filter(), "id": item["id"]}, {"$set": {"status": "rented"}})
     
     days = calculate_days(rental.start_date, rental.end_date)
     rental_id = str(uuid.uuid4())
@@ -2483,7 +2483,7 @@ async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depend
     }
     
     await db.rentals.insert_one(doc)
-    await db.customers.update_one({"id": rental.customer_id}, {"$inc": {"total_rentals": 1}})
+    await db.customers.update_one({**current_user.get_store_filter(), "id": rental.customer_id}, {"$inc": {"total_rentals": 1}})
     
     # AUTO-REGISTER in CAJA: Create cash movement for the paid amount
     if rental.paid_amount > 0:
@@ -2535,7 +2535,7 @@ async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depend
         await db.cash_movements.insert_one(cash_doc)
         
         # Store operation_number in rental for ticket reference
-        await db.rentals.update_one({"id": rental_id}, {"$set": {"operation_number": operation_number}})
+        await db.rentals.update_one({**current_user.get_store_filter(), "id": rental_id}, {"$set": {"operation_number": operation_number}})
         
         # Add operation_number to response
         doc["operation_number"] = operation_number
@@ -3633,7 +3633,7 @@ async def create_maintenance(maintenance: MaintenanceCreate, current_user: Curre
     }
     
     await db.maintenance.insert_one(doc)
-    await db.items.update_one({"id": maintenance.item_id}, {"$set": {"status": "maintenance"}})
+    await db.items.update_one({**current_user.get_store_filter(), "id": maintenance.item_id}, {"$set": {"status": "maintenance"}})
     
     return MaintenanceResponse(**doc)
 
@@ -3737,7 +3737,7 @@ async def complete_maintenance(maintenance_id: str, current_user: CurrentUser = 
         {"id": maintenance_id},
         {"$set": {"status": "completed", "completed_date": datetime.now(timezone.utc).isoformat()}}
     )
-    await db.items.update_one({"id": maintenance["item_id"]}, {"$set": {"status": "available"}})
+    await db.items.update_one({**current_user.get_store_filter(), "id": maintenance["item_id"]}, {"$set": {"status": "available"}})
     
     return {"message": "Maintenance completed"}
 
@@ -4776,7 +4776,7 @@ async def get_dashboard(current_user: CurrentUser = Depends(get_current_user)):
     stats = await get_stats(current_user)
     
     # Recent activity
-    recent_rentals = await db.rentals.find({}, {"_id": 0}).sort("created_at", -1).to_list(10)
+    recent_rentals = await db.rentals.find({**current_user.get_store_filter(), }, {"_id": 0}).sort("created_at", -1).to_list(10)
     
     # Occupancy by Category (Gama) - EXCLUDING retired/deleted/lost items
     # Only count rentable items: available, rented, maintenance
@@ -5321,7 +5321,7 @@ async def get_source_stats(source_id: str, current_user: CurrentUser = Depends(g
         raise HTTPException(status_code=404, detail="Source not found")
     
     # Get customers from this source
-    customers = await db.customers.find({"source": source["name"]}, {"_id": 0}).to_list(1000)
+    customers = await db.customers.find({**current_user.get_store_filter(), "source": source["name"]}, {"_id": 0}).to_list(1000)
     customer_ids = [c["id"] for c in customers]
     
     # Get rentals from these customers
@@ -5496,7 +5496,7 @@ async def get_active_session(current_user: CurrentUser = Depends(get_current_use
 @api_router.get("/cash/sessions")
 async def get_cash_sessions(current_user: CurrentUser = Depends(get_current_user)):
     """Get all cash sessions (history)"""
-    sessions = await db.cash_sessions.find({}, {"_id": 0}).sort("opened_at", -1).to_list(5000)
+    sessions = await db.cash_sessions.find({**current_user.get_store_filter(), }, {"_id": 0}).sort("opened_at", -1).to_list(5000)
     return [CashSessionResponse(**s) for s in sessions]
 
 # ==================== CASH MOVEMENTS ROUTES ====================
@@ -6025,7 +6025,7 @@ async def close_cash_register(closing: CashClosingCreate, current_user: CurrentU
 
 @api_router.get("/cash/closings")
 async def get_cash_closings(current_user: CurrentUser = Depends(get_current_user)):
-    closings = await db.cash_closings.find({}, {"_id": 0}).sort("date", -1).to_list(5000)
+    closings = await db.cash_closings.find({**current_user.get_store_filter(), }, {"_id": 0}).sort("date", -1).to_list(5000)
     return [CashClosingResponse(**c) for c in closings]
 
 @api_router.get("/cash/movements/search")
@@ -6191,7 +6191,7 @@ async def revert_cash_closing(closing_id: str, current_user: CurrentUser = Depen
     if not existing:
         raise HTTPException(status_code=404, detail="Cash closing not found")
     
-    await db.cash_closings.delete_one({"id": closing_id})
+    await db.cash_closings.delete_one({**current_user.get_store_filter(), "id": closing_id})
     return {"message": f"Cash closing has been reverted", "id": closing_id}
 
 # ==================== INTEGRATIONS CONFIG ROUTES ====================
