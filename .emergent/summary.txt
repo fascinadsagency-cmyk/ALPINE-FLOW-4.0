@@ -1,74 +1,84 @@
 <analysis>**original_problem_statement:**
-El usuario ha solicitado una serie de mejoras y correcciones de errores en toda la aplicación de alquiler de esquí. Las solicitudes más recientes incluyen:
+El usuario ha solicitado una transformación arquitectónica completa de la aplicación para convertirla en una plataforma multi-tenant (SaaS), junto con optimizaciones de rendimiento y correcciones de errores. Las solicitudes clave incluyen:
 
-1.  **Persistencia del Logo del Ticket**: Arreglar un bug en la página de Configuración donde el logo de la empresa subido para los tickets no se guarda y desaparece al recargar la página.
-2.  **Lógica de Anulación de Cobro**: Añadir una opción en el modal de devoluciones para anular completamente el cargo de un alquiler, devolviendo el 100% del importe pagado.
-3.  **Límite de Artículos en Inventario**: Corregir un bug donde la tabla de inventario solo mostraba 500 artículos de más de 2000.
-4.  **Filtro en Historial de Caja**: Implementar un filtro de fechas funcional en la pestaña de Cierres de Caja.
-5.  **Lógica Financiera de Alquiler**: Asegurar que los campos Importe Pagado y Depósito se respeten al crear un nuevo alquiler.
-6.  **Unificación de Interfaz**: Replicar el modal de gestión de cambios de la página de Devoluciones en la página de Alquileres Activos para una experiencia de usuario consistente.
-7.  **Lógica de Packs en Carrito**: Redefinir la interacción con los packs en el carrito, permitiendo cambiar el tipo de pack con un selector y editar el nombre de los componentes individualmente.
-8.  **Caché de Service Worker**: Solucionar un problema crítico de caché que impedía ver los cambios de código sin borrar la caché manualmente.
+1.  **Transformación a Multi-Tenant (CRÍTICO):**
+    *   Añadir un campo  a todas las colecciones de datos relevantes (Clientes, Artículos, Alquileres, etc.).
+    *   Implementar un aislamiento de datos estricto para que cada tienda solo pueda ver y modificar sus propios datos.
+    *   Crear un rol  con acceso a todas las tiendas y un panel de gestión.
+    *   Migrar los datos existentes a una tienda principal ().
+    *   Crear un frontend para que el  gestione tiendas (crear, editar, ver).
+
+2.  **Fallo Crítico de Aislamiento (Último Reporte):** El usuario ha detectado que al crear una tienda nueva, esta hereda datos (clientes, stock, alquileres) de la tienda principal, rompiendo el modelo SaaS. **Esto es el problema más urgente a resolver.**
+
+3.  **Optimización de Rendimiento:**
+    *   Corregir el cuelgue de las páginas de  e  al manejar grandes volúmenes de datos.
+    *   Implementar paginación del lado del servidor (server-side pagination) y scroll infinito.
+    *   Implementar búsqueda del lado del servidor (server-side search) con debounce.
+
+4.  **Correcciones y Mejoras de UI:**
+    *   Eliminar un filtro de fecha no funcional en la página de .
+    *   Reparar el botón Configurar en el nuevo panel de gestión de tiendas.
+    *   Añadir una función de impersonation para que el Super Admin pueda acceder como una tienda específica.
+    *   Resolver un bug donde los artículos recién importados no aparecían en el buscador de Nuevo Alquiler.
+    *   Arreglar la persistencia del logo de la empresa en la página de .
 
 **User's preferred language**: Spanish
 
 **what currently exists?**
-La aplicación es un sistema de gestión de alquiler de esquí (React, FastAPI, MongoDB). Durante esta sesión, el agente ha implementado con éxito una gran cantidad de características y correcciones críticas en múltiples áreas, incluyendo el carrito de alquiler (), la gestión de alquileres activos (), las devoluciones (), el registro de caja () y el inventario ().
+La aplicación ha sido re-arquitecturada en el backend para soportar un modelo multi-tenant. La base de datos ha sido migrada para incluir  en todas las colecciones principales. Se han creado los roles  (para tiendas) y  (global). La autenticación ha sido modificada para incluir el  en el token JWT.
 
-La última tarea consistió en solucionar el problema de persistencia del logo de la empresa. El agente ha implementado una solución completa que incluye compresión de imágenes en el frontend, y la creación de nuevos endpoints en el backend () para guardar toda la configuración de la aplicación en la base de datos MongoDB, sincronizándola a través de un  en React. El código para esta solución ya ha sido escrito tanto en el frontend como en el backend.
+Se han implementado optimizaciones de rendimiento críticas en las páginas de  e , reemplazando la carga masiva de datos con scroll infinito y búsqueda del lado del servidor.
+
+En el frontend, se ha creado una nueva página  para que el Super Admin pueda ver y crear tiendas, y una página  para editarlas. Sin embargo, la implementación de aislamiento de datos es defectuosa, ya que las nuevas tiendas no están vacías como deberían.
 
 **Last working item**:
--   Last item agent was working: Implementar la persistencia para el logo de la empresa subido en la página de Configuración. El agente ha añadido la lógica para comprimir la imagen, guardarla en Base64 y sincronizarla con un nuevo endpoint () en el backend para almacenarla en MongoDB.
--   Status: IN PROGRESS (La codificación está completa, pero la prueba no se ha realizado).
+-   Last item agent was working: El agente estaba diagnosticando un **fallo crítico de aislamiento de datos**. El usuario reportó que al crear una nueva tienda, esta aparecía con datos (stock, clientes, alquileres) heredados de la tienda principal, lo cual es inaceptable para un modelo SaaS.
+-   Status: IN PROGRESS
 -   Agent Testing Done: N
--   Which testing method agent to use? Frontend testing agent. El flujo de prueba debe ser:
-    1.  Navegar a la página de Configuración.
-    2.  Subir una imagen como logo.
-    3.  Verificar que la vista previa de la imagen aparece correctamente.
-    4.  Recargar la página.
-    5.  Verificar que la imagen del logo sigue ahí, cargada desde el backend.
--   User Testing Done: N
+-   Which testing method agent to use? both. Es crucial realizar una prueba de aislamiento completa:
+    1.  Como , crear una Tienda de Prueba 3.
+    2.  Crear un usuario  para esa tienda.
+    3.  Desloguearse y loguearse como el nuevo usuario de la Tienda 3.
+    4.  Navegar a **TODAS** las páginas (Dashboard, Clientes, Inventario, Alquileres Activos, Devoluciones, Caja).
+    5.  Verificar que **TODOS** los contadores (clientes, artículos, alquileres pendientes) estén en CERO y todas las tablas estén vacías.
+    6.  Verificar que la página de  no herede configuraciones como precios (Tarifas, Packs).
+-   User Testing Done: Y (El usuario encontró el fallo).
 
 **All Pending/In progress Issue list**:
--   Issue 1: (P0 - BLOCKER) La funcionalidad de persistencia del logo no ha sido probada.
--   Issue 2: (P1 - Low Priority) Los checkboxes para la selección masiva en la página de Clientes () no son visibles.
+-   Issue 1: (P0 - CRITICAL BLOCKER) Fallo de aislamiento de datos: Las nuevas tiendas heredan datos de la tienda principal.
+-   Issue 2: (P2 - Low Priority) Los checkboxes para la selección masiva en la página de Clientes () no son visibles.
+-   Issue 3: (P2 - Low Priority) La persistencia del logo de la empresa en  no ha sido probada.
 
 **Issues Detail:**
--   **Issue 1**: La funcionalidad de persistencia del logo no ha sido probada.
-    -   **Attempted fixes**: El agente ha escrito todo el código necesario: compresión de imagen y guardado en , creación de endpoints de backend en , y la lógica de sincronización en .
+-   **Issue 1**: Fallo de aislamiento de datos: Las nuevas tiendas heredan datos de la tienda principal.
+    -   **Attempted fixes**: El agente aplicó de forma masiva el filtro  a más de 150 consultas en el backend (). Sin embargo, es evidente que algunas consultas, especialmente las que cargan datos iniciales o para contextos globales, se han omitido.
     -   **Next debug checklist**:
-        1.  Ejecutar una prueba manual o con el testing agent siguiendo el flujo descrito en Last working item.
-        2.  Revisar los logs del backend para confirmar que la llamada a  es exitosa.
-        3.  Revisar los logs de la consola del navegador para confirmar que la llamada  al recargar la página carga el logo.
-        4.  Verificar en la base de datos (colección ) que el documento de configuración contiene el campo  con la cadena Base64.
-    -   **Why fix this issue and what will be achieved with the fix?**: Completa una funcionalidad clave de configuración solicitada por el usuario y asegura que el logo aparezca en los tickets.
-    -   **Status**: TESTING PENDING
+        1.  **Auditoría Completa de **: Revisar CADA endpoint y CADA llamada a la base de datos (, , , , , etc.) para asegurar que el filtro  está presente. Prestar especial atención a las queries complejas con  o .
+        2.  **Auditoría de Frontend Data Fetching**: Revisar , todos los contextos de React (, ) y los componentes principales (, ) para identificar llamadas a la API que puedan estar pidiendo datos sin filtrar por tienda.
+        3.  **Colecciones de Configuración**: Investigar las colecciones  y . Estas parecen ser globales. Deben modificarse para incluir un  y ser filtradas en consecuencia.
+        4.  **Reproducir y Aislar**: Seguir los pasos de prueba descritos en Last working item para identificar qué página o componente específico está mostrando los datos heredados primero.
+    -   **Why fix this issue and what will be achieved with the fix?**: Es el pilar fundamental de la arquitectura SaaS. Sin esto, la aplicación es inutilizable por múltiples clientes.
+    -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Both.
-    -   **Blocked on other issue**: No.
+    -   **Should Test frontend/backend/both after fix?**: Both
+    -   **Blocked on other issue**: No, este es el principal bloqueador.
 
 -   **Issue 2**: Los checkboxes para la selección masiva en la página de Clientes no son visibles.
-    -   **Attempted fixes**: Ninguno en esta sesión. Es un bug heredado.
-    -   **Next debug checklist**:
-        1.  Revisar  y su CSS asociado.
-        2.  Inspeccionar la tabla de clientes en el navegador para ver si los checkboxes están presentes en el DOM pero ocultos por estilos (ej. , ).
-        3.  Verificar si el Service Worker () podría estar sirviendo una versión en caché de los estilos que causa el problema.
-    -   **Why fix this issue and what will be achieved with the fix?**: Habilita la funcionalidad de borrado masivo de clientes, mejorando la gestión.
+    -   **Attempted fixes**: Ninguno. Este es un bug antiguo y de baja prioridad.
+    -   **Next debug checklist**: Inspeccionar el DOM y el CSS de la tabla en  para encontrar la regla de estilo que está ocultando los checkboxes.
+    -   **Why fix this issue and what will be achieved with the fix?**: Mejora la usabilidad de la gestión de clientes.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Frontend.
-    -   **Blocked on other issue**: No.
+    -   **Should Test frontend/backend/both after fix?**: Frontend
+    -   **Blocked on other issue**: Issue 1.
 
 **In progress Task List**:
-(Ninguna, la última tarea está pendiente de prueba y se ha movido a la lista de issues)
+(Ninguno, todo el trabajo actual se centra en resolver el Issue 1).
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    *   (P0) **Refactorización del Modal de Cambios**: Extraer el modal Gestión de Contrato Completo de  y  a un componente reutilizable para eliminar la duplicación de código masiva.
-    *   (P1) **Refactorización del Backend**: Dividir el monolito  en una estructura de carpetas modular (routers, models, services) para mejorar la mantenibilidad.
-    *   (P2) **Verificación Post-Implementación**: Realizar pruebas funcionales de la lógica financiera en alquileres reales y de la generación de tickets tras la anulación de cargos.
-    *   (P3) **Conectar Lógica de 'Hardware'**: Vincular los interruptores de la UI en la página de configuración a la lógica de auto-impresión.
-
+    *   (P0) **Refactorización del Backend**: Dividir el archivo monolítico  en una estructura modular (routers, services, models). La dificultad para implementar el multi-tenant demuestra que esto es ahora una necesidad crítica.
+    *   (P1) **Refactorización de Componentes Frontend**: Descomponer los componentes masivos como  (3400+ líneas),  (3300+ líneas) y  (1900+ líneas) en componentes más pequeños y manejables.
 -   **Future Tasks:**
     *   Crear una Pestaña de Soporte y Mejoras.
     *   Implementar personalización de la tabla de Inventario con Drag & Drop.
@@ -76,104 +86,104 @@ La última tarea consistió en solucionar el problema de persistencia del logo d
     *   Implementar un Buscador Global en la aplicación.
 
 **Completed work in this session**
--   **Lógica de Packs en Carrito (DONE)**: Se rediseñó la interacción en : el nombre del pack es ahora un selector para cambiar la definición del pack, y el tipo de cada componente es un campo de texto editable para personalizar el ticket.
--   **Corrección de Caché (DONE)**: Se modificó el Service Worker () a una estrategia Network First y se implementó un auto-reload (), solucionando el problema de actualizaciones de código que no se reflejaban.
--   **Corrección de Precio de Pack (DONE)**: Se arregló un bug en  donde la UI no actualizaba el precio al cambiar el pack seleccionado en el selector.
--   **Unificación de UI de Cambios (DONE)**: Se replicó el modal completo de Gestión de Contrato de  a , unificando la experiencia para cambios de material y devoluciones.
--   **Limpieza de UI (DONE)**: Se eliminó el botón naranja de CAMBIOS en la cabecera de  a petición del usuario.
--   **Lógica Financiera (DONE)**: Se corrigió el flujo de creación de alquileres en  para que respete los valores de Importe Pagado y Depósito, y se actualizó  para incluir el depósito en el cálculo del saldo final.
--   **Filtro de Historial de Caja (DONE)**: Se implementó un filtro de fechas con presets (Hoy, 7 días, etc.) completamente funcional en .
--   **Corrección de Límite de Inventario (DONE)**: Se aumentó el límite de consulta en el backend () de 500 a 5000, solucionando que no se mostraran todos los artículos en .
--   **Anulación de Cargos (DONE)**: Se añadió un checkbox de Anulación Total en el modal de liquidación de  para permitir devoluciones completas del 100% del importe.
--   **Implementación de Persistencia de Logo (IN PROGRESS)**: Se ha escrito todo el código para comprimir, guardar (en localStorage y MongoDB) y cargar el logo de la empresa.
+-   **Transformación a Multi-Tenant (Backend - Parcialmente Exitoso)**: Migrada la BD, creados roles, y refactorizada la autenticación. La mayoría de los endpoints fueron actualizados para filtrar por .
+-   **Panel de Super Admin (Frontend)**: Creadas las páginas  y  para la gestión de tiendas. El menú de navegación se actualiza según el rol.
+-   **Función de Impersonation**: Creado el endpoint  y la lógica de UI para que el Super Admin pueda acceder como una tienda.
+-   **Optimización de Rendimiento (Clientes e Inventario)**: Implementado con éxito el scroll infinito y la búsqueda/paginación del lado del servidor, solucionando los cuelgues de la aplicación.
+-   **Corrección de Bug (Clientes)**: Solucionado un bucle de renderizado infinito que bloqueaba la página de Clientes.
+-   **Mejora de UI (Caja)**: Eliminado un filtro de fecha no funcional de la página , limpiando la interfaz.
+-   **Corrección de Bug (Buscador)**: Solucionado un problema por el cual los artículos recién importados no aparecían en el buscador de Nuevo Alquiler.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1**: Los checkboxes de selección masiva en la página de Clientes son invisibles.
--   **Issue 2**: El backend () es un archivo monolítico que necesita refactorización.
--   **Issue 3**: Varios componentes de frontend (, , ) son extremadamente grandes y complejos, lo que provoca bugs recurrentes.
+-   **Issue 1**: Los checkboxes de selección masiva en  son invisibles.
+-   **Issue 2**: La persistencia del logo en  no se ha probado y podría no funcionar.
 
 **Known issue recurrence from previous fork**
--   **Issue recurrence in previous fork**: La complejidad de los archivos monolíticos de frontend sigue siendo la principal fuente de bugs y dificulta el desarrollo. Aunque el agente tuvo éxito, lo hizo añadiendo más código a estos archivos (e incluso duplicando grandes porciones de lógica entre  y ), lo que aumenta la deuda técnica.
--   **Recurrence count**: Alto.
--   **Status**: El patrón persiste. La refactorización de componentes y del backend es cada vez más crítica.
+-   **Issue recurrence in previous fork**: La complejidad de los archivos monolíticos (, , etc.) es la causa raíz de la mayoría de los problemas. El intento fallido del agente de usar scripts para parchear  y el actual fallo de aislamiento de datos son consecuencias directas de esta deuda técnica.
+-   **Recurrence count**: Muy alto.
+-   **Status**: El patrón persiste y se agrava. La refactorización es ahora crítica para la estabilidad.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **React State & Effects**: El agente resolvió complejos bugs de estado y re-renderizado, especialmente en , corrigiendo dependencias de  y asegurando actualizaciones inmutables para forzar la actualización de la UI.
--   **Service Worker Caching**: Se cambió la estrategia de Cache First a Network First para los assets principales (JS/CSS) para evitar servir contenido obsoleto durante el desarrollo.
--   **Image Handling & Optimization**: Se implementó compresión de imágenes en el lado del cliente (usando Canvas) antes de la conversión a Base64 para reducir el tamaño de almacenamiento.
--   **Backend Persistence**: Se crearon nuevos endpoints en FastAPI () para persistir la configuración de la aplicación, que antes solo se guardaba en .
--   **Code Duplication for UI Unification**: Para cumplir con la solicitud del usuario de tener un modal idéntico, se duplicó una gran cantidad de estado y lógica de UI entre  y .
+-   **Multi-Tenancy (SaaS)**: Transformación de la arquitectura para aislar los datos por tienda ().
+-   **Data Isolation**: Uso de un middleware y dependencia en FastAPI para inyectar filtros  en todas las consultas a la base de datos.
+-   **JWT Payload Customization**: Modificación del token para incluir  y , permitiendo la lógica de autorización en el backend y frontend.
+-   **Server-Side Pagination & Infinite Scroll**: Carga de datos en lotes desde el servidor a medida que el usuario hace scroll, usando  en el frontend.
+-   **Debounced Server-Side Search**: Optimización de la búsqueda para que consulte a la base de datos en lugar de filtrar en el cliente, con un  para evitar peticiones excesivas.
+-   **Automated Code Modification (y sus riesgos)**: El agente intentó usar scripts para refactorizar , lo que resultó en errores de sintaxis masivos, destacando los peligros de este enfoque en código complejo.
 
 **key DB schema**
--   **settings**: (Nueva colección)
-    -   Se espera que contenga un único documento con un campo  y un campo  que es un objeto con toda la configuración de la aplicación, incluyendo  como una cadena Base64.
-    -   
+-   **stores**: (Nueva colección) 
+-   **users**: (Modificado) 
+-   **customers, items, rentals, cash_closings, cash_movements**: (Modificado) Se ha añadido el campo  a todos los documentos. Se han creado índices compuestos sobre .
+-   **tariffs, packs**: (PENDIENTE DE MODIFICACIÓN) Actualmente son globales. Necesitan un campo  para un aislamiento completo.
 
 **All files of reference**
--   **/app/backend/server.py**: Modificado para añadir endpoints  y aumentar límites de consulta.
--   **/app/frontend/src/pages/Settings.jsx**: Modificado para la lógica de compresión y subida de logo.
--   **/app/frontend/src/contexts/SettingsContext.jsx**: Modificado para sincronizar ajustes con el backend.
--   **/app/frontend/src/pages/ActiveRentals.jsx**: Modificado masivamente para replicar el modal de .
--   **/app/frontend/src/pages/Returns.jsx**: Modificado para la lógica de anulación de cargo y depósitos.
--   **/app/frontend/src/pages/NewRental.jsx**: Modificado masivamente para la nueva lógica de packs y financiera.
--   **/app/frontend/src/pages/CashRegister.jsx**: Modificado para añadir el filtro de fechas.
--   **/app/frontend/public/sw.js**: Modificado para la estrategia Network First.
--   **/app/frontend/src/App.js**: Modificado para el auto-reload del Service Worker.
--   **/app/frontend/src/pages/Inventory.jsx**: Modificado para cambiar texto de un botón.
+-   **/app/backend/server.py**: Archivo principal del backend, masivamente modificado para la lógica multi-tenant.
+-   **/app/backend/multitenant.py**: Nuevo helper para la lógica de aislamiento y autenticación.
+-   **/app/frontend/src/pages/Customers.jsx**: Modificado para implementar rendimiento con scroll infinito.
+-   **/app/frontend/src/pages/Inventory.jsx**: Modificado para implementar rendimiento con scroll infinito.
+-   **/app/frontend/src/pages/StoreManagement.jsx**: Nueva página para el panel de Super Admin.
+-   **/app/frontend/src/pages/StoreSettings.jsx**: Nueva página para la configuración de una tienda específica.
+-   **/app/frontend/src/App.js**: Modificado para gestionar las nuevas rutas y la lógica de roles.
+-   **/app/frontend/src/components/Layout.jsx**: Modificado para mostrar condicionalmente el enlace de gestión de tiendas.
 
 **Areas that need refactoring**:
--   **CRÍTICO:**  y  contienen cientos de líneas de código duplicado para el modal Gestión de Contrato Completo. Este modal debe extraerse urgentemente a un componente reutilizable.
--   **ALTO:**  sigue siendo un monolito. Su división en módulos es una tarea pendiente de alta prioridad.
--   **ALTO:**  (más de 2800 líneas),  (más de 1400 líneas),  (más de 1700 líneas) son extremadamente grandes y deben descomponerse en componentes más pequeños y manejables.
+-   **CRÍTICO:**  es un monolito inmanejable. La dificultad para aplicar el filtro  de forma fiable demuestra que su división en módulos (routers, servicios) es la máxima prioridad de refactorización para garantizar la estabilidad.
+-   **CRÍTICO:** Las colecciones  y  parecen ser globales. Esto rompe el aislamiento y debe corregirse añadiendo  y actualizando toda la lógica que las consume, especialmente en .
+-   **ALTO:** Los componentes de frontend como , , y  son enormes y complejos, lo que probablemente contribuye al bug de aislamiento de datos.
 
 **key api endpoints**
--   : (Nuevo) Guarda el objeto de configuración de la aplicación en la base de datos.
--   : (Nuevo) Obtiene el objeto de configuración de la aplicación.
--   : Límite de respuesta aumentado de 500 a 5000.
--   : Límite de respuesta aumentado de 100 a 5000.
--   : Límite de respuesta aumentado de 500 a 5000.
+-   : (Nuevo) Permite a un Super Admin obtener un token para una tienda específica.
+-   : (Nuevo) Lista todas las tiendas (solo Super Admin).
+-   : (Nuevo) Crea una nueva tienda (solo Super Admin).
+-   : (Nuevo) Actualiza los datos de una tienda (solo Super Admin).
+-   Todos los demás endpoints (, , etc.) han sido modificados internamente para filtrar por el  del usuario autenticado.
 
 **Critical Info for New Agent**
--   **Tu primera tarea es probar la persistencia del logo.** El código está escrito, pero no se ha verificado si funciona. Sigue los pasos de prueba descritos en Last working item.
--   **La duplicación de código es un problema grave.** El agente anterior replicó un modal muy complejo entre  y . Después de solucionar la tarea actual, debes proponer al usuario refactorizar este modal en un componente reutilizable para mejorar la mantenibilidad.
--   **Los componentes monolíticos son la raíz de muchos bugs.** Continúa proponiendo la refactorización de  y los componentes de React masivos (, etc.) como tareas de fondo para mejorar la salud del proyecto.
--   **El usuario es muy directo y técnico.** Responde a sus solicitudes de manera precisa y prepárate para redefiniciones completas de la funcionalidad existente.
+-   **Tu prioridad #1, absoluta e innegociable, es arreglar el fallo de aislamiento de datos.** No avances en ninguna otra tarea hasta que las tiendas nuevas se creen 100% vacías.
+-   **No confíes en que los filtros  existentes son suficientes.** El agente anterior hizo un trabajo masivo pero incompleto. Debes auditar CADA consulta a la BD. Empieza por las colecciones que probablemente son globales y no deberían serlo, como  y .
+-   **Ten cuidado con la refactorización automatizada.** El agente anterior perdió mucho tiempo y casi corrompe el código al intentar usar scripts para parchear . Dada la complejidad, un enfoque manual y sistemático, aunque más lento, es más seguro.
+-   **El usuario es técnico y espera ver resultados tangibles.** Comunica tus planes claramente y céntrate en implementar las interfaces de usuario que demuestren que los cambios de backend funcionan.
 
 **documents and test reports created in this job**
 -   
--    (Actualizado con múltiples nuevas funcionalidades)
+-   
+-   
+-    (backup de la base de datos)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **Request (P0)**: Arreglar la persistencia de la imagen del logo en Configuración. (Message 436) - **Status: IN PROGRESS (Testing Pending)**
-2.  **Request**: Añadir la opción de anulación/devolución total en la liquidación de alquileres. (Message 401) - **Status: RESOLVED**
-3.  **Bug Report**: La tabla de inventario solo muestra 500 artículos, no los más de 2000 que existen. (Message 375) - **Status: RESOLVED**
-4.  **Request**: Cambiar el texto del botón Importar CSV a solo Importar. (Message 367) - **Status: RESOLVED**
-5.  **Bug Report**: El filtro de fechas en el historial de caja no funciona. (Message 336) - **Status: RESOLVED**
-6.  **Request**: Reestructurar la lógica financiera para que los cobros parciales y fianzas funcionen correctamente. (Message 308) - **Status: RESOLVED**
-7.  **Request**: Eliminar el botón naranja CAMBIOS de la cabecera de Alquileres Activos. (Message 297) - **Status: RESOLVED**
-8.  **Request (Clarification)**: El modal de cambios en Alquileres Activos debe ser *exactamente igual* al de Devoluciones. (Message 256) - **Status: RESOLVED**
-9.  **Bug Report**: El precio del pack no se actualiza en la UI al cambiarlo. (Message 152) - **Status: RESOLVED**
-10. **Bug Report**: El caché del Service Worker impide ver las actualizaciones. (Message 116) - **Status: RESOLVED**
+1.  **Request (P0 - BLOCKER)**: FALLO CRÍTICO DE AISLAMIENTO: LAS TIENDAS NUEVAS NO ESTÁN VACÍAS. El usuario reporta que las nuevas tiendas heredan datos. - **Status: IN PROGRESS**
+2.  **Request**: EL BOTÓN CONFIGURAR EN GESTIÓN DE TIENDAS NO FUNCIONA. Pide reparar el botón y añadir página de ajustes y función de impersonation. - **Status: RESOLVED**
+3.  **Feedback**: Como usuario no veo ninguna diferencia visual. Pide ver el panel de Super Admin y el identificador de tienda en la UI. - **Status: RESOLVED**
+4.  **Confirmation**: El usuario confirma proceder con la transformación a multi-tenant. - **Status: N/A**
+5.  **Information**: El usuario proporciona el nombre de la tienda: EL ENEBRO. - **Status: N/A**
+6.  **Request**: TRANSFORMACIÓN A ARQUITECTURA MULTI-TENANT. Petición de la refactorización completa a SaaS. - **Status: IN PROGRESS (con bugs)**
+7.  **Bug Report**: LOS ARTÍCULOS IMPORTADOS NO APARECEN EN EL BUSCADOR. - **Status: RESOLVED**
+8.  **Request**: ELIMINACIÓN DE ELEMENTO INÚTIL: FILTRO DE CAJA. - **Status: RESOLVED**
+9.  **Request**: REPARACIÓN DE INVENTARIO: ELIMINAR BLOQUEO DE CARGA. Pide optimizar la página de Inventario. - **Status: RESOLVED**
+10. **Request**: OPTIMIZACIÓN ESTRUCTURAL: ESCALABILIDAD PARA... CLIENTES. Pide optimizar la página de Clientes. - **Status: RESOLVED**
 
 **Project Health Check:**
--   **Broken**: No. La aplicación es funcional.
--   **Mocked**: No.
+-   **Broken**: Sí. El fallo crítico en el aislamiento de datos hace que la funcionalidad principal de SaaS no funcione.
 
 **3rd Party Integrations**
 -    (SheetJS)
 
 **Testing status**
--   **Testing agent used after significant changes**: YES. Se utilizó con éxito para verificar la nueva lógica de packs.
--   **Troubleshoot agent used after agent stuck in loop**: NO
+-   **Testing agent used after significant changes**: NO. El agente ha realizado pruebas manuales extensas con  y , pero no ha ejecutado un flujo de prueba completo con el testing agent desde la implementación de multi-tenant.
+-   **Troubleshoot agent used after agent stuck in loop**: NO. El agente se atascó con los scripts de refactorización pero se recuperó usando .
 -   **Test files created**: N/A
--   **Known regressions**: Ninguna conocida.
+-   **Known regressions**: El aislamiento de datos, que es una nueva característica, está implementado de forma incorrecta.
 
 **Credentials to test flow:**
--   Usuario:  / 
+-   **Super Admin**:  / 
+-   **Tienda 1 (EL ENEBRO)**:  / 
+-   **Tienda 2 (Prueba)**:  / 
 
 **What agent forgot to execute**
--   El agente no probó la última funcionalidad implementada (persistencia del logo).
--   El agente no ha abordado el bug heredado de los checkboxes invisibles en la página de .</analysis>
+-   El agente no completó correctamente la implementación del aislamiento de datos, dejando fugas de datos entre tiendas.
+-   El agente nunca llegó a probar la funcionalidad de persistencia del logo solicitada en el handoff original.
+-   El bug de los checkboxes invisibles en la página de Clientes sigue sin resolverse.</analysis>
