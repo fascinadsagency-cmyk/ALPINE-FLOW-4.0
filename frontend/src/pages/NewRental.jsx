@@ -1519,7 +1519,8 @@ export default function NewRental() {
         person_name: "",
         is_generic: i.is_generic || false,
         quantity: Number(i.quantity || 1),
-        unit_price: Number(i.rental_price || getItemPriceWithPack(i) || 0)
+        unit_price: Number(i.rental_price || getItemPriceWithPack(i) || 0),
+        custom_type_label: i.customTypeLabel || null  // Custom label for ticket (LOCAL ONLY)
       }));
       
       const rentalResponse = await fetch(`${API}/api/rentals`, {
