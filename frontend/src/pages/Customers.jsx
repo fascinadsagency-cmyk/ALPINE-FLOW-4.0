@@ -1135,6 +1135,32 @@ export default function Customers() {
                   })}
                 </TableBody>
               </Table>
+              
+              {/* Infinite Scroll Loading Indicator */}
+              {loadingMore && (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <span className="ml-2 text-slate-600">Cargando más clientes...</span>
+                </div>
+              )}
+              
+              {/* Infinite Scroll Observer Target */}
+              {hasMore && !loading && (
+                <div ref={observerTarget} className="h-10 flex justify-center items-center">
+                  {!loadingMore && (
+                    <span className="text-xs text-slate-400">Scroll para cargar más</span>
+                  )}
+                </div>
+              )}
+              
+              {/* End of List Indicator */}
+              {!hasMore && customers.length > 0 && (
+                <div className="py-6 text-center text-slate-500 text-sm border-t border-slate-200 mt-4">
+                  <Badge variant="outline" className="bg-slate-50">
+                    Fin de la lista - {totalCustomers} cliente{totalCustomers !== 1 ? 's' : ''} en total
+                  </Badge>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
