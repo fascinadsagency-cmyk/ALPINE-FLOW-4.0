@@ -4812,9 +4812,11 @@ async def get_dashboard(current_user: CurrentUser = Depends(get_current_user)):
     
     # Occupancy by Category (Gama) - EXCLUDING retired/deleted/lost items
     # Only count rentable items: available, rented, maintenance
+    # Multi-tenant: Filter by store
     category_stats = await db.items.aggregate([
         {
             "$match": {
+                **current_user.get_store_filter(),
                 "status": {"$in": ["available", "rented", "maintenance"]}  # Exclude retired/deleted/lost
             }
         },
@@ -4858,9 +4860,11 @@ async def get_dashboard(current_user: CurrentUser = Depends(get_current_user)):
             occupancy_by_category[category]["percentage"] = round((rented / total) * 100, 1)
     
     # Maintenance Alerts (grouped by category and item type)
+    # Multi-tenant: Filter by store
     maintenance_items = await db.items.aggregate([
         {
             "$match": {
+                **current_user.get_store_filter(),
                 "$expr": {
                     "$gte": ["$days_used", "$maintenance_interval"]
                 },
