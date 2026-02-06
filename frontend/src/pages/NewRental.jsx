@@ -1522,7 +1522,32 @@ export default function NewRental() {
     try {
       const cleanTotal = Number(total.toFixed(2));
       const cleanDeposit = Number(parseFloat(deposit) || 0);
-      const paid = paymentMethodSelected !== 'pending' ? cleanTotal : 0;
+      
+      // NUEVO: Usar el importe pagado introducido por el usuario
+      // Si está vacío, usar el total (comportamiento por defecto)
+      // Si es "pending", cobrar 0€ del alquiler
+      let cleanPaidAmount;
+      if (paymentMethodSelected === 'pending') {
+        cleanPaidAmount = 0; // Pendiente = no se cobra nada del alquiler
+      } else if (paidAmount !== "" && paidAmount !== null) {
+        cleanPaidAmount = Number(parseFloat(paidAmount) || 0);
+      } else {
+        cleanPaidAmount = cleanTotal; // Por defecto: pago completo
+      }
+      
+      // Calcular pendiente
+      const pendingAmount = cleanTotal - cleanPaidAmount;
+      
+      // Lo que entra en caja HOY = Importe pagado + Depósito
+      const cashInToday = cleanPaidAmount + cleanDeposit;
+      
+      console.log('[Rental] Resumen financiero:', {
+        total: cleanTotal,
+        paidAmount: cleanPaidAmount,
+        deposit: cleanDeposit,
+        pending: pendingAmount,
+        cashInToday: cashInToday
+      });
       
       const itemsToSend = items.map(i => ({
         barcode: String(i.barcode || i.id || ''),
@@ -1546,7 +1571,8 @@ export default function NewRental() {
           items: itemsToSend,
           payment_method: paymentMethodSelected || 'cash',
           total_amount: cleanTotal,
-          paid_amount: Number(paid.toFixed(2)),
+          paid_amount: Number(cleanPaidAmount.toFixed(2)),
+          pending_amount: Number(pendingAmount.toFixed(2)),
           deposit: cleanDeposit,
           notes: notes || ''
         })
