@@ -4104,9 +4104,10 @@ class FinancialCalculatorService:
         return summary
     
     @staticmethod
-    async def get_reconciliation_data(start_date: str, end_date: str) -> dict:
+    async def get_reconciliation_data(start_date: str, end_date: str, store_filter: dict = None) -> dict:
         """
         Genera datos de reconciliación para depurar discrepancias.
+        Multi-tenant: Acepta store_filter para aislar datos por tienda.
         
         Compara:
         1. Lo que dice cash_movements
@@ -4116,15 +4117,23 @@ class FinancialCalculatorService:
         start_dt = f"{start_date}T00:00:00"
         end_dt = f"{end_date}T23:59:59"
         
-        # 1. Obtener todos los cash_movements del período
-        movements = await db.cash_movements.find({
+        # Construir filtro base
+        base_filter = {
             "created_at": {"$gte": start_dt, "$lte": end_dt}
-        }, {"_id": 0}).to_list(5000)
+        }
+        
+        # Multi-tenant: Add store filter if provided
+        if store_filter:
+            base_filter.update(store_filter)
+        
+        # 1. Obtener todos los cash_movements del período
+        movements = await db.cash_movements.find(base_filter, {"_id": 0}).to_list(5000)
         
         # 2. Obtener todos los rentals del período
-        rentals = await db.rentals.find({
-            "created_at": {"$gte": start_dt, "$lte": end_dt}
-        }, {"_id": 0, "id": 1, "paid_amount": 1, "payment_method": 1, "customer_name": 1}).to_list(5000)
+        rentals = await db.rentals.find(
+            base_filter,
+            {"_id": 0, "id": 1, "paid_amount": 1, "payment_method": 1, "customer_name": 1}
+        ).to_list(5000)
         
         # 3. Calcular totales de cada fuente
         movements_total = {
@@ -4438,7 +4447,9 @@ async def get_reconciliation_report(
     
     Uso: Cuando los totales de Caja no coinciden con los de Reportes
     """
-    return await financial_service.get_reconciliation_data(start_date, end_date)
+    return await financial_service.get_reconciliation_data(
+        start_date, end_date, store_filter=current_user.get_store_filter()
+    )
 
 @api_router.get("/reports/financial-summary")
 async def get_unified_financial_summary(
