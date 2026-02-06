@@ -283,6 +283,11 @@ const translations = {
 };
 
 export function SettingsProvider({ children }) {
+  const API = process.env.REACT_APP_BACKEND_URL;
+  
+  // Flag para evitar múltiples cargas
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  
   // ========== BASIC SETTINGS ==========
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode');
@@ -315,6 +320,46 @@ export function SettingsProvider({ children }) {
       return null;
     }
   });
+
+  // ========== CARGAR SETTINGS DESDE BACKEND AL INICIAR ==========
+  useEffect(() => {
+    const loadSettingsFromBackend = async () => {
+      const token = localStorage.getItem('token');
+      if (!token || settingsLoaded) return;
+      
+      try {
+        console.log('[Settings] Cargando configuración desde backend...');
+        const response = await fetch(`${API}/api/settings`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const settings = await response.json();
+          console.log('[Settings] Configuración cargada desde backend');
+          
+          // Solo actualizar si hay datos en el backend
+          if (settings.company_logo && !companyLogo) {
+            console.log('[Settings] Logo encontrado en backend, actualizando...');
+            setCompanyLogo(settings.company_logo);
+          }
+          if (settings.ticket_header) setTicketHeader(settings.ticket_header);
+          if (settings.ticket_footer) setTicketFooter(settings.ticket_footer);
+          if (settings.ticket_terms) setTicketTerms(settings.ticket_terms);
+          if (settings.show_dni_on_ticket !== undefined) setShowDniOnTicket(settings.show_dni_on_ticket);
+          if (settings.show_vat_on_ticket !== undefined) setShowVatOnTicket(settings.show_vat_on_ticket);
+          if (settings.default_vat !== undefined) setDefaultVat(settings.default_vat);
+          if (settings.vat_included_in_prices !== undefined) setVatIncludedInPrices(settings.vat_included_in_prices);
+          
+          setSettingsLoaded(true);
+        }
+      } catch (error) {
+        console.error('[Settings] Error cargando desde backend:', error);
+      }
+    };
+    
+    // Pequeño delay para asegurar que el token existe
+    setTimeout(loadSettingsFromBackend, 1000);
+  }, [API]);
 
   // ========== TICKET DESIGN ==========
   const [ticketHeader, setTicketHeader] = useState(() => {
