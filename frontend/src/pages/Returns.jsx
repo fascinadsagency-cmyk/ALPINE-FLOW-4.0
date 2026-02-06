@@ -720,16 +720,54 @@ export default function Returns() {
       balanceReason += `Saldo pendiente anterior`;
     }
     
+    // NUEVO: Considerar el depósito/fianza a devolver
+    const depositToReturn = rental.deposit || 0;
+    
+    // Lógica mixta: Fianza cubre Deuda
+    // Si hay deuda (balance > 0) y hay fianza (deposit > 0):
+    // - Si deposit >= balance: Devolver (deposit - balance) al cliente
+    // - Si deposit < balance: Cobrar (balance - deposit) al cliente
+    let finalBalance = balance;
+    let depositRefund = depositToReturn;
+    let balanceDetails = balanceReason;
+    
+    if (depositToReturn > 0) {
+      if (balance > 0 && depositToReturn >= balance) {
+        // Fianza cubre la deuda completamente
+        depositRefund = depositToReturn - balance;
+        finalBalance = -depositRefund; // Negativo = hay que devolver al cliente
+        balanceDetails = `${balanceReason}. Deuda €${balance.toFixed(2)} descontada del depósito`;
+      } else if (balance > 0 && depositToReturn < balance) {
+        // Fianza cubre parcialmente la deuda
+        finalBalance = balance - depositToReturn;
+        depositRefund = 0;
+        balanceDetails = `${balanceReason}. €${depositToReturn.toFixed(2)} del depósito aplicado a la deuda`;
+      } else if (balance <= 0) {
+        // No hay deuda, devolver todo el depósito
+        depositRefund = depositToReturn;
+        // El balance ya es negativo o 0, añadir el depósito a devolver
+        finalBalance = balance - depositToReturn;
+        if (depositToReturn > 0) {
+          balanceDetails = balanceReason ? `${balanceReason} + Depósito a devolver` : `Depósito a devolver`;
+        }
+      }
+    }
+    
     const result = {
-      balance: Math.round(balance * 100) / 100,
+      balance: Math.round(finalBalance * 100) / 100,
       daysUsed,
       daysPaid,
       pricePerDay: Math.round(pricePerDay * 100) / 100,
       serviceUsed: Math.round(serviceUsed * 100) / 100,
       totalPaid: Math.round(totalPaidForItems * 100) / 100,
       itemsToReturn: toReturnItems.map(i => i.barcode),
-      balanceReason,
-      originalPaymentMethod: rental.payment_method || "cash"
+      balanceReason: balanceDetails,
+      originalPaymentMethod: rental.payment_method || "cash",
+      // NUEVO: Información detallada para el modal
+      depositOriginal: depositToReturn,
+      depositRefund: Math.round(depositRefund * 100) / 100,
+      pendingAmount: rental.pending_amount || 0,
+      rawBalance: Math.round(balance * 100) / 100 // Balance antes de aplicar depósito
     };
     
     console.log('Resultado liquidación:', result);
