@@ -69,8 +69,7 @@ const PAYMENT_METHODS = [
 export default function CashRegister() {
   const { darkMode } = useSettings();
   
-  // State
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  // State (removed date state - always use today)
   const [summary, setSummary] = useState(null);
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
