@@ -4199,8 +4199,10 @@ async def get_daily_report(date: Optional[str] = None, current_user: CurrentUser
     card_revenue = financial_summary["by_payment_method"]["card"]["income"]
     
     # Para online y other, buscar en cash_movements con payment_method específico
+    # Multi-tenant: Filter by store
     other_methods = await db.cash_movements.aggregate([
         {"$match": {
+            **current_user.get_store_filter(),
             "created_at": {"$gte": start, "$lte": end},
             "movement_type": "income",
             "payment_method": {"$nin": ["cash", "card"]}
@@ -4219,23 +4221,25 @@ async def get_daily_report(date: Optional[str] = None, current_user: CurrentUser
         else:
             other_revenue += m["total"]
     
-    # Get rentals count for the day (operational data, not financial)
+    # Get rentals count for the day (operational data, not financial) - Multi-tenant: Filter by store
     rentals_count = await db.rentals.count_documents({
+        **current_user.get_store_filter(),
         "created_at": {"$gte": start, "$lte": end}
     })
     
-    # Get returns for the day
+    # Get returns for the day - Multi-tenant: Filter by store
     returns_count = await db.rentals.count_documents({
+        **current_user.get_store_filter(),
         "status": "returned",
         "actual_return_date": {"$gte": start, "$lte": end}
     })
     
-    # Get active rentals
-    active_rentals = await db.rentals.count_documents({"status": {"$in": ["active", "partial"]}})
+    # Get active rentals - Multi-tenant: Filter by store
+    active_rentals = await db.rentals.count_documents({**current_user.get_store_filter(), "status": {"$in": ["active", "partial"]}})
     
-    # Get pending returns
+    # Get pending returns - Multi-tenant: Filter by store
     pending_returns = await db.rentals.find(
-        {"status": {"$in": ["active", "partial"]}},
+        {**current_user.get_store_filter(), "status": {"$in": ["active", "partial"]}},
         {"_id": 0}
     ).to_list(5000)
     
@@ -4252,9 +4256,9 @@ async def get_daily_report(date: Optional[str] = None, current_user: CurrentUser
                 "pending_amount": r.get("pending_amount", 0)
             })
     
-    # Calculate inventory usage (percentage of items rented)
-    total_items = await db.items.count_documents({"status": {"$nin": ["deleted", "retired"]}})
-    rented_items = await db.items.count_documents({"status": "rented"})
+    # Calculate inventory usage (percentage of items rented) - Multi-tenant: Filter by store
+    total_items = await db.items.count_documents({**current_user.get_store_filter(), "status": {"$nin": ["deleted", "retired"]}})
+    rented_items = await db.items.count_documents({**current_user.get_store_filter(), "status": "rented"})
     inventory_usage = (rented_items / total_items * 100) if total_items > 0 else 0
     
     total_revenue = cash_revenue + card_revenue + online_revenue + other_revenue
