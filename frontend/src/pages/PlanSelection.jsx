@@ -333,7 +333,7 @@ export default function PlanSelection() {
                   </div>
                 </CardContent>
 
-                <CardFooter>
+                <CardFooter className="flex-col gap-2">
                   <Button
                     className={`w-full ${getPlanButtonColor(plan.id)} text-white`}
                     disabled={isCurrentPlan || selecting === plan.id || !canSelect}
