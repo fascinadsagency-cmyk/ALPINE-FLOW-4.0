@@ -1799,6 +1799,7 @@ export default function NewRental() {
       
     } catch (error) {
       console.error("Error creando alquiler:", error);
+      console.error("Error details:", error.response || error.message);
       setProcessingPayment(false);
       
       // Mostrar el error real del backend
