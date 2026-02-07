@@ -198,7 +198,7 @@ export default function Integrations() {
       </div>
 
       <Tabs defaultValue="whatsapp" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
           <TabsTrigger value="whatsapp" className="gap-2">
             <MessageSquare className="h-4 w-4" />
             <span className="hidden sm:inline">WhatsApp</span>
@@ -214,10 +214,6 @@ export default function Integrations() {
           <TabsTrigger value="email" className="gap-2">
             <Mail className="h-4 w-4" />
             <span className="hidden sm:inline">Email</span>
-          </TabsTrigger>
-          <TabsTrigger value="calendar" className="gap-2">
-            <Calendar className="h-4 w-4" />
-            <span className="hidden sm:inline">Calendario</span>
           </TabsTrigger>
         </TabsList>
 
