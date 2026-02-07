@@ -1171,12 +1171,40 @@ export default function Returns() {
   const processReturn = async () => {
     if (!rental || scannedBarcodes.length === 0) return;
     
+    // Verificar si se van a devolver TODOS los artículos
+    const allItemsScanned = rental.items.every(item => 
+      item.returned || scannedBarcodes.includes(item.barcode)
+    );
+    
+    // Si hay depósito y se devuelven todos los artículos, mostrar diálogo
+    if (allItemsScanned && rental.deposit > 0 && !rental.deposit_status) {
+      setShowDepositDialog(true);
+      return;
+    }
+    
+    // Procesar devolución normal (sin depósito o ya procesado)
+    await executeReturn();
+  };
+  
+  const executeReturn = async () => {
     setProcessing(true);
     try {
-      const response = await rentalApi.processReturn(rental.id, scannedBarcodes);
+      const response = await rentalApi.processReturn(
+        rental.id, 
+        scannedBarcodes,
+        depositAction,
+        forfeitReason
+      );
       
       if (response.data.status === 'returned') {
-        toast.success("Devolución completada");
+        // Mostrar mensaje según acción de depósito
+        if (response.data.deposit_returned) {
+          toast.success(`✅ Devolución completada. Depósito devuelto: €${response.data.deposit_amount}`);
+        } else if (response.data.deposit_forfeited) {
+          toast.success(`✅ Devolución completada. Depósito incautado: €${response.data.deposit_amount}`);
+        } else {
+          toast.success("✅ Devolución completada");
+        }
         resetForm();
         loadPendingReturns();
       } else {
@@ -1186,8 +1214,9 @@ export default function Returns() {
         setScannedBarcodes([]);
         loadPendingReturns();
       }
+      setShowDepositDialog(false);
     } catch (error) {
-      toast.error("Error al procesar devolución");
+      toast.error(error.response?.data?.detail || "Error al procesar devolución");
     } finally {
       setProcessing(false);
     }
