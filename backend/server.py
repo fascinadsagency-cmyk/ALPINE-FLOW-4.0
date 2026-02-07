@@ -8634,8 +8634,9 @@ logger = logging.getLogger(__name__)
 async def startup_db_indexes():
     """Create database indexes for performance optimization"""
     try:
-        # Customer indexes for fast search and filtering
-        await db.customers.create_index("dni", unique=True)
+        # Customer indexes for fast search and filtering (multi-tenant aware)
+        # Note: DNI uniqueness is enforced per store via unique_dni_per_store index
+        await db.customers.create_index([("store_id", 1), ("dni", 1)])
         await db.customers.create_index("name")
         await db.customers.create_index("phone")
         await db.customers.create_index("created_at")
