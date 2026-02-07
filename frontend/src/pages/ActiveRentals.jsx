@@ -148,31 +148,116 @@ export default function ActiveRentals() {
     setAddItemsDays(daysRemaining);
     setAddItemsSelected([]);
     setAddItemsSearch("");
+    setAddItemsSearchResults([]);
     setAddItemsChargeNow(true);
     setAddItemsPaymentMethod("cash");
     setAddItemsModalOpen(true);
   };
+
+  // Buscar artículos disponibles para añadir
+  const searchAvailableItems = async (query) => {
+    if (!query || query.trim().length < 2) {
+      setAddItemsSearchResults([]);
+      return;
+    }
+    
+    setAddItemsSearchLoading(true);
+    try {
+      const response = await axios.get(`${API}/items?search=${encodeURIComponent(query)}&status=available&limit=20`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      // Filtrar solo artículos disponibles
+      const availableItems = response.data.filter(item => item.status === 'available');
+      setAddItemsSearchResults(availableItems);
+    } catch (error) {
+      console.error("[AddItems] Error buscando artículos:", error);
+      toast.error("Error al buscar artículos");
+      setAddItemsSearchResults([]);
+    } finally {
+      setAddItemsSearchLoading(false);
+    }
+  };
+
+  // Manejar cambio en búsqueda con debounce manual
+  const handleAddItemsSearchChange = (e) => {
+    const value = e.target.value;
+    setAddItemsSearch(value);
+    
+    // Debounce de 300ms
+    clearTimeout(window.addItemsSearchTimeout);
+    window.addItemsSearchTimeout = setTimeout(() => {
+      searchAvailableItems(value);
+    }, 300);
+  };
+
+  // Manejar Enter para búsqueda inmediata o escaneo
+  const handleAddItemsSearchKeyDown = async (e) => {
+    if (e.key === 'Enter' && addItemsSearch.trim()) {
+      e.preventDefault();
+      clearTimeout(window.addItemsSearchTimeout);
+      
+      // Buscar por código exacto primero (comportamiento de escáner)
+      try {
+        const response = await axios.get(`${API}/items/barcode/${encodeURIComponent(addItemsSearch.trim())}`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        
+        if (response.data && response.data.status === 'available') {
+          addItemToRental(response.data);
+          return;
+        } else if (response.data) {
+          toast.warning(`Artículo ${addItemsSearch} no está disponible (${response.data.status})`);
+          setAddItemsSearch("");
+          return;
+        }
+      } catch {
+        // No encontrado por código exacto, hacer búsqueda normal
+        await searchAvailableItems(addItemsSearch);
+      }
+    }
+  };
   
-  const addItemToRental = (item) => {
+  const addItemToRental = async (item) => {
     // Verificar que no esté ya agregado
     if (addItemsSelected.find(i => i.barcode === item.barcode)) {
       toast.warning("Este artículo ya está en la lista");
       return;
     }
     
-    // Calcular precio según días
+    // Calcular precio usando tarifas
     const days = addItemsDays;
     let unitPrice = 0;
     
-    // Usar la tarifa según días disponibles
-    if (item[`day_${days}`]) {
-      unitPrice = item[`day_${days}`];
-    } else if (item.daily_rate) {
-      unitPrice = item.daily_rate * days;
+    try {
+      // Obtener tarifas para calcular precio correcto
+      const tariffsRes = await axios.get(`${API}/tariffs`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const tariffs = tariffsRes.data;
+      
+      // Buscar tarifa para este tipo de item
+      const tariff = tariffs.find(t => t.item_type?.toLowerCase() === item.item_type?.toLowerCase());
+      
+      if (tariff) {
+        // Usar tarifa escalonada: day_1, day_2, ..., day_10, day_11_plus
+        const dayField = days <= 10 ? `day_${days}` : 'day_11_plus';
+        unitPrice = tariff[dayField] || tariff.day_1 || 0;
+      } else if (item.rental_price) {
+        // Fallback al precio base del artículo
+        unitPrice = item.rental_price * days;
+      }
+    } catch (error) {
+      console.error("[AddItems] Error obteniendo tarifas:", error);
+      // Fallback si falla
+      if (item.rental_price) {
+        unitPrice = item.rental_price * days;
+      }
     }
     
     const newItem = {
       barcode: item.barcode,
+      internal_code: item.internal_code,
       name: item.name || item.item_type,
       item_type: item.item_type,
       size: item.size,
@@ -183,7 +268,8 @@ export default function ActiveRentals() {
     
     setAddItemsSelected([...addItemsSelected, newItem]);
     setAddItemsSearch("");
-    toast.success(`Artículo añadido: ${newItem.name}`);
+    setAddItemsSearchResults([]);
+    toast.success(`Artículo añadido: ${newItem.name} (${item.internal_code || item.barcode})`);
   };
   
   const removeItemFromAddList = (barcode) => {
@@ -213,6 +299,9 @@ export default function ActiveRentals() {
           days: addItemsDays,
           charge_now: addItemsChargeNow,
           payment_method: addItemsPaymentMethod
+        },
+        {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         }
       );
       
@@ -226,7 +315,7 @@ export default function ActiveRentals() {
       }
       
       setAddItemsModalOpen(false);
-      loadRentals();
+      loadActiveRentals();
     } catch (error) {
       console.error("[AddItems] Error:", error);
       const errorMsg = error.response?.data?.detail || error.message || "Error al añadir artículos";
