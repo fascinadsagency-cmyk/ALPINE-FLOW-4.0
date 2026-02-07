@@ -97,6 +97,7 @@ export default function Login() {
                   onChange={(e) => setUsername(e.target.value)}
                   className="h-11"
                   data-testid="username-input"
+                  tabIndex={1}
                   autoFocus
                 />
               </div>
@@ -110,6 +111,7 @@ export default function Login() {
                     value={storeName}
                     onChange={(e) => setStoreName(e.target.value)}
                     className="h-11"
+                    tabIndex={2}
                   />
                 </div>
               )}
@@ -123,6 +125,7 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="h-11"
                   data-testid="password-input"
+                  tabIndex={3}
                 />
               </div>
               <Button 
@@ -130,6 +133,7 @@ export default function Login() {
                 className="w-full h-11 font-semibold"
                 disabled={loading}
                 data-testid="login-submit-btn"
+                tabIndex={4}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isRegister ? "Crear cuenta" : "Iniciar sesión"}
