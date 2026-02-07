@@ -1622,7 +1622,10 @@ export default function NewRental() {
       return;
     }
     
-    // Instead of completing immediately, open payment dialog
+    // Sincronizar el método de pago del desplegable con el popup
+    setPaymentMethodSelected(paymentMethod);
+    
+    // Abrir el dialog de pago
     setShowPaymentDialog(true);
   };
 
