@@ -1096,80 +1096,66 @@ export default function NewRental() {
     setEditingItemDays(null);
   };
 
-  // QUICK ADD: Configuración estricta - Solo 3 productos genéricos
-  const QUICK_ADD_CONFIG = [
-    { key: 'cascos', label: 'Cascos', genericName: 'Casco Genérico', type: 'helmet' },
-    { key: 'bastones', label: 'Bastones', genericName: 'Bastones Genéricos', type: 'poles' },
-    { key: 'mascara', label: 'Máscara', genericName: 'Máscara Genérica', type: 'goggles' }
-  ];
-
-  const quickAddGeneric = async (config) => {
+  // QUICK ADD: Dynamic from database (items with is_quick_add = true)
+  const quickAddItem = async (quickItem) => {
     try {
-      // Buscar artículo genérico existente por nombre o tipo
-      const response = await itemApi.getAll({ item_type: config.type });
-      let genericItem = response.data.find(i => i.is_generic && i.stock_available > 0);
-      
-      // Si no existe, crear automáticamente
-      if (!genericItem) {
-        const createResponse = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/items`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({
-            is_generic: true,
-            name: config.genericName,
-            item_type: config.type,
-            stock_total: 100,
-            rental_price: 5.00
-          })
-        });
-        if (createResponse.ok) {
-          genericItem = await createResponse.json();
-          toast.info(`${config.genericName} creado automáticamente`);
-        } else {
-          toast.error(`No se pudo crear ${config.genericName}`);
+      if (quickItem.is_generic) {
+        // === GENERIC ITEM (stock-based) ===
+        if (quickItem.stock_available < 1) {
+          toast.error(`No hay stock disponible de ${quickItem.name || quickItem.item_type}`);
           return;
         }
-      }
-      
-      // Verificar stock disponible
-      if (genericItem.stock_available < 1) {
-        toast.error(`No hay ${config.label} disponibles`);
-        return;
-      }
-
-      // Buscar si ya está en el carrito
-      const existingIndex = items.findIndex(i => i.id === genericItem.id);
-      
-      if (existingIndex >= 0) {
-        // Incrementar cantidad
-        const updatedItems = [...items];
-        const currentQty = updatedItems[existingIndex].quantity || 1;
-        if (currentQty < genericItem.stock_available) {
-          updatedItems[existingIndex] = { 
-            ...updatedItems[existingIndex], 
-            quantity: currentQty + 1 
-          };
-          setItems(updatedItems);
-          toast.success(`${config.label}: ${currentQty + 1} unidades`);
+        
+        // Check if already in cart
+        const existingIndex = items.findIndex(i => i.id === quickItem.id);
+        
+        if (existingIndex >= 0) {
+          // Increment quantity
+          const updatedItems = [...items];
+          const currentQty = updatedItems[existingIndex].quantity || 1;
+          if (currentQty < quickItem.stock_available) {
+            updatedItems[existingIndex] = { 
+              ...updatedItems[existingIndex], 
+              quantity: currentQty + 1 
+            };
+            setItems(updatedItems);
+            toast.success(`${quickItem.name || quickItem.item_type}: ${currentQty + 1} uds`);
+          } else {
+            toast.error(`Stock máximo alcanzado`);
+          }
         } else {
-          toast.error(`Stock máximo alcanzado para ${config.label}`);
+          // Add new with quantity 1
+          setItems([...items, { 
+            ...quickItem, 
+            quantity: 1, 
+            customPrice: null,
+            itemDays: numDays
+          }]);
+          toast.success(`✓ ${quickItem.name || quickItem.item_type}`);
         }
       } else {
-        // Añadir nuevo con cantidad 1 y días por defecto
+        // === INDIVIDUAL ITEM (unique, not stock-based) ===
+        if (quickItem.status !== 'available') {
+          toast.error(`Artículo no disponible (${quickItem.status})`);
+          return;
+        }
+        
+        // Check if already in cart
+        if (items.find(i => i.id === quickItem.id || i.barcode === quickItem.barcode)) {
+          toast.error("Artículo ya añadido");
+          return;
+        }
+        
         setItems([...items, { 
-          ...genericItem, 
-          quantity: 1, 
+          ...quickItem, 
           customPrice: null,
           itemDays: numDays
         }]);
-        toast.success(`${config.label} añadido`);
+        toast.success(`✓ ${quickItem.internal_code || quickItem.barcode}`);
       }
     } catch (error) {
       console.error('Error:', error);
-      toast.error(`Error al añadir ${config.label}`);
+      toast.error(`Error al añadir artículo`);
     }
   };
 
