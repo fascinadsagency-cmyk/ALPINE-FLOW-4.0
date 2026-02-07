@@ -4,7 +4,7 @@
    GLASSMORPHISM THEME
    To DISABLE: Comment out the line below
    ======================================== */
-@import './glassmorphism-theme.css';
+/* @import './glassmorphism-theme.css'; */
 
 @tailwind base;
 @tailwind components;
