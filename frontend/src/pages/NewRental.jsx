@@ -2932,7 +2932,7 @@ export default function NewRental() {
                 <div>
                   <Label>Método de Pago</Label>
                   <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <SelectTrigger className="h-11 mt-1" data-testid="payment-method-select">
+                    <SelectTrigger className="h-11 mt-1" data-testid="payment-method-select" tabIndex={10}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -2953,6 +2953,7 @@ export default function NewRental() {
                     onChange={(e) => setPaidAmount(e.target.value)}
                     className="h-11 mt-1"
                     data-testid="paid-amount-input"
+                    tabIndex={11}
                   />
                 </div>
                 <div>
@@ -2964,13 +2965,14 @@ export default function NewRental() {
                     onChange={(e) => setDeposit(e.target.value)}
                     className="h-11 mt-1"
                     data-testid="deposit-input"
+                    tabIndex={12}
                   />
                 </div>
                 <div>
                   <Label>Descuento</Label>
                   <div className="flex gap-1 mt-1">
                     <Select value={discountType} onValueChange={setDiscountType}>
-                      <SelectTrigger className="w-20 h-11">
+                      <SelectTrigger className="w-20 h-11" tabIndex={13}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -2986,6 +2988,7 @@ export default function NewRental() {
                         value={discountValue}
                         onChange={(e) => setDiscountValue(e.target.value)}
                         className="h-11 flex-1"
+                        tabIndex={14}
                       />
                     )}
                   </div>
@@ -2999,6 +3002,7 @@ export default function NewRental() {
                     value={discountReason}
                     onChange={(e) => setDiscountReason(e.target.value)}
                     className="h-10 text-sm"
+                    tabIndex={15}
                   />
                 </div>
               )}
