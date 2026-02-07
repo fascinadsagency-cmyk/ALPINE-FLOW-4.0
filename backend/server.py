@@ -2010,6 +2010,33 @@ async def get_item_types(current_user: CurrentUser = Depends(get_current_user)):
     
     return result
 
+@api_router.post("/item-types/sync")
+async def sync_item_types(current_user: CurrentUser = Depends(get_current_user)):
+    """
+    🔄 SELF-HEALING: Sincroniza la tabla item_types con el inventario real.
+    
+    Escanea todos los tipos que existen en artículos pero no tienen ficha en item_types,
+    y los crea automáticamente con sus tarifas (precio 0 por defecto).
+    
+    Ejecutar después de importaciones o cuando los filtros no muestren todos los tipos.
+    """
+    try:
+        sync_result = await sync_item_types_from_inventory(current_user.store_id)
+        
+        if sync_result["created_count"] > 0:
+            return {
+                "message": f"✅ Sincronización completada: {sync_result['created_count']} tipos creados",
+                "stats": sync_result
+            }
+        else:
+            return {
+                "message": "✅ Sincronización completada: Todo estaba al día",
+                "stats": sync_result
+            }
+    except Exception as e:
+        logger.error(f"Error syncing item types: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al sincronizar tipos: {str(e)}")
+
 @api_router.post("/item-types", response_model=ItemTypeResponse)
 async def create_item_type(item_type: ItemTypeCreate, current_user: CurrentUser = Depends(get_current_user)):
     """Create a new custom item type"""
