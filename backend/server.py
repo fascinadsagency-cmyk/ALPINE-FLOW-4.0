@@ -7175,6 +7175,151 @@ async def get_store_stats(store_id: int, current_user: CurrentUser = Depends(req
     }
 
 
+# ==================== HELP CENTER ENDPOINTS ====================
+
+@api_router.get("/help/videos", response_model=List[VideoTutorial])
+async def get_video_tutorials(current_user: CurrentUser = Depends(get_current_user)):
+    """Get all active video tutorials"""
+    store_filter = current_user.get_store_filter()
+    videos = await db.video_tutorials.find(
+        {**store_filter, "active": True}, 
+        {"_id": 0}
+    ).sort("order", 1).to_list(100)
+    return [VideoTutorial(**v) for v in videos]
+
+@api_router.get("/help/videos/all", response_model=List[VideoTutorial])
+async def get_all_video_tutorials(current_user: CurrentUser = Depends(get_current_user)):
+    """Get all video tutorials (including inactive) - Admin only"""
+    store_filter = current_user.get_store_filter()
+    videos = await db.video_tutorials.find(
+        store_filter, 
+        {"_id": 0}
+    ).sort("order", 1).to_list(100)
+    return [VideoTutorial(**v) for v in videos]
+
+@api_router.post("/help/videos", response_model=VideoTutorial)
+async def create_video_tutorial(
+    video: VideoTutorialCreate,
+    current_user: CurrentUser = Depends(get_current_user)
+):
+    """Create new video tutorial - Admin only"""
+    video_doc = {
+        "id": str(uuid.uuid4()),
+        "store_id": current_user.store_id,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        **video.model_dump()
+    }
+    await db.video_tutorials.insert_one(video_doc)
+    return VideoTutorial(**video_doc)
+
+@api_router.put("/help/videos/{video_id}", response_model=VideoTutorial)
+async def update_video_tutorial(
+    video_id: str,
+    video: VideoTutorialCreate,
+    current_user: CurrentUser = Depends(get_current_user)
+):
+    """Update video tutorial - Admin only"""
+    store_filter = current_user.get_store_filter()
+    
+    update_data = video.model_dump()
+    result = await db.video_tutorials.update_one(
+        {**store_filter, "id": video_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Video no encontrado")
+    
+    updated = await db.video_tutorials.find_one({**store_filter, "id": video_id}, {"_id": 0})
+    return VideoTutorial(**updated)
+
+@api_router.delete("/help/videos/{video_id}")
+async def delete_video_tutorial(
+    video_id: str,
+    current_user: CurrentUser = Depends(get_current_user)
+):
+    """Delete video tutorial - Admin only"""
+    store_filter = current_user.get_store_filter()
+    result = await db.video_tutorials.delete_one({**store_filter, "id": video_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Video no encontrado")
+    
+    return {"message": "Video eliminado correctamente"}
+
+# FAQ ENDPOINTS
+
+@api_router.get("/help/faqs", response_model=List[FAQ])
+async def get_faqs(current_user: CurrentUser = Depends(get_current_user)):
+    """Get all active FAQs"""
+    store_filter = current_user.get_store_filter()
+    faqs = await db.faqs.find(
+        {**store_filter, "active": True}, 
+        {"_id": 0}
+    ).sort("order", 1).to_list(100)
+    return [FAQ(**f) for f in faqs]
+
+@api_router.get("/help/faqs/all", response_model=List[FAQ])
+async def get_all_faqs(current_user: CurrentUser = Depends(get_current_user)):
+    """Get all FAQs (including inactive) - Admin only"""
+    store_filter = current_user.get_store_filter()
+    faqs = await db.faqs.find(
+        store_filter, 
+        {"_id": 0}
+    ).sort("order", 1).to_list(100)
+    return [FAQ(**f) for f in faqs]
+
+@api_router.post("/help/faqs", response_model=FAQ)
+async def create_faq(
+    faq: FAQCreate,
+    current_user: CurrentUser = Depends(get_current_user)
+):
+    """Create new FAQ - Admin only"""
+    faq_doc = {
+        "id": str(uuid.uuid4()),
+        "store_id": current_user.store_id,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        **faq.model_dump()
+    }
+    await db.faqs.insert_one(faq_doc)
+    return FAQ(**faq_doc)
+
+@api_router.put("/help/faqs/{faq_id}", response_model=FAQ)
+async def update_faq(
+    faq_id: str,
+    faq: FAQCreate,
+    current_user: CurrentUser = Depends(get_current_user)
+):
+    """Update FAQ - Admin only"""
+    store_filter = current_user.get_store_filter()
+    
+    update_data = faq.model_dump()
+    result = await db.faqs.update_one(
+        {**store_filter, "id": faq_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="FAQ no encontrado")
+    
+    updated = await db.faqs.find_one({**store_filter, "id": faq_id}, {"_id": 0})
+    return FAQ(**updated)
+
+@api_router.delete("/help/faqs/{faq_id}")
+async def delete_faq(
+    faq_id: str,
+    current_user: CurrentUser = Depends(get_current_user)
+):
+    """Delete FAQ - Admin only"""
+    store_filter = current_user.get_store_filter()
+    result = await db.faqs.delete_one({**store_filter, "id": faq_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="FAQ no encontrado")
+    
+    return {"message": "FAQ eliminado correctamente"}
+
+
 # Include router
 app.include_router(api_router)
 
