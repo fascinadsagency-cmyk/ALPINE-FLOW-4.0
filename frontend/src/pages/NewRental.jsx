@@ -1721,7 +1721,6 @@ export default function NewRental() {
           payment_method: paymentMethodSelected || 'cash',
           total_amount: cleanTotal,
           paid_amount: Number(cleanPaidAmount.toFixed(2)),
-          pending_amount: Number(pendingAmount.toFixed(2)),
           deposit: cleanDeposit,
           notes: notes || ''
         })
