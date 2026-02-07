@@ -13,7 +13,7 @@ import sys
 import uuid
 
 # Configuration
-BACKEND_URL = "https://rental-security-fix.preview.emergentagent.com/api"
+BACKEND_URL = "https://rental-design-lab.preview.emergentagent.com/api"
 TEST_USER = "testcaja"
 TEST_PASSWORD = "test1234"
 
