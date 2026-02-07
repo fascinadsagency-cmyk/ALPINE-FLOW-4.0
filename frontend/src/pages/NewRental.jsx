@@ -1798,12 +1798,13 @@ export default function NewRental() {
       }
       
     } catch (error) {
-      console.error("Error creando alquiler:", error);
-      console.error("Error details:", error.response || error.message);
+      console.error("[Rental] Error creando alquiler:", error);
+      console.error("[Rental] Full error object:", error);
+      console.error("[Rental] Error message:", error.message);
       setProcessingPayment(false);
       
-      // Mostrar el error real del backend
-      const errorMessage = error.response?.data?.detail || error.message || "Error desconocido al crear el alquiler";
+      // Mostrar el error real - fetch errors tienen .message, no .response
+      const errorMessage = error.message || "Error desconocido al crear el alquiler";
       toast.error(`❌ ${errorMessage}`);
       
       // No redirigir - dejar al usuario en el formulario para que pueda corregir
