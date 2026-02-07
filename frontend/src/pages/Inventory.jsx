@@ -2968,6 +2968,25 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                   placeholder="Ej: Estante A1"
                 />
               </div>
+              
+              {/* Quick Add Toggle */}
+              <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <Label className="text-blue-900 font-medium cursor-pointer" htmlFor="quick-add-toggle">
+                      Mostrar en "Añadir Rápido"
+                    </Label>
+                    <p className="text-xs text-blue-600">Aparecerá como botón en Nuevo Alquiler</p>
+                  </div>
+                </div>
+                <Checkbox
+                  id="quick-add-toggle"
+                  checked={editingItem.is_quick_add || false}
+                  onCheckedChange={(checked) => setEditingItem({ ...editingItem, is_quick_add: checked })}
+                  className="h-6 w-6"
+                />
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => {
