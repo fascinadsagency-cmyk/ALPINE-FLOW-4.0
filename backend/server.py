@@ -290,6 +290,8 @@ class RentalResponse(BaseModel):
 class ReturnInput(BaseModel):
     barcodes: List[str]
     quantities: Optional[Dict[str, int]] = {}  # Map barcode -> quantity for partial returns
+    deposit_action: Optional[str] = "return"  # "return" or "forfeit"
+    forfeit_reason: Optional[str] = None  # Razón de incautación
 
 class MaintenanceCreate(BaseModel):
     item_id: str
