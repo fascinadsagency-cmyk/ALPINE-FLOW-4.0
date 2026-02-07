@@ -7188,8 +7188,8 @@ async def get_video_tutorials(current_user: CurrentUser = Depends(get_current_us
     return [VideoTutorial(**v) for v in videos]
 
 @api_router.get("/help/videos/all", response_model=List[VideoTutorial])
-async def get_all_video_tutorials(current_user: CurrentUser = Depends(get_current_user)):
-    """Get all video tutorials (including inactive) - Admin only"""
+async def get_all_video_tutorials(current_user: CurrentUser = Depends(require_super_admin)):
+    """Get all video tutorials (including inactive) - SUPER ADMIN ONLY"""
     store_filter = current_user.get_store_filter()
     videos = await db.video_tutorials.find(
         store_filter, 
@@ -7200,9 +7200,9 @@ async def get_all_video_tutorials(current_user: CurrentUser = Depends(get_curren
 @api_router.post("/help/videos", response_model=VideoTutorial)
 async def create_video_tutorial(
     video: VideoTutorialCreate,
-    current_user: CurrentUser = Depends(get_current_user)
+    current_user: CurrentUser = Depends(require_super_admin)
 ):
-    """Create new video tutorial - Admin only"""
+    """Create new video tutorial - SUPER ADMIN ONLY"""
     video_doc = {
         "id": str(uuid.uuid4()),
         "store_id": current_user.store_id,
@@ -7216,9 +7216,9 @@ async def create_video_tutorial(
 async def update_video_tutorial(
     video_id: str,
     video: VideoTutorialCreate,
-    current_user: CurrentUser = Depends(get_current_user)
+    current_user: CurrentUser = Depends(require_super_admin)
 ):
-    """Update video tutorial - Admin only"""
+    """Update video tutorial - SUPER ADMIN ONLY"""
     store_filter = current_user.get_store_filter()
     
     update_data = video.model_dump()
@@ -7236,9 +7236,9 @@ async def update_video_tutorial(
 @api_router.delete("/help/videos/{video_id}")
 async def delete_video_tutorial(
     video_id: str,
-    current_user: CurrentUser = Depends(get_current_user)
+    current_user: CurrentUser = Depends(require_super_admin)
 ):
-    """Delete video tutorial - Admin only"""
+    """Delete video tutorial - SUPER ADMIN ONLY"""
     store_filter = current_user.get_store_filter()
     result = await db.video_tutorials.delete_one({**store_filter, "id": video_id})
     
@@ -7260,8 +7260,8 @@ async def get_faqs(current_user: CurrentUser = Depends(get_current_user)):
     return [FAQ(**f) for f in faqs]
 
 @api_router.get("/help/faqs/all", response_model=List[FAQ])
-async def get_all_faqs(current_user: CurrentUser = Depends(get_current_user)):
-    """Get all FAQs (including inactive) - Admin only"""
+async def get_all_faqs(current_user: CurrentUser = Depends(require_super_admin)):
+    """Get all FAQs (including inactive) - SUPER ADMIN ONLY"""
     store_filter = current_user.get_store_filter()
     faqs = await db.faqs.find(
         store_filter, 
@@ -7272,9 +7272,9 @@ async def get_all_faqs(current_user: CurrentUser = Depends(get_current_user)):
 @api_router.post("/help/faqs", response_model=FAQ)
 async def create_faq(
     faq: FAQCreate,
-    current_user: CurrentUser = Depends(get_current_user)
+    current_user: CurrentUser = Depends(require_super_admin)
 ):
-    """Create new FAQ - Admin only"""
+    """Create new FAQ - SUPER ADMIN ONLY"""
     faq_doc = {
         "id": str(uuid.uuid4()),
         "store_id": current_user.store_id,
@@ -7288,9 +7288,9 @@ async def create_faq(
 async def update_faq(
     faq_id: str,
     faq: FAQCreate,
-    current_user: CurrentUser = Depends(get_current_user)
+    current_user: CurrentUser = Depends(require_super_admin)
 ):
-    """Update FAQ - Admin only"""
+    """Update FAQ - SUPER ADMIN ONLY"""
     store_filter = current_user.get_store_filter()
     
     update_data = faq.model_dump()
@@ -7308,9 +7308,9 @@ async def update_faq(
 @api_router.delete("/help/faqs/{faq_id}")
 async def delete_faq(
     faq_id: str,
-    current_user: CurrentUser = Depends(get_current_user)
+    current_user: CurrentUser = Depends(require_super_admin)
 ):
-    """Delete FAQ - Admin only"""
+    """Delete FAQ - SUPER ADMIN ONLY"""
     store_filter = current_user.get_store_filter()
     result = await db.faqs.delete_one({**store_filter, "id": faq_id})
     
