@@ -300,6 +300,14 @@ class MaintenanceCreate(BaseModel):
     cost: float = 0
     scheduled_date: Optional[str] = None
 
+
+class AddItemsToRentalInput(BaseModel):
+    items: List[RentalItemInput]
+    days: Optional[int] = None  # Días para los nuevos items (None = usar los del alquiler)
+    end_date: Optional[str] = None  # Fecha fin específica (None = usar la del alquiler)
+    charge_now: bool = True  # Si se cobra ahora o queda pendiente
+    payment_method: Optional[str] = "cash"  # Método de pago si se cobra ahora
+
 class MaintenanceResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
