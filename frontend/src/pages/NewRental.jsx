@@ -3094,24 +3094,12 @@ export default function NewRental() {
                         </span>
                       </div>
                       
-                      {cleanDeposit > 0 && (
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Depósito/Fianza:</span>
-                          <span className="font-medium text-blue-600">€{cleanDeposit.toFixed(2)}</span>
-                        </div>
-                      )}
-                      
                       {pendingAmount > 0 && (
                         <div className="flex justify-between pt-2 border-t border-slate-200">
                           <span className="text-amber-700 font-medium">Pendiente de pago:</span>
                           <span className="font-bold text-amber-600">€{pendingAmount.toFixed(2)}</span>
                         </div>
                       )}
-                      
-                      <div className="flex justify-between pt-2 border-t border-slate-300 mt-2">
-                        <span className="text-slate-800 font-semibold">💵 ENTRADA EN CAJA HOY:</span>
-                        <span className="font-bold text-lg text-emerald-700">€{cashInToday.toFixed(2)}</span>
-                      </div>
                     </div>
                     
                     {pendingAmount > 0 && (
