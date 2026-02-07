@@ -1,14 +1,45 @@
 # AlpineFlow - Sistema de Gestión de Alquiler de Equipos de Esquí
 
 ## Estado del Proyecto
-**Última actualización:** 2026-02-06
+**Última actualización:** 2026-02-07
 **Estado:** Operativo - Multi-Tenant SaaS Estable
 
 ---
 
 ## Cambios Recientes (2026-02-07)
 
-### Sistema de "Añadir Rápido" Personalizable (NUEVO)
+### Añadir Artículos a Alquiler Activo (NUEVO - Opción C)
+1. **✅ Botón "AÑADIR" en Alquileres Activos**
+   - Nuevo botón verde junto a "CAMBIOS" en cada fila
+   - Permite añadir artículos a contratos ya existentes
+   
+2. **✅ Modal de Añadir Artículos**
+   - Muestra cliente y fecha de fin del alquiler
+   - Campo de días (por defecto: días restantes)
+   - Búsqueda de artículos disponibles con debounce 300ms
+   - Soporte para escáner (Enter para añadir directamente)
+   
+3. **✅ Cálculo de Precio**
+   - Usa tarifas escalonadas (`day_1`, `day_2`, ..., `day_11_plus`)
+   - Precio individual × días restantes
+   - NO usa el motor de packs (simplicidad según Opción C)
+   
+4. **✅ Opciones de Cobro**
+   - Checkbox "Cobrar ahora (registrar en caja)"
+   - Selector Efectivo/Tarjeta
+   - Si no se cobra: suma al saldo pendiente
+   
+5. **✅ Endpoint Backend**
+   - `POST /api/rentals/{rental_id}/add-items`
+   - Valida límites del plan
+   - Actualiza items del alquiler
+   - Crea movimiento de caja (categoría: `rental_extension`)
+   - Actualiza `paid_amount` o `pending_amount`
+
+6. **✅ Bug Fix**
+   - Corregido `UnboundLocalError` por import de datetime dentro de bloque else
+
+### Sistema de "Añadir Rápido" Personalizable (ANTERIOR)
 1. **✅ Nuevo Campo `is_quick_add` en BD**
    - Añadido a modelos `ItemCreate` y `ItemResponse`
    - Valor por defecto: `false`
