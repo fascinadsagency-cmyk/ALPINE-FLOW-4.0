@@ -1183,10 +1183,10 @@ export default function Returns() {
     }
     
     // Procesar devolución normal (sin depósito o ya procesado)
-    await executeReturn();
+    await confirmDepositAndReturn();
   };
   
-  const executeReturn = async () => {
+  const confirmDepositAndReturn = async () => {
     setProcessing(true);
     try {
       const response = await rentalApi.processReturn(
@@ -2968,7 +2968,7 @@ export default function Returns() {
               Cancelar
             </Button>
             <Button 
-              onClick={executeReturn}
+              onClick={confirmDepositAndReturn}
               disabled={processing || (depositAction === "forfeit" && !forfeitReason.trim())}
             >
               {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
