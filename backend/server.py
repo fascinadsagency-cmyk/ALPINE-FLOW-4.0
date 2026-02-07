@@ -7004,6 +7004,200 @@ async def save_settings(settings: BusinessSettings, current_user: CurrentUser = 
     return {"success": True, "message": "Configuración guardada"}
 
 
+# ==================== PLAN & TRIAL MANAGEMENT ROUTES ====================
+
+class PlanStatusResponse(BaseModel):
+    plan_type: str
+    plan_name: str
+    is_trial: bool
+    trial_days_remaining: int
+    trial_expired: bool
+    current_items: int
+    current_customers: int
+    current_users: int
+    max_items: int
+    max_customers: int
+    max_users: int
+    price: int
+
+class PlanSelectionRequest(BaseModel):
+    plan_type: str  # 'basic', 'pro', 'enterprise'
+
+@api_router.get("/plan/status", response_model=PlanStatusResponse)
+async def get_plan_status(current_user: CurrentUser = Depends(get_current_user)):
+    """
+    Get current plan status including trial information.
+    Returns remaining trial days and current usage.
+    """
+    store = await db.stores.find_one({"store_id": current_user.store_id})
+    if not store:
+        raise HTTPException(status_code=404, detail="Store not found")
+    
+    # Get current plan or default to trial
+    plan_type = store.get("plan_type", "trial")
+    trial_start = store.get("trial_start_date")
+    
+    # Calculate trial status
+    is_trial = plan_type == "trial"
+    trial_days_remaining = 0
+    trial_expired = False
+    
+    if is_trial:
+        if trial_start:
+            # Parse trial start date
+            if isinstance(trial_start, str):
+                trial_start_dt = datetime.fromisoformat(trial_start.replace('Z', '+00:00'))
+            else:
+                trial_start_dt = trial_start
+            
+            days_since_start = (datetime.now(timezone.utc) - trial_start_dt).days
+            trial_days_remaining = max(0, 15 - days_since_start)
+            trial_expired = days_since_start > 15
+        else:
+            # No trial start date, set it now
+            await db.stores.update_one(
+                {"store_id": current_user.store_id},
+                {"$set": {"trial_start_date": datetime.now(timezone.utc).isoformat()}}
+            )
+            trial_days_remaining = 15
+    
+    # Get plan limits
+    plan_info = PLAN_LIMITS.get(plan_type, PLAN_LIMITS["trial"])
+    
+    # Count current usage
+    store_filter = current_user.get_store_filter()
+    current_items = await db.items.count_documents(store_filter)
+    current_customers = await db.customers.count_documents(store_filter)
+    current_users = await db.users.count_documents(store_filter)
+    
+    return PlanStatusResponse(
+        plan_type=plan_type,
+        plan_name=plan_info["name"],
+        is_trial=is_trial,
+        trial_days_remaining=trial_days_remaining,
+        trial_expired=trial_expired,
+        current_items=current_items,
+        current_customers=current_customers,
+        current_users=current_users,
+        max_items=plan_info["max_items"],
+        max_customers=plan_info["max_customers"],
+        max_users=plan_info["max_users"],
+        price=plan_info.get("price", 0)
+    )
+
+@api_router.get("/plan/available")
+async def get_available_plans():
+    """Get all available plans with their limits and prices."""
+    return {
+        "plans": [
+            {
+                "id": "basic",
+                "name": "Plan Básico",
+                "max_items": 3000,
+                "max_customers": 10000,
+                "max_users": 10,
+                "price": 950,
+                "price_display": "950€/año"
+            },
+            {
+                "id": "pro",
+                "name": "Plan PRO",
+                "max_items": 6000,
+                "max_customers": 30000,
+                "max_users": 10,
+                "price": 1450,
+                "price_display": "1.450€/año",
+                "recommended": True
+            },
+            {
+                "id": "enterprise",
+                "name": "Plan Enterprise",
+                "max_items": -1,  # Unlimited
+                "max_customers": -1,  # Unlimited
+                "max_users": 50,
+                "price": 1950,
+                "price_display": "1.950€/año"
+            }
+        ]
+    }
+
+@api_router.post("/plan/select")
+async def select_plan(
+    request: PlanSelectionRequest,
+    current_user: CurrentUser = Depends(require_admin)
+):
+    """
+    Select a plan for the store. 
+    Validates that current data doesn't exceed plan limits.
+    Only ADMIN can change plan.
+    """
+    plan_type = request.plan_type
+    
+    if plan_type not in ["basic", "pro", "enterprise"]:
+        raise HTTPException(status_code=400, detail="Plan inválido. Opciones: basic, pro, enterprise")
+    
+    plan_info = PLAN_LIMITS[plan_type]
+    store_filter = current_user.get_store_filter()
+    
+    # Count current usage
+    current_items = await db.items.count_documents(store_filter)
+    current_customers = await db.customers.count_documents(store_filter)
+    
+    # Validate limits
+    errors = []
+    if plan_info["max_items"] != 999999 and current_items > plan_info["max_items"]:
+        errors.append(f"Tu inventario actual ({current_items} artículos) supera el límite del {plan_info['name']} ({plan_info['max_items']})")
+    
+    if plan_info["max_customers"] != 999999 and current_customers > plan_info["max_customers"]:
+        errors.append(f"Tu base de clientes ({current_customers}) supera el límite del {plan_info['name']} ({plan_info['max_customers']})")
+    
+    if errors:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "Tu uso actual supera los límites del plan seleccionado",
+                "errors": errors,
+                "suggestion": "Elimina artículos/clientes o elige un plan superior"
+            }
+        )
+    
+    # Update store plan
+    await db.stores.update_one(
+        {"store_id": current_user.store_id},
+        {
+            "$set": {
+                "plan_type": plan_type,
+                "plan_activated_at": datetime.now(timezone.utc).isoformat(),
+                "settings.max_items": plan_info["max_items"],
+                "settings.max_customers": plan_info["max_customers"],
+                "settings.max_users": plan_info["max_users"]
+            },
+            "$unset": {
+                "trial_start_date": ""  # Remove trial info
+            }
+        }
+    )
+    
+    return {
+        "success": True,
+        "message": f"Plan {plan_info['name']} activado correctamente",
+        "plan": plan_type,
+        "plan_name": plan_info["name"]
+    }
+
+@api_router.post("/plan/simulate-payment")
+async def simulate_payment(
+    request: PlanSelectionRequest,
+    current_user: CurrentUser = Depends(require_admin)
+):
+    """
+    Simulate payment success and activate plan.
+    In production, this would integrate with Stripe/PayPal.
+    """
+    # First validate and select the plan
+    return await select_plan(request, current_user)
+
+
 # ==================== STORE MANAGEMENT ROUTES (SUPER_ADMIN ONLY) ====================
 
 @api_router.get("/stores", response_model=List[StoreResponse])
