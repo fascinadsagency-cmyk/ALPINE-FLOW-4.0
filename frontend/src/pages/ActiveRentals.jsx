@@ -133,6 +133,8 @@ export default function ActiveRentals() {
   const [addItemsChargeNow, setAddItemsChargeNow] = useState(true);
   const [addItemsPaymentMethod, setAddItemsPaymentMethod] = useState("cash");
   const [addItemsProcessing, setAddItemsProcessing] = useState(false);
+  const [addItemsSearchResults, setAddItemsSearchResults] = useState([]); // Resultados de búsqueda de artículos
+  const [addItemsSearchLoading, setAddItemsSearchLoading] = useState(false);
 
 
   // ============ ADD ITEMS MODAL FUNCTIONS ============
