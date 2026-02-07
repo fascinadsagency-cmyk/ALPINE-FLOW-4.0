@@ -178,7 +178,8 @@ aside nav > div[class*="border-t"] {
 button[class*="bg-blue-6"]:not([class*="outline"]),
 button[class*="bg-primary"]:not([class*="outline"]),
 button[class*="bg-emerald-6"]:not([class*="outline"]),
-button[class*="bg-purple-6"]:not([class*="outline"]) {
+button[class*="bg-purple-6"]:not([class*="outline"]),
+button[class*="from-purple"]:not([class*="outline"]) {
   background: linear-gradient(135deg, #6B21A8 0%, #4E00A8 100%) !important;
   border: none !important;
   color: white !important;
@@ -194,7 +195,8 @@ button[class*="bg-purple-6"]:not([class*="outline"]) {
 button[class*="bg-blue-6"]:not([class*="outline"]):hover,
 button[class*="bg-primary"]:not([class*="outline"]):hover,
 button[class*="bg-emerald-6"]:not([class*="outline"]):hover,
-button[class*="bg-purple-6"]:not([class*="outline"]):hover {
+button[class*="bg-purple-6"]:not([class*="outline"]):hover,
+button[class*="from-purple"]:not([class*="outline"]):hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 28px rgba(78, 0, 168, 0.5) !important;
   background: linear-gradient(135deg, #7C3AED 0%, #6B21A8 100%) !important;
@@ -210,25 +212,25 @@ button[class*="bg-emerald-6"]:disabled {
   opacity: 0.6 !important;
 }
 
-/* Outline buttons - White with purple border */
+/* Outline buttons - Purple border with white bg */
 button[class*="outline"],
 button[class*="variant-outline"] {
   background: white !important;
   backdrop-filter: none !important;
-  border: 2px solid var(--purple-light) !important;
+  border: 2px solid var(--purple-dark) !important;
   color: var(--purple-dark) !important;
-  border-radius: 16px !important;
+  border-radius: 14px !important;
   font-weight: 600 !important;
   transition: all 0.3s ease !important;
 }
 
 button[class*="outline"]:hover,
 button[class*="variant-outline"]:hover {
-  background: var(--purple-ultra-light) !important;
-  border-color: var(--purple-medium) !important;
-  color: var(--purple-darkest) !important;
+  background: linear-gradient(135deg, #6B21A8 0%, #4E00A8 100%) !important;
+  border-color: var(--purple-dark) !important;
+  color: white !important;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(107, 33, 168, 0.25) !important;
+  box-shadow: 0 6px 16px rgba(107, 33, 168, 0.3) !important;
 }
 
 /* Small buttons */
@@ -238,17 +240,23 @@ button[class*="size-sm"] {
   font-size: 13px !important;
 }
 
-/* Large buttons - Extra emphasis */
-button[class*="size-lg"] {
+/* Large buttons - Extra emphasis for IMPORTANT actions */
+button[class*="size-lg"]:not([class*="outline"]) {
+  background: linear-gradient(135deg, #6B21A8 0%, #4E00A8 100%) !important;
   border-radius: 18px !important;
   padding: 16px 32px !important;
   font-size: 16px !important;
   font-weight: 700 !important;
   box-shadow: 0 8px 24px rgba(78, 0, 168, 0.45) !important;
+  color: white !important;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
 }
 
-button[class*="size-lg"]:hover {
-  box-shadow: 0 10px 32px rgba(78, 0, 168, 0.55) !important;
+button[class*="size-lg"]:not([class*="outline"]):hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 32px rgba(78, 0, 168, 0.6) !important;
+  background: linear-gradient(135deg, #7C3AED 0%, #6B21A8 100%) !important;
 }
 
 /* ========== INPUTS - CLEAN WHITE ========== */
