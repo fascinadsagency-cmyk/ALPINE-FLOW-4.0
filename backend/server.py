@@ -1815,15 +1815,16 @@ def format_type_label(normalized_value: str) -> str:
     return normalized_value.replace('_', ' ').title()
 
 
-async def ensure_type_and_tariff_exist(store_id: int, type_name: str) -> str:
+async def ensure_type_and_tariff_exist(store_id: int, type_name: str) -> dict:
     """
     Ensure a type and its tariff exist for the store.
     Creates them if they don't exist.
-    Returns the normalized type value.
+    Returns dict with: normalized_type, tariff_id, daily_rate
+    GARANTIZA que siempre devuelve tariff_id y daily_rate válidos.
     """
     normalized = normalize_type_name(type_name)
     if not normalized:
-        return ""
+        normalized = "general"  # Fallback para tipos vacíos
     
     store_filter = {"store_id": store_id}
     
@@ -1847,8 +1848,9 @@ async def ensure_type_and_tariff_exist(store_id: int, type_name: str) -> str:
     
     if not existing_tariff:
         # Create default tariff with price 0
+        tariff_id = str(uuid.uuid4())
         tariff_doc = {
-            "id": str(uuid.uuid4()),
+            "id": tariff_id,
             "store_id": store_id,
             "item_type": normalized,
             "daily_rate": 0.0,
@@ -1858,8 +1860,19 @@ async def ensure_type_and_tariff_exist(store_id: int, type_name: str) -> str:
         }
         await db.tariffs.insert_one(tariff_doc)
         logger.info(f"✅ Auto-created tariff for type '{normalized}' with price 0€ for store {store_id}")
+        
+        return {
+            "normalized_type": normalized,
+            "tariff_id": tariff_id,
+            "daily_rate": 0.0
+        }
     
-    return normalized
+    # Tariff exists - return its data
+    return {
+        "normalized_type": normalized,
+        "tariff_id": existing_tariff.get("id", ""),
+        "daily_rate": existing_tariff.get("daily_rate", 0.0)
+    }
 
 
 async def auto_cleanup_empty_type(store_id: int, type_value: str):
