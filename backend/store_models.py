@@ -18,10 +18,11 @@ class StoreResponse(BaseModel):
     store_id: int
     name: str
     status: str
-    plan: str
+    plan: Optional[str] = None
+    plan_type: Optional[str] = None  # Support both plan and plan_type
     created_at: str
-    settings: dict
-    contact: dict
+    settings: Optional[dict] = {}
+    contact: Optional[dict] = {}
 
 class StoreUpdate(BaseModel):
     name: Optional[str] = None
