@@ -6,9 +6,32 @@
 
 ---
 
-## Cambios Recientes (2026-02-06)
+## Cambios Recientes (2026-02-07)
 
-### Gestión Dinámica de Tipos de Artículos (NUEVO)
+### Sistema de "Añadir Rápido" Personalizable (NUEVO)
+1. **✅ Nuevo Campo `is_quick_add` en BD**
+   - Añadido a modelos `ItemCreate` y `ItemResponse`
+   - Valor por defecto: `false`
+   
+2. **✅ Checkbox en Formulario de Edición**
+   - Ubicado al final del formulario con icono ⚡
+   - Texto: "Mostrar en Añadir Rápido"
+   - Subtexto: "Aparecerá como botón en Nuevo Alquiler"
+   
+3. **✅ Endpoints Backend**
+   - `GET /api/items/quick-add`: Obtiene items con `is_quick_add=true`
+   - `PATCH /api/items/{id}/quick-add`: Toggle acceso rápido
+   
+4. **✅ Renderizado Dinámico en Mostrador**
+   - Botones cargados desde BD al abrir Nuevo Alquiler
+   - Muestra nombre (genéricos) o código (individuales)
+   - Stock disponible entre paréntesis para genéricos
+   
+5. **✅ Scroll Horizontal para muchos botones**
+   - Contenedor con `overflow-x-auto`
+   - Botones con `flex-shrink-0` y `whitespace-nowrap`
+
+### Gestión Dinámica de Tipos (ANTERIOR)
 1. **✅ Creación Automática al Importar/Crear**
    - Si el tipo no existe, se crea automáticamente
    - También se crea tarifa con precio €0/día
