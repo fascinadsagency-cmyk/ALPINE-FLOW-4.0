@@ -7386,11 +7386,23 @@ async def download_invoice(
     Generate and download invoice PDF - ADMIN ONLY
     The PDF is generated on-demand and secured per store_id
     """
-    # Find payment record
+    from bson import ObjectId
+    
+    # Find payment record - try both id field and _id (ObjectId)
     payment = await db.payments.find_one({
         "store_id": current_user.store_id,
-        "$or": [{"id": payment_id}, {"_id": payment_id}]
+        "id": payment_id
     })
+    
+    # If not found by 'id', try by ObjectId
+    if not payment:
+        try:
+            payment = await db.payments.find_one({
+                "store_id": current_user.store_id,
+                "_id": ObjectId(payment_id)
+            })
+        except:
+            pass
     
     if not payment:
         raise HTTPException(status_code=404, detail="Pago no encontrado")
