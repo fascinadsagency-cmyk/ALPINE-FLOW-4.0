@@ -1778,6 +1778,9 @@ export default function NewRental() {
       const pendingToShow = cleanTotal - cleanPaidAmount;
       
       // === ÉXITO ===
+      const totalToPay = cleanTotal + cleanDeposit; // Total que el cliente debe pagar HOY
+      const cashGivenAmount = Number(parseFloat(cashGiven) || 0);
+      
       setCompletedRental({
         ...rentalData,
         customer_name: customer?.name || 'Cliente',
@@ -1787,8 +1790,8 @@ export default function NewRental() {
         paid_amount: cleanPaidAmount,
         pending_amount: pendingToShow,
         deposit: cleanDeposit,
-        change: paymentMethodSelected === "cash" && cashGivenAmount > cleanPaidAmount + cleanDeposit 
-          ? Number((cashGivenAmount - cleanPaidAmount - cleanDeposit).toFixed(2)) 
+        change: paymentMethodSelected === "cash" && cashGivenAmount > totalToPay
+          ? Number((cashGivenAmount - totalToPay).toFixed(2)) 
           : 0
       });
       
@@ -1807,6 +1810,7 @@ export default function NewRental() {
       console.error("[Rental] Error creando alquiler:", error);
       console.error("[Rental] Full error object:", error);
       console.error("[Rental] Error message:", error.message);
+      console.error("[Rental] Error stack:", error.stack);
       setProcessingPayment(false);
       
       // Mostrar el error real - fetch errors tienen .message, no .response
