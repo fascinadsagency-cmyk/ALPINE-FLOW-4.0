@@ -1625,6 +1625,16 @@ export default function NewRental() {
     // Sincronizar el método de pago del desplegable con el popup
     setPaymentMethodSelected(paymentMethod);
     
+    // Establecer el importe inicial según el método seleccionado
+    const currentTotal = calculateTotal();
+    if (paymentMethod === "pending") {
+      // Para pendiente, dejar en 0 por defecto (usuario puede cambiar)
+      setPaidAmount("0");
+    } else {
+      // Para otros métodos, poner el total completo
+      setPaidAmount(currentTotal.toFixed(2));
+    }
+    
     // Abrir el dialog de pago
     setShowPaymentDialog(true);
   };
