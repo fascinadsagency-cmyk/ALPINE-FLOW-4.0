@@ -53,6 +53,47 @@ export default function PlanSelection() {
 
     try {
       const token = localStorage.getItem("token");
+      
+      // Create Stripe checkout session
+      const response = await axios.post(
+        `${API}/plan/checkout`,
+        { 
+          plan_type: planId,
+          origin_url: window.location.origin
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Redirect to Stripe Checkout
+      if (response.data.checkout_url) {
+        toast.info("Redirigiendo a la pasarela de pago...");
+        window.location.href = response.data.checkout_url;
+      } else {
+        throw new Error("No se recibió URL de checkout");
+      }
+    } catch (err) {
+      const errorData = err.response?.data?.detail;
+      if (typeof errorData === "object" && errorData.errors) {
+        setError({
+          message: errorData.message,
+          errors: errorData.errors,
+          suggestion: errorData.suggestion
+        });
+      } else {
+        setError({ message: errorData || "Error al procesar el pago" });
+      }
+      toast.error("No se pudo procesar el pago");
+      setSelecting(null);
+    }
+  };
+
+  // Alternative: Direct activation for testing (bypasses Stripe)
+  const handleDirectActivation = async (planId) => {
+    setSelecting(planId);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem("token");
       await axios.post(
         `${API}/plan/simulate-payment`,
         { plan_type: planId },
