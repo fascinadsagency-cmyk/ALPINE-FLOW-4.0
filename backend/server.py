@@ -8099,29 +8099,6 @@ async def create_store(store: StoreCreate, current_user: CurrentUser = Depends(r
         }
     # ============================================================
     
-    # ============ AUTO-CREATE DEFAULT ITEM TYPES FOR NEW STORE ============
-    default_item_types = [
-        {"value": "ski", "label": "Esquí"},
-        {"value": "boot", "label": "Bota"},
-        {"value": "snowboard", "label": "Tabla Snowboard"},
-        {"value": "helmet", "label": "Casco"},
-        {"value": "poles", "label": "Bastones"},
-        {"value": "goggles", "label": "Máscaras"},
-    ]
-    
-    for item_type in default_item_types:
-        type_id = str(uuid.uuid4())
-        type_doc = {
-            "id": type_id,
-            "store_id": next_id,
-            "value": item_type['value'],
-            "label": item_type['label'],
-            "is_default": True,
-            "created_at": datetime.now(timezone.utc).isoformat()
-        }
-        await db.item_types.insert_one(type_doc)
-    # =======================================================================
-    
     return store_doc
 
 @api_router.get("/stores/{store_id}", response_model=StoreResponse)
