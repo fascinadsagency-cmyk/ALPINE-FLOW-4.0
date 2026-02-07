@@ -950,13 +950,13 @@ export default function Returns() {
         if (refundAmount > 0) {
           // Registrar salida de caja por el importe total
           await axios.post(`${API}/cash/movements`, {
-            type: "expense",
+            movement_type: "expense",
             category: "refund",
             amount: refundAmount,
             payment_method: paymentMethod || settlementData.originalPaymentMethod || 'cash',
-            description: `⚠️ ANULACIÓN TOTAL - ${rental.customer_name} (Devolución completa por excepción)`,
+            concept: `⚠️ ANULACIÓN TOTAL - ${rental.customer_name} (Devolución completa por excepción)`,
             reference_id: rental.id,
-            reference_type: "rental"
+            notes: "Anulación total"
           }, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
           });
