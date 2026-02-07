@@ -1,55 +1,95 @@
 /* ========================================
-   GLASSMORPHISM THEME - GROWSYNC INSPIRED
-   Modern Purple Dashboard Design
+   GLASSMORPHISM PURPLE PREMIUM THEME
+   Complete UI/UX Transformation
+   Modern SaaS Dashboard for AlpineFlow
    ========================================
    
-   Color Palette (from reference image):
-   - Deep Purple: #4E00A8, #6B21A8
-   - Medium Purple: #8A2BE2, #9333EA
+   Design System:
+   - Deep Purple Accent: #6B21A8, #4E00A8
+   - Vibrant Purple: #8B5CF6, #9333EA
    - Light Purple: #A855F7, #C084FC
-   - Extra Light: #DDD6FE, #E9D5FF
-   - Background: #F7F7F7, #FAFAFA
-   - Sidebar: #F0F0F0
+   - Glassmorphism: backdrop-filter blur effects
+   - Animations: Smooth, fast (max 0.2s)
+   - Premium feel: Shadows, glows, gradients
    
-   To DISABLE this theme: Comment out the import in index.css
+   To DISABLE: Comment out import in index.css
 ========================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  /* ===== PURPLE GRADIENT PALETTE (from image) ===== */
-  --purple-darkest: #4E00A8;
-  --purple-dark: #6B21A8;
-  --purple-primary: #8A2BE2;
+  /* ===== PURPLE GRADIENT PALETTE ===== */
+  --purple-deepest: #4E00A8;
+  --purple-deep: #6B21A8;
+  --purple-primary: #8B5CF6;
   --purple-medium: #9333EA;
   --purple-light: #A855F7;
   --purple-lighter: #C084FC;
   --purple-extra-light: #DDD6FE;
-  --purple-ultra-light: #E9D5FF;
+  --purple-ultra-light: #EDE9FE;
   
   /* Backgrounds */
-  --bg-main: #FAFAFA;
-  --bg-sidebar: #F5F5F7;
-  --bg-card-white: #FFFFFF;
+  --bg-main: linear-gradient(135deg, #FFFFFF 0%, #F9FAFB 50%, #F5F3FF 100%);
+  --bg-sidebar: #F8F9FA;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-glass: rgba(255, 255, 255, 0.7);
   
   /* Text */
   --text-primary: #1F2937;
   --text-secondary: #6B7280;
   --text-muted: #9CA3AF;
-  --text-light: #D1D5DB;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(107, 33, 168, 0.08);
+  --shadow-md: 0 4px 16px rgba(107, 33, 168, 0.12);
+  --shadow-lg: 0 8px 32px rgba(107, 33, 168, 0.15);
+  --shadow-xl: 0 12px 48px rgba(107, 33, 168, 0.2);
+  
+  /* Transitions */
+  --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ========== GLOBAL STYLES ========== */
 
-body {
-  font-family: 'Inter', sans-serif !important;
-  background: #FAFAFA !important;
-  position: relative;
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-/* Remove the pattern for cleaner look like the reference */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  background: linear-gradient(135deg, #FFFFFF 0%, #F9FAFB 50%, #F5F3FF 100%) !important;
+  background-attachment: fixed;
+  position: relative;
+  color: var(--text-primary);
+}
+
+/* Subtle animated background pattern */
 body::before {
-  display: none;
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(circle at 20% 30%, rgba(139, 92, 246, 0.06) 0%, transparent 60%),
+    radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.06) 0%, transparent 60%),
+    radial-gradient(circle at 40% 80%, rgba(124, 58, 237, 0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+  animation: backgroundShift 20s ease-in-out infinite;
+}
+
+@keyframes backgroundShift {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -58,220 +98,399 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-primary);
 }
 
-/* ========== SIDEBAR STYLES (REFERENCE IMAGE) ========== */
+/* ========== SIDEBAR PREMIUM ========== */
 
-/* Sidebar container - Light gray solid background */
+/* Sidebar container - Floating effect */
 aside,
-nav[aria-label="Main navigation"],
 aside > div:first-child {
-  background: linear-gradient(180deg, #F7F7F7 0%, #F0F0F0 100%) !important;
-  backdrop-filter: none !important;
-  border-right: 1px solid #E5E5E5 !important;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-right: 1px solid rgba(139, 92, 246, 0.1) !important;
+  box-shadow: 4px 0 24px rgba(107, 33, 168, 0.08) !important;
+  margin: 12px 0 12px 12px !important;
+  border-radius: 24px !important;
 }
 
-/* Logo area */
+/* Logo glow effect */
 aside img,
-aside [class*="logo"] {
-  filter: drop-shadow(0 2px 4px rgba(139, 51, 234, 0.2));
+aside [class*="logo"],
+aside h2 {
+  filter: drop-shadow(0 2px 8px rgba(139, 92, 246, 0.3));
+  transition: filter 0.3s ease;
 }
 
-/* Sidebar navigation items */
+aside img:hover,
+aside [class*="logo"]:hover {
+  filter: drop-shadow(0 4px 12px rgba(139, 92, 246, 0.5));
+}
+
+/* Navigation items with smooth animations */
 aside nav a,
 aside nav button {
-  border-radius: 12px !important;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border-radius: 16px !important;
+  transition: var(--transition-base) !important;
   font-weight: 500 !important;
-  color: #6B7280 !important;
-  margin: 2px 8px !important;
+  color: var(--text-secondary) !important;
+  margin: 3px 8px !important;
+  padding: 12px 16px !important;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Active navigation item - SOLID purple gradient (like image) */
+/* Animated gradient on hover */
+aside nav a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+aside nav a:hover::before {
+  left: 100%;
+}
+
+/* Active navigation - SOLID dark purple gradient with glow */
 aside nav a[class*="bg-primary"],
 aside nav a[class*="text-primary"] {
-  background: linear-gradient(135deg, #8A2BE2 0%, #9333EA 100%) !important;
+  background: linear-gradient(135deg, #6B21A8 0%, #4E00A8 100%) !important;
   color: white !important;
-  box-shadow: 0 4px 12px rgba(138, 43, 226, 0.35) !important;
+  box-shadow: 0 6px 20px rgba(78, 0, 168, 0.4),
+              0 0 40px rgba(139, 92, 246, 0.2) !important;
   font-weight: 600 !important;
+  transform: scale(1.02);
 }
 
-/* Hover state - subtle purple tint */
-aside nav a:not([class*="bg-primary"]):hover,
-aside nav button:hover {
-  background: rgba(139, 51, 234, 0.08) !important;
-  color: var(--purple-primary) !important;
-  transform: translateX(2px);
+/* Hover state - purple tint with slide animation */
+aside nav a:not([class*="bg-primary"]):hover {
+  background: rgba(139, 92, 246, 0.1) !important;
+  color: var(--purple-deep) !important;
+  transform: translateX(4px) scale(1.01);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.15);
 }
 
-/* Menu section dividers */
+/* Section dividers */
 aside nav > div[class*="border-t"] {
-  border-color: #E5E5E5 !important;
-  margin-top: 16px !important;
+  border-color: rgba(139, 92, 246, 0.15) !important;
+  margin: 16px 8px !important;
   padding-top: 16px !important;
 }
 
-/* ========== CARDS - SOLID BACKGROUNDS (NOT BLUR) ========== */
+/* Icon animations */
+aside nav a svg {
+  transition: var(--transition-base);
+}
 
-/* Default white cards */
+aside nav a:hover svg {
+  transform: scale(1.15) rotate(2deg);
+}
+
+aside nav a[class*="bg-primary"] svg {
+  filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.3));
+}
+
+/* ========== CARDS - GLASSMORPHISM PREMIUM ========== */
+
 [class*="Card"],
-.card {
-  background: #FFFFFF !important;
-  backdrop-filter: none !important;
-  border: 1px solid #E5E7EB !important;
-  border-radius: 20px !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
-  transition: all 0.3s ease !important;
+.card,
+.glass-card {
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  border-radius: 24px !important;
+  box-shadow: var(--shadow-md) !important;
+  transition: var(--transition-base) !important;
+  position: relative;
+  overflow: hidden;
 }
 
-[class*="Card"]:hover,
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(139, 51, 234, 0.12) !important;
+/* Shimmer effect on cards */
+[class*="Card"]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s ease;
+  pointer-events: none;
 }
 
-/* Card headers */
+[class*="Card"]:hover::before {
+  left: 150%;
+}
+
+[class*="Card"]:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: var(--shadow-xl) !important;
+  border-color: rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Card headers with purple accent */
 [class*="CardHeader"],
 [class*="card-header"] {
-  border-bottom: 1px solid #F3F4F6 !important;
-  padding: 20px 24px !important;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.1) !important;
+  padding: 24px 28px !important;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), transparent);
 }
 
 [class*="CardTitle"] {
-  font-size: 20px !important;
+  font-size: 22px !important;
   font-weight: 700 !important;
   color: var(--text-primary) !important;
+  background: linear-gradient(135deg, #6B21A8 0%, #8B5CF6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* ========== STATS CARDS (PURPLE GRADIENTS) ========== */
+/* ========== STAT CARDS - DARK PURPLE GRADIENTS ========== */
 
-/* Target stat cards with gradient backgrounds */
-.stat-card-purple {
-  background: linear-gradient(180deg, #9333EA 0%, #6B21A8 100%) !important;
+.stat-card-dark,
+[data-stat-type="total"] {
+  background: linear-gradient(135deg, #4E00A8 0%, #6B21A8 100%) !important;
   border: none !important;
-  border-radius: 24px !important;
-  padding: 24px !important;
-  box-shadow: 0 8px 24px rgba(107, 33, 168, 0.3) !important;
+  border-radius: 28px !important;
+  padding: 36px 28px !important;
+  box-shadow: 0 12px 32px rgba(78, 0, 168, 0.4),
+              0 0 60px rgba(107, 33, 168, 0.2) !important;
   color: white !important;
+  min-height: 180px !important;
+  position: relative;
+  overflow: hidden;
 }
 
-.stat-card-dark {
-  background: linear-gradient(180deg, #6B21A8 0%, #4E00A8 100%) !important;
+.stat-card-medium,
+[data-stat-type="ended"],
+[data-stat-type="running"] {
+  background: linear-gradient(135deg, #6B21A8 0%, #8B5CF6 100%) !important;
   border: none !important;
-  border-radius: 24px !important;
-  padding: 24px !important;
-  box-shadow: 0 8px 24px rgba(78, 0, 168, 0.4) !important;
+  border-radius: 28px !important;
+  padding: 36px 28px !important;
+  box-shadow: 0 12px 32px rgba(107, 33, 168, 0.35),
+              0 0 50px rgba(139, 92, 246, 0.15) !important;
   color: white !important;
+  min-height: 180px !important;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Large numbers in stat cards */
-.stat-number {
-  font-size: 56px !important;
-  font-weight: 800 !important;
+.stat-card-light,
+[data-stat-type="pending"] {
+  background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%) !important;
+  border: none !important;
+  border-radius: 28px !important;
+  padding: 36px 28px !important;
+  box-shadow: 0 12px 32px rgba(139, 92, 246, 0.3),
+              0 0 40px rgba(168, 85, 247, 0.15) !important;
+  color: white !important;
+  min-height: 180px !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated gradient overlay on stat cards */
+.stat-card-dark::before,
+.stat-card-medium::before,
+.stat-card-light::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+  animation: rotateGlow 8s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes rotateGlow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Stat card hover - Extra glow */
+.stat-card-dark:hover,
+.stat-card-medium:hover,
+.stat-card-light:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 48px rgba(78, 0, 168, 0.5),
+              0 0 80px rgba(139, 92, 246, 0.3) !important;
+}
+
+.stat-card-title {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  opacity: 0.95 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1.2px !important;
+  margin-bottom: 16px !important;
+}
+
+.stat-card-number {
+  font-size: 72px !important;
+  font-weight: 900 !important;
   line-height: 1 !important;
-  color: white !important;
   font-family: 'Poppins', sans-serif !important;
+  margin: 20px 0 !important;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* ========== BUTTONS - DARK PURPLE FOR IMPORTANT ACTIONS ========== */
+.stat-card-subtitle {
+  font-size: 13px !important;
+  opacity: 0.85 !important;
+  font-weight: 500 !important;
+}
 
-/* Primary buttons - DARK PURPLE (for important actions: Login, Cobrar, Nuevo Alquiler) */
-button[class*="bg-blue-6"]:not([class*="outline"]),
+/* Arrow icon circle in stat cards */
+.icon-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-base);
+  backdrop-filter: blur(10px);
+}
+
+.icon-circle:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(1.15) rotate(5deg);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+
+/* ========== BUTTONS - DARK PURPLE PREMIUM ========== */
+
+/* Primary buttons - DARK PURPLE with extra glow */
+button[class*="bg-blue"]:not([class*="outline"]):not([class*="bg-blue-1"]):not([class*="bg-blue-2"]):not([class*="bg-blue-3"]):not([class*="bg-blue-4"]):not([class*="bg-blue-5"]),
 button[class*="bg-primary"]:not([class*="outline"]),
-button[class*="bg-emerald-6"]:not([class*="outline"]),
-button[class*="bg-purple-6"]:not([class*="outline"]),
+button[class*="bg-emerald"]:not([class*="outline"]),
+button[class*="bg-purple"]:not([class*="outline"]),
 button[class*="from-purple"]:not([class*="outline"]) {
   background: linear-gradient(135deg, #6B21A8 0%, #4E00A8 100%) !important;
   border: none !important;
   color: white !important;
   border-radius: 16px !important;
   font-weight: 700 !important;
-  padding: 12px 24px !important;
-  box-shadow: 0 6px 20px rgba(78, 0, 168, 0.4) !important;
-  transition: all 0.3s ease !important;
+  padding: 14px 28px !important;
+  box-shadow: 0 6px 24px rgba(78, 0, 168, 0.45),
+              0 0 40px rgba(107, 33, 168, 0.2) !important;
+  transition: var(--transition-base) !important;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
+  position: relative;
+  overflow: hidden;
 }
 
-button[class*="bg-blue-6"]:not([class*="outline"]):hover,
+/* Button shimmer effect */
+button[class*="bg-blue"]:not([class*="outline"])::before,
+button[class*="bg-primary"]:not([class*="outline"])::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+button[class*="bg-blue"]:not([class*="outline"]):hover::before,
+button[class*="bg-primary"]:not([class*="outline"]):hover::before {
+  left: 150%;
+}
+
+button[class*="bg-blue"]:not([class*="outline"]):hover,
 button[class*="bg-primary"]:not([class*="outline"]):hover,
-button[class*="bg-emerald-6"]:not([class*="outline"]):hover,
-button[class*="bg-purple-6"]:not([class*="outline"]):hover,
+button[class*="bg-emerald"]:not([class*="outline"]):hover,
 button[class*="from-purple"]:not([class*="outline"]):hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 28px rgba(78, 0, 168, 0.5) !important;
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 36px rgba(78, 0, 168, 0.6),
+              0 0 60px rgba(139, 92, 246, 0.3) !important;
   background: linear-gradient(135deg, #7C3AED 0%, #6B21A8 100%) !important;
 }
 
-/* Disabled state */
-button[class*="bg-blue-6"]:disabled,
-button[class*="bg-primary"]:disabled,
-button[class*="bg-emerald-6"]:disabled {
-  background: linear-gradient(135deg, #9CA3AF 0%, #6B7280 100%) !important;
-  box-shadow: none !important;
-  cursor: not-allowed !important;
-  opacity: 0.6 !important;
+/* Active/pressed state */
+button[class*="bg-blue"]:not([class*="outline"]):active,
+button[class*="bg-primary"]:not([class*="outline"]):active {
+  transform: translateY(-1px) scale(0.98);
 }
 
-/* Outline buttons - Purple border with white bg */
+/* Disabled state with shimmer */
+button:disabled {
+  background: linear-gradient(135deg, #D1D5DB 0%, #9CA3AF 100%) !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  opacity: 0.5 !important;
+}
+
+/* Outline buttons - hover fills with purple */
 button[class*="outline"],
 button[class*="variant-outline"] {
   background: white !important;
-  backdrop-filter: none !important;
-  border: 2px solid var(--purple-dark) !important;
-  color: var(--purple-dark) !important;
+  border: 2px solid var(--purple-deep) !important;
+  color: var(--purple-deep) !important;
   border-radius: 14px !important;
   font-weight: 600 !important;
-  transition: all 0.3s ease !important;
+  padding: 12px 24px !important;
+  transition: var(--transition-base) !important;
 }
 
 button[class*="outline"]:hover,
 button[class*="variant-outline"]:hover {
   background: linear-gradient(135deg, #6B21A8 0%, #4E00A8 100%) !important;
-  border-color: var(--purple-dark) !important;
+  border-color: transparent !important;
   color: white !important;
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(107, 33, 168, 0.3) !important;
+  box-shadow: 0 6px 20px rgba(107, 33, 168, 0.35) !important;
 }
 
-/* Small buttons */
+/* Button sizes */
 button[class*="size-sm"] {
   border-radius: 12px !important;
   padding: 8px 16px !important;
   font-size: 13px !important;
 }
 
-/* Large buttons - Extra emphasis for IMPORTANT actions */
 button[class*="size-lg"]:not([class*="outline"]) {
   background: linear-gradient(135deg, #6B21A8 0%, #4E00A8 100%) !important;
-  border-radius: 18px !important;
-  padding: 16px 32px !important;
-  font-size: 16px !important;
-  font-weight: 700 !important;
-  box-shadow: 0 8px 24px rgba(78, 0, 168, 0.45) !important;
-  color: white !important;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
+  border-radius: 20px !important;
+  padding: 18px 40px !important;
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  box-shadow: 0 10px 32px rgba(78, 0, 168, 0.5),
+              0 0 60px rgba(107, 33, 168, 0.25) !important;
+  letter-spacing: 1px;
 }
 
 button[class*="size-lg"]:not([class*="outline"]):hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 32px rgba(78, 0, 168, 0.6) !important;
-  background: linear-gradient(135deg, #7C3AED 0%, #6B21A8 100%) !important;
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 14px 48px rgba(78, 0, 168, 0.65),
+              0 0 80px rgba(139, 92, 246, 0.35) !important;
 }
 
-/* ========== INPUTS - CLEAN WHITE ========== */
+/* ========== INPUTS PREMIUM ========== */
 
 input,
 textarea,
 select,
 [role="combobox"] {
-  background: white !important;
-  backdrop-filter: none !important;
-  border: 1.5px solid #E5E7EB !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 2px solid #E5E7EB !important;
   border-radius: 14px !important;
-  transition: all 0.3s ease !important;
+  transition: var(--transition-base) !important;
   color: var(--text-primary) !important;
-  padding: 10px 16px !important;
+  padding: 12px 16px !important;
+  font-weight: 500;
 }
 
 input:focus,
@@ -280,302 +499,278 @@ select:focus,
 [role="combobox"]:focus {
   background: white !important;
   border-color: var(--purple-medium) !important;
-  box-shadow: 0 0 0 4px rgba(139, 51, 234, 0.1) !important;
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15),
+              0 4px 12px rgba(107, 33, 168, 0.2) !important;
   outline: none !important;
+  transform: scale(1.01);
+}
+
+/* Input with icon (search) */
+input[type="search"],
+input[class*="search"] {
+  padding-left: 44px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%239333EA' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: 12px center !important;
 }
 
 input::placeholder,
 textarea::placeholder {
   color: var(--text-muted) !important;
+  font-weight: 400;
 }
 
-/* Search input styling (from image) */
-input[type="search"],
-input[placeholder*="busca"],
-input[placeholder*="Busca"],
-input[placeholder*="Search"] {
-  padding-left: 40px !important;
-  background: white !important;
-  border-radius: 16px !important;
+/* Validation states */
+input:valid:not(:placeholder-shown) {
+  border-color: #10B981 !important;
+  background: rgba(236, 253, 245, 0.5) !important;
 }
 
-/* ========== MODALS/DIALOGS ========== */
+input:invalid:not(:placeholder-shown):not(:focus) {
+  border-color: #EF4444 !important;
+  background: rgba(254, 242, 242, 0.5) !important;
+}
+
+/* ========== MODALS/DIALOGS PREMIUM ========== */
 
 [role="dialog"],
 [class*="DialogContent"] {
-  background: white !important;
-  backdrop-filter: none !important;
-  border: 1px solid #E5E7EB !important;
-  border-radius: 24px !important;
-  box-shadow: 0 20px 60px rgba(107, 33, 168, 0.2) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(40px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-radius: 32px !important;
+  box-shadow: 0 24px 80px rgba(107, 33, 168, 0.25),
+              0 0 100px rgba(139, 92, 246, 0.15) !important;
+  animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ========== BADGES (LIKE IMAGE) ========== */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 
-/* Success/Complete badges - Light purple */
+/* Modal backdrop */
+[class*="DialogOverlay"],
+[role="dialog"] ~ div {
+  background: rgba(30, 27, 75, 0.4) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* ========== BADGES - GLASSMORPHISM ========== */
+
+/* Success badges */
 .status-available,
 [class*="bg-emerald-100"]:not(button),
-[class*="bg-green-100"]:not(button) {
-  background: linear-gradient(135deg, #DDD6FE 0%, #C7D2FE 100%) !important;
-  border: 1px solid var(--purple-light) !important;
-  border-radius: 14px !important;
-  color: var(--purple-dark) !important;
-  font-weight: 600 !important;
-  padding: 6px 12px !important;
+[class*="bg-green-100"]:not(button),
+.badge-success {
+  background: rgba(236, 253, 245, 0.8) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1.5px solid #10B981 !important;
+  border-radius: 16px !important;
+  color: #065F46 !important;
+  font-weight: 700 !important;
+  padding: 6px 14px !important;
+  text-transform: uppercase;
+  font-size: 11px !important;
+  letter-spacing: 0.5px;
 }
 
-/* In Progress badges - Medium purple */
+/* Purple badges */
+[class*="bg-purple-100"]:not(button),
 [class*="bg-blue-100"]:not(button),
-[class*="bg-purple-100"]:not(button) {
-  background: linear-gradient(135deg, #C084FC 0%, #A855F7 100%) !important;
-  border: 1px solid var(--purple-medium) !important;
-  border-radius: 14px !important;
-  color: white !important;
-  font-weight: 600 !important;
-  padding: 6px 12px !important;
+.badge-purple {
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.3) 0%, rgba(139, 92, 246, 0.3) 100%) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1.5px solid var(--purple-medium) !important;
+  border-radius: 16px !important;
+  color: var(--purple-deep) !important;
+  font-weight: 700 !important;
+  padding: 6px 14px !important;
+  text-transform: uppercase;
+  font-size: 11px !important;
+  letter-spacing: 0.5px;
 }
 
 /* Alert badges */
 .status-rented,
-[class*="bg-red-100"]:not(button) {
-  background: linear-gradient(135deg, #FECACA 0%, #FCA5A5 100%) !important;
-  border: 1px solid #EF4444 !important;
-  border-radius: 14px !important;
+[class*="bg-red-100"]:not(button),
+.badge-danger {
+  background: rgba(254, 242, 242, 0.8) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1.5px solid #EF4444 !important;
+  border-radius: 16px !important;
   color: #991B1B !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
 }
 
 [class*="bg-amber-100"]:not(button),
-[class*="bg-yellow-100"]:not(button) {
-  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%) !important;
-  border: 1px solid #F59E0B !important;
-  border-radius: 14px !important;
+[class*="bg-yellow-100"]:not(button),
+.badge-warning {
+  background: rgba(254, 243, 199, 0.8) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1.5px solid #F59E0B !important;
+  border-radius: 16px !important;
   color: #92400E !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
 }
 
-/* ========== TABLES ========== */
+/* ========== TABLES PREMIUM ========== */
 
 table {
-  border-radius: 16px !important;
+  border-radius: 20px !important;
   overflow: hidden;
   background: white !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* Sticky header with gradient */
+thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 th {
   background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%) !important;
-  backdrop-filter: none !important;
+  backdrop-filter: blur(10px) !important;
   font-weight: 700 !important;
-  color: var(--text-primary) !important;
-  padding: 16px !important;
-  border-bottom: 2px solid #E5E7EB !important;
+  color: var(--purple-deep) !important;
+  padding: 18px 16px !important;
+  border-bottom: 2px solid rgba(139, 92, 246, 0.2) !important;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.8px;
 }
 
 td {
-  padding: 16px !important;
+  padding: 18px 16px !important;
   color: var(--text-secondary) !important;
+  font-weight: 500;
 }
 
+/* Zebra striping - subtle */
+tbody tr:nth-child(even) {
+  background: rgba(249, 250, 251, 0.5) !important;
+}
+
+/* Row hover - purple highlight */
 tbody tr {
   border-bottom: 1px solid #F3F4F6 !important;
-  transition: all 0.2s ease !important;
+  transition: var(--transition-fast) !important;
+  cursor: pointer;
 }
 
 tbody tr:hover {
-  background: linear-gradient(90deg, rgba(139, 51, 234, 0.03) 0%, transparent 100%) !important;
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0.06) 0%, rgba(168, 85, 247, 0.06) 50%, transparent 100%) !important;
+  transform: scale(1.005);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.1);
 }
 
-/* ========== SCROLLBAR ========== */
+/* ========== SCROLLBAR PREMIUM ========== */
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #F5F5F5;
+  background: rgba(243, 244, 246, 0.5);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #A855F7 0%, #9333EA 100%);
   border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.3);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #9333EA 0%, #8A2BE2 100%);
+  background: linear-gradient(180deg, #9333EA 0%, #7C3AED 100%);
 }
 
-/* ========== DASHBOARD SPECIFIC STYLES ========== */
+/* ========== LOADING SKELETONS - PURPLE SHIMMER ========== */
 
-/* Page header (Dashboard title + subtitle) */
+@keyframes shimmerPurple {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton,
+.loading-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(243, 244, 246, 0.8) 0%,
+    rgba(221, 214, 254, 0.8) 50%,
+    rgba(243, 244, 246, 0.8) 100%
+  ) !important;
+  background-size: 2000px 100%;
+  animation: shimmerPurple 2s infinite linear;
+  border-radius: 12px;
+}
+
+/* ========== TOOLTIPS GLASSMORPHISM ========== */
+
+[role="tooltip"],
+.tooltip {
+  background: rgba(78, 0, 168, 0.95) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 12px !important;
+  padding: 8px 14px !important;
+  color: white !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 8px 24px rgba(78, 0, 168, 0.4) !important;
+}
+
+/* ========== FOCUS STATES ========== */
+
+*:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.4) !important;
+  border-color: var(--purple-medium) !important;
+}
+
+button:focus-visible {
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.3),
+              0 6px 24px rgba(78, 0, 168, 0.45) !important;
+}
+
+/* ========== PAGE HEADER ========== */
+
 .page-header h1 {
-  font-size: 44px !important;
-  font-weight: 800 !important;
+  font-size: 48px !important;
+  font-weight: 900 !important;
   color: var(--text-primary) !important;
   margin-bottom: 8px !important;
+  line-height: 1.2 !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .page-header p {
-  font-size: 16px !important;
+  font-size: 17px !important;
   color: var(--text-secondary) !important;
-  font-weight: 400 !important;
-}
-
-/* ========== STAT CARDS (PURPLE GRADIENTS) ========== */
-
-/* Dark purple card (Total) */
-.stat-card-dark,
-[data-stat-type="total"] {
-  background: linear-gradient(180deg, #6B21A8 0%, #4E00A8 100%) !important;
-  border: none !important;
-  border-radius: 24px !important;
-  padding: 32px 24px !important;
-  box-shadow: 0 8px 24px rgba(78, 0, 168, 0.35) !important;
-  color: white !important;
-  min-height: 160px !important;
-}
-
-/* Medium purple card (Ended, Running) */
-.stat-card-medium,
-[data-stat-type="ended"],
-[data-stat-type="running"] {
-  background: linear-gradient(180deg, #9333EA 0%, #7C3AED 100%) !important;
-  border: none !important;
-  border-radius: 24px !important;
-  padding: 32px 24px !important;
-  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3) !important;
-  color: white !important;
-  min-height: 160px !important;
-}
-
-/* Light purple card (Pending) */
-.stat-card-light,
-[data-stat-type="pending"] {
-  background: linear-gradient(180deg, #A855F7 0%, #9333EA 100%) !important;
-  border: none !important;
-  border-radius: 24px !important;
-  padding: 32px 24px !important;
-  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.25) !important;
-  color: white !important;
-  min-height: 160px !important;
-}
-
-/* Stat card titles */
-.stat-card-title {
-  font-size: 14px !important;
   font-weight: 500 !important;
-  opacity: 0.9 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.5px !important;
-  margin-bottom: 12px !important;
-}
-
-/* Stat card numbers - VERY LARGE like image */
-.stat-card-number {
-  font-size: 64px !important;
-  font-weight: 800 !important;
-  line-height: 1 !important;
-  font-family: 'Poppins', sans-serif !important;
-  margin: 16px 0 !important;
-}
-
-/* Stat card subtitle */
-.stat-card-subtitle {
-  font-size: 12px !important;
-  opacity: 0.8 !important;
-}
-
-/* ========== CHARTS ========== */
-
-canvas {
-  border-radius: 12px !important;
-}
-
-/* Chart container */
-.chart-container {
-  background: white !important;
-  padding: 24px !important;
-  border-radius: 20px !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
-}
-
-/* ========== USER PROFILE HEADER ========== */
-
-/* Top right user area */
-[class*="user-profile"],
-.user-profile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: white;
-  padding: 8px 16px;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-/* ========== NOTIFICATION BADGES ========== */
-
-/* Badge count (like "15" on Task in sidebar) */
-.badge-count {
-  background: linear-gradient(135deg, #8A2BE2 0%, #9333EA 100%) !important;
-  color: white !important;
-  font-weight: 700 !important;
-  font-size: 11px !important;
-  padding: 2px 8px !important;
-  border-radius: 12px !important;
-  box-shadow: 0 2px 6px rgba(138, 43, 226, 0.3) !important;
-}
-
-/* ========== PROGRESS BARS ========== */
-
-/* Progress bar container */
-[class*="Progress"],
-.progress-bar {
-  background: rgba(139, 51, 234, 0.1) !important;
-  border-radius: 12px !important;
-  height: 8px !important;
-  overflow: hidden;
-}
-
-/* Progress bar fill */
-[class*="Progress"] > div,
-.progress-bar-fill {
-  background: linear-gradient(90deg, #8A2BE2 0%, #A855F7 100%) !important;
-  border-radius: 12px !important;
-  transition: width 0.3s ease !important;
-}
-
-/* ========== TEAM MEMBER CARDS ========== */
-
-/* Team collaboration cards (light purple bg) */
-.team-member-card {
-  background: linear-gradient(135deg, #E9D5FF 0%, #DDD6FE 100%) !important;
-  border: 1px solid var(--purple-light) !important;
-  border-radius: 20px !important;
-  padding: 20px !important;
-  box-shadow: 0 4px 12px rgba(139, 51, 234, 0.1) !important;
-}
-
-/* ========== SECTION DIVIDERS ========== */
-
-/* Section headers */
-.section-header {
-  font-size: 24px !important;
-  font-weight: 700 !important;
-  color: var(--text-primary) !important;
-  margin-bottom: 16px !important;
-  display: flex;
-  align-items: center;
-  gap: 12px;
 }
 
 /* ========== ANIMATIONS ========== */
 
+/* Fade in up for cards */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
@@ -583,108 +778,223 @@ canvas {
   }
 }
 
-.animate-fade-in-up {
+.animate-fade-in {
   animation: fadeInUp 0.4s ease-out;
 }
 
+/* Stagger animation for multiple cards */
+.animate-stagger-1 { animation-delay: 0.05s; }
+.animate-stagger-2 { animation-delay: 0.1s; }
+.animate-stagger-3 { animation-delay: 0.15s; }
+.animate-stagger-4 { animation-delay: 0.2s; }
+
+/* Pulse glow for important elements */
 @keyframes pulseGlow {
   0%, 100% {
-    box-shadow: 0 4px 16px rgba(138, 43, 226, 0.3);
+    box-shadow: 0 6px 24px rgba(78, 0, 168, 0.4);
   }
   50% {
-    box-shadow: 0 8px 24px rgba(138, 43, 226, 0.5);
+    box-shadow: 0 10px 40px rgba(78, 0, 168, 0.6);
   }
 }
 
 .pulse-glow {
-  animation: pulseGlow 2s infinite;
+  animation: pulseGlow 2.5s infinite ease-in-out;
 }
 
-/* ========== FOCUS STATES ========== */
+/* ========== PROGRESS BARS ========== */
 
-*:focus-visible {
-  outline: none !important;
-  box-shadow: 0 0 0 3px rgba(139, 51, 234, 0.3) !important;
+[class*="Progress"],
+.progress-bar {
+  background: rgba(221, 214, 254, 0.5) !important;
+  border-radius: 12px !important;
+  height: 10px !important;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
-button:focus-visible {
-  box-shadow: 0 0 0 3px rgba(139, 51, 234, 0.3), 
-              0 4px 16px rgba(138, 43, 226, 0.35) !important;
+[class*="Progress"] > div,
+.progress-bar-fill {
+  background: linear-gradient(90deg, #8B5CF6 0%, #A855F7 100%) !important;
+  border-radius: 12px !important;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+  position: relative;
+  overflow: hidden;
 }
 
-/* ========== UTILITY CLASSES (REUSABLE) ========== */
-
-.glass-white {
-  background: white !important;
-  border-radius: 20px !important;
-  border: 1px solid #E5E7EB !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+/* Animated shine on progress bar */
+[class*="Progress"] > div::after,
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: progressShine 2s infinite;
 }
 
-.purple-gradient-bg {
-  background: linear-gradient(135deg, #8A2BE2 0%, #9333EA 100%) !important;
+@keyframes progressShine {
+  0% { left: -100%; }
+  100% { left: 200%; }
 }
 
-.purple-gradient-text {
-  background: linear-gradient(135deg, #8A2BE2 0%, #A855F7 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* ========== NOTIFICATION TOAST ========== */
+
+[class*="Toaster"],
+[class*="toast"] {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(139, 92, 246, 0.2) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(107, 33, 168, 0.2) !important;
 }
 
-.text-shadow-purple {
-  text-shadow: 0 2px 8px rgba(139, 51, 234, 0.3);
+/* ========== DROPDOWN MENUS ========== */
+
+[role="menu"],
+[role="listbox"],
+.dropdown-menu {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(139, 92, 246, 0.15) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 40px rgba(107, 33, 168, 0.2) !important;
+  padding: 8px !important;
 }
 
-/* ========== TOP HEADER BAR ========== */
-
-header {
-  background: white !important;
-  border-bottom: 1px solid #E5E7EB !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+[role="menuitem"],
+[role="option"] {
+  border-radius: 10px !important;
+  transition: var(--transition-fast) !important;
+  padding: 10px 14px !important;
 }
 
-/* ========== RESPONSIVE ========== */
+[role="menuitem"]:hover,
+[role="option"]:hover {
+  background: rgba(139, 92, 246, 0.12) !important;
+  color: var(--purple-deep) !important;
+}
+
+/* ========== TABS ========== */
+
+[role="tablist"] button {
+  border-radius: 12px 12px 0 0 !important;
+  font-weight: 600 !important;
+  transition: var(--transition-base) !important;
+}
+
+[role="tab"][aria-selected="true"] {
+  background: linear-gradient(135deg, #6B21A8 0%, #8B5CF6 100%) !important;
+  color: white !important;
+  box-shadow: 0 -4px 16px rgba(107, 33, 168, 0.3) !important;
+}
+
+/* ========== MOBILE OPTIMIZATIONS ========== */
 
 @media (max-width: 768px) {
   .stat-card-number {
-    font-size: 48px !important;
+    font-size: 56px !important;
   }
   
   .page-header h1 {
-    font-size: 32px !important;
+    font-size: 36px !important;
   }
   
-  [class*="Card"],
-  .card {
-    border-radius: 16px !important;
+  [class*="Card"] {
+    border-radius: 20px !important;
+  }
+  
+  aside {
+    margin: 0 !important;
+    border-radius: 0 !important;
   }
 }
 
-/* ========== ICON STYLES ========== */
+/* ========== UTILITY CLASSES ========== */
 
-/* Icons should match the subtle style from the image */
-svg {
-  transition: all 0.3s ease;
+.glass-white {
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-radius: 24px !important;
+  box-shadow: var(--shadow-md) !important;
 }
 
-button:hover svg {
-  transform: scale(1.1);
+.purple-glow {
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3),
+              0 0 60px rgba(168, 85, 247, 0.2) !important;
 }
 
-/* Circular icon buttons (like arrow in stat cards) */
-.icon-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
+.text-gradient-purple {
+  background: linear-gradient(135deg, #6B21A8 0%, #A855F7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
 }
 
-.icon-circle:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.1);
+/* Number highlight with purple glow */
+.number-highlight {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  background: linear-gradient(135deg, #6B21A8 0%, #8B5CF6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+/* Icon with purple glow */
+.icon-glow {
+  filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.5));
+}
+
+/* ========== CHARTS STYLING ========== */
+
+canvas {
+  border-radius: 16px !important;
+  filter: drop-shadow(0 4px 12px rgba(139, 92, 246, 0.1));
+}
+
+/* Chart container */
+.chart-container {
+  background: white !important;
+  padding: 28px !important;
+  border-radius: 24px !important;
+  box-shadow: var(--shadow-md) !important;
+  border: 1px solid rgba(139, 92, 246, 0.1) !important;
+}
+
+/* ========== EMPTY STATES ========== */
+
+.empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text-muted);
+}
+
+.empty-state svg {
+  opacity: 0.3;
+  filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.2));
+}
+
+/* ========== SEARCH BAR PREMIUM ========== */
+
+.search-bar-container {
+  background: white !important;
+  border: 2px solid #E5E7EB !important;
+  border-radius: 20px !important;
+  padding: 4px !important;
+  box-shadow: 0 4px 16px rgba(107, 33, 168, 0.08) !important;
+  transition: var(--transition-base) !important;
+}
+
+.search-bar-container:focus-within {
+  border-color: var(--purple-medium) !important;
+  box-shadow: 0 6px 24px rgba(139, 92, 246, 0.2),
+              0 0 0 4px rgba(139, 92, 246, 0.1) !important;
+  transform: scale(1.01);
 }
