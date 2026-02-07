@@ -1012,6 +1012,17 @@ async def export_all_customers(
 
 @api_router.post("/items", response_model=ItemResponse)
 async def create_item(item: ItemCreate, current_user: CurrentUser = Depends(get_current_user)):
+    # PLAN LIMIT VALIDATION: Check max_items limit
+    store = await db.stores.find_one({"id": current_user.store_id})
+    if store:
+        max_items = store.get("settings", {}).get("max_items", 3000)  # Default: 3000 for Standard
+        current_items = await db.items.count_documents(current_user.get_store_filter())
+        if current_items >= max_items:
+            raise HTTPException(
+                status_code=403, 
+                detail=f"Límite de artículos alcanzado ({max_items}). Actualiza tu plan para añadir más."
+            )
+    
     # For generic items, generate auto ID and skip duplicate checks for barcode/internal_code
     if item.is_generic:
         # Validate required fields for generic items
