@@ -8,7 +8,29 @@
 
 ## Cambios Recientes (2026-02-06)
 
-### Sistema de Pagos Parciales (NUEVO)
+### Gestión Dinámica de Tipos de Artículos (NUEVO)
+1. **✅ Creación Automática al Importar/Crear**
+   - Si el tipo no existe, se crea automáticamente
+   - También se crea tarifa con precio €0/día
+   - Helper: `ensure_type_and_tariff_exist(store_id, type_name)`
+   
+2. **✅ Auto-Cleanup al Eliminar Artículos**
+   - Hook implementado en `delete_item` endpoint
+   - Si quedan 0 artículos del tipo → se elimina tipo + tarifa
+   - Función: `auto_cleanup_empty_type(store_id, type_value)`
+   
+3. **✅ Normalización de Nombres**
+   - Case-insensitive (mayúsculas/minúsculas)
+   - Espacios convertidos a underscores
+   - Acentos removidos: á→a, é→e, etc.
+   - Función: `normalize_type_name(type_name)`
+   
+4. **✅ Limpieza de BD Ejecutada**
+   - Script: `/app/backend/cleanup_types.py`
+   - 25 tipos vacíos eliminados
+   - 0 tipos/tarifas faltantes encontrados
+
+### Sistema de Pagos Parciales (ANTERIOR)
 1. **✅ Eliminación del Bloqueo de Importe**
    - El sistema permite finalizar alquileres con cualquier importe pagado >= 0
    - El campo "Importe Pagado" acepta valores menores al total
