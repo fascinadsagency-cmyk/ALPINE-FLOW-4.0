@@ -2,7 +2,7 @@
 Store Management Models for Multi-Tenant
 """
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Union
 
 class StoreCreate(BaseModel):
     name: str
@@ -15,8 +15,8 @@ class StoreCreate(BaseModel):
     max_customers: int = 10000
 
 class StoreResponse(BaseModel):
-    store_id: Optional[str] = None  # UUID string
-    id: Optional[str] = None  # Also support 'id' field
+    store_id: Optional[Union[str, int]] = None  # Can be UUID string or integer
+    id: Optional[Union[str, int]] = None  # Also support 'id' field
     name: str
     status: str
     plan: Optional[str] = None
