@@ -349,6 +349,7 @@ class ItemTypeResponse(BaseModel):
     value: str
     label: str
     is_default: bool
+    store_id: Optional[int] = None
     created_at: str
 
 # ==================== AUTH HELPERS ====================
