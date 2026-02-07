@@ -3252,10 +3252,19 @@ async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depend
     
     # AUTO-REGISTER in CAJA: Create cash movement(s) for payment and deposit
     total_cash_in = rental.paid_amount + rental.deposit
+    print(f"[DEBUG] Total cash in: {total_cash_in} (paid: {rental.paid_amount}, deposit: {rental.deposit})")
+    
     if total_cash_in > 0:
         # Get active session (already validated at the beginning)
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        print(f"[DEBUG] Looking for session on date: {date}, store: {current_user.store_id}")
         active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
+        print(f"[DEBUG] Active session found: {active_session is not None}")
+        
+        if not active_session:
+            print("[DEBUG] No active session - skipping cash movements")
+            # Continue without creating movements
+            return RentalResponse(**doc)
         
         # Prepare rental items for ticket printing
         rental_items_for_ticket = []
