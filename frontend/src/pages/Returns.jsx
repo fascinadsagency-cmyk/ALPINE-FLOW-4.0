@@ -2883,6 +2883,100 @@ export default function Returns() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ============ DIÁLOGO DE GESTIÓN DE DEPÓSITO ============ */}
+      <Dialog open={showDepositDialog} onOpenChange={setShowDepositDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-amber-600" />
+              Gestión de Depósito
+            </DialogTitle>
+            <DialogDescription>
+              Este alquiler tiene un depósito de <span className="font-bold text-amber-600">€{rental?.deposit || 0}</span>
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="flex flex-col gap-3">
+              <Button
+                variant={depositAction === "return" ? "default" : "outline"}
+                className="h-20 justify-start text-left"
+                onClick={() => setDepositAction("return")}
+              >
+                <div className="flex items-start gap-3 w-full">
+                  <CheckCircle className={`h-6 w-6 mt-1 ${depositAction === "return" ? "text-white" : "text-green-600"}`} />
+                  <div className="flex-1">
+                    <div className="font-semibold">Devolver Depósito</div>
+                    <div className="text-sm opacity-80">Material en buen estado - Devolver €{rental?.deposit || 0} al cliente</div>
+                  </div>
+                </div>
+              </Button>
+              
+              <Button
+                variant={depositAction === "forfeit" ? "default" : "outline"}
+                className="h-20 justify-start text-left bg-red-50 hover:bg-red-100"
+                onClick={() => setDepositAction("forfeit")}
+              >
+                <div className="flex items-start gap-3 w-full">
+                  <AlertTriangle className={`h-6 w-6 mt-1 ${depositAction === "forfeit" ? "text-white" : "text-red-600"}`} />
+                  <div className="flex-1">
+                    <div className="font-semibold text-red-700">Incautar Depósito</div>
+                    <div className="text-sm text-red-600">Material dañado/perdido - No devolver</div>
+                  </div>
+                </div>
+              </Button>
+            </div>
+            
+            {depositAction === "forfeit" && (
+              <div className="space-y-2">
+                <Label htmlFor="forfeit-reason">Motivo de incautación *</Label>
+                <Textarea
+                  id="forfeit-reason"
+                  placeholder="Ej: Esquí roto, bota perdida, daños en el material..."
+                  value={forfeitReason}
+                  onChange={(e) => setForfeitReason(e.target.value)}
+                  rows={3}
+                  className="resize-none"
+                />
+              </div>
+            )}
+            
+            <div className={`p-4 rounded-lg border ${
+              depositAction === "return" 
+                ? "bg-green-50 border-green-200" 
+                : "bg-red-50 border-red-200"
+            }`}>
+              <div className="text-sm font-medium">
+                {depositAction === "return" ? (
+                  <>
+                    <CheckCircle className="h-4 w-4 inline mr-2 text-green-600" />
+                    Se registrará una <strong>SALIDA</strong> de €{rental?.deposit || 0} en caja
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle className="h-4 w-4 inline mr-2 text-red-600" />
+                    El depósito pasará a <strong>INGRESO EXTRA</strong> en reportes
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDepositDialog(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={executeReturn}
+              disabled={processing || (depositAction === "forfeit" && !forfeitReason.trim())}
+            >
+              {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {depositAction === "return" ? "Devolver Depósito y Completar" : "Incautar y Completar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
