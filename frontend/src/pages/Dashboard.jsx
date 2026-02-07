@@ -223,71 +223,83 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* KPI Cards Row - Purple gradient style (GrowSync inspired) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Card 1: Alquileres Activos - Dark Purple */}
-        <div 
-          className="stat-card-dark cursor-pointer transform hover:scale-105 transition-transform"
+      {/* KPI Cards Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Alquileres Activos */}
+        <Card 
+          className="cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-blue-500"
           onClick={() => navigate('/alquileres-activos')}
-          data-stat-type="total"
         >
-          <div className="flex items-center justify-between mb-4">
-            <p className="stat-card-title">Alquileres Activos</p>
-            <div className="icon-circle">
-              <ArrowRight className="h-5 w-5 text-white" />
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500">Alquileres Activos</p>
+                <p className="text-3xl font-bold text-slate-900 mt-1">{stats.active_rentals || 0}</p>
+                <p className="text-xs text-slate-500 mt-1">En curso ahora mismo</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                <ShoppingCart className="h-6 w-6 text-blue-600" />
+              </div>
             </div>
-          </div>
-          <p className="stat-card-number">{stats.active_rentals || 0}</p>
-          <p className="stat-card-subtitle">En curso ahora mismo</p>
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Card 2: Devoluciones Hoy - Medium Purple */}
-        <div 
-          className="stat-card-medium cursor-pointer transform hover:scale-105 transition-transform"
+        {/* Card 2: Devoluciones Hoy */}
+        <Card 
+          className="cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-amber-500"
           onClick={() => navigate('/devoluciones')}
-          data-stat-type="ended"
         >
-          <div className="flex items-center justify-between mb-4">
-            <p className="stat-card-title">Devoluciones Hoy</p>
-            <div className="icon-circle">
-              <ArrowRight className="h-5 w-5 text-white" />
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500">Devoluciones Hoy</p>
+                <p className="text-3xl font-bold text-slate-900 mt-1">{stats.returns_today || 0}</p>
+                <p className="text-xs text-slate-500 mt-1">Equipos por recoger</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
+                <RotateCcw className="h-6 w-6 text-amber-600" />
+              </div>
             </div>
-          </div>
-          <p className="stat-card-number">{stats.returns_today || 0}</p>
-          <p className="stat-card-subtitle">Equipos por recoger</p>
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Card 3: Ocupación Stock - Medium Purple */}
-        <div 
-          className="stat-card-medium cursor-pointer transform hover:scale-105 transition-transform"
+        {/* Card 3: Ocupación Stock */}
+        <Card 
+          className="cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-emerald-500"
           onClick={() => navigate('/inventario')}
-          data-stat-type="running"
         >
-          <div className="flex items-center justify-between mb-4">
-            <p className="stat-card-title">Ocupación Stock</p>
-            <div className="icon-circle">
-              <ArrowRight className="h-5 w-5 text-white" />
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500">Ocupación Stock</p>
+                <p className="text-3xl font-bold text-slate-900 mt-1">{inventory.occupancy_percent || 0}%</p>
+                <p className="text-xs text-slate-500 mt-1">Material alquilado</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center">
+                <Package className="h-6 w-6 text-emerald-600" />
+              </div>
             </div>
-          </div>
-          <p className="stat-card-number">{inventory.occupancy_percent || 0}%</p>
-          <p className="stat-card-subtitle">Material alquilado</p>
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Card 4: Clientes del Día - Light Purple */}
-        <div 
-          className="stat-card-light cursor-pointer transform hover:scale-105 transition-transform"
+        {/* Card 4: Clientes del Día */}
+        <Card 
+          className="cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-violet-500"
           onClick={() => navigate('/clientes')}
-          data-stat-type="pending"
         >
-          <div className="flex items-center justify-between mb-4">
-            <p className="stat-card-title">Clientes del Día</p>
-            <div className="icon-circle">
-              <ArrowRight className="h-5 w-5 text-white" />
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500">Clientes del Día</p>
+                <p className="text-3xl font-bold text-slate-900 mt-1">{stats.customers_today ?? 0}</p>
+                <p className="text-xs text-slate-500 mt-1">Clientes únicos atendidos</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-violet-100 flex items-center justify-center">
+                <Users className="h-6 w-6 text-violet-600" />
+              </div>
             </div>
-          </div>
-          <p className="stat-card-number">{stats.customers_today ?? 0}</p>
-          <p className="stat-card-subtitle">Clientes únicos atendidos</p>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* ============ CONTROL DE DEVOLUCIONES - TORRE DE CONTROL ============ */}
