@@ -2589,6 +2589,44 @@ async def delete_tariff(item_type: str, current_user: CurrentUser = Depends(get_
         raise HTTPException(status_code=404, detail="Tariff not found")
     return {"status": "success", "deleted": item_type}
 
+
+@api_router.put("/tariffs/{tariff_id}")
+async def update_tariff(tariff_id: str, tariff: TariffCreate, current_user: CurrentUser = Depends(get_current_user)):
+    """
+    Update a tariff and PROPAGATE the price to all items with this tariff.
+    This ensures items always have the correct rental_price.
+    """
+    # Find existing tariff
+    existing = await db.tariffs.find_one({**current_user.get_store_filter(), "id": tariff_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Tariff not found")
+    
+    # Update tariff
+    update_data = tariff.model_dump()
+    await db.tariffs.update_one(
+        {"id": tariff_id},
+        {"$set": update_data}
+    )
+    
+    # PROPAGATE: Update rental_price in ALL items with this tariff
+    new_price = tariff.daily_rate if hasattr(tariff, 'daily_rate') else update_data.get('daily_rate', 0)
+    item_type = existing.get("item_type", "")
+    
+    propagate_result = await db.items.update_many(
+        {**current_user.get_store_filter(), "tariff_id": tariff_id},
+        {"$set": {"rental_price": new_price}}
+    )
+    
+    logger.info(f"✅ Tariff '{item_type}' updated. Price propagated to {propagate_result.modified_count} items.")
+    
+    # Return updated tariff
+    updated = await db.tariffs.find_one({"id": tariff_id}, {"_id": 0})
+    return {
+        **TariffResponse(**updated).model_dump(),
+        "items_updated": propagate_result.modified_count
+    }
+
+
 # ==================== PACK ROUTES ====================
 
 class PackCreate(BaseModel):
