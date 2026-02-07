@@ -23,6 +23,7 @@ import StoreManagement from "@/pages/StoreManagement";
 import StoreSettings from "@/pages/StoreSettings";
 import Help from "@/pages/Help";
 import Support from "@/pages/Support";
+import HelpAdmin from "@/pages/HelpAdmin";
 import Layout from "@/components/Layout";
 
 // ============================================================
@@ -170,6 +171,7 @@ function AppRoutes() {
           <Route path="tiendas" element={<StoreManagement />} />
           <Route path="tiendas/:storeId/ajustes" element={<StoreSettings />} />
           <Route path="ayuda" element={<Help />} />
+          <Route path="ayuda/admin" element={<HelpAdmin />} />
           <Route path="soporte" element={<Support />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
