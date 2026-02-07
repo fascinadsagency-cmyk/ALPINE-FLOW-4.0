@@ -343,9 +343,25 @@ export default function Inventory() {
   });
 
   useEffect(() => {
-    loadItemTypes();
+    syncAndLoadItemTypes();
     loadTariffs();
   }, []);
+
+  const syncAndLoadItemTypes = async () => {
+    try {
+      // 🔄 SELF-HEALING: Sincronizar tipos del inventario primero
+      await axios.post(`${API}/item-types/sync`, {}, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      // Luego cargar los tipos actualizados
+      await loadItemTypes();
+    } catch (error) {
+      console.error("Error syncing item types:", error);
+      // Si falla la sync, intentar cargar tipos de todos modos
+      loadItemTypes();
+    }
+  };
 
   const loadItemTypes = async () => {
     try {
