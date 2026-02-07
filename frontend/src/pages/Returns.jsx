@@ -989,13 +989,13 @@ export default function Returns() {
         const refundAmount = Math.abs(balance);
         console.log('Registrando reembolso:', refundAmount);
         await axios.post(`${API}/cash/movements`, {
-          type: "expense",
+          movement_type: "expense",
           category: "refund",
           amount: refundAmount,
           payment_method: paymentMethod,
-          description: `Devolución anticipada - ${rental.customer_name}`,
+          concept: `Devolución anticipada - ${rental.customer_name}`,
           reference_id: rental.id,
-          reference_type: "rental"
+          notes: "Reembolso por devolución"
         }, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
