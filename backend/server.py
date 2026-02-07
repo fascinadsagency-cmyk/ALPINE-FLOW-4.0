@@ -2274,30 +2274,32 @@ async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUs
                 errors.append({"barcode": barcode, "error": "Already exists"})
                 continue
             
-            # ============ AUTO-CREATE TYPE AND TARIFF ============
+            # ============ AUTO-CREATE TYPE AND TARIFF (OBLIGATORIO) ============
             raw_item_type = row.get('item_type', row.get('tipo', row.get('type', 'general'))).strip()
             if not raw_item_type:
                 raw_item_type = 'general'
             
-            # Use helper function that ensures type AND tariff exist
-            normalized_type = await ensure_type_and_tariff_exist(current_user.store_id, raw_item_type)
+            # Esta función GARANTIZA que tipo Y tarifa existen, y retorna tariff_id y precio
+            type_tariff_data = await ensure_type_and_tariff_exist(current_user.store_id, raw_item_type)
+            normalized_type = type_tariff_data["normalized_type"]
+            tariff_id = type_tariff_data["tariff_id"]
+            daily_rate = type_tariff_data["daily_rate"]
             
             if normalized_type not in types_created:
-                # Check if it was just created
                 type_check = await db.item_types.find_one({
                     "store_id": current_user.store_id, 
                     "value": normalized_type
                 })
                 if type_check and type_check.get("created_at", "").startswith(datetime.now(timezone.utc).strftime("%Y-%m-%d")):
                     types_created.append(normalized_type)
-            # =====================================================
+            # ===================================================================
             
             item_id = str(uuid.uuid4())
             doc = {
                 "id": item_id,
                 "store_id": current_user.store_id,
                 "barcode": barcode,
-                "item_type": normalized_type,  # Use normalized type
+                "item_type": normalized_type,
                 "brand": row.get('brand', row.get('marca', '')).strip(),
                 "model": row.get('model', row.get('modelo', '')).strip(),
                 "size": row.get('size', row.get('talla', '')).strip(),
@@ -2308,15 +2310,12 @@ async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUs
                 "maintenance_interval": int(row.get('maintenance_interval', row.get('mantenimiento_cada', 30)) or 30),
                 "days_used": 0,
                 "amortization": 0,
-                "created_at": datetime.now(timezone.utc).isoformat()
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                # ============ ASIGNACIÓN OBLIGATORIA DE TARIFA ============
+                "tariff_id": tariff_id,  # SIEMPRE asignado
+                "rental_price": daily_rate  # SIEMPRE asignado (puede ser 0 si tarifa nueva)
+                # ==========================================================
             }
-            
-            # ============ AUTO-ASSIGN TARIFF (guaranteed to exist now) ============
-            tariff = await db.tariffs.find_one({**current_user.get_store_filter(), "item_type": normalized_type}, {"_id": 0})
-            if tariff:
-                doc["tariff_id"] = tariff.get("id", "")
-                doc["rental_price"] = tariff.get("daily_rate", 0)
-            # ======================================================================
             
             await db.items.insert_one(doc)
             created.append({"barcode": barcode, "type": normalized_type})
