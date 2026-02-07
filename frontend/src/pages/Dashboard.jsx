@@ -208,13 +208,13 @@ export default function Dashboard() {
           <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`} style={{ fontFamily: 'Plus Jakarta Sans' }}>
             Dashboard
           </h1>
-          <p className={`mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Vista general de tu negocio</p>
+          <p className="text-lg text-slate-600 font-medium mt-2">Gestiona tu tienda de alquiler con información en tiempo real</p>
         </div>
         <div className="flex items-center gap-2">
           {/* BOTÓN GRANDE - NUEVO ALQUILER */}
           <Button 
             size="lg"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 text-base cursor-pointer shadow-lg hover:shadow-xl transition-all"
+            className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold px-8 py-6 text-base cursor-pointer shadow-lg shadow-purple-500/30 hover:shadow-xl transition-all"
             onClick={() => navigate("/nuevo-alquiler")}
           >
             <ShoppingCart className="h-5 w-5 mr-2" />
