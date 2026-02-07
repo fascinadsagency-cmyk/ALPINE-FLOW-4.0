@@ -1633,13 +1633,13 @@ export default function NewRental() {
     setPaymentMethodSelected(paymentMethod);
     
     // Establecer el importe inicial según el método seleccionado
-    const currentTotal = calculateTotal();
+    const totalToPay = calculateTotalToPay(); // INCLUYE DEPÓSITO
     if (paymentMethod === "pending") {
       // Para pendiente, dejar en 0 por defecto (usuario puede cambiar)
       setPaidAmount("0");
     } else {
-      // Para otros métodos, poner el total completo
-      setPaidAmount(currentTotal.toFixed(2));
+      // Para otros métodos, poner el total completo (alquiler + depósito)
+      setPaidAmount(totalToPay.toFixed(2));
     }
     
     // Abrir el dialog de pago
