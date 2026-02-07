@@ -4968,10 +4968,11 @@ async def get_unified_financial_summary(
     end_date: str,
     include_manual: bool = True,
     include_deposits: bool = True,
-    current_user: CurrentUser = Depends(get_current_user)
+    current_user: CurrentUser = Depends(require_admin)
 ):
     """
     Resumen financiero unificado usando el servicio centralizado.
+    Solo accesible para ADMIN y SUPER_ADMIN.
     
     Este endpoint GARANTIZA que los totales coincidan con la vista de Caja.
     
