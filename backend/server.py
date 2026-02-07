@@ -2568,6 +2568,13 @@ async def import_items(request: ItemImportRequest, current_user: CurrentUser = D
             errors += 1
             print(f"Error importing item {item.internal_code}: {str(e)}")
     
+    # 🔄 SELF-HEALING: Sincronizar tipos después de la importación
+    try:
+        await sync_item_types_from_inventory(current_user.store_id)
+        logger.info(f"✅ Auto-sync after items import for store {current_user.store_id}")
+    except Exception as e:
+        logger.error(f"Error auto-syncing types after import: {e}")
+    
     return {
         "imported": imported,
         "duplicates": duplicates,
