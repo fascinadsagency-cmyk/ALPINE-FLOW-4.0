@@ -4805,11 +4805,12 @@ async def get_daily_report(date: Optional[str] = None, current_user: CurrentUser
 async def get_range_report(
     start_date: str,
     end_date: str,
-    current_user: CurrentUser = Depends(get_current_user)
+    current_user: CurrentUser = Depends(require_admin)
 ):
     """
     Reporte por rango de fechas usando el servicio financiero centralizado.
     GARANTIZA coincidencia con la vista de Caja.
+    Solo accesible para ADMIN y SUPER_ADMIN.
     
     Incluye:
     - Revenue breakdown by payment method (desde cash_movements)
