@@ -3022,8 +3022,8 @@ export default function NewRental() {
               {(() => {
                 const cleanPaidAmount = paidAmount !== "" ? Number(parseFloat(paidAmount) || 0) : total;
                 const cleanDeposit = Number(parseFloat(deposit) || 0);
-                const pendingAmount = paymentMethodSelected === 'pending' ? total : Math.max(0, total - cleanPaidAmount);
-                const cashInToday = paymentMethodSelected === 'pending' ? cleanDeposit : cleanPaidAmount + cleanDeposit;
+                const pendingAmount = Math.max(0, total - cleanPaidAmount);
+                const cashInToday = cleanPaidAmount + cleanDeposit;
                 
                 return (
                   <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
@@ -3037,8 +3037,8 @@ export default function NewRental() {
                       
                       <div className="flex justify-between">
                         <span className="text-slate-600">Importe pagado ahora:</span>
-                        <span className={`font-medium ${paymentMethodSelected === 'pending' ? 'text-amber-600' : 'text-emerald-600'}`}>
-                          €{paymentMethodSelected === 'pending' ? '0.00' : cleanPaidAmount.toFixed(2)}
+                        <span className={`font-medium ${cleanPaidAmount === 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                          €{cleanPaidAmount.toFixed(2)}
                         </span>
                       </div>
                       
