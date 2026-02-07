@@ -1216,7 +1216,24 @@ export default function Returns() {
       }
       setShowDepositDialog(false);
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Error al procesar devolución");
+      console.error("[Returns] Error en devolución:", error);
+      console.error("[Returns] Error response:", error.response);
+      
+      // Extraer mensaje de error correctamente
+      let errorMessage = "Error al procesar devolución";
+      if (error.response?.data) {
+        if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        } else if (error.response.data.detail) {
+          errorMessage = error.response.data.detail;
+        } else if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setProcessing(false);
     }
