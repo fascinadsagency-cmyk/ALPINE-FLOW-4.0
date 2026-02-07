@@ -45,6 +45,7 @@ const API = process.env.REACT_APP_BACKEND_URL;
 
 export default function Settings() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { 
     darkMode, setDarkMode,
     language, setLanguage, 
