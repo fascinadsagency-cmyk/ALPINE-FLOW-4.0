@@ -34,10 +34,13 @@ export default function Providers() {
   const [showStatsDialog, setShowStatsDialog] = useState(false);
   const [editingProvider, setEditingProvider] = useState(null);
   const [deletingProvider, setDeletingProvider] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteCheckResult, setDeleteCheckResult] = useState(null); // { canDelete, customers, items }
   const [statsData, setStatsData] = useState(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [globalStats, setGlobalStats] = useState(null);
   const [showGlobalMetrics, setShowGlobalMetrics] = useState(true);
+  const [userRole, setUserRole] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     discount_percent: "0",
