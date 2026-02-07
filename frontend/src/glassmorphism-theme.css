@@ -1,203 +1,260 @@
 /* ========================================
-   GLASSMORPHISM THEME - PURPLE GRADIENT
-   Emergent Modern SaaS Dashboard
+   GLASSMORPHISM THEME - GROWSYNC INSPIRED
+   Modern Purple Dashboard Design
    ========================================
    
-   Color Palette:
-   - Deep Purple: #4C1D95
-   - Medium Purple: #7C3AED
-   - Light Purple: #A78BFA
-   - Extra Light: #DDD6FE
-   - White Background: #FFFFFF
+   Color Palette (from reference image):
+   - Deep Purple: #4E00A8, #6B21A8
+   - Medium Purple: #8A2BE2, #9333EA
+   - Light Purple: #A855F7, #C084FC
+   - Extra Light: #DDD6FE, #E9D5FF
+   - Background: #F7F7F7, #FAFAFA
+   - Sidebar: #F0F0F0
    
    To DISABLE this theme: Comment out the import in index.css
 ========================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* ===== GLASSMORPHISM THEME COLORS ===== */
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.18);
-  --glass-shadow: rgba(76, 29, 149, 0.1);
-  
-  /* Purple Gradient Palette */
-  --purple-deep: #4C1D95;
-  --purple-primary: #7C3AED;
-  --purple-medium: #8B5CF6;
-  --purple-light: #A78BFA;
+  /* ===== PURPLE GRADIENT PALETTE (from image) ===== */
+  --purple-darkest: #4E00A8;
+  --purple-dark: #6B21A8;
+  --purple-primary: #8A2BE2;
+  --purple-medium: #9333EA;
+  --purple-light: #A855F7;
+  --purple-lighter: #C084FC;
   --purple-extra-light: #DDD6FE;
-  --purple-ultra-light: #EDE9FE;
-  
-  /* Accent Colors */
-  --accent-cyan: #06B6D4;
-  --accent-pink: #EC4899;
+  --purple-ultra-light: #E9D5FF;
   
   /* Backgrounds */
-  --bg-main: #FFFFFF;
-  --bg-secondary: #FAFAFA;
+  --bg-main: #FAFAFA;
+  --bg-sidebar: #F5F5F7;
+  --bg-card-white: #FFFFFF;
   
-  /* Text Colors */
+  /* Text */
   --text-primary: #1F2937;
   --text-secondary: #6B7280;
   --text-muted: #9CA3AF;
+  --text-light: #D1D5DB;
 }
 
-/* ========== GLOBAL GLASSMORPHISM STYLES ========== */
+/* ========== GLOBAL STYLES ========== */
 
 body {
-  font-family: 'Inter', 'Poppins', sans-serif !important;
-  background: linear-gradient(135deg, #FFFFFF 0%, #F9FAFB 50%, #F3F4F6 100%) !important;
-  background-attachment: fixed;
+  font-family: 'Inter', sans-serif !important;
+  background: #FAFAFA !important;
   position: relative;
 }
 
-/* Subtle background pattern */
+/* Remove the pattern for cleaner look like the reference */
 body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: 
-    radial-gradient(circle at 20% 50%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-body > * {
-  position: relative;
-  z-index: 1;
+  display: none;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Poppins', sans-serif !important;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
-/* ========== SIDEBAR GLASSMORPHISM ========== */
+/* ========== SIDEBAR STYLES (REFERENCE IMAGE) ========== */
 
-/* Sidebar container */
-aside {
-  background: rgba(255, 255, 255, 0.85) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.3) !important;
-  box-shadow: 4px 0 24px rgba(76, 29, 149, 0.08) !important;
+/* Sidebar container - Light gray solid background */
+aside,
+nav[aria-label="Main navigation"],
+aside > div:first-child {
+  background: linear-gradient(180deg, #F7F7F7 0%, #F0F0F0 100%) !important;
+  backdrop-filter: none !important;
+  border-right: 1px solid #E5E5E5 !important;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Logo area */
+aside img,
+aside [class*="logo"] {
+  filter: drop-shadow(0 2px 4px rgba(139, 51, 234, 0.2));
 }
 
 /* Sidebar navigation items */
-aside nav a {
-  border-radius: 16px !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+aside nav a,
+aside nav button {
+  border-radius: 12px !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
   font-weight: 500 !important;
+  color: #6B7280 !important;
+  margin: 2px 8px !important;
 }
 
-/* Active navigation item - Purple gradient */
-aside nav a[class*="bg-primary"] {
-  background: linear-gradient(135deg, var(--purple-primary) 0%, var(--purple-medium) 100%) !important;
+/* Active navigation item - SOLID purple gradient (like image) */
+aside nav a[class*="bg-primary"],
+aside nav a[class*="text-primary"] {
+  background: linear-gradient(135deg, #8A2BE2 0%, #9333EA 100%) !important;
   color: white !important;
-  box-shadow: 0 8px 16px rgba(124, 58, 237, 0.3), 
-              0 2px 4px rgba(124, 58, 237, 0.2) !important;
+  box-shadow: 0 4px 12px rgba(138, 43, 226, 0.35) !important;
+  font-weight: 600 !important;
 }
 
-/* Hover state */
-aside nav a:not([class*="bg-primary"]):hover {
-  background: rgba(124, 58, 237, 0.08) !important;
-  color: var(--purple-deep) !important;
-  transform: translateX(4px);
+/* Hover state - subtle purple tint */
+aside nav a:not([class*="bg-primary"]):hover,
+aside nav button:hover {
+  background: rgba(139, 51, 234, 0.08) !important;
+  color: var(--purple-primary) !important;
+  transform: translateX(2px);
 }
 
-/* ========== CARDS GLASSMORPHISM ========== */
+/* Menu section dividers */
+aside nav > div[class*="border-t"] {
+  border-color: #E5E5E5 !important;
+  margin-top: 16px !important;
+  padding-top: 16px !important;
+}
 
+/* ========== CARDS - SOLID BACKGROUNDS (NOT BLUR) ========== */
+
+/* Default white cards */
 [class*="Card"],
-.card,
-[role="dialog"] {
-  background: rgba(255, 255, 255, 0.75) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  border-radius: 24px !important;
-  box-shadow: 0 8px 32px rgba(76, 29, 149, 0.08),
-              0 2px 8px rgba(76, 29, 149, 0.04) !important;
+.card {
+  background: #FFFFFF !important;
+  backdrop-filter: none !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 20px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
   transition: all 0.3s ease !important;
 }
 
 [class*="Card"]:hover,
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(124, 58, 237, 0.15),
-              0 4px 12px rgba(124, 58, 237, 0.08) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(139, 51, 234, 0.12) !important;
 }
 
 /* Card headers */
 [class*="CardHeader"],
 [class*="card-header"] {
-  border-bottom: 1px solid rgba(124, 58, 237, 0.1) !important;
+  border-bottom: 1px solid #F3F4F6 !important;
+  padding: 20px 24px !important;
 }
 
-/* ========== BUTTONS GLASSMORPHISM ========== */
+[class*="CardTitle"] {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+}
 
-/* Primary buttons - Purple gradient */
-button[class*="bg-blue"]:not([class*="outline"]),
+/* ========== STATS CARDS (PURPLE GRADIENTS) ========== */
+
+/* Target stat cards with gradient backgrounds */
+.stat-card-purple {
+  background: linear-gradient(180deg, #9333EA 0%, #6B21A8 100%) !important;
+  border: none !important;
+  border-radius: 24px !important;
+  padding: 24px !important;
+  box-shadow: 0 8px 24px rgba(107, 33, 168, 0.3) !important;
+  color: white !important;
+}
+
+.stat-card-dark {
+  background: linear-gradient(180deg, #6B21A8 0%, #4E00A8 100%) !important;
+  border: none !important;
+  border-radius: 24px !important;
+  padding: 24px !important;
+  box-shadow: 0 8px 24px rgba(78, 0, 168, 0.4) !important;
+  color: white !important;
+}
+
+/* Large numbers in stat cards */
+.stat-number {
+  font-size: 56px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  color: white !important;
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* ========== BUTTONS - SOLID PURPLE GRADIENTS ========== */
+
+/* Primary buttons - Solid purple gradient (like image) */
+button[class*="bg-blue-6"]:not([class*="outline"]),
 button[class*="bg-primary"]:not([class*="outline"]),
-button[class*="bg-emerald"]:not([class*="outline"]) {
-  background: linear-gradient(135deg, var(--purple-primary) 0%, var(--purple-medium) 100%) !important;
+button[class*="bg-emerald-6"]:not([class*="outline"]),
+button[class*="bg-purple-6"]:not([class*="outline"]) {
+  background: linear-gradient(135deg, #8A2BE2 0%, #9333EA 100%) !important;
   border: none !important;
   color: white !important;
-  border-radius: 12px !important;
-  font-weight: 500 !important;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3) !important;
+  border-radius: 16px !important;
+  font-weight: 600 !important;
+  padding: 12px 24px !important;
+  box-shadow: 0 4px 16px rgba(138, 43, 226, 0.35) !important;
   transition: all 0.3s ease !important;
 }
 
-button[class*="bg-blue"]:not([class*="outline"]):hover,
+button[class*="bg-blue-6"]:not([class*="outline"]):hover,
 button[class*="bg-primary"]:not([class*="outline"]):hover,
-button[class*="bg-emerald"]:not([class*="outline"]):hover {
+button[class*="bg-emerald-6"]:not([class*="outline"]):hover,
+button[class*="bg-purple-6"]:not([class*="outline"]):hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4) !important;
+  box-shadow: 0 6px 20px rgba(138, 43, 226, 0.45) !important;
+  background: linear-gradient(135deg, #9333EA 0%, #A855F7 100%) !important;
 }
 
-/* Outline buttons */
-button[class*="outline"] {
-  background: rgba(255, 255, 255, 0.6) !important;
-  backdrop-filter: blur(10px) !important;
-  border: 1.5px solid rgba(124, 58, 237, 0.3) !important;
-  color: var(--purple-deep) !important;
-  border-radius: 12px !important;
-  font-weight: 500 !important;
+/* Outline buttons - White with purple border */
+button[class*="outline"],
+button[class*="variant-outline"] {
+  background: white !important;
+  backdrop-filter: none !important;
+  border: 2px solid var(--purple-light) !important;
+  color: var(--purple-dark) !important;
+  border-radius: 16px !important;
+  font-weight: 600 !important;
   transition: all 0.3s ease !important;
 }
 
-button[class*="outline"]:hover {
-  background: rgba(124, 58, 237, 0.1) !important;
-  border-color: var(--purple-primary) !important;
+button[class*="outline"]:hover,
+button[class*="variant-outline"]:hover {
+  background: var(--purple-ultra-light) !important;
+  border-color: var(--purple-medium) !important;
+  color: var(--purple-darkest) !important;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 51, 234, 0.2) !important;
 }
 
-/* ========== INPUTS GLASSMORPHISM ========== */
+/* Small buttons */
+button[class*="size-sm"] {
+  border-radius: 12px !important;
+  padding: 8px 16px !important;
+}
+
+/* Large buttons */
+button[class*="size-lg"] {
+  border-radius: 18px !important;
+  padding: 14px 32px !important;
+  font-size: 16px !important;
+}
+
+/* ========== INPUTS - CLEAN WHITE ========== */
 
 input,
 textarea,
 select,
 [role="combobox"] {
-  background: rgba(255, 255, 255, 0.6) !important;
-  backdrop-filter: blur(10px) !important;
-  border: 1.5px solid rgba(124, 58, 237, 0.2) !important;
-  border-radius: 12px !important;
+  background: white !important;
+  backdrop-filter: none !important;
+  border: 1.5px solid #E5E7EB !important;
+  border-radius: 14px !important;
   transition: all 0.3s ease !important;
   color: var(--text-primary) !important;
+  padding: 10px 16px !important;
 }
 
 input:focus,
 textarea:focus,
 select:focus,
 [role="combobox"]:focus {
-  background: rgba(255, 255, 255, 0.8) !important;
-  border-color: var(--purple-primary) !important;
-  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1) !important;
+  background: white !important;
+  border-color: var(--purple-medium) !important;
+  box-shadow: 0 0 0 4px rgba(139, 51, 234, 0.1) !important;
+  outline: none !important;
 }
 
 input::placeholder,
@@ -205,48 +262,69 @@ textarea::placeholder {
   color: var(--text-muted) !important;
 }
 
+/* Search input styling (from image) */
+input[type="search"],
+input[placeholder*="busca"],
+input[placeholder*="Busca"],
+input[placeholder*="Search"] {
+  padding-left: 40px !important;
+  background: white !important;
+  border-radius: 16px !important;
+}
+
 /* ========== MODALS/DIALOGS ========== */
 
 [role="dialog"],
 [class*="DialogContent"] {
-  border-radius: 32px !important;
-  box-shadow: 0 20px 60px rgba(76, 29, 149, 0.2),
-              0 8px 24px rgba(76, 29, 149, 0.1) !important;
+  background: white !important;
+  backdrop-filter: none !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 24px !important;
+  box-shadow: 0 20px 60px rgba(107, 33, 168, 0.2) !important;
 }
 
-/* ========== BADGES & TAGS ========== */
+/* ========== BADGES (LIKE IMAGE) ========== */
 
+/* Success/Complete badges - Light purple */
 .status-available,
-[class*="bg-emerald-100"] {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%) !important;
-  border: 1px solid rgba(16, 185, 129, 0.3) !important;
-  border-radius: 12px !important;
-  backdrop-filter: blur(8px) !important;
+[class*="bg-emerald-100"]:not(button),
+[class*="bg-green-100"]:not(button) {
+  background: linear-gradient(135deg, #DDD6FE 0%, #C7D2FE 100%) !important;
+  border: 1px solid var(--purple-light) !important;
+  border-radius: 14px !important;
+  color: var(--purple-dark) !important;
+  font-weight: 600 !important;
+  padding: 6px 12px !important;
 }
 
+/* In Progress badges - Medium purple */
+[class*="bg-blue-100"]:not(button),
+[class*="bg-purple-100"]:not(button) {
+  background: linear-gradient(135deg, #C084FC 0%, #A855F7 100%) !important;
+  border: 1px solid var(--purple-medium) !important;
+  border-radius: 14px !important;
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 6px 12px !important;
+}
+
+/* Alert badges */
 .status-rented,
-[class*="bg-red-100"] {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%) !important;
-  border: 1px solid rgba(239, 68, 68, 0.3) !important;
-  border-radius: 12px !important;
-  backdrop-filter: blur(8px) !important;
+[class*="bg-red-100"]:not(button) {
+  background: linear-gradient(135deg, #FECACA 0%, #FCA5A5 100%) !important;
+  border: 1px solid #EF4444 !important;
+  border-radius: 14px !important;
+  color: #991B1B !important;
+  font-weight: 600 !important;
 }
 
-.status-maintenance,
-[class*="bg-amber-100"],
-[class*="bg-yellow-100"] {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.15) 100%) !important;
-  border: 1px solid rgba(245, 158, 11, 0.3) !important;
-  border-radius: 12px !important;
-  backdrop-filter: blur(8px) !important;
-}
-
-[class*="bg-blue-100"],
-[class*="bg-purple-100"] {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%) !important;
-  border: 1px solid rgba(124, 58, 237, 0.3) !important;
-  border-radius: 12px !important;
-  backdrop-filter: blur(8px) !important;
+[class*="bg-amber-100"]:not(button),
+[class*="bg-yellow-100"]:not(button) {
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%) !important;
+  border: 1px solid #F59E0B !important;
+  border-radius: 14px !important;
+  color: #92400E !important;
+  font-weight: 600 !important;
 }
 
 /* ========== TABLES ========== */
@@ -254,140 +332,332 @@ textarea::placeholder {
 table {
   border-radius: 16px !important;
   overflow: hidden;
+  background: white !important;
 }
 
 th {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%) !important;
-  backdrop-filter: blur(10px) !important;
-  font-weight: 600 !important;
-  color: var(--purple-deep) !important;
+  background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%) !important;
+  backdrop-filter: none !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+  padding: 16px !important;
+  border-bottom: 2px solid #E5E7EB !important;
+}
+
+td {
+  padding: 16px !important;
+  color: var(--text-secondary) !important;
+}
+
+tbody tr {
+  border-bottom: 1px solid #F3F4F6 !important;
+  transition: all 0.2s ease !important;
 }
 
 tbody tr:hover {
-  background: rgba(124, 58, 237, 0.04) !important;
+  background: linear-gradient(90deg, rgba(139, 51, 234, 0.03) 0%, transparent 100%) !important;
 }
 
-/* ========== SCROLLBAR GLASSMORPHISM ========== */
+/* ========== SCROLLBAR ========== */
 
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.3);
+  background: #F5F5F5;
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, var(--purple-light) 0%, var(--purple-medium) 100%);
+  background: linear-gradient(180deg, #A855F7 0%, #9333EA 100%);
   border-radius: 10px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, var(--purple-medium) 0%, var(--purple-primary) 100%);
+  background: linear-gradient(180deg, #9333EA 0%, #8A2BE2 100%);
 }
 
-/* ========== DASHBOARD SPECIFIC ========== */
+/* ========== DASHBOARD SPECIFIC STYLES ========== */
 
-/* Stats cards */
-[class*="p-6"][class*="rounded"]:not([role="dialog"]) {
+/* Page header (Dashboard title + subtitle) */
+.page-header h1 {
+  font-size: 44px !important;
+  font-weight: 800 !important;
+  color: var(--text-primary) !important;
+  margin-bottom: 8px !important;
+}
+
+.page-header p {
+  font-size: 16px !important;
+  color: var(--text-secondary) !important;
+  font-weight: 400 !important;
+}
+
+/* ========== STAT CARDS (PURPLE GRADIENTS) ========== */
+
+/* Dark purple card (Total) */
+.stat-card-dark,
+[data-stat-type="total"] {
+  background: linear-gradient(180deg, #6B21A8 0%, #4E00A8 100%) !important;
+  border: none !important;
   border-radius: 24px !important;
+  padding: 32px 24px !important;
+  box-shadow: 0 8px 24px rgba(78, 0, 168, 0.35) !important;
+  color: white !important;
+  min-height: 160px !important;
 }
 
-/* Chart containers */
+/* Medium purple card (Ended, Running) */
+.stat-card-medium,
+[data-stat-type="ended"],
+[data-stat-type="running"] {
+  background: linear-gradient(180deg, #9333EA 0%, #7C3AED 100%) !important;
+  border: none !important;
+  border-radius: 24px !important;
+  padding: 32px 24px !important;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3) !important;
+  color: white !important;
+  min-height: 160px !important;
+}
+
+/* Light purple card (Pending) */
+.stat-card-light,
+[data-stat-type="pending"] {
+  background: linear-gradient(180deg, #A855F7 0%, #9333EA 100%) !important;
+  border: none !important;
+  border-radius: 24px !important;
+  padding: 32px 24px !important;
+  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.25) !important;
+  color: white !important;
+  min-height: 160px !important;
+}
+
+/* Stat card titles */
+.stat-card-title {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  opacity: 0.9 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  margin-bottom: 12px !important;
+}
+
+/* Stat card numbers - VERY LARGE like image */
+.stat-card-number {
+  font-size: 64px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  font-family: 'Poppins', sans-serif !important;
+  margin: 16px 0 !important;
+}
+
+/* Stat card subtitle */
+.stat-card-subtitle {
+  font-size: 12px !important;
+  opacity: 0.8 !important;
+}
+
+/* ========== CHARTS ========== */
+
 canvas {
-  border-radius: 16px !important;
+  border-radius: 12px !important;
 }
 
-/* Progress circles */
-[class*="CircularProgress"],
-[class*="progress"] {
-  filter: drop-shadow(0 4px 8px rgba(124, 58, 237, 0.2));
+/* Chart container */
+.chart-container {
+  background: white !important;
+  padding: 24px !important;
+  border-radius: 20px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ========== USER PROFILE HEADER ========== */
+
+/* Top right user area */
+[class*="user-profile"],
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 8px 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* ========== NOTIFICATION BADGES ========== */
+
+/* Badge count (like "15" on Task in sidebar) */
+.badge-count {
+  background: linear-gradient(135deg, #8A2BE2 0%, #9333EA 100%) !important;
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  padding: 2px 8px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 6px rgba(138, 43, 226, 0.3) !important;
+}
+
+/* ========== PROGRESS BARS ========== */
+
+/* Progress bar container */
+[class*="Progress"],
+.progress-bar {
+  background: rgba(139, 51, 234, 0.1) !important;
+  border-radius: 12px !important;
+  height: 8px !important;
+  overflow: hidden;
+}
+
+/* Progress bar fill */
+[class*="Progress"] > div,
+.progress-bar-fill {
+  background: linear-gradient(90deg, #8A2BE2 0%, #A855F7 100%) !important;
+  border-radius: 12px !important;
+  transition: width 0.3s ease !important;
+}
+
+/* ========== TEAM MEMBER CARDS ========== */
+
+/* Team collaboration cards (light purple bg) */
+.team-member-card {
+  background: linear-gradient(135deg, #E9D5FF 0%, #DDD6FE 100%) !important;
+  border: 1px solid var(--purple-light) !important;
+  border-radius: 20px !important;
+  padding: 20px !important;
+  box-shadow: 0 4px 12px rgba(139, 51, 234, 0.1) !important;
+}
+
+/* ========== SECTION DIVIDERS ========== */
+
+/* Section headers */
+.section-header {
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+  margin-bottom: 16px !important;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 /* ========== ANIMATIONS ========== */
 
-@keyframes glassShimmer {
-  0% {
-    background-position: -200% center;
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  100% {
-    background-position: 200% center;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-.glass-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.3) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  background-size: 200% 100%;
-  animation: glassShimmer 2s infinite;
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out;
 }
 
-/* ========== UTILITY CLASSES ========== */
-
-.glass-panel {
-  background: rgba(255, 255, 255, 0.75) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  border-radius: 24px !important;
-  box-shadow: 0 8px 32px rgba(76, 29, 149, 0.08) !important;
-}
-
-.glass-card {
-  background: rgba(255, 255, 255, 0.7) !important;
-  backdrop-filter: blur(16px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.25) !important;
-  border-radius: 20px !important;
-  box-shadow: 0 4px 16px rgba(76, 29, 149, 0.06) !important;
-}
-
-.purple-gradient {
-  background: linear-gradient(135deg, var(--purple-primary) 0%, var(--purple-medium) 100%) !important;
-}
-
-.purple-gradient-text {
-  background: linear-gradient(135deg, var(--purple-primary) 0%, var(--purple-medium) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ========== MOBILE RESPONSIVENESS ========== */
-
-@media (max-width: 768px) {
-  [class*="Card"],
-  .card {
-    border-radius: 20px !important;
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 4px 16px rgba(138, 43, 226, 0.3);
   }
-  
-  button {
-    border-radius: 10px !important;
+  50% {
+    box-shadow: 0 8px 24px rgba(138, 43, 226, 0.5);
   }
+}
+
+.pulse-glow {
+  animation: pulseGlow 2s infinite;
 }
 
 /* ========== FOCUS STATES ========== */
 
 *:focus-visible {
   outline: none !important;
-  ring: 2px solid var(--purple-primary) !important;
-  ring-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(139, 51, 234, 0.3) !important;
 }
 
-/* ========== LOGO GLOW EFFECT ========== */
-
-[class*="logo"],
-.logo {
-  filter: drop-shadow(0 2px 8px rgba(124, 58, 237, 0.3));
-  transition: filter 0.3s ease;
+button:focus-visible {
+  box-shadow: 0 0 0 3px rgba(139, 51, 234, 0.3), 
+              0 4px 16px rgba(138, 43, 226, 0.35) !important;
 }
 
-[class*="logo"]:hover,
-.logo:hover {
-  filter: drop-shadow(0 4px 12px rgba(124, 58, 237, 0.5));
+/* ========== UTILITY CLASSES (REUSABLE) ========== */
+
+.glass-white {
+  background: white !important;
+  border-radius: 20px !important;
+  border: 1px solid #E5E7EB !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+}
+
+.purple-gradient-bg {
+  background: linear-gradient(135deg, #8A2BE2 0%, #9333EA 100%) !important;
+}
+
+.purple-gradient-text {
+  background: linear-gradient(135deg, #8A2BE2 0%, #A855F7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-shadow-purple {
+  text-shadow: 0 2px 8px rgba(139, 51, 234, 0.3);
+}
+
+/* ========== TOP HEADER BAR ========== */
+
+header {
+  background: white !important;
+  border-bottom: 1px solid #E5E7EB !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (max-width: 768px) {
+  .stat-card-number {
+    font-size: 48px !important;
+  }
+  
+  .page-header h1 {
+    font-size: 32px !important;
+  }
+  
+  [class*="Card"],
+  .card {
+    border-radius: 16px !important;
+  }
+}
+
+/* ========== ICON STYLES ========== */
+
+/* Icons should match the subtle style from the image */
+svg {
+  transition: all 0.3s ease;
+}
+
+button:hover svg {
+  transform: scale(1.1);
+}
+
+/* Circular icon buttons (like arrow in stat cards) */
+.icon-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.icon-circle:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
 }
