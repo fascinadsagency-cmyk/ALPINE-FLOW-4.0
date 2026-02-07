@@ -2193,7 +2193,7 @@ async def create_items_bulk(data: BulkItemCreate, current_user: CurrentUser = De
 
 @api_router.post("/items/import-csv")
 async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUser = Depends(get_current_user)):
-    """Import items from CSV file with automatic type creation and tariff assignment"""
+    """Import items from CSV file with automatic type AND tariff creation"""
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="File must be CSV")
     
@@ -2217,38 +2217,23 @@ async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUs
                 errors.append({"barcode": barcode, "error": "Already exists"})
                 continue
             
-            # ============ FIND OR CREATE ITEM TYPE ============
-            # Get type from Excel (column name can be 'tipo', 'type', 'item_type')
-            raw_item_type = row.get('item_type', row.get('tipo', row.get('type', 'ski'))).strip()
-            
+            # ============ AUTO-CREATE TYPE AND TARIFF ============
+            raw_item_type = row.get('item_type', row.get('tipo', row.get('type', 'general'))).strip()
             if not raw_item_type:
-                raw_item_type = 'ski'  # Default fallback
+                raw_item_type = 'general'
             
-            # Normalize: lowercase, replace spaces with underscores
-            normalized_value = raw_item_type.lower().replace(" ", "_")
+            # Use helper function that ensures type AND tariff exist
+            normalized_type = await ensure_type_and_tariff_exist(current_user.store_id, raw_item_type)
             
-            # Search if type exists for this store (by normalized value)
-            existing_type = await db.item_types.find_one({
-                **current_user.get_store_filter(),
-                "value": normalized_value
-            })
-            
-            if not existing_type:
-                # CREATE NEW TYPE AUTOMATICALLY
-                type_id = str(uuid.uuid4())
-                new_type = {
-                    "id": type_id,
-                    "store_id": current_user.store_id,
-                    "value": normalized_value,
-                    "label": raw_item_type.title(),  # "esquí adulto" → "Esquí Adulto"
-                    "is_default": False,
-                    "created_at": datetime.now(timezone.utc).isoformat()
-                }
-                await db.item_types.insert_one(new_type)
-                types_created.append(normalized_value)
-            
-            item_type = normalized_value
-            # ==================================================
+            if normalized_type not in types_created:
+                # Check if it was just created
+                type_check = await db.item_types.find_one({
+                    "store_id": current_user.store_id, 
+                    "value": normalized_type
+                })
+                if type_check and type_check.get("created_at", "").startswith(datetime.now(timezone.utc).strftime("%Y-%m-%d")):
+                    types_created.append(normalized_type)
+            # =====================================================
             
             item_id = str(uuid.uuid4())
             doc = {
