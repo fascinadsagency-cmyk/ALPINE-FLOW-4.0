@@ -148,6 +148,9 @@ class ItemResponse(BaseModel):
     category: str = "MEDIA"
     maintenance_interval: int = 30
     created_at: str
+    # Tariff fields
+    tariff_id: str = ""  # Link to tariff
+    rental_price: Optional[float] = None  # Price per day from tariff
     # Financial fields (optional for response)
     acquisition_cost: Optional[float] = None
     total_revenue: Optional[float] = None
@@ -158,7 +161,6 @@ class ItemResponse(BaseModel):
     name: str = ""
     stock_total: int = 0
     stock_available: int = 0
-    rental_price: Optional[float] = None
     # Quick Add feature
     is_quick_add: bool = False
 
