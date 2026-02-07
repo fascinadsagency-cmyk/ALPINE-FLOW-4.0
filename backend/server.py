@@ -7046,6 +7046,64 @@ async def startup_db_indexes():
         logger.info("✅ Database indexes created successfully")
     except Exception as e:
         logger.warning(f"⚠️ Index creation error (may already exist): {e}")
+    
+    # MULTI-TENANT SECURITY: Validate data isolation on startup
+    await validate_multitenant_isolation()
+
+
+async def validate_multitenant_isolation():
+    """
+    CRITICAL SECURITY CHECK: Validate multi-tenant data isolation.
+    Runs on every server startup to detect anomalies.
+    """
+    try:
+        # Get all valid store IDs
+        stores = await db.stores.distinct("store_id")
+        valid_store_ids = set(stores)
+        
+        # Check for items without store_id
+        orphan_items = await db.items.count_documents({
+            "$or": [
+                {"store_id": {"$exists": False}},
+                {"store_id": None},
+                {"store_id": {"$nin": list(valid_store_ids)}}
+            ]
+        })
+        
+        if orphan_items > 0:
+            logger.error(f"🚨 SECURITY ALERT: {orphan_items} items without valid store_id!")
+        
+        # Check for customers without store_id
+        orphan_customers = await db.customers.count_documents({
+            "$or": [
+                {"store_id": {"$exists": False}},
+                {"store_id": None}
+            ]
+        })
+        
+        if orphan_customers > 0:
+            logger.error(f"🚨 SECURITY ALERT: {orphan_customers} customers without store_id!")
+        
+        # Check for rentals without store_id
+        orphan_rentals = await db.rentals.count_documents({
+            "$or": [
+                {"store_id": {"$exists": False}},
+                {"store_id": None}
+            ]
+        })
+        
+        if orphan_rentals > 0:
+            logger.error(f"🚨 SECURITY ALERT: {orphan_rentals} rentals without store_id!")
+        
+        # Summary
+        total_orphans = orphan_items + orphan_customers + orphan_rentals
+        if total_orphans == 0:
+            logger.info("✅ Multi-tenant isolation: ALL DATA PROPERLY ISOLATED")
+        else:
+            logger.error(f"🚨 MULTI-TENANT VIOLATION: {total_orphans} records without proper store_id!")
+            
+    except Exception as e:
+        logger.error(f"Error validating multi-tenant isolation: {e}")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
