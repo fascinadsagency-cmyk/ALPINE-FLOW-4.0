@@ -3474,6 +3474,27 @@ export default function NewRental() {
               </div>
             </div>
 
+            {/* IMPORTE A PAGAR - EDITABLE (excepto Pago Online y Pendiente) */}
+            <div className="space-y-2">
+              <Label className="text-base font-semibold">Importe a Pagar (€)</Label>
+              <Input
+                type="number"
+                value={paidAmount}
+                onChange={(e) => setPaidAmount(e.target.value)}
+                placeholder="0.00"
+                className="h-14 text-2xl font-bold text-center"
+                min="0"
+                step="0.01"
+                disabled={paymentMethodSelected === "pago_online"}
+                readOnly={paymentMethodSelected === "pending"}
+              />
+              <p className="text-xs text-slate-500 text-center">
+                {paymentMethodSelected === "pending" && "Pendiente de pago = 0€ pagados ahora"}
+                {paymentMethodSelected === "pago_online" && "Pago online = Total completo"}
+                {(paymentMethodSelected === "cash" || paymentMethodSelected === "card") && "Puedes cambiar el importe para pagos parciales"}
+              </p>
+            </div>
+
             {/* Cash Input and Change Calculation */}
             {paymentMethodSelected === "cash" && (
               <div className="space-y-4 p-4 rounded-lg bg-slate-50 border-2 border-slate-200">
