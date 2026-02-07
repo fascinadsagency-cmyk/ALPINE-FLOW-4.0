@@ -3513,21 +3513,21 @@ export default function NewRental() {
                 </div>
 
                 {/* Change Display */}
-                {cashGiven && parseFloat(cashGiven) >= calculateTotal() && (
+                {cashGiven && parseFloat(cashGiven) >= (parseFloat(paidAmount) || 0) && (
                   <div className="p-4 rounded-lg bg-blue-50 border-2 border-blue-300 animate-fade-in">
                     <p className="text-sm font-medium text-blue-700">Cambio a Devolver</p>
                     <p className="text-4xl font-black text-blue-900 mt-1">
-                      €{(parseFloat(cashGiven) - calculateTotal()).toFixed(2)}
+                      €{(parseFloat(cashGiven) - (parseFloat(paidAmount) || 0)).toFixed(2)}
                     </p>
                   </div>
                 )}
 
-                {/* Warning if insufficient */}
-                {cashGiven && parseFloat(cashGiven) < calculateTotal() && (
-                  <div className="p-3 rounded-lg bg-red-50 border border-red-300 flex items-start gap-2">
-                    <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-red-700">
-                      El efectivo entregado es menor que el total a pagar.
+                {/* Warning if insufficient (solo advertencia, NO bloquea) */}
+                {cashGiven && parseFloat(cashGiven) < (parseFloat(paidAmount) || 0) && (
+                  <div className="p-3 rounded-lg bg-amber-50 border border-amber-300 flex items-start gap-2">
+                    <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-amber-700">
+                      El efectivo entregado es menor que el importe a pagar. Se registrará como pago parcial.
                     </p>
                   </div>
                 )}
