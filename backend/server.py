@@ -2609,7 +2609,8 @@ async def update_tariff(tariff_id: str, tariff: TariffCreate, current_user: Curr
     )
     
     # PROPAGATE: Update rental_price in ALL items with this tariff
-    new_price = tariff.daily_rate if hasattr(tariff, 'daily_rate') else update_data.get('daily_rate', 0)
+    # El precio base es day_1 (precio por 1 día)
+    new_price = tariff.day_1 if tariff.day_1 is not None else 0.0
     item_type = existing.get("item_type", "")
     
     propagate_result = await db.items.update_many(
@@ -2617,7 +2618,7 @@ async def update_tariff(tariff_id: str, tariff: TariffCreate, current_user: Curr
         {"$set": {"rental_price": new_price}}
     )
     
-    logger.info(f"✅ Tariff '{item_type}' updated. Price propagated to {propagate_result.modified_count} items.")
+    logger.info(f"✅ Tariff '{item_type}' updated. Price €{new_price} propagated to {propagate_result.modified_count} items.")
     
     # Return updated tariff
     updated = await db.tariffs.find_one({"id": tariff_id}, {"_id": 0})
