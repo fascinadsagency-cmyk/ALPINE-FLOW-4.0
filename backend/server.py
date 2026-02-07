@@ -4945,10 +4945,11 @@ async def get_range_report(
 async def get_reconciliation_report(
     start_date: str,
     end_date: str,
-    current_user: CurrentUser = Depends(get_current_user)
+    current_user: CurrentUser = Depends(require_admin)
 ):
     """
     Endpoint de reconciliación para depurar discrepancias entre Caja y Reportes.
+    Solo accesible para ADMIN y SUPER_ADMIN.
     
     Compara:
     1. Totales de cash_movements (fuente de verdad)
