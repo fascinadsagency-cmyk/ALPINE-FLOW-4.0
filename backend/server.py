@@ -3647,6 +3647,166 @@ async def process_return(rental_id: str, return_input: ReturnInput, current_user
         "deposit_forfeited": deposit_forfeited
     }
 
+
+# =================== ADD ITEMS TO EXISTING RENTAL ====================
+@api_router.post("/rentals/{rental_id}/add-items")
+async def add_items_to_rental(
+    rental_id: str, 
+    add_items_input: AddItemsToRentalInput, 
+    current_user: CurrentUser = Depends(get_current_user)
+):
+    """
+    Añade artículos nuevos a un alquiler activo.
+    Calcula precio proporcional basado en días restantes.
+    Opcionalmente cobra el importe adicional.
+    """
+    # Validar que el alquiler existe y está activo
+    rental = await db.rentals.find_one({**current_user.get_store_filter(), **{"id": rental_id}})
+    if not rental:
+        raise HTTPException(status_code=404, detail="Alquiler no encontrado")
+    
+    if rental["status"] not in ["active", "partial"]:
+        raise HTTPException(status_code=400, detail="Solo se pueden añadir artículos a alquileres activos")
+    
+    # Validar límite del plan
+    plan_status_response = await get_plan_status(current_user)
+    current_items = plan_status_response["current_items"]
+    max_items = plan_status_response["max_items"]
+    
+    new_items_count = len(add_items_input.items)
+    if current_items + new_items_count > max_items:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Límite de artículos alcanzado. Plan actual: {current_items}/{max_items}. No se pueden añadir {new_items_count} artículos más."
+        )
+    
+    # Calcular días para los nuevos artículos
+    if add_items_input.days:
+        days = add_items_input.days
+    else:
+        # Usar días restantes del alquiler original
+        from datetime import datetime
+        end_date = datetime.fromisoformat(rental["end_date"].replace('Z', '+00:00'))
+        start_date_new = datetime.now(timezone.utc)
+        days = max(1, (end_date - start_date_new).days + 1)
+    
+    # Fecha de fin para nuevos items
+    end_date_new_items = add_items_input.end_date or rental["end_date"]
+    
+    # Procesar nuevos artículos
+    new_items_processed = []
+    additional_rental_amount = 0
+    additional_deposit = 0
+    
+    for item_input in add_items_input.items:
+        # Verificar que el artículo existe y está disponible
+        item = await db.items.find_one({**current_user.get_store_filter(), **{"barcode": item_input.barcode}})
+        if not item:
+            raise HTTPException(status_code=404, detail=f"Artículo {item_input.barcode} no encontrado")
+        
+        if item["status"] != "available":
+            raise HTTPException(status_code=400, detail=f"Artículo {item_input.barcode} no está disponible")
+        
+        # Marcar como alquilado
+        await db.items.update_one(
+            {**current_user.get_store_filter(), **{"barcode": item_input.barcode}},
+            {"$set": {"status": "rented"}}
+        )
+        
+        # Calcular precio usando unit_price o 0
+        item_price = item_input.unit_price or 0
+        additional_rental_amount += item_price
+        
+        # Agregar al array de items del rental
+        new_item_entry = {
+            "barcode": item_input.barcode,
+            "name": item.get("name", "Artículo"),
+            "item_type": item.get("item_type", ""),
+            "size": item.get("size", ""),
+            "person_name": item_input.person_name or "",
+            "unit_price": item_price,
+            "returned": False,
+            "return_date": None,
+            "end_date": end_date_new_items,  # Puede ser diferente
+            "days": days
+        }
+        new_items_processed.append(new_item_entry)
+    
+    # Actualizar el alquiler con los nuevos items y montos
+    rental["items"].extend(new_items_processed)
+    new_total = rental["total_amount"] + additional_rental_amount
+    new_deposit = rental.get("deposit", 0) + additional_deposit
+    
+    await db.rentals.update_one(
+        {**current_user.get_store_filter(), **{"id": rental_id}},
+        {"$set": {
+            "items": rental["items"],
+            "total_amount": new_total,
+            "deposit": new_deposit
+        }}
+    )
+    
+    # Si se cobra ahora, registrar en caja
+    if add_items_input.charge_now and additional_rental_amount > 0:
+        # Validar sesión de caja activa
+        date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
+        
+        if not active_session:
+            raise HTTPException(
+                status_code=400,
+                detail="No hay sesión de caja activa. Abre la caja para registrar el cobro."
+            )
+        
+        # Obtener datos del cliente
+        customer = await db.customers.find_one({**current_user.get_store_filter(), **{"id": rental.get("customer_id")}})
+        customer_name = customer.get("name", rental.get("customer_name", "Cliente")) if customer else rental.get("customer_name", "Cliente")
+        
+        # Registrar movimiento de ampliación
+        operation_number = await get_next_operation_number()
+        cash_movement_id = str(uuid.uuid4())
+        cash_doc = {
+            "id": cash_movement_id,
+            "store_id": current_user.store_id,
+            "operation_number": operation_number,
+            "session_id": active_session["id"],
+            "movement_type": "income",
+            "amount": additional_rental_amount,
+            "payment_method": add_items_input.payment_method,
+            "category": "rental_extension",
+            "concept": f"Ampliación de material #{rental_id[:8]} - {customer_name}",
+            "reference_id": rental_id,
+            "customer_name": customer_name,
+            "notes": f"Ampliación: {len(new_items_processed)} artículo(s) por {days} día(s)",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "created_by": current_user.username
+        }
+        await db.cash_movements.insert_one(cash_doc)
+        
+        # Actualizar paid_amount del rental
+        await db.rentals.update_one(
+            {**current_user.get_store_filter(), **{"id": rental_id}},
+            {"$set": {"paid_amount": rental["paid_amount"] + additional_rental_amount}}
+        )
+    else:
+        # Si no se cobra ahora, sumar al pendiente
+        new_pending = rental.get("pending_amount", 0) + additional_rental_amount
+        await db.rentals.update_one(
+            {**current_user.get_store_filter(), **{"id": rental_id}},
+            {"$set": {"pending_amount": new_pending}}
+        )
+    
+    return {
+        "message": "Artículos añadidos exitosamente",
+        "items_added": len(new_items_processed),
+        "additional_amount": additional_rental_amount,
+        "additional_deposit": additional_deposit,
+        "new_total": new_total,
+        "charged_now": add_items_input.charge_now
+    }
+
+
+
 class PaymentRequest(BaseModel):
     amount: float
     payment_method: str = "cash"
