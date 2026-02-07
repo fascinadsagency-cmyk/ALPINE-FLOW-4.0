@@ -1632,45 +1632,37 @@ export default function NewRental() {
       return;
     }
 
-    // Validate cash payment
-    if (paymentMethodSelected === "cash" && !cashGiven) {
-      toast.error("Introduce el efectivo entregado");
-      return;
-    }
-
-    const total = Number(calculateTotal().toFixed(2));
-    const cashGivenAmount = Number(parseFloat(cashGiven) || 0);
-
-    if (paymentMethodSelected === "cash" && cashGivenAmount < total) {
-      toast.error(`El efectivo entregado (€${cashGivenAmount.toFixed(2)}) es menor que el total (€${total.toFixed(2)})`);
-      return;
-    }
+    // ELIMINADO: Validación que bloqueaba pagos parciales
+    // Ahora SIEMPRE permitimos guardar, incluso con 0€ pagados (pendiente)
 
     setProcessingPayment(true);
     
     const API = process.env.REACT_APP_BACKEND_URL;
     
     // === VERIFICACIÓN SIMPLE DE CAJA (sin abrir automáticamente) ===
-    try {
-      const sessionCheck = await fetch(`${API}/api/cash/sessions/active`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      
-      if (!sessionCheck.ok) {
-        toast.warning("⚠️ Debe abrir la caja en el módulo de CAJA antes de procesar este alquiler.");
-        setProcessingPayment(false);
-        return;
+    // NOTA: Solo verificar si NO es pendiente ni pago online
+    if (paymentMethodSelected !== 'pending' && paymentMethodSelected !== 'pago_online') {
+      try {
+        const sessionCheck = await fetch(`${API}/api/cash/sessions/active`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        
+        if (!sessionCheck.ok) {
+          toast.warning("⚠️ Debe abrir la caja en el módulo de CAJA antes de procesar este alquiler.");
+          setProcessingPayment(false);
+          return;
+        }
+        
+        const sessionText = await sessionCheck.text();
+        if (!sessionText || sessionText.trim().startsWith('<') || !JSON.parse(sessionText)?.id) {
+          toast.warning("⚠️ Debe abrir la caja en el módulo de CAJA antes de procesar este alquiler.");
+          setProcessingPayment(false);
+          return;
+        }
+      } catch (e) {
+        // Si falla la verificación, continuar igual (no bloquear)
+        console.log("No se pudo verificar caja, continuando...");
       }
-      
-      const sessionText = await sessionCheck.text();
-      if (!sessionText || sessionText.trim().startsWith('<') || !JSON.parse(sessionText)?.id) {
-        toast.warning("⚠️ Debe abrir la caja en el módulo de CAJA antes de procesar este alquiler.");
-        setProcessingPayment(false);
-        return;
-      }
-    } catch (e) {
-      // Si falla la verificación, continuar igual (no bloquear)
-      console.log("No se pudo verificar caja, continuando...");
     }
     
     // === ENVÍO SIMPLE DEL ALQUILER ===
