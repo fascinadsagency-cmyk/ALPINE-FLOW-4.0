@@ -3603,7 +3603,7 @@ export default function NewRental() {
             </Button>
             <Button 
               onClick={processPaymentAndCompleteRental}
-              disabled={processingPayment || (paymentMethodSelected === "cash" && !cashGiven)}
+              disabled={processingPayment}
               className="bg-emerald-600 hover:bg-emerald-700 min-w-[200px]"
               size="lg"
             >
