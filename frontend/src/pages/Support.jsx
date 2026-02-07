@@ -16,7 +16,7 @@ export default function Support() {
   };
 
   const handleEmailClick = () => {
-    window.location.href = "mailto:soporte@elenebro.com";
+    window.location.href = "mailto:soporte@alpineflow.es";
   };
 
   return (
