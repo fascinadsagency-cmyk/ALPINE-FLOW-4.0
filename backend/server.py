@@ -1388,7 +1388,7 @@ async def get_items(
         # Sanitize search term
         clean_search = search.strip()
         if clean_search:
-            # Search by internal_code, barcode, barcode_2, serial_number, brand, model, size, name (for generic)
+            # Search by internal_code, barcode, barcode_2, serial_number, brand, model, size, name, item_type
             search_conditions = [
                 {"internal_code": {"$regex": clean_search, "$options": "i"}},
                 {"barcode": {"$regex": clean_search, "$options": "i"}},
@@ -1397,7 +1397,8 @@ async def get_items(
                 {"brand": {"$regex": clean_search, "$options": "i"}},
                 {"model": {"$regex": clean_search, "$options": "i"}},
                 {"size": {"$regex": clean_search, "$options": "i"}},
-                {"name": {"$regex": clean_search, "$options": "i"}}
+                {"name": {"$regex": clean_search, "$options": "i"}},
+                {"item_type": {"$regex": clean_search, "$options": "i"}}  # AÑADIDO: Buscar por tipo de artículo
             ]
             # If we have other conditions, we need to combine with $and
             if query:
