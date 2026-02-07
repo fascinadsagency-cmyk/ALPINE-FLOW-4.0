@@ -6369,19 +6369,37 @@ async def get_sources(current_user: CurrentUser = Depends(get_current_user)):
 
 @api_router.delete("/sources/{source_id}")
 async def delete_source(source_id: str, current_user: CurrentUser = Depends(get_current_user)):
+    # SEGURIDAD: Solo ADMIN puede eliminar proveedores
+    if current_user.role not in ["admin", "super_admin"]:
+        raise HTTPException(status_code=403, detail="Solo los administradores pueden eliminar proveedores")
+    
     # Multi-tenant: Check source exists in same store
     source = await db.sources.find_one({**current_user.get_store_filter(), "id": source_id})
     if not source:
-        raise HTTPException(status_code=404, detail="Source not found")
+        raise HTTPException(status_code=404, detail="Proveedor no encontrado")
     
-    # Check if source is used (within same store)
-    count = await db.customers.count_documents({**current_user.get_store_filter(), "source": source["name"]})
-    if count > 0:
-        raise HTTPException(status_code=400, detail=f"Cannot delete: {count} customers using this source")
+    # INTEGRIDAD: Verificar si hay clientes vinculados
+    customer_count = await db.customers.count_documents({**current_user.get_store_filter(), "source": source["name"]})
+    if customer_count > 0:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"No se puede eliminar el proveedor porque tiene {customer_count} cliente(s) asociado(s). Reasigna los clientes a otro proveedor primero."
+        )
+    
+    # INTEGRIDAD: Verificar si hay artículos vinculados (por provider_id o source)
+    items_by_provider_id = await db.items.count_documents({**current_user.get_store_filter(), "provider_id": source_id})
+    items_by_source_name = await db.items.count_documents({**current_user.get_store_filter(), "source": source["name"]})
+    total_items = items_by_provider_id + items_by_source_name
+    
+    if total_items > 0:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"No se puede eliminar el proveedor porque tiene {total_items} artículo(s) asociado(s). Reasigna los artículos a otro proveedor primero."
+        )
     
     # Multi-tenant: Delete only from own store
     await db.sources.delete_one({**current_user.get_store_filter(), "id": source_id})
-    return {"message": "Source deleted"}
+    return {"message": "Proveedor eliminado correctamente"}
 
 @api_router.put("/sources/{source_id}", response_model=SourceResponse)
 async def update_source(source_id: str, source: SourceCreate, current_user: CurrentUser = Depends(get_current_user)):
