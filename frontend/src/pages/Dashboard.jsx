@@ -223,67 +223,71 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* KPI Cards Row - Solo datos operativos, sin información financiera */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className={`hover:shadow-md transition-shadow cursor-pointer ${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`} onClick={() => navigate('/alquileres-activos')}>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Alquileres Activos</p>
-                <p className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>{stats.active_rentals || 0}</p>
-                <p className={`text-xs mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>En curso ahora mismo</p>
-              </div>
-              <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${darkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
-                <ShoppingCart className={`h-6 w-6 ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`} />
-              </div>
+      {/* KPI Cards Row - Purple gradient style (GrowSync inspired) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Card 1: Alquileres Activos - Dark Purple */}
+        <div 
+          className="stat-card-dark cursor-pointer transform hover:scale-105 transition-transform"
+          onClick={() => navigate('/alquileres-activos')}
+          data-stat-type="total"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <p className="stat-card-title">Alquileres Activos</p>
+            <div className="icon-circle">
+              <ArrowRight className="h-5 w-5 text-white" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <p className="stat-card-number">{stats.active_rentals || 0}</p>
+          <p className="stat-card-subtitle">En curso ahora mismo</p>
+        </div>
 
-        <Card className={`hover:shadow-md transition-shadow cursor-pointer ${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`} onClick={() => navigate('/devoluciones')}>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Devoluciones Hoy</p>
-                <p className={`text-2xl font-bold ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>{stats.returns_today || 0}</p>
-                <p className={`text-xs mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Equipos por recoger</p>
-              </div>
-              <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${darkMode ? 'bg-amber-900/30' : 'bg-amber-100'}`}>
-                <RotateCcw className={`h-6 w-6 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`} />
-              </div>
+        {/* Card 2: Devoluciones Hoy - Medium Purple */}
+        <div 
+          className="stat-card-medium cursor-pointer transform hover:scale-105 transition-transform"
+          onClick={() => navigate('/devoluciones')}
+          data-stat-type="ended"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <p className="stat-card-title">Devoluciones Hoy</p>
+            <div className="icon-circle">
+              <ArrowRight className="h-5 w-5 text-white" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <p className="stat-card-number">{stats.returns_today || 0}</p>
+          <p className="stat-card-subtitle">Equipos por recoger</p>
+        </div>
 
-        <Card className={`hover:shadow-md transition-shadow cursor-pointer ${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`} onClick={() => navigate('/inventario')}>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Ocupación Stock</p>
-                <p className={`text-2xl font-bold ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>{inventory.occupancy_percent || 0}%</p>
-                <p className={`text-xs mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Material alquilado</p>
-              </div>
-              <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${darkMode ? 'bg-purple-900/30' : 'bg-purple-100'}`}>
-                <Package className={`h-6 w-6 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
-              </div>
+        {/* Card 3: Ocupación Stock - Medium Purple */}
+        <div 
+          className="stat-card-medium cursor-pointer transform hover:scale-105 transition-transform"
+          onClick={() => navigate('/inventario')}
+          data-stat-type="running"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <p className="stat-card-title">Ocupación Stock</p>
+            <div className="icon-circle">
+              <ArrowRight className="h-5 w-5 text-white" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <p className="stat-card-number">{inventory.occupancy_percent || 0}%</p>
+          <p className="stat-card-subtitle">Material alquilado</p>
+        </div>
 
-        <Card className={`hover:shadow-md transition-shadow cursor-pointer ${darkMode ? 'bg-[#1a1a1a] border-[#333]' : 'border-slate-200'}`} onClick={() => navigate('/clientes')}>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Clientes del Día</p>
-                <p className={`text-2xl font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{stats.customers_today ?? 0}</p>
-                <p className={`text-xs mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Clientes únicos atendidos</p>
-              </div>
-              <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${darkMode ? 'bg-emerald-900/30' : 'bg-emerald-100'}`}>
-                <Users className={`h-6 w-6 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
-              </div>
+        {/* Card 4: Clientes del Día - Light Purple */}
+        <div 
+          className="stat-card-light cursor-pointer transform hover:scale-105 transition-transform"
+          onClick={() => navigate('/clientes')}
+          data-stat-type="pending"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <p className="stat-card-title">Clientes del Día</p>
+            <div className="icon-circle">
+              <ArrowRight className="h-5 w-5 text-white" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <p className="stat-card-number">{stats.customers_today ?? 0}</p>
+          <p className="stat-card-subtitle">Clientes únicos atendidos</p>
+        </div>
       </div>
 
       {/* ============ CONTROL DE DEVOLUCIONES - TORRE DE CONTROL ============ */}
