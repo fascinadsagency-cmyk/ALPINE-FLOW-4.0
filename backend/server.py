@@ -6844,6 +6844,15 @@ async def fix_return_dates(current_user: CurrentUser = Depends(get_current_user)
 # ==================== BUSINESS SETTINGS/CONFIGURATION ====================
 
 class BusinessSettings(BaseModel):
+    company_logo: Optional[str] = None  # Base64 encoded image
+    ticket_header: Optional[str] = ""
+    ticket_footer: Optional[str] = ""
+    ticket_terms: Optional[str] = ""
+    show_dni_on_ticket: bool = True
+    show_vat_on_ticket: bool = False
+    default_vat: float = 21.0
+    vat_included_in_prices: bool = True
+    language: str = "es"
 
 # ==================== HELP CENTER MODELS ====================
 
@@ -6884,15 +6893,6 @@ class FAQCreate(BaseModel):
     answer: str
     order: int = 0
     active: bool = True
-    company_logo: Optional[str] = None  # Base64 encoded image
-    ticket_header: Optional[str] = ""
-    ticket_footer: Optional[str] = ""
-    ticket_terms: Optional[str] = ""
-    show_dni_on_ticket: bool = True
-    show_vat_on_ticket: bool = False
-    default_vat: float = 21.0
-    vat_included_in_prices: bool = True
-    language: str = "es"
     dark_mode: bool = False
     auto_print: bool = False
 
