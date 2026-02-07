@@ -58,7 +58,8 @@ import {
   Edit2,
   Save,
   Lock,
-  Check
+  Check,
+  Plus
 } from "lucide-react";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
