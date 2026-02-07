@@ -3154,6 +3154,170 @@ export default function ActiveRentals() {
         </DialogContent>
       </Dialog>
 
+
+      {/* ============ MODAL AÑADIR ARTÍCULOS ============ */}
+      <Dialog open={addItemsModalOpen} onOpenChange={setAddItemsModalOpen}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5 text-emerald-600" />
+              Añadir Artículos al Alquiler
+            </DialogTitle>
+            <DialogDescription>
+              Cliente: <strong>{addItemsRental?.customer_name}</strong> | 
+              Alquiler hasta: <strong>{addItemsRental?.end_date}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {/* Días para los nuevos artículos */}
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <Label>Días de alquiler para los nuevos artículos</Label>
+                <Input
+                  type="number"
+                  value={addItemsDays}
+                  onChange={(e) => setAddItemsDays(Number(e.target.value))}
+                  min="1"
+                  className="h-11 mt-1"
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  Por defecto: días restantes hasta el fin del alquiler original
+                </p>
+              </div>
+            </div>
+            
+            {/* Búsqueda de artículos */}
+            <div>
+              <Label>Buscar artículo disponible</Label>
+              <Input
+                placeholder="Escanea código de barras o busca por nombre..."
+                value={addItemsSearch}
+                onChange={(e) => setAddItemsSearch(e.target.value)}
+                className="h-11 mt-1"
+                autoFocus
+              />
+            </div>
+            
+            {/* Lista de artículos disponibles filtrados */}
+            {addItemsSearch && (
+              <div className="border rounded-lg p-3 max-h-[200px] overflow-y-auto">
+                <p className="text-sm font-medium mb-2">Artículos disponibles:</p>
+                {inventory.filter(item => 
+                  item.status === "available" &&
+                  (item.barcode?.toLowerCase().includes(addItemsSearch.toLowerCase()) ||
+                   item.name?.toLowerCase().includes(addItemsSearch.toLowerCase()) ||
+                   item.item_type?.toLowerCase().includes(addItemsSearch.toLowerCase()))
+                ).slice(0, 5).map(item => (
+                  <div key={item.barcode} className="flex items-center justify-between p-2 hover:bg-slate-50 rounded">
+                    <div>
+                      <p className="font-medium">{item.name || item.item_type}</p>
+                      <p className="text-xs text-slate-500">{item.barcode} - {item.size}</p>
+                    </div>
+                    <Button size="sm" onClick={() => addItemToRental(item)}>
+                      <Plus className="h-3 w-3 mr-1" /> Añadir
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* Artículos seleccionados para añadir */}
+            {addItemsSelected.length > 0 && (
+              <div className="border rounded-lg p-3 bg-emerald-50">
+                <p className="text-sm font-semibold mb-2">Artículos a añadir ({addItemsSelected.length}):</p>
+                <div className="space-y-2">
+                  {addItemsSelected.map((item, idx) => (
+                    <div key={item.barcode} className="flex items-center justify-between p-2 bg-white rounded">
+                      <div className="flex-1">
+                        <p className="font-medium">{item.name}</p>
+                        <p className="text-xs text-slate-500">
+                          {item.barcode} | {item.days} días | €{item.unit_price.toFixed(2)}
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => removeItemFromAddList(item.barcode)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Resumen de cobro */}
+                <div className="mt-3 p-3 bg-white rounded border-2 border-emerald-300">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-semibold">Total adicional:</span>
+                    <span className="text-2xl font-bold text-emerald-700">
+                      €{calculateAddItemsTotal().toFixed(2)}
+                    </span>
+                  </div>
+                  
+                  {/* Opción de cobrar ahora */}
+                  <div className="flex items-center gap-2 mt-3">
+                    <input
+                      type="checkbox"
+                      id="charge-now"
+                      checked={addItemsChargeNow}
+                      onChange={(e) => setAddItemsChargeNow(e.target.checked)}
+                      className="h-4 w-4"
+                    />
+                    <Label htmlFor="charge-now" className="cursor-pointer">
+                      Cobrar ahora (registrar en caja)
+                    </Label>
+                  </div>
+                  
+                  {addItemsChargeNow && (
+                    <div className="mt-2">
+                      <Label className="text-xs">Método de pago</Label>
+                      <div className="flex gap-2 mt-1">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={addItemsPaymentMethod === "cash" ? "default" : "outline"}
+                          onClick={() => setAddItemsPaymentMethod("cash")}
+                        >
+                          💵 Efectivo
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={addItemsPaymentMethod === "card" ? "default" : "outline"}
+                          onClick={() => setAddItemsPaymentMethod("card")}
+                        >
+                          💳 Tarjeta
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {!addItemsChargeNow && (
+                    <p className="text-xs text-amber-600 mt-2">
+                      ⚠️ El importe se sumará al saldo pendiente del alquiler
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddItemsModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={confirmAddItems}
+              disabled={addItemsSelected.length === 0 || addItemsProcessing}
+            >
+              {addItemsProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Confirmar y Añadir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
