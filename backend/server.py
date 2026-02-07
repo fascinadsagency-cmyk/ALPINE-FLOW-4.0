@@ -1998,6 +1998,9 @@ async def get_item_types(current_user: CurrentUser = Depends(get_current_user)):
     type_labels = {t["value"]: t["label"] for t in type_docs if "value" in t and "label" in t}
     
     # Construir respuesta: usar label personalizado si existe, sino usar el valor tal cual
+    # También obtener created_at si existe
+    type_created_at = {t["value"]: t.get("created_at", "") for t in type_docs if "value" in t}
+    
     result = []
     for type_value in distinct_types:
         result.append(ItemTypeResponse(
@@ -2005,7 +2008,7 @@ async def get_item_types(current_user: CurrentUser = Depends(get_current_user)):
             value=type_value,
             label=type_labels.get(type_value, type_value.replace('_', ' ').title()),
             is_default=False,
-            store_id=current_user.store_id
+            created_at=type_created_at.get(type_value, datetime.now(timezone.utc).isoformat())
         ))
     
     return result
