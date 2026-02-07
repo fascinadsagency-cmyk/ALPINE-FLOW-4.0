@@ -34,7 +34,12 @@ export const rentalApi = {
   getById: (id) => axios.get(`${API}/rentals/${id}`),
   getByBarcode: (barcode) => axios.get(`${API}/rentals/barcode/${barcode}`),
   create: (data) => axios.post(`${API}/rentals`, data),
-  processReturn: (id, barcodes) => axios.post(`${API}/rentals/${id}/return`, { barcodes }),
+  processReturn: (id, barcodes, depositAction = "return", forfeitReason = null) => 
+    axios.post(`${API}/rentals/${id}/return`, { 
+      barcodes,
+      deposit_action: depositAction,
+      forfeit_reason: forfeitReason
+    }),
   processPayment: (id, amount) => axios.post(`${API}/rentals/${id}/payment`, null, { params: { amount } }),
 };
 
