@@ -2379,11 +2379,14 @@ async def import_items(request: ItemImportRequest, current_user: CurrentUser = D
                     duplicate_codes.append(f"{internal_code} (barcode)")
                     continue
             
-            # ============ AUTO-CREATE TYPE AND TARIFF ============
+            # ============ AUTO-CREATE TYPE AND TARIFF (OBLIGATORIO) ============
             raw_item_type = item.item_type.strip() if item.item_type else "general"
             
-            # Use helper function that ensures type AND tariff exist
-            normalized_type = await ensure_type_and_tariff_exist(current_user.store_id, raw_item_type)
+            # Esta función GARANTIZA que tipo Y tarifa existen
+            type_tariff_data = await ensure_type_and_tariff_exist(current_user.store_id, raw_item_type)
+            normalized_type = type_tariff_data["normalized_type"]
+            tariff_id = type_tariff_data["tariff_id"]
+            daily_rate = type_tariff_data["daily_rate"]
             
             if normalized_type not in types_created:
                 type_check = await db.item_types.find_one({
@@ -2392,7 +2395,7 @@ async def import_items(request: ItemImportRequest, current_user: CurrentUser = D
                 })
                 if type_check and type_check.get("created_at", "").startswith(datetime.now(timezone.utc).strftime("%Y-%m-%d")):
                     types_created.append(normalized_type)
-            # =====================================================
+            # ===================================================================
             
             # Generate barcode if not provided
             barcode = item.barcode.strip() if item.barcode else internal_code
@@ -2404,7 +2407,7 @@ async def import_items(request: ItemImportRequest, current_user: CurrentUser = D
                 "internal_code": internal_code,
                 "barcode": barcode,
                 "serial_number": item.serial_number.strip() if item.serial_number else "",
-                "item_type": normalized_type,  # Use normalized type
+                "item_type": normalized_type,
                 "brand": item.brand.strip(),
                 "model": item.model.strip() if item.model else "",
                 "size": str(item.size).strip(),
@@ -2417,15 +2420,12 @@ async def import_items(request: ItemImportRequest, current_user: CurrentUser = D
                 "maintenance_interval": 30,
                 "days_used": 0,
                 "amortization": 0,
-                "created_at": datetime.now(timezone.utc).isoformat()
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                # ============ ASIGNACIÓN OBLIGATORIA DE TARIFA ============
+                "tariff_id": tariff_id,  # SIEMPRE asignado
+                "rental_price": daily_rate  # SIEMPRE asignado
+                # ==========================================================
             }
-            
-            # ============ AUTO-ASSIGN TARIFF (guaranteed to exist now) ============
-            tariff = await db.tariffs.find_one({**current_user.get_store_filter(), "item_type": normalized_type}, {"_id": 0})
-            if tariff:
-                doc["tariff_id"] = tariff.get("id", "")
-                doc["rental_price"] = tariff.get("daily_rate", 0)
-            # ======================================================================
             
             await db.items.insert_one(doc)
             imported += 1
