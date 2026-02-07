@@ -184,14 +184,18 @@ export default function StoreManagement() {
   };
 
   const getPlanBadge = (plan) => {
+    // Handle null/undefined plans
+    const planType = plan || 'basic';
+    
     const colors = {
       basic: "bg-gray-100 text-gray-800",
       pro: "bg-blue-100 text-blue-800",
-      enterprise: "bg-purple-100 text-purple-800"
+      enterprise: "bg-purple-100 text-purple-800",
+      trial: "bg-yellow-100 text-yellow-800"
     };
     return (
-      <Badge className={colors[plan] || colors.basic}>
-        {plan.toUpperCase()}
+      <Badge className={colors[planType] || colors.basic}>
+        {planType.toUpperCase()}
       </Badge>
     );
   };
@@ -348,7 +352,7 @@ export default function StoreManagement() {
                     </CardDescription>
                   </div>
                   <div className="flex flex-col gap-2 items-end">
-                    {getPlanBadge(store.plan)}
+                    {getPlanBadge(store.plan || store.plan_type)}
                     {getStatusBadge(store.status)}
                   </div>
                 </div>
