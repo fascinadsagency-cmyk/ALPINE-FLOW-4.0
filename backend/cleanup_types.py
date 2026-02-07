@@ -43,7 +43,7 @@ async def cleanup_types():
     print('='*70)
     
     # Get all stores
-    stores = await db.stores.find({}, {"id": 1, "name": 1}).to_list(100)
+    stores = await db.stores.find({}, {"store_id": 1, "name": 1}).to_list(100)
     print(f"\n📦 Tiendas encontradas: {len(stores)}")
     
     total_types_deleted = 0
