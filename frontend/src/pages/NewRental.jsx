@@ -350,7 +350,7 @@ export default function NewRental() {
     loadTariffs();
     loadSources();
     loadPacks();
-    loadItemTypes();
+    syncAndLoadItemTypes();
     const timer = setTimeout(() => setShowTimeHint(false), 5000);
     
     // AUTO-FOCUS: Focus barcode input on page load (for barcode scanner)
