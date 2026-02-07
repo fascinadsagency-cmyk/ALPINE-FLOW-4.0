@@ -406,8 +406,106 @@ create_token = mt_create_token
 
 # ==================== AUTH ROUTES ====================
 
-@api_router.post("/auth/register", response_model=TokenResponse)
+class PublicRegisterRequest(BaseModel):
+    email: str
+    password: str
+    store_name: Optional[str] = None
+
+class RegisterResponse(BaseModel):
+    access_token: str
+    user: dict
+    store_id: int
+    is_new_store: bool
+    requires_setup: bool
+
+@api_router.post("/auth/register")
+async def register_public(request: PublicRegisterRequest):
+    """
+    Public registration endpoint.
+    Creates a new user AND a new store with trial status.
+    """
+    email = request.email.lower().strip()
+    
+    # Validate email format
+    if not email or "@" not in email or "." not in email.split("@")[-1]:
+        raise HTTPException(status_code=400, detail="Email inválido")
+    
+    # Check if email already exists
+    existing = await db.users.find_one({"username": email})
+    if existing:
+        raise HTTPException(
+            status_code=400, 
+            detail="Este email ya tiene una cuenta asociada. ¿Quieres iniciar sesión?"
+        )
+    
+    # Validate password
+    if len(request.password) < 6:
+        raise HTTPException(status_code=400, detail="La contraseña debe tener al menos 6 caracteres")
+    
+    # Get next store_id
+    last_store = await db.stores.find_one(sort=[("store_id", -1)])
+    next_store_id = (last_store["store_id"] + 1) if last_store and last_store.get("store_id") else 1
+    
+    # Create the store with trial status
+    trial_start = datetime.now(timezone.utc).isoformat()
+    store_name = request.store_name or f"Mi Tienda {next_store_id}"
+    
+    store_doc = {
+        "store_id": next_store_id,
+        "name": store_name,
+        "status": "active",
+        "plan_type": "trial",
+        "trial_start_date": trial_start,
+        "created_at": trial_start,
+        "settings": {
+            "currency": "EUR",
+            "timezone": "Europe/Madrid",
+            "language": "es",
+            "max_items": PLAN_LIMITS["trial"]["max_items"],
+            "max_customers": PLAN_LIMITS["trial"]["max_customers"],
+            "max_users": PLAN_LIMITS["trial"]["max_users"]
+        },
+        "billing_data": {},
+        "requires_setup": True  # Flag to force initial configuration
+    }
+    
+    await db.stores.insert_one(store_doc)
+    
+    # Create the admin user for this store
+    user_id = str(uuid.uuid4())
+    user_doc = {
+        "id": user_id,
+        "username": email,
+        "password": hash_password(request.password),
+        "role": "admin",
+        "store_id": next_store_id,
+        "created_at": trial_start
+    }
+    
+    await db.users.insert_one(user_doc)
+    
+    # Generate token
+    token = create_token(user_id, email, "admin", next_store_id)
+    
+    logger.info(f"New registration: {email} -> store_id={next_store_id} (trial)")
+    
+    return {
+        "access_token": token,
+        "user": {
+            "id": user_id,
+            "username": email,
+            "role": "admin"
+        },
+        "store_id": next_store_id,
+        "is_new_store": True,
+        "requires_setup": True,
+        "message": "¡Cuenta creada! Bienvenido a tu período de prueba de 15 días."
+    }
+
+
+@api_router.post("/auth/register-legacy", response_model=TokenResponse)
 async def register(user: UserCreate):
+    """Legacy register endpoint for internal use (e.g., creating staff users)"""
     existing = await db.users.find_one({"username": user.username})
     if existing:
         raise HTTPException(status_code=400, detail="Username already exists")
@@ -422,11 +520,63 @@ async def register(user: UserCreate):
     }
     await db.users.insert_one(user_doc)
     
-    token = create_token(user_id, user.username, user.role)
+    token = create_token(user_id, user.username, user.role, None)
     return TokenResponse(
         access_token=token,
         user=UserResponse(id=user_id, username=user.username, role=user.role)
     )
+
+
+@api_router.put("/store/setup")
+async def complete_store_setup(
+    current_user: CurrentUser = Depends(require_admin)
+):
+    """
+    Mark store setup as complete.
+    Called after user fills in required store information.
+    """
+    store = await db.stores.find_one({"store_id": current_user.store_id})
+    if not store:
+        raise HTTPException(status_code=404, detail="Tienda no encontrada")
+    
+    # Check required fields
+    required_fields = ["name"]
+    missing = []
+    for field in required_fields:
+        if not store.get(field) or store.get(field) == f"Mi Tienda {current_user.store_id}":
+            missing.append(field)
+    
+    if missing:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Completa la configuración de tu tienda: {', '.join(missing)}"
+        )
+    
+    # Mark setup as complete
+    await db.stores.update_one(
+        {"store_id": current_user.store_id},
+        {"$set": {"requires_setup": False}}
+    )
+    
+    return {"success": True, "message": "Configuración completada"}
+
+
+@api_router.get("/store/setup-status")
+async def get_setup_status(current_user: CurrentUser = Depends(get_current_user)):
+    """Check if store requires initial setup"""
+    if current_user.role == "super_admin":
+        return {"requires_setup": False}
+    
+    store = await db.stores.find_one({"store_id": current_user.store_id})
+    if not store:
+        return {"requires_setup": True}
+    
+    return {
+        "requires_setup": store.get("requires_setup", False),
+        "store_name": store.get("name", ""),
+        "has_billing_data": bool(store.get("billing_data", {}).get("cif_nif"))
+    }
+
 
 @api_router.post("/auth/login", response_model=TokenResponse)
 async def login(user: UserLogin):
