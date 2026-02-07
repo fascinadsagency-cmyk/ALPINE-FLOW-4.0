@@ -101,6 +101,30 @@ export default function Layout() {
                 {item.label}
               </NavLink>
             ))}
+
+            {/* Support Section */}
+            <div className={`pt-4 mt-4 border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+              {supportItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  tabIndex={-1}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                      isActive
+                        ? "bg-blue-600/10 text-blue-600"
+                        : darkMode 
+                          ? "text-slate-300 hover:bg-slate-700 hover:text-white"
+                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                    )
+                  }
+                >
+                  <item.icon className="h-5 w-5" aria-hidden="true" tabIndex={-1} />
+                  {item.label}
+                </NavLink>
+              ))}
+            </div>
           </nav>
 
           {/* User */}
