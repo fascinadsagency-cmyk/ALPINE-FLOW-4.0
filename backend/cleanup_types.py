@@ -51,7 +51,7 @@ async def cleanup_types():
     total_tariffs_created = 0
     
     for store in stores:
-        store_id = store["id"]
+        store_id = store["store_id"]
         store_name = store.get("name", f"Tienda {store_id}")
         print(f"\n--- {store_name} (ID: {store_id}) ---")
         
