@@ -100,6 +100,22 @@ def require_super_admin(current_user: CurrentUser = Depends(get_current_user)):
         )
     return current_user
 
+def require_admin(current_user: CurrentUser = Depends(get_current_user)):
+    """
+    Dependency to ensure only ADMIN or SUPER_ADMIN can access.
+    SECURITY: Blocks STAFF users from management actions.
+    
+    Use this for: User management, pricing, reports, store settings
+    """
+    if current_user.role not in ["admin", "super_admin"]:
+        logger.warning(f"🚨 ADMIN REQUIRED: User {current_user.username} (role: {current_user.role}) blocked")
+        raise HTTPException(
+            status_code=403,
+            detail="This action requires ADMIN privileges. Contact your store owner."
+        )
+    return current_user
+    return current_user
+
 def create_token(user_id: str, username: str, role: str, store_id: Optional[int]) -> str:
     """
     Create JWT token with store_id included.
