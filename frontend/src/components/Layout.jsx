@@ -19,7 +19,9 @@ import {
   Wallet,
   Settings,
   Building2,
-  Cog
+  Cog,
+  HelpCircle,
+  Headphones
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
