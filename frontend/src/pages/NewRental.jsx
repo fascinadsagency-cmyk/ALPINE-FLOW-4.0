@@ -1672,14 +1672,13 @@ export default function NewRental() {
       
       // NUEVO: Usar el importe pagado introducido por el usuario
       // Si está vacío, usar el total (comportamiento por defecto)
-      // Si es "pending", cobrar 0€ del alquiler
+      // Permitir pagos parciales incluso con método "pending"
       let cleanPaidAmount;
-      if (paymentMethodSelected === 'pending') {
-        cleanPaidAmount = 0; // Pendiente = no se cobra nada del alquiler
-      } else if (paidAmount !== "" && paidAmount !== null) {
+      if (paidAmount !== "" && paidAmount !== null && !isNaN(paidAmount)) {
         cleanPaidAmount = Number(parseFloat(paidAmount) || 0);
       } else {
-        cleanPaidAmount = cleanTotal; // Por defecto: pago completo
+        // Por defecto: si es pending sin cantidad, 0€; si no, pago completo
+        cleanPaidAmount = paymentMethodSelected === 'pending' ? 0 : cleanTotal;
       }
       
       // Calcular pendiente
