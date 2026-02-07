@@ -1708,6 +1708,8 @@ async def delete_item(item_id: str, force: bool = Query(False), current_user: Cu
     if item.get("status") == "rented":
         raise HTTPException(status_code=400, detail="No se puede eliminar un artículo alquilado")
     
+    item_type = item.get("item_type", "")
+    
     # Check if item has rental history
     rental_history = await db.rentals.count_documents({
         "items.item_id": item_id
@@ -1728,6 +1730,8 @@ async def delete_item(item_id: str, force: bool = Query(False), current_user: Cu
                 "deleted_at": datetime.now(timezone.utc).isoformat()
             }}
         )
+        # AUTO-CLEANUP: Check if type should be removed
+        await auto_cleanup_empty_type(current_user.store_id, item_type)
         return {"message": "Artículo dado de baja (tiene historial)", "action": "soft_delete", "deleted": True}
     
     # No history or force=True - physical delete
@@ -1736,7 +1740,109 @@ async def delete_item(item_id: str, force: bool = Query(False), current_user: Cu
     if result.deleted_count == 0:
         raise HTTPException(status_code=500, detail="Error al eliminar el artículo")
     
+    # AUTO-CLEANUP: Check if type should be removed after deletion
+    await auto_cleanup_empty_type(current_user.store_id, item_type)
+    
     return {"message": "Artículo eliminado permanentemente", "action": "hard_delete", "deleted": True}
+
+
+# ============== HELPER FUNCTIONS FOR DYNAMIC TYPE MANAGEMENT ==============
+
+def normalize_type_name(type_name: str) -> str:
+    """Normalize type name for consistent storage and comparison"""
+    if not type_name:
+        return ""
+    # Lowercase, strip whitespace, replace spaces with underscores
+    normalized = type_name.lower().strip()
+    # Remove accents
+    accents = {'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u', 'ñ': 'n', 'ü': 'u'}
+    for acc, repl in accents.items():
+        normalized = normalized.replace(acc, repl)
+    # Replace multiple spaces/underscores with single underscore
+    import re
+    normalized = re.sub(r'[\s_]+', '_', normalized)
+    # Remove trailing underscores
+    normalized = normalized.strip('_')
+    return normalized
+
+
+def format_type_label(normalized_value: str) -> str:
+    """Create human-readable label from normalized value"""
+    return normalized_value.replace('_', ' ').title()
+
+
+async def ensure_type_and_tariff_exist(store_id: int, type_name: str) -> str:
+    """
+    Ensure a type and its tariff exist for the store.
+    Creates them if they don't exist.
+    Returns the normalized type value.
+    """
+    normalized = normalize_type_name(type_name)
+    if not normalized:
+        return ""
+    
+    store_filter = {"store_id": store_id}
+    
+    # Check if type exists
+    existing_type = await db.item_types.find_one({**store_filter, "value": normalized})
+    
+    if not existing_type:
+        # Create new type
+        type_doc = {
+            "id": str(uuid.uuid4()),
+            "store_id": store_id,
+            "value": normalized,
+            "label": format_type_label(normalized),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.item_types.insert_one(type_doc)
+        logger.info(f"✅ Auto-created type '{normalized}' for store {store_id}")
+    
+    # Check if tariff exists
+    existing_tariff = await db.tariffs.find_one({**store_filter, "item_type": normalized})
+    
+    if not existing_tariff:
+        # Create default tariff with price 0
+        tariff_doc = {
+            "id": str(uuid.uuid4()),
+            "store_id": store_id,
+            "item_type": normalized,
+            "daily_rate": 0.0,
+            "deposit": 0.0,
+            "name": format_type_label(normalized),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.tariffs.insert_one(tariff_doc)
+        logger.info(f"✅ Auto-created tariff for type '{normalized}' with price 0€ for store {store_id}")
+    
+    return normalized
+
+
+async def auto_cleanup_empty_type(store_id: int, type_value: str):
+    """
+    AUTO-CLEANUP: Remove type and tariff if no items remain.
+    Called after item deletion.
+    """
+    if not type_value:
+        return
+    
+    normalized = normalize_type_name(type_value)
+    store_filter = {"store_id": store_id}
+    
+    # Count remaining items of this type (excluding deleted)
+    remaining_items = await db.items.count_documents({
+        **store_filter,
+        "item_type": normalized,
+        "status": {"$nin": ["deleted"]}
+    })
+    
+    if remaining_items == 0:
+        # No items left - remove type and tariff
+        type_deleted = await db.item_types.delete_one({**store_filter, "value": normalized})
+        tariff_deleted = await db.tariffs.delete_one({**store_filter, "item_type": normalized})
+        
+        if type_deleted.deleted_count > 0 or tariff_deleted.deleted_count > 0:
+            logger.info(f"🧹 Auto-cleanup: Removed empty type '{normalized}' from store {store_id}")
 
 # ==================== ITEM TYPES ROUTES ====================
 
