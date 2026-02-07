@@ -3405,22 +3405,10 @@ export default function NewRental() {
               </p>
             </div>
 
-            {/* Payment Method Selection */}
+            {/* Payment Method Selection - REFACTORIZADO: Solo 4 opciones con lógica reactiva */}
             <div className="space-y-3">
               <Label className="text-base font-semibold">Método de Pago</Label>
               <div className="grid grid-cols-2 gap-3">
-                <Button
-                  type="button"
-                  variant={paymentMethodSelected === "cash" ? "default" : "outline"}
-                  className={`h-20 text-lg font-bold ${
-                    paymentMethodSelected === "cash" 
-                      ? "bg-emerald-600 hover:bg-emerald-700" 
-                      : "hover:border-emerald-500"
-                  }`}
-                  onClick={() => setPaymentMethodSelected("cash")}
-                >
-                  💵 EFECTIVO
-                </Button>
                 <Button
                   type="button"
                   variant={paymentMethodSelected === "card" ? "default" : "outline"}
@@ -3429,9 +3417,59 @@ export default function NewRental() {
                       ? "bg-blue-600 hover:bg-blue-700" 
                       : "hover:border-blue-500"
                   }`}
-                  onClick={() => setPaymentMethodSelected("card")}
+                  onClick={() => {
+                    setPaymentMethodSelected("card");
+                    setPaidAmount(calculateTotal().toFixed(2));
+                  }}
                 >
                   💳 TARJETA
+                </Button>
+                <Button
+                  type="button"
+                  variant={paymentMethodSelected === "cash" ? "default" : "outline"}
+                  className={`h-20 text-lg font-bold ${
+                    paymentMethodSelected === "cash" 
+                      ? "bg-emerald-600 hover:bg-emerald-700" 
+                      : "hover:border-emerald-500"
+                  }`}
+                  onClick={() => {
+                    setPaymentMethodSelected("cash");
+                    setPaidAmount(calculateTotal().toFixed(2));
+                    setCashGiven("");
+                  }}
+                >
+                  💵 EFECTIVO
+                </Button>
+                <Button
+                  type="button"
+                  variant={paymentMethodSelected === "pending" ? "default" : "outline"}
+                  className={`h-20 text-lg font-bold ${
+                    paymentMethodSelected === "pending" 
+                      ? "bg-amber-600 hover:bg-amber-700" 
+                      : "hover:border-amber-500"
+                  }`}
+                  onClick={() => {
+                    setPaymentMethodSelected("pending");
+                    setPaidAmount("0");
+                    setCashGiven("");
+                  }}
+                >
+                  ⏳ PENDIENTE
+                </Button>
+                <Button
+                  type="button"
+                  variant={paymentMethodSelected === "pago_online" ? "default" : "outline"}
+                  className={`h-20 text-lg font-bold ${
+                    paymentMethodSelected === "pago_online" 
+                      ? "bg-purple-600 hover:bg-purple-700" 
+                      : "hover:border-purple-500"
+                  }`}
+                  onClick={() => {
+                    setPaymentMethodSelected("pago_online");
+                    setPaidAmount(calculateTotal().toFixed(2));
+                  }}
+                >
+                  🌐 ONLINE
                 </Button>
               </div>
             </div>
