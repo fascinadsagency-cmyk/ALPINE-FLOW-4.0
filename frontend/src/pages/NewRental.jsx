@@ -212,7 +212,7 @@ export default function NewRental() {
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [showNewCustomer, setShowNewCustomer] = useState(false);
-  const [newCustomer, setNewCustomer] = useState({ dni: "", name: "", phone: "", address: "", city: "", source: "" });
+  const [newCustomer, setNewCustomer] = useState({ dni: "", name: "", phone: "", email: "", address: "", city: "", source: "" });
   
   // Item search modal
   const [showItemSearch, setShowItemSearch] = useState(false);
@@ -922,7 +922,7 @@ export default function NewRental() {
       const response = await customerApi.create(newCustomer);
       setCustomer(response.data);
       setShowNewCustomer(false);
-      setNewCustomer({ dni: "", name: "", phone: "", address: "", city: "", source: "" });
+      setNewCustomer({ dni: "", name: "", phone: "", email: "", address: "", city: "", source: "" });
       toast.success("Cliente creado correctamente");
     } catch (error) {
       toast.error(error.response?.data?.detail || "Error al crear cliente");
@@ -3157,6 +3157,17 @@ export default function NewRental() {
                 onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
                 className="h-11 mt-1"
                 data-testid="new-customer-name"
+              />
+            </div>
+            <div>
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={newCustomer.email}
+                onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
+                className="h-11 mt-1"
+                placeholder="email@ejemplo.com"
+                autoComplete="off"
               />
             </div>
             <div>
