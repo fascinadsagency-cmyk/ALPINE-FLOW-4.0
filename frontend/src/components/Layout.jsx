@@ -107,7 +107,7 @@ export default function Layout() {
 
           {/* Navigation - tabindex=-1 to prevent Tab jumping to sidebar during form editing */}
           <nav className="flex-1 space-y-1 p-4 overflow-y-auto" role="navigation" aria-label="Main navigation">
-            {navItems.map((item) => (
+            {filteredNavItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
@@ -206,7 +206,7 @@ export default function Layout() {
           darkMode ? 'bg-slate-800' : 'bg-white'
         }`}>
           <nav className="space-y-1 p-4 max-h-[calc(100vh-8rem)] overflow-y-auto" role="navigation" aria-label="Mobile navigation">
-            {navItems.map((item) => (
+            {filteredNavItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
