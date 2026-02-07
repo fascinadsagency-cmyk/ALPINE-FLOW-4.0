@@ -1611,6 +1611,13 @@ export default function NewRental() {
     
     return total;
   };
+  
+  // NUEVO: Calcular el total A COBRAR HOY (incluye depósito)
+  const calculateTotalToPay = () => {
+    const rentalAmount = calculateTotal();
+    const depositAmount = Number(parseFloat(deposit) || 0);
+    return rentalAmount + depositAmount;
+  };
 
   const completeRental = async () => {
     if (!customer) {
