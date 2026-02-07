@@ -291,9 +291,14 @@ export default function Layout() {
             </Button>
           </div>
         </div>
-        <div className={`min-h-screen pt-14 lg:pt-0 transition-colors duration-300 ${darkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
-          <Outlet />
-        </div>
+        {/* Trial Banner */}
+        <TrialBanner />
+        
+        <PaywallOverlay>
+          <div className={`min-h-screen pt-14 lg:pt-0 transition-colors duration-300 ${darkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
+            <Outlet />
+          </div>
+        </PaywallOverlay>
       </main>
     </div>
   );
