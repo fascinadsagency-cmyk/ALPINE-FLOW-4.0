@@ -227,6 +227,10 @@ export default function NewRental() {
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [completedRental, setCompletedRental] = useState(null);
   
+  // Quick Add items (dynamic from DB)
+  const [quickAddItems, setQuickAddItems] = useState([]);
+  const [loadingQuickAdd, setLoadingQuickAdd] = useState(false);
+  
   // Payment modal (NEW)
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [paymentMethodSelected, setPaymentMethodSelected] = useState("cash");
