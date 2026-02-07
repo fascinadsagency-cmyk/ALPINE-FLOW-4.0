@@ -4472,6 +4472,7 @@ class FinancialCalculatorService:
     async def get_financial_summary(
         start_date: str,
         end_date: str,
+        store_filter: dict = None,
         session_id: str = None,
         include_manual_movements: bool = True,
         include_deposits: bool = True
