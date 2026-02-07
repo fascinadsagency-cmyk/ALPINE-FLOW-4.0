@@ -3139,8 +3139,9 @@ def calculate_days(start_date: str, end_date: str) -> int:
 
 @api_router.post("/rentals", response_model=RentalResponse)
 async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depends(get_current_user)):
-    # CRITICAL: Validate active cash session FIRST (if payment is being made)
-    if rental.paid_amount > 0:
+    # CRITICAL: Validate active cash session FIRST (if ANY payment is being made)
+    total_cash_in = rental.paid_amount + rental.deposit
+    if total_cash_in > 0:
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
         
