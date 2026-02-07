@@ -1056,12 +1056,30 @@ async def export_all_customers(
 
 @api_router.post("/items", response_model=ItemResponse)
 async def create_item(item: ItemCreate, current_user: CurrentUser = Depends(get_current_user)):
-    # PLAN LIMIT VALIDATION: Check max_items limit
-    store = await db.stores.find_one({"id": current_user.store_id})
+    # PLAN LIMIT VALIDATION: Check max_items limit from active plan
+    store = await db.stores.find_one({"store_id": current_user.store_id})
     if store:
-        max_items = store.get("settings", {}).get("max_items", 3000)  # Default: 3000 for Standard
+        plan_type = store.get("plan_type", "trial")
+        plan_info = PLAN_LIMITS.get(plan_type, PLAN_LIMITS["trial"])
+        max_items = plan_info["max_items"]
+        
+        # Check if trial expired
+        if plan_type == "trial":
+            trial_start = store.get("trial_start_date")
+            if trial_start:
+                if isinstance(trial_start, str):
+                    trial_start_dt = datetime.fromisoformat(trial_start.replace('Z', '+00:00'))
+                else:
+                    trial_start_dt = trial_start
+                days_since_start = (datetime.now(timezone.utc) - trial_start_dt).days
+                if days_since_start > 15:
+                    raise HTTPException(
+                        status_code=403,
+                        detail="Tu período de prueba ha expirado. Por favor, selecciona un plan para continuar."
+                    )
+        
         current_items = await db.items.count_documents(current_user.get_store_filter())
-        if current_items >= max_items:
+        if max_items != 999999 and current_items >= max_items:
             raise HTTPException(
                 status_code=403, 
                 detail=f"Límite de artículos alcanzado ({max_items}). Actualiza tu plan para añadir más."
