@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -16,12 +17,16 @@ import csv
 import io
 from fastapi import UploadFile, File
 
-# Multi-tenant imports
-from multitenant import get_current_user, CurrentUser, require_super_admin, require_admin, create_token as mt_create_token
-from store_models import StoreCreate, StoreResponse, StoreUpdate
+# PDF Generation
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.lib.units import cm, mm
 
 # Multi-tenant imports
 from multitenant import get_current_user, CurrentUser, require_super_admin, require_admin, create_token as mt_create_token
+from store_models import StoreCreate, StoreResponse, StoreUpdate
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
