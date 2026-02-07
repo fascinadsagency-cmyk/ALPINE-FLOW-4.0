@@ -12,11 +12,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { Store, Plus, Users, Package, ShoppingCart, Building2, TrendingUp, Settings, Loader2 } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
 export default function StoreManagement() {
   const { darkMode } = useSettings();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,9 +38,17 @@ export default function StoreManagement() {
     address: ""
   });
 
+  // Verificar permisos de super_admin
   useEffect(() => {
-    loadStores();
-  }, []);
+    if (user && user.role !== "super_admin") {
+      toast.error("Esta página es solo para administradores del sistema");
+      navigate("/");
+      return;
+    }
+    if (user) {
+      loadStores();
+    }
+  }, [user, navigate]);
 
   const loadStores = async () => {
     setLoading(true);
