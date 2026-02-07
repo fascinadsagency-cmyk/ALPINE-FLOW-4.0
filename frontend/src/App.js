@@ -25,6 +25,7 @@ import Help from "@/pages/Help";
 import Support from "@/pages/Support";
 import HelpAdmin from "@/pages/HelpAdmin";
 import TeamManagement from "@/pages/TeamManagement";
+import PlanSelection from "@/pages/PlanSelection";
 import Layout from "@/components/Layout";
 
 // ============================================================
