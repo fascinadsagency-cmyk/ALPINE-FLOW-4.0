@@ -1658,6 +1658,12 @@ export default function NewRental() {
     setProcessingPayment(true);
     
     const API = process.env.REACT_APP_BACKEND_URL;
+    console.log('[Rental] ===== INICIANDO COBRO =====');
+    console.log('[Rental] API URL:', API);
+    console.log('[Rental] Customer:', customer?.id, customer?.name);
+    console.log('[Rental] Payment method:', paymentMethodSelected);
+    console.log('[Rental] Paid amount input:', paidAmount);
+    console.log('[Rental] Deposit input:', deposit);
     
     // Calcular el monto a pagar para determinar si necesitamos verificar la caja
     const cleanTotal = Number(total.toFixed(2));
