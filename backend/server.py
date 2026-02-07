@@ -2240,7 +2240,7 @@ async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUs
                 "id": item_id,
                 "store_id": current_user.store_id,
                 "barcode": barcode,
-                "item_type": item_type,  # Normalized type
+                "item_type": normalized_type,  # Use normalized type
                 "brand": row.get('brand', row.get('marca', '')).strip(),
                 "model": row.get('model', row.get('modelo', '')).strip(),
                 "size": row.get('size', row.get('talla', '')).strip(),
@@ -2254,14 +2254,15 @@ async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUs
                 "created_at": datetime.now(timezone.utc).isoformat()
             }
             
-            # ============ AUTO-ASSIGN TARIFF (if exists) ============
-            tariff = await db.tariffs.find_one({**current_user.get_store_filter(), "item_type": item_type}, {"_id": 0})
+            # ============ AUTO-ASSIGN TARIFF (guaranteed to exist now) ============
+            tariff = await db.tariffs.find_one({**current_user.get_store_filter(), "item_type": normalized_type}, {"_id": 0})
             if tariff:
                 doc["tariff_id"] = tariff.get("id", "")
-            # ========================================================
+                doc["rental_price"] = tariff.get("daily_rate", 0)
+            # ======================================================================
             
             await db.items.insert_one(doc)
-            created.append({"barcode": barcode, "type": item_type})
+            created.append({"barcode": barcode, "type": normalized_type})
         except Exception as e:
             errors.append({"barcode": row.get('barcode', 'unknown'), "error": str(e)})
     
