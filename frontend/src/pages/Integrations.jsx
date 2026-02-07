@@ -11,7 +11,6 @@ import {
   MessageSquare, 
   CreditCard, 
   Mail, 
-  Calendar,
   Check,
   X,
   Loader2,
