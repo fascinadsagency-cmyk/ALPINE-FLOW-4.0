@@ -3287,6 +3287,7 @@ async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depend
             cash_movement_id = str(uuid.uuid4())
             cash_doc = {
                 "id": cash_movement_id,
+                "store_id": current_user.store_id,  # CRITICAL: Multi-tenant isolation
                 "operation_number": operation_number,
                 "session_id": active_session["id"],
                 "movement_type": "income",
@@ -3312,6 +3313,7 @@ async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depend
             deposit_movement_id = str(uuid.uuid4())
             deposit_doc = {
                 "id": deposit_movement_id,
+                "store_id": current_user.store_id,  # CRITICAL: Multi-tenant isolation
                 "operation_number": operation_number,  # Same operation number
                 "session_id": active_session["id"],
                 "movement_type": "income",
