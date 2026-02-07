@@ -382,6 +382,7 @@ export default function Providers() {
                             size="icon"
                             onClick={() => openEditDialog(provider)}
                             className="h-8 w-8"
+                            title="Editar proveedor"
                           >
                             <Edit2 className="h-4 w-4" />
                           </Button>
@@ -390,17 +391,22 @@ export default function Providers() {
                             size="icon"
                             onClick={() => openStatistics(provider)}
                             className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            title="Ver estadísticas"
                           >
                             <BarChart3 className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openDeleteDialog(provider)}
-                            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {canDeleteProviders && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openDeleteDialog(provider)}
+                              className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              title="Eliminar proveedor"
+                              data-testid={`delete-provider-${provider.id}`}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
