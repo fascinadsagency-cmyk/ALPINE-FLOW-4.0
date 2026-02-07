@@ -3670,8 +3670,8 @@ async def add_items_to_rental(
     
     # Validar límite del plan
     plan_status_response = await get_plan_status(current_user)
-    current_items = plan_status_response["current_items"]
-    max_items = plan_status_response["max_items"]
+    current_items = plan_status_response.current_items
+    max_items = plan_status_response.max_items
     
     new_items_count = len(add_items_input.items)
     if current_items + new_items_count > max_items:
