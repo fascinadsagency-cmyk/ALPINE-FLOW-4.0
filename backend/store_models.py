@@ -15,7 +15,8 @@ class StoreCreate(BaseModel):
     max_customers: int = 10000
 
 class StoreResponse(BaseModel):
-    store_id: int
+    store_id: Optional[str] = None  # UUID string
+    id: Optional[str] = None  # Also support 'id' field
     name: str
     status: str
     plan: Optional[str] = None
