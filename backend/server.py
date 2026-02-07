@@ -3543,6 +3543,77 @@ async def process_return(rental_id: str, return_input: ReturnInput, current_user
     if new_status == "returned":
         update_fields["actual_return_date"] = datetime.now(timezone.utc).isoformat()
     
+    # ============ GESTIÓN DE DEPÓSITO ============
+    deposit_amount = rental.get("deposit", 0)
+    deposit_returned = False
+    deposit_forfeited = False
+    
+    if new_status == "returned" and deposit_amount > 0:
+        # Solo procesar depósito cuando la devolución está completa
+        deposit_action = return_input.deposit_action or "return"
+        
+        # Validar sesión de caja activa
+        date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
+        
+        if not active_session:
+            raise HTTPException(
+                status_code=400,
+                detail="No hay sesión de caja activa. Abre la caja para procesar la devolución/incautación del depósito."
+            )
+        
+        operation_number = await get_next_operation_number()
+        customer = await db.customers.find_one({**current_user.get_store_filter(), **{"id": rental.get("customer_id")}})
+        customer_name = customer.get("name", rental.get("customer_name", "Cliente")) if customer else rental.get("customer_name", "Cliente")
+        
+        if deposit_action == "return":
+            # DEVOLVER DEPÓSITO AL CLIENTE
+            cash_movement_id = str(uuid.uuid4())
+            cash_doc = {
+                "id": cash_movement_id,
+                "operation_number": operation_number,
+                "session_id": active_session["id"],
+                "movement_type": "expense",  # Salida de caja
+                "amount": deposit_amount,
+                "payment_method": rental.get("payment_method", "cash"),
+                "category": "deposit_return",
+                "concept": f"Devolución Depósito #{rental_id[:8]} - {customer_name}",
+                "reference_id": rental_id,
+                "customer_name": customer_name,
+                "notes": "Depósito devuelto - Material en buen estado",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "created_by": current_user.username
+            }
+            await db.cash_movements.insert_one(cash_doc)
+            deposit_returned = True
+            update_fields["deposit_status"] = "returned"
+            update_fields["deposit_returned_at"] = datetime.now(timezone.utc).isoformat()
+            
+        elif deposit_action == "forfeit":
+            # INCAUTAR DEPÓSITO (pasa a ingreso extra)
+            cash_movement_id = str(uuid.uuid4())
+            forfeit_reason = return_input.forfeit_reason or "Material dañado"
+            cash_doc = {
+                "id": cash_movement_id,
+                "operation_number": operation_number,
+                "session_id": active_session["id"],
+                "movement_type": "income",  # Ingreso (ya no se devuelve)
+                "amount": deposit_amount,
+                "payment_method": rental.get("payment_method", "cash"),
+                "category": "deposit_forfeited",  # Categoría especial para reportes
+                "concept": f"Depósito Incautado #{rental_id[:8]} - {customer_name}",
+                "reference_id": rental_id,
+                "customer_name": customer_name,
+                "notes": f"Depósito incautado: {forfeit_reason}",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "created_by": current_user.username
+            }
+            await db.cash_movements.insert_one(cash_doc)
+            deposit_forfeited = True
+            update_fields["deposit_status"] = "forfeited"
+            update_fields["deposit_forfeited_at"] = datetime.now(timezone.utc).isoformat()
+            update_fields["deposit_forfeit_reason"] = forfeit_reason
+    
     await db.rentals.update_one(
         {"id": rental_id},
         {"$set": update_fields}
@@ -3554,7 +3625,10 @@ async def process_return(rental_id: str, return_input: ReturnInput, current_user
         "pending_items": pending_items,
         "status": new_status,
         "pending_amount": rental["pending_amount"],
-        "operation_number": rental.get("operation_number", rental_id[:8].upper())
+        "operation_number": rental.get("operation_number", rental_id[:8].upper()),
+        "deposit_amount": deposit_amount,
+        "deposit_returned": deposit_returned,
+        "deposit_forfeited": deposit_forfeited
     }
 
 class PaymentRequest(BaseModel):
