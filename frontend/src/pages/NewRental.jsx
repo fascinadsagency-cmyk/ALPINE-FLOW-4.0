@@ -1726,20 +1726,32 @@ export default function NewRental() {
         })
       });
       
+      // Verificar el status ANTES de leer el body
+      if (!rentalResponse.ok) {
+        const errorText = await rentalResponse.text();
+        let errorMessage = 'Error al crear alquiler';
+        
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.detail || errorMessage;
+        } catch (e) {
+          // Si no es JSON, usar el texto directamente
+          errorMessage = errorText || errorMessage;
+        }
+        
+        toast.error(errorMessage);
+        setProcessingPayment(false);
+        return;
+      }
+      
+      // Si fue exitoso, leer el body
       const responseText = await rentalResponse.text();
       
-      // Si devuelve HTML o error, redirigir a lista de alquileres
+      // Si devuelve HTML o está vacío, redirigir a lista de alquileres
       if (!responseText || responseText.trim().startsWith('<')) {
         toast.info("Verificando alquiler... Redirigiendo a la lista.");
         setShowPaymentDialog(false);
         setTimeout(() => window.location.href = '/rentals', 1500);
-        return;
-      }
-      
-      if (!rentalResponse.ok) {
-        const errorData = JSON.parse(responseText);
-        toast.error(errorData.detail || 'Error al crear alquiler');
-        setProcessingPayment(false);
         return;
       }
       
