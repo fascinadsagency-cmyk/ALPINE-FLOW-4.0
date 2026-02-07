@@ -4701,10 +4701,11 @@ financial_service = FinancialCalculatorService()
 # ==================== REPORTS ROUTES ====================
 
 @api_router.get("/reports/daily", response_model=DailyReportResponse)
-async def get_daily_report(date: Optional[str] = None, current_user: CurrentUser = Depends(get_current_user)):
+async def get_daily_report(date: Optional[str] = None, current_user: CurrentUser = Depends(require_admin)):
     """
     Reporte diario usando el servicio financiero centralizado.
     GARANTIZA coincidencia con la vista de Caja.
+    Solo accesible para ADMIN y SUPER_ADMIN.
     """
     if not date:
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
