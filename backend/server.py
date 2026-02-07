@@ -7239,6 +7239,312 @@ async def simulate_payment(
     return await select_plan(request, current_user)
 
 
+# ==================== BILLING ROUTES (ADMIN ONLY) ====================
+
+# Platform fiscal data (AlpineFlow SaaS)
+PLATFORM_FISCAL_DATA = {
+    "company_name": "AlpineFlow Software S.L.",
+    "cif": "B12345678",
+    "address": "Calle Tecnología 123, 28001 Madrid, España",
+    "email": "facturacion@alpineflow.es",
+    "phone": "+34 900 123 456"
+}
+
+class BillingDataUpdate(BaseModel):
+    company_name: Optional[str] = None
+    cif_nif: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    postal_code: Optional[str] = None
+    country: Optional[str] = "España"
+
+class PaymentRecord(BaseModel):
+    id: str
+    date: str
+    plan: str
+    plan_name: str
+    amount: float
+    status: str  # 'paid', 'pending'
+    invoice_number: str
+
+@api_router.get("/billing/data")
+async def get_billing_data(current_user: CurrentUser = Depends(require_admin)):
+    """Get store billing/fiscal data - ADMIN ONLY"""
+    store = await db.stores.find_one({"store_id": current_user.store_id})
+    if not store:
+        raise HTTPException(status_code=404, detail="Tienda no encontrada")
+    
+    billing_data = store.get("billing_data", {})
+    return {
+        "company_name": billing_data.get("company_name", store.get("name", "")),
+        "cif_nif": billing_data.get("cif_nif", ""),
+        "address": billing_data.get("address", ""),
+        "city": billing_data.get("city", ""),
+        "postal_code": billing_data.get("postal_code", ""),
+        "country": billing_data.get("country", "España")
+    }
+
+@api_router.put("/billing/data")
+async def update_billing_data(
+    data: BillingDataUpdate,
+    current_user: CurrentUser = Depends(require_admin)
+):
+    """Update store billing/fiscal data - ADMIN ONLY"""
+    update_dict = {k: v for k, v in data.model_dump().items() if v is not None}
+    
+    if not update_dict:
+        raise HTTPException(status_code=400, detail="No hay datos para actualizar")
+    
+    await db.stores.update_one(
+        {"store_id": current_user.store_id},
+        {"$set": {f"billing_data.{k}": v for k, v in update_dict.items()}}
+    )
+    
+    return {"success": True, "message": "Datos de facturación actualizados"}
+
+@api_router.get("/billing/payments")
+async def get_payment_history(current_user: CurrentUser = Depends(require_admin)):
+    """Get payment history for the store - ADMIN ONLY"""
+    payments = await db.payments.find(
+        {"store_id": current_user.store_id}
+    ).sort("date", -1).to_list(100)
+    
+    return {
+        "payments": [
+            {
+                "id": str(p.get("_id", p.get("id", ""))),
+                "date": p.get("date", ""),
+                "plan": p.get("plan", ""),
+                "plan_name": p.get("plan_name", ""),
+                "amount": p.get("amount", 0),
+                "status": p.get("status", "pending"),
+                "invoice_number": p.get("invoice_number", "")
+            }
+            for p in payments
+        ]
+    }
+
+@api_router.post("/billing/payments")
+async def create_payment_record(
+    current_user: CurrentUser = Depends(require_admin)
+):
+    """
+    Create a payment record when plan is activated.
+    In production, this would be called by payment gateway webhook.
+    """
+    store = await db.stores.find_one({"store_id": current_user.store_id})
+    if not store:
+        raise HTTPException(status_code=404, detail="Tienda no encontrada")
+    
+    plan_type = store.get("plan_type", "trial")
+    if plan_type == "trial":
+        raise HTTPException(status_code=400, detail="No hay plan activo para facturar")
+    
+    plan_info = PLAN_LIMITS.get(plan_type, {})
+    
+    # Generate invoice number: ALF-YEAR-STOREID-SEQUENCE
+    year = datetime.now().year
+    last_payment = await db.payments.find_one(
+        {"store_id": current_user.store_id},
+        sort=[("created_at", -1)]
+    )
+    sequence = 1
+    if last_payment and last_payment.get("invoice_number", "").startswith(f"ALF-{year}"):
+        try:
+            sequence = int(last_payment["invoice_number"].split("-")[-1]) + 1
+        except:
+            pass
+    
+    invoice_number = f"ALF-{year}-{current_user.store_id:04d}-{sequence:04d}"
+    
+    payment_doc = {
+        "id": str(uuid.uuid4()),
+        "store_id": current_user.store_id,
+        "date": datetime.now(timezone.utc).isoformat(),
+        "plan": plan_type,
+        "plan_name": plan_info.get("name", plan_type),
+        "amount": plan_info.get("price", 0),
+        "status": "paid",
+        "invoice_number": invoice_number,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.payments.insert_one(payment_doc)
+    
+    return {
+        "success": True,
+        "payment_id": payment_doc["id"],
+        "invoice_number": invoice_number
+    }
+
+@api_router.get("/billing/invoice/{payment_id}/download")
+async def download_invoice(
+    payment_id: str,
+    current_user: CurrentUser = Depends(require_admin)
+):
+    """
+    Generate and download invoice PDF - ADMIN ONLY
+    The PDF is generated on-demand and secured per store_id
+    """
+    # Find payment record
+    payment = await db.payments.find_one({
+        "store_id": current_user.store_id,
+        "$or": [{"id": payment_id}, {"_id": payment_id}]
+    })
+    
+    if not payment:
+        raise HTTPException(status_code=404, detail="Pago no encontrado")
+    
+    # Get store data
+    store = await db.stores.find_one({"store_id": current_user.store_id})
+    if not store:
+        raise HTTPException(status_code=404, detail="Tienda no encontrada")
+    
+    billing_data = store.get("billing_data", {})
+    
+    # Create PDF directory if not exists
+    pdf_dir = Path("/app/backend/invoices")
+    pdf_dir.mkdir(exist_ok=True)
+    
+    # Generate PDF filename
+    invoice_number = payment.get("invoice_number", payment_id)
+    pdf_filename = f"{invoice_number}.pdf"
+    pdf_path = pdf_dir / pdf_filename
+    
+    # Generate PDF
+    doc = SimpleDocTemplate(
+        str(pdf_path),
+        pagesize=A4,
+        rightMargin=2*cm,
+        leftMargin=2*cm,
+        topMargin=2*cm,
+        bottomMargin=2*cm
+    )
+    
+    styles = getSampleStyleSheet()
+    story = []
+    
+    # Title style
+    title_style = ParagraphStyle(
+        'Title',
+        parent=styles['Heading1'],
+        fontSize=24,
+        spaceAfter=30,
+        textColor=colors.HexColor('#1e40af')
+    )
+    
+    # Header
+    story.append(Paragraph("FACTURA", title_style))
+    story.append(Spacer(1, 20))
+    
+    # Invoice info
+    invoice_info = f"""
+    <b>Número de Factura:</b> {invoice_number}<br/>
+    <b>Fecha:</b> {payment.get('date', '')[:10]}<br/>
+    <b>Estado:</b> {'Pagado' if payment.get('status') == 'paid' else 'Pendiente'}
+    """
+    story.append(Paragraph(invoice_info, styles['Normal']))
+    story.append(Spacer(1, 30))
+    
+    # Two column layout for fiscal data
+    # Emisor (Platform)
+    emisor_text = f"""
+    <b>EMISOR</b><br/>
+    {PLATFORM_FISCAL_DATA['company_name']}<br/>
+    CIF: {PLATFORM_FISCAL_DATA['cif']}<br/>
+    {PLATFORM_FISCAL_DATA['address']}<br/>
+    {PLATFORM_FISCAL_DATA['email']}
+    """
+    
+    # Receptor (Store)
+    store_name = billing_data.get('company_name') or store.get('name', 'N/A')
+    store_cif = billing_data.get('cif_nif', 'N/A')
+    store_address = billing_data.get('address', 'N/A')
+    store_city = billing_data.get('city', '')
+    store_postal = billing_data.get('postal_code', '')
+    store_full_address = f"{store_address}"
+    if store_postal or store_city:
+        store_full_address += f", {store_postal} {store_city}"
+    
+    receptor_text = f"""
+    <b>CLIENTE</b><br/>
+    {store_name}<br/>
+    NIF/CIF: {store_cif}<br/>
+    {store_full_address}
+    """
+    
+    # Create table for two columns
+    fiscal_data = [[
+        Paragraph(emisor_text, styles['Normal']),
+        Paragraph(receptor_text, styles['Normal'])
+    ]]
+    fiscal_table = Table(fiscal_data, colWidths=[8*cm, 8*cm])
+    fiscal_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+    ]))
+    story.append(fiscal_table)
+    story.append(Spacer(1, 40))
+    
+    # Invoice details table
+    plan_name = payment.get('plan_name', payment.get('plan', 'N/A'))
+    amount = payment.get('amount', 0)
+    iva = amount * 0.21  # 21% IVA
+    total = amount + iva
+    
+    details_data = [
+        ['Concepto', 'Cantidad', 'Precio', 'Total'],
+        [f'Suscripción Anual - {plan_name}', '1', f'{amount:.2f} €', f'{amount:.2f} €'],
+        ['', '', '', ''],
+        ['', '', 'Base Imponible:', f'{amount:.2f} €'],
+        ['', '', 'IVA (21%):', f'{iva:.2f} €'],
+        ['', '', 'TOTAL:', f'{total:.2f} €'],
+    ]
+    
+    details_table = Table(details_data, colWidths=[8*cm, 2*cm, 3*cm, 3*cm])
+    details_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e40af')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('TOPPADDING', (0, 0), (-1, 0), 12),
+        ('GRID', (0, 0), (-1, 1), 1, colors.HexColor('#e2e8f0')),
+        ('FONTNAME', (2, 3), (2, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (3, -1), (3, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (3, -1), (3, -1), 12),
+        ('LINEABOVE', (2, 3), (-1, 3), 1, colors.HexColor('#e2e8f0')),
+    ]))
+    story.append(details_table)
+    story.append(Spacer(1, 40))
+    
+    # Footer
+    footer_text = """
+    <b>Forma de pago:</b> Transferencia bancaria / Tarjeta de crédito<br/><br/>
+    <i>Esta factura ha sido generada electrónicamente y es válida sin firma.</i><br/>
+    <i>AlpineFlow Software S.L. - Todos los derechos reservados</i>
+    """
+    footer_style = ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=9,
+        textColor=colors.HexColor('#64748b')
+    )
+    story.append(Paragraph(footer_text, footer_style))
+    
+    # Build PDF
+    doc.build(story)
+    
+    # Return file
+    return FileResponse(
+        path=str(pdf_path),
+        filename=pdf_filename,
+        media_type="application/pdf"
+    )
+
+
 # ==================== STORE MANAGEMENT ROUTES (SUPER_ADMIN ONLY) ====================
 
 @api_router.get("/stores", response_model=List[StoreResponse])
