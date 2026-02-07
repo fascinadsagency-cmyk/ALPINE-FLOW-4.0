@@ -3184,6 +3184,7 @@ export default function NewRental() {
                 onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
                 className="h-11 mt-1"
                 data-testid="new-customer-name"
+                tabIndex={3}
               />
             </div>
             <div>
@@ -3195,6 +3196,7 @@ export default function NewRental() {
                 className="h-11 mt-1"
                 placeholder="email@ejemplo.com"
                 autoComplete="off"
+                tabIndex={4}
               />
             </div>
             <div>
@@ -3203,6 +3205,7 @@ export default function NewRental() {
                 value={newCustomer.address}
                 onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
                 className="h-11 mt-1"
+                tabIndex={5}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -3212,6 +3215,7 @@ export default function NewRental() {
                   value={newCustomer.city}
                   onChange={(e) => setNewCustomer({ ...newCustomer, city: e.target.value })}
                   className="h-11 mt-1"
+                  tabIndex={6}
                 />
               </div>
               <div>
