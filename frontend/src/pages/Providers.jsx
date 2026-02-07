@@ -55,6 +55,16 @@ export default function Providers() {
   useEffect(() => {
     loadProviders();
     loadGlobalStats();
+    // Obtener rol del usuario desde el token
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setUserRole(payload.role || 'employee');
+      } catch (e) {
+        setUserRole('employee');
+      }
+    }
   }, []);
 
   const loadProviders = async () => {
