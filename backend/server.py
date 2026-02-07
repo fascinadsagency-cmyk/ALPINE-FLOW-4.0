@@ -3248,8 +3248,9 @@ async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depend
     await db.rentals.insert_one({**current_user.get_store_filter(), **doc})
     await db.customers.update_one({**current_user.get_store_filter(), "id": rental.customer_id}, {"$inc": {"total_rentals": 1}})
     
-    # AUTO-REGISTER in CAJA: Create cash movement for the paid amount
-    if rental.paid_amount > 0:
+    # AUTO-REGISTER in CAJA: Create cash movement(s) for payment and deposit
+    total_cash_in = rental.paid_amount + rental.deposit
+    if total_cash_in > 0:
         # Get active session (already validated at the beginning)
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
@@ -3273,29 +3274,52 @@ async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depend
                 "item_type": item_name
             })
         
-        cash_movement_id = str(uuid.uuid4())
         operation_number = await get_next_operation_number()
-        cash_doc = {
-            "id": cash_movement_id,
-            "operation_number": operation_number,
-            "session_id": active_session["id"],
-            "movement_type": "income",
-            "amount": rental.paid_amount,
-            "payment_method": rental.payment_method,
-            "category": "rental",
-            "concept": f"Alquiler #{rental_id[:8]} - {customer['name']}",
-            "reference_id": rental_id,
-            "customer_name": customer["name"],
-            "notes": f"Alquiler {days} días ({rental.start_date} a {rental.end_date})",
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "created_by": current_user.username,
-            # NEW: Store rental details for ticket printing
-            "rental_items": rental_items_for_ticket,
-            "rental_days": days,
-            "rental_start_date": rental.start_date,
-            "rental_end_date": rental.end_date
-        }
-        await db.cash_movements.insert_one(cash_doc)
+        
+        # Register payment if > 0
+        if rental.paid_amount > 0:
+            cash_movement_id = str(uuid.uuid4())
+            cash_doc = {
+                "id": cash_movement_id,
+                "operation_number": operation_number,
+                "session_id": active_session["id"],
+                "movement_type": "income",
+                "amount": rental.paid_amount,
+                "payment_method": rental.payment_method,
+                "category": "rental",
+                "concept": f"Alquiler #{rental_id[:8]} - {customer['name']}",
+                "reference_id": rental_id,
+                "customer_name": customer["name"],
+                "notes": f"Alquiler {days} días ({rental.start_date} a {rental.end_date})",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "created_by": current_user.username,
+                # Store rental details for ticket printing
+                "rental_items": rental_items_for_ticket,
+                "rental_days": days,
+                "rental_start_date": rental.start_date,
+                "rental_end_date": rental.end_date
+            }
+            await db.cash_movements.insert_one(cash_doc)
+        
+        # Register deposit separately if > 0
+        if rental.deposit > 0:
+            deposit_movement_id = str(uuid.uuid4())
+            deposit_doc = {
+                "id": deposit_movement_id,
+                "operation_number": operation_number,  # Same operation number
+                "session_id": active_session["id"],
+                "movement_type": "income",
+                "amount": rental.deposit,
+                "payment_method": rental.payment_method,
+                "category": "deposit",
+                "concept": f"Depósito #{rental_id[:8]} - {customer['name']}",
+                "reference_id": rental_id,
+                "customer_name": customer["name"],
+                "notes": f"Depósito/Fianza para alquiler {days} días",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "created_by": current_user.username
+            }
+            await db.cash_movements.insert_one(deposit_doc)
         
         # Store operation_number in rental for ticket reference
         await db.rentals.update_one({**current_user.get_store_filter(), "id": rental_id}, {"$set": {"operation_number": operation_number}})
