@@ -6844,6 +6844,46 @@ async def fix_return_dates(current_user: CurrentUser = Depends(get_current_user)
 # ==================== BUSINESS SETTINGS/CONFIGURATION ====================
 
 class BusinessSettings(BaseModel):
+
+# ==================== HELP CENTER MODELS ====================
+
+class VideoTutorial(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    title: str
+    description: str
+    video_url: str
+    thumbnail_url: Optional[str] = None
+    duration: str
+    order: int = 0
+    active: bool = True
+    store_id: Optional[int] = None
+    created_at: str
+
+class VideoTutorialCreate(BaseModel):
+    title: str
+    description: str
+    video_url: str
+    thumbnail_url: Optional[str] = None
+    duration: str
+    order: int = 0
+    active: bool = True
+
+class FAQ(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    question: str
+    answer: str
+    order: int = 0
+    active: bool = True
+    store_id: Optional[int] = None
+    created_at: str
+
+class FAQCreate(BaseModel):
+    question: str
+    answer: str
+    order: int = 0
+    active: bool = True
     company_logo: Optional[str] = None  # Base64 encoded image
     ticket_header: Optional[str] = ""
     ticket_footer: Optional[str] = ""
