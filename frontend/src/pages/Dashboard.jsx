@@ -214,7 +214,7 @@ export default function Dashboard() {
           {/* BOTÓN GRANDE - NUEVO ALQUILER */}
           <Button 
             size="lg"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-6 text-base cursor-pointer shadow-lg hover:shadow-xl transition-all"
+            className="!bg-blue-600 hover:!bg-blue-700 text-white font-bold px-8 py-6 text-base cursor-pointer shadow-lg hover:shadow-xl transition-all"
             onClick={() => navigate("/nuevo-alquiler")}
           >
             <ShoppingCart className="h-5 w-5 mr-2" />
