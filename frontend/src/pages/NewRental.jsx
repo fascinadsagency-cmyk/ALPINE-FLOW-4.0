@@ -3059,10 +3059,11 @@ export default function NewRental() {
               
               {/* RESUMEN FINANCIERO DINÁMICO */}
               {(() => {
-                const cleanPaidAmount = paidAmount !== "" ? Number(parseFloat(paidAmount) || 0) : total;
-                const cleanDeposit = Number(parseFloat(deposit) || 0);
-                const pendingAmount = Math.max(0, total - cleanPaidAmount);
-                const cashInToday = cleanPaidAmount + cleanDeposit;
+                const rentalAmount = total; // Importe del alquiler
+                const depositAmount = Number(parseFloat(deposit) || 0);
+                const totalToPay = rentalAmount + depositAmount; // TOTAL A COBRAR HOY
+                const cleanPaidAmount = paidAmount !== "" ? Number(parseFloat(paidAmount) || 0) : totalToPay;
+                const pendingAmount = Math.max(0, rentalAmount - cleanPaidAmount);
                 
                 return (
                   <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
@@ -3070,11 +3071,23 @@ export default function NewRental() {
                     
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-slate-600">Total del alquiler:</span>
-                        <span className="font-medium">€{total.toFixed(2)}</span>
+                        <span className="text-slate-600">Importe Alquiler:</span>
+                        <span className="font-medium">€{rentalAmount.toFixed(2)}</span>
                       </div>
                       
-                      <div className="flex justify-between">
+                      {depositAmount > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-600">Depósito (reembolsable):</span>
+                          <span className="font-medium text-amber-600">€{depositAmount.toFixed(2)}</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-between pt-2 border-t border-slate-300">
+                        <span className="text-slate-900 font-semibold">Total a Recibir HOY:</span>
+                        <span className="font-bold text-lg text-primary">€{totalToPay.toFixed(2)}</span>
+                      </div>
+                      
+                      <div className="flex justify-between pt-2 border-t">
                         <span className="text-slate-600">Importe pagado ahora:</span>
                         <span className={`font-medium ${cleanPaidAmount === 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
                           €{cleanPaidAmount.toFixed(2)}
