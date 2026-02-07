@@ -44,7 +44,8 @@ import {
   Ruler,
   Scale,
   Mountain,
-  Radio
+  Radio,
+  Zap
 } from "lucide-react";
 import { toast } from "sonner";
 
