@@ -9,7 +9,8 @@ import {
   HelpCircle,
   Video,
   MessageCircle,
-  Loader2
+  Loader2,
+  Pencil
 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
@@ -98,6 +99,18 @@ export default function Help() {
         <p className="text-lg text-slate-600">
           Encuentra respuestas y aprende a usar todas las funcionalidades
         </p>
+        {/* Admin link */}
+        <div className="mt-4">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => window.location.href = '/ayuda/admin'}
+            className="text-xs"
+          >
+            <Pencil className="h-3 w-3 mr-1" />
+            Administrar Contenido
+          </Button>
+        </div>
       </div>
 
       {/* VIDEO TUTORIALS SECTION */}
