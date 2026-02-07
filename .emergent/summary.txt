@@ -1,107 +1,100 @@
-<analysis>**original_problem_statement:**
-The user's project is a rental management SaaS application. Over the course of the session, the user made several requests:
-1.  **UI Reversion:** Revert the application's glassmorphism design back to the original, cleaner blue-themed UI. This included fixing residual purple styles and layout issues on the dashboard.
-2.  **Bug Fix:** Resolve an issue where saving new team members was failing.
-3.  **Feature Removal:** Remove the Calendar Integration (Google/Outlook) feature entirely from the application.
-4.  **End-to-End Audit:** Conduct a comprehensive technical audit covering plan limits, multi-tenancy security, PWA offline mode, critical business logic (rentals, stock), performance, and session management.
-5.  **Hotfix:** Fix the Reports page, which had stopped working for Admin users.
-6.  **Commercial System Implementation:**
-    *   Implement a 15-day Free Trial system for new stores.
-    *   Define three subscription plans (Básico, Pro, Enterprise) with specific limits on items and customers.
-    *   Create a Paywall to block access to the app when the trial expires.
-    *   Build a Billing section for Admins to manage fiscal data and view payment history with downloadable PDF invoices.
-    *   Integrate the payment system with Stripe for checkout and use webhooks for confirmation.
-    *   Implement a Super Admin role that can bypass the paywall for support purposes.
-7.  **Enable Public Registration:** Allow new users to sign up for the service publicly. A new account should automatically create a new store and start the 15-day free trial.
+<analysis>**original_problem_statement**: The user wants to build and refine a comprehensive rental management application. Throughout the session, the user has requested and provided feedback on the following key features:
+1.  **Public Registration System**: Allow new users to sign up, which creates a new user and a new store for them.
+2.  **Super Admin Store Management**: A super admin user should be able to view and manage all stores in the system, including impersonating a store admin.
+3.  **Multi-Tenancy Data Isolation**: Data such as customers, items, and cash movements must be strictly isolated per store ().
+4.  **Customer Management**: The ability to create customers. The  field should be optional.
+5.  **Rental & Payment Flow**:
+    *   Create new rentals, selecting customers and items.
+    *   Handle payments, including partial payments and a Pending Payment status.
+    *   A warning should appear if the cash register is closed when creating a rental with a payment.
+    *   Implement keyboard navigation (using Tab) to speed up data entry.
+6.  **Deposit Management System**:
+    *   Collect deposits during the rental creation process. The total amount to be paid must include the rental fee plus the deposit.
+    *   The deposit amount should be tracked separately from rental revenue.
+    *   During the return process, the admin should have options to Return Deposit or Forfeit Deposit.
+    *   Forfeited deposits should be recorded as extra income.
+    *   Reporting should distinguish between actual revenue and deposits in custody (This part is pending).
+7.  **Add Items to Active Rental**: A new feature to add more items to an already active rental, recalculating the price and handling the additional payment.
 
-**User's preferred language**: Spanish
+**User's preferred language**: Spanish. The next agent MUST respond in Spanish.
 
 **what currently exists?**
-The application is a multi-tenant rental management system with a React frontend and a Python (FastAPI/MongoDB) backend.
-
-The session's work has resulted in:
-- The UI has been successfully reverted to its original, cleaner design.
-- Critical bugs related to team management and reporting have been fixed.
-- A comprehensive commercial system is in place:
-    - A 15-day free trial is automatically initiated for new stores.
-    - A functional paywall blocks access upon trial expiry.
-    - A plan selection page allows users to choose between Básico, Pro, and Enterprise plans.
-    - The system is fully integrated with Stripe for handling payments.
-    - A dedicated Billing section allows admins to manage fiscal data and download PDF invoices.
-- Role-Based Access Control (RBAC) has been hardened, ensuring Staff users cannot access admin-only sections like Reports, Billing, or Team Management.
-- A Super Admin role has a bypass for the paywall.
+The project is a multi-tenant rental management system with a React frontend and a FastAPI (Python) backend using a PostgreSQL database.
+Key features include:
+- User authentication (public registration, login).
+- Super admin dashboard for managing all stores.
+- Store-specific dashboards for managing customers, items, rentals, and cash register sessions.
+- A complete flow for creating new rentals, including complex pricing, payment processing, and deposit handling.
+- A flow for processing returns, including deposit management (return or forfeit).
+- A cash register system with cash movements tracking for all transactions (rentals, deposits, returns).
 
 **Last working item**:
-- **Last item agent was working:** Implementing the public user registration (sign-up) feature. The goal is to add a Create Account option on the login page, which, upon successful registration, creates a new store, assigns the user as its admin, and starts a 15-day free trial.
-- **Status:** IN PROGRESS
-- **Agent Testing Done:** N
-- **Which testing method agent to use?** both
-- **User Testing Done:** N
+- **Last item agent was working**: Implementing the Añadir Artículos a un alquiler activo (Add Items to an Active Rental) feature. The agent analyzed the complexity of the existing pricing engine and, based on user feedback, proceeded with Option C:
+    - **Option C**: Add a new button Añadir Artículos next to the Cambios button in the active rentals list. This opens a simple modal to add individual items. The price is calculated based on the item's individual rate multiplied by the remaining days of the rental. This approach avoids using the complex pack-pricing engine for this feature.
+- **Status**: IN PROGRESS
+- **Agent Testing Done**: N
+- **Which testing method agent to use?**: Both.
+    - **Backend**: Use  or a python script to test the new endpoint  once its logic is implemented.
+    - **Frontend**: Use the frontend testing agent to run an end-to-end test: click the Añadir Artículos button, search and add an item in the modal, verify the price calculation, process the payment, and confirm the rental is updated correctly.
+- **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Public Registration (Sign-Up) is incomplete (Priority: P0)**
-
-**Issues Detail:**
--   **Issue 1: Public Registration (Sign-Up) is incomplete**
-    -   **Attempted fixes:** The agent started modifying the backend () to create a new store on registration and the frontend () to add a sign-up form. The work is unfinished.
-    -   **Next debug checklist:**
-        1.  Complete the UI changes in  to include a registration form with fields for email and password, and a Create Account button.
-        2.  Finalize the backend logic in  (and its corresponding service in ) for the  endpoint. Ensure it:
-            *   Checks if the email already exists.
-            *   Creates a new  document.
-            *   Creates a new  document with  and the new .
-            *   Sets  and  for the new store.
-        3.  Ensure the user is automatically logged in and redirected to the dashboard after registration.
-    -   **Why fix this issue and what will be achieved with the fix?** This is a critical business requirement to allow new users to self-onboard to the platform, which is essential for user acquisition.
-    -   **Status:** IN PROGRESS
-    -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on other issue:** None
+There are no pending bugs. The only pending item is the feature currently in progress.
 
 **In progress Task List**:
--   **Task 1: Complete Public Registration Feature (Priority: P0)**
-    -   **Where to resume:** Resume work on  to add the registration UI and its associated logic. Then, complete the implementation of the registration endpoint in  and .
-    -   **What will be achieved with this?** The application will have a fully functional public sign-up flow, enabling user growth.
-    -   **Status:** IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on something:** None
+- **Task 1**: (P0) Complete the Añadir Artículos a un Alquiler Activo feature.
+    - **Where to resume**:
+        1.  **Backend**: Flesh out the logic in the  endpoint in . It currently exists but is a placeholder. The logic must:
+            -   Accept a list of new item IDs and payment details.
+            -   Update the rental document to include the new items and update  and .
+            -   Change the status of the new items to Alquilado.
+            -   Create  records for the additional payment and any new deposit collected, linked to the current user's active cash session.
+        2.  **Frontend**: Implement the core functionality within the  component in . This includes:
+            -   Adding an item search component (can be reused from ).
+            -   A list to display items as they are added.
+            -   Logic to calculate the additional cost (individual item price * remaining days).
+            -   A payment/checkout UI within the modal to handle the additional payment (similar to the one in ).
+            -   A submit handler that calls the backend endpoint.
+    - **What will be achieved with this?**: Users will be able to add more items to an existing rental contract, and the system will handle the additional charges and inventory updates correctly.
+    - **Status**: IN PROGRESS
+    - **Should Test frontend/backend/both after fix?**: Both
 
 **Upcoming and Future Tasks**
-- **Upcoming Tasks:**
-  - **P1: PWA/Offline Mode Stress Test:** The user's E2E audit request included testing the PWA's offline capabilities (ID conflict resolution on sync, sync order, data persistence on refresh). This was not performed and should be addressed.
-- **Future Tasks:**
-  - **P2: Advanced Business Logic Testing:** The audit also requested tests for complex scenarios that were not covered:
-      - Price calculation for rentals that span across months.
-      - Verification of audit logs for cash flow movements, especially for voided transactions.
-  - **P2: Minor UI Polish:** The NUEVO ALQUILER button's color was noted by the user. While the agent determined it's the standard primary color, it might be worth confirming with the user if a different shade of blue is preferred for better visual distinction.
+- **Upcoming Tasks**:
+    - **Task 1 (P1)**: Enhance the Add Items feature based on user discussion. The user asked if the end date could be edited when adding items. This should be considered. The current plan (Option C) assumes the same end date. A date picker could be added to the .
+- **Future Tasks**:
+    - **Task 1 (P2)**: Implement differentiated financial reporting for deposits.
+        - **File/Method**: This will likely require changes to the reporting endpoints/pages.
+        - **Description**: The Reports section should distinguish between Ingresos reales (actual revenue from rentals) and Depósitos en custodia (deposits currently held). Forfeited deposits should be moved to a category like Ingreso Extra.
 
 **Completed work in this session**
-- **UI Reversion:** The app-wide glassmorphism theme was removed, and the original, cleaner UI was restored. (, ).
-- **Team Management Bug Fix:** Fixed an issue preventing new team members from being saved by correcting backend URL handling and database inconsistencies. (, ).
-- **Calendar Integration Removal:** Removed the calendar integration feature from the Integrations page UI. ().
-- **Plan Limit Validation:** Implemented strict backend validation to enforce item and customer limits based on the store's subscription plan. ().
-- **Reports Page Hotfix:** Repaired the reports functionality by fixing a bug in the financial service layer and added admin-only role protection. ().
-- **Commercial System Implementation:**
-    - Deployed a full-featured Free Trial, Plans (Básico, Pro, Enterprise), and Paywall system. (, , , ).
-    - Integrated the system with **Stripe Checkout** for real payments. (, ).
-    - Created a **Billing section** with fiscal data management and PDF invoice generation. (, ).
+- **Public Registration System**: Implemented and tested ().
+- **Super Admin Access**: Fixed access to Gestión de Tiendas and resolved related frontend () and backend ( model) bugs.
+- **Multi-Tenancy Fixes**:
+    - **Customers**: Removed a global unique constraint on the  field, allowing different stores to have customers with the same DNI.
+    - **Cash Movements**: Added the missing  to all  documents, fixing a critical bug where movements were not appearing.
+    - **Cash Sessions**: Fixed a bug where opening a cash session did not save the .
+- **Rental & Payment Flow Enhancements**:
+    - Made the customer  field optional in the New Rental form.
+    - Fixed logic to allow partial payments when the payment method is Pending.
+    - Added a warning in New Rental if the cash register is closed before processing a payment.
+    - Fixed body stream already read error by refactoring  response handling in .
+    - Synced the payment method selection between the main dropdown and the checkout modal in .
+    - Added  to improve keyboard navigation in  and .
+- **Deposit Management Implementation**:
+    - **Rental Creation**: The Total a Pagar now correctly includes the deposit. The frontend UI and backend logic were fixed to handle this. The backend now creates separate cash movements for the rental fee and the deposit.
+    - **Rental Return**: Implemented the UI and backend logic to handle returning or forfeiting a deposit during the return process.
+- **Data Seeding**: Removed the automatic creation of default item types and providers for newly created stores.
+- **Bug Fixes**:
+    - Fixed a bug where a faulty unique index () was being recreated on every server startup.
+    - Fixed a  on the  page.
+    - Fixed the [object Object] error message display on the  page by correctly parsing the error response.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1: PWA/Offline Mode Not Audited**
-    -   **Debug checklist:**
-        1.  Simulate offline mode in the browser.
-        2.  Create several new rentals and customers.
-        3.  Refresh the page to ensure data persists in LocalStorage/IndexedDB.
-        4.  Go back online and verify that data syncs correctly without ID collisions or referential integrity errors.
-    -   **Why to solve this issue and what will be achieved with this?** This is critical for ensuring data integrity and a reliable user experience in areas with poor connectivity, a key feature of a PWA.
-    -   **Should Test frontend/backend/both after fix:** both
-    -   **Is recurring issue?** N
--   **Issue 2: Complex Business Logic Not Audited**
-    -   **Debug checklist:**
-        1.  Create a rental that starts at the end of one month and ends in the next. Verify the pricing calculation is correct.
-        2.  Process a payment, then find the corresponding cash flow entry. Annulling the payment should create a clear audit trail, not just delete the record.
-    -   **Why to solve this issue and what will be achieved with this?** This ensures the core business logic is robust and financially accurate, preventing billing errors and providing accountability.
-    -   **Should Test frontend/backend/both after fix:** backend
+- **Issue 1**: Financial reports do not properly differentiate between rental income and security deposits.
+    - **Why to solve this issue and what will be achieved with this?**: This is crucial for correct accounting. The user needs to know their actual revenue, separate from the money they are temporarily holding as deposits.
+    - **Should Test frontend/backend/both after fix**: Both.
+    - **Is recurring issue?**: N
 
 **Known issue recurrence from previous fork**
 - None.
@@ -110,88 +103,81 @@ The session's work has resulted in:
 
 
 **Key Technical Concepts**
-- **Frontend:** React (with Vite), Tailwind CSS, Shadcn UI for components, React Router for navigation.
-- **Backend:** Python with FastAPI for the API, Pydantic for data validation, and Motor for asynchronous communication with MongoDB.
-- **Database:** MongoDB.
-- **Authentication:** JWT-based token authentication. Tokens are stored in frontend .
-- **Architecture:** Multi-tenant SaaS, where data is segregated by .
-- **Payments:** Stripe Checkout is used for processing subscription payments.
+- **Frontend**: React, Material-UI (MUI), React Router, Fetch API.
+- **Backend**: Python, FastAPI, Pydantic, SQLAlchemy.
+- **Database**: PostgreSQL.
+- **Architecture**: Multi-tenant architecture where data is partitioned by .
 
 **key DB schema**
--   **stores:** 
--   **users:** 
--   **items:** 
--   **customers:** 
--   **payments:** 
+- : 
+- : 
+- :  (with a unique index on )
+- : 
+- : 
+- : 
 
 **changes in tech stack**
-- The  library was added to the backend to facilitate the Stripe integration.
+- None.
 
 **All files of reference**
--   **:** The main FastAPI file, heavily modified to add endpoints for billing, plans, Stripe, and enhanced security.
--   **:** Handles user authentication. It's currently being modified to support public registration.
--   **:** The login page, which is being updated to include a registration form.
--   **:** The main app layout, modified to display the trial banner and paywall overlay.
--   **:** A new page that displays subscription plans and initiates the Stripe checkout process.
--   **:** A new page for admins to manage billing information and download invoices.
--   **:** Contains critical environment variables for the database connection and Stripe API keys.
+- : Contains all logic for creating rentals, handling returns, managing deposits, and adding items. Heavily modified.
+- : The main page for creating rentals. Heavily modified to fix UI, payment logic, and deposit handling.
+- : The page listing active rentals. Modified to add the button, state, and modal for the Add Items feature.
+- : The page for processing returns. Modified to add deposit return/forfeit logic.
+- : Handles user registration and login. Modified to implement the public sign-up feature.
+-  (and/or startup scripts): Modified to remove faulty index creation on startup.
 
 **Areas that need refactoring**:
-- The main backend file, , has grown to over 5,000 lines. It should be modularized by splitting the endpoints into multiple FastAPI  instances (e.g., one router for auth, one for billing, etc.) to improve maintainability.
+- The  and  components are very large and complex (over 3000-4000 lines). They handle a lot of state, UI logic, and API calls. Breaking them down into smaller, more manageable sub-components would improve maintainability.
 
 **key api endpoints**
--   : (In Progress) Public registration for new users.
--   : User login, returns JWT.
--   : Fetches the current store's trial and plan status.
--   : Generates a Stripe Checkout URL for payment.
--   : Listens for successful payment events from Stripe.
--   : Retrieves the payment history for a store.
--   : Downloads a specific invoice as a PDF.
+- : Creates a new user and store.
+- : Creates a new rental.
+- : Processes a rental return.
+- : (In progress) Adds new items to an active rental.
+- : Opens a new cash register session.
+- : (Super admin only) Lists all stores.
+- : Lists cash movements for the current user's store.
 
 **Critical Info for New Agent**
--   The application is multi-tenant. Every database query that accesses tenant-specific data **must** be filtered by  to prevent data leakage.
--   A  role exists. Users with this role bypass the subscription paywall, which is essential for providing customer support.
--   The development environment uses a Simulate Payment button on the plan selection page. This allows for testing the post-payment workflow without making a real Stripe transaction.
--   Be aware of database name differences. The running server uses  (from ), while some manual scripts might default to . Ensure you target the correct database when performing manual operations.
+- **Multi-Tenancy is Paramount**: Many critical bugs were caused by a missing  in database documents (, ). Always ensure  is included when creating or querying data.
+- **Follow Option C**: For the Add Items feature, the user explicitly chose the simplest implementation (Option C). Do not attempt to integrate the complex pack-pricing engine. Stick to calculating price based on individual rates * remaining days.
+- **User is Cost-Conscious**: The user has mentioned wasting credits. Be thorough in your internal testing (, manual checks) before claiming a fix is complete to ensure it works on the first try.
+- **Large Components**: Be aware that  and  are very large. When modifying them, be careful not to introduce side effects.
 
 **documents and test reports created in this job**
--   
--   
--   
--   
--   
--   
+-  (and subsequent test reports generated by the testing agent)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **Request (In Progress):** Implement a public sign-up system with automatic trial activation.
-2.  **Request (Completed):** Implement the full commercial system (plans, trial, paywall, Stripe, billing, master admin bypass).
-3.  **Question (Answered):** cuál es la contraseña de la tienda ID1 y el usuario? (What is the password for store ID1 and the user?).
-4.  **Request (Completed):** Add a Facturación (Billing) section to settings for admins.
-5.  **Request (Completed):** Implement the free trial and paid plans system with a paywall.
-6.  **Confirmation:** Acknowledged the completion of the Reports page hotfix.
-7.  **Request (Completed):** la pestaña de reportes ha dejado de funcionar... (The reports tab has stopped working).
-8.  **Request (Completed):** necesito que realices una comprobación exhaustiva de extremo a extremo... (I need you to perform an exhaustive end-to-end check).
-9.  **Request (Completed):** necesito que realices una comprobación exhaustiva... (I need you to perform an exhaustive check) - This was a duplicate, part of the same request.
-10. **Request (Completed):** elimina completamente la funcionalidad de Integración con Calendarios (completely remove the 'Calendar Integration' functionality).
+10.  - User provides detailed requirements for the Add Items feature. (IN PROGRESS)
+9.   - Initial, detailed request for the Add Items feature. (IN PROGRESS)
+8.   - User reports that cash movements are not being created for new rentals. (RESOLVED - Missing ).
+7.   &  - User reports the [object Object] error on the Returns page is persistent and asks the agent to test the full flow. (RESOLVED by testing agent).
+6.   - User reports an error on the return page. (RESOLVED - It was the [object Object] bug).
+5.   - User reports that rentals are created but the UI shows an error. (RESOLVED - It was an error handling issue in the frontend  call).
+4.   - User is frustrated with a persistent error on the New Rental page. (RESOLVED).
+3.   - User reports the body stream already read error has returned. (RESOLVED).
+2.   - User reports the deposit is still not being handled correctly in the final payment step. (RESOLVED - UI display bug in total amount).
+1.   - User reports a crash on the New Rental page. (RESOLVED - ).
 
 **Project Health Check:**
--   **Broken:** The public user registration flow is currently non-functional as its implementation is incomplete.
--   **Mocked:** The payment flow includes a Simulate Payment option for development, which bypasses the real Stripe checkout.
+- **Broken**:
+    - The Add Items to Active Rental feature is incomplete and therefore broken.
+- **Mocked**:
+    - None.
 
 **3rd Party Integrations**
--   **Stripe (Payments):** Integrated via the  library. Requires  and  to be set in the  file (User-provided keys).
+- None identified beyond standard frontend/backend libraries.
 
 **Testing status**
--   **Testing agent used after significant changes:** NO
--   **Troubleshoot agent used after agent stuck in loop:** NO
--   **Test files created:** []
--   **Known regressions:** A regression on the Reports page was introduced and subsequently fixed during the session.
+- **Testing agent used after significant changes**: YES. The testing agent was used effectively to diagnose and fix complex frontend issues, notably the [object Object] error on the Returns page.
+- **Troubleshoot agent used after agent stuck in loop**: YES. Used to identify error handling problems in frontend  calls.
+- **Test files created**: Test reports exist in .
+- **Known regressions**: None currently, but the high complexity and large component sizes pose a risk.
 
 **Credentials to test flow:**
--   **Admin:**  / 
--   **Staff:**  / 
+- **Super Admin**: user: , password: 
+- **Regular Admin**: user:  (password not specified, but this user is associated with the EL ENEBRO store)
 
 **What agent forgot to execute**
--   The agent did not execute the PWA/Offline mode stress test as requested in the E2E audit.
--   The agent did not explicitly test the business logic for rental price calculations across month boundaries or the audit trail for voided cash flow transactions.
--   The primary active task, implementing public user registration, remains unfinished.</analysis>
+- The accounting part of the deposit management feature is still pending. Specifically, the reports do not yet differentiate between revenue and deposits held in custody, as requested by the user.</analysis>
