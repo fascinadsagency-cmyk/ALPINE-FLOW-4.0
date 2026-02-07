@@ -122,6 +122,17 @@ export default function ActiveRentals() {
   const [changeTotalDelta, setChangeTotalDelta] = useState(0);
   const [changeMaterialDelta, setChangeMaterialDelta] = useState(0);
 
+
+  // ============ ADD ITEMS MODAL STATE ============
+  const [addItemsModalOpen, setAddItemsModalOpen] = useState(false);
+  const [addItemsRental, setAddItemsRental] = useState(null);
+  const [addItemsSelected, setAddItemsSelected] = useState([]); // Array de {barcode, name, days, unit_price, person_name}
+  const [addItemsSearch, setAddItemsSearch] = useState("");
+  const [addItemsDays, setAddItemsDays] = useState(0); // Días por defecto = días restantes
+  const [addItemsChargeNow, setAddItemsChargeNow] = useState(true);
+  const [addItemsPaymentMethod, setAddItemsPaymentMethod] = useState("cash");
+  const [addItemsProcessing, setAddItemsProcessing] = useState(false);
+
   // ============ LEGACY SWAP MODAL STATE (keeping for backward compatibility) ============
   const [swapModalOpen, setSwapModalOpen] = useState(false);
   const [swapRental, setSwapRental] = useState(null); // The rental being swapped
