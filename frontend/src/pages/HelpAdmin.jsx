@@ -233,6 +233,15 @@ export default function HelpAdmin() {
         <p className="text-slate-600 mt-1">
           Gestiona los videos tutoriales y preguntas frecuentes
         </p>
+        <Card className="mt-4 bg-blue-50 border-blue-200">
+          <CardContent className="py-3 flex items-start gap-2">
+            <MessageCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-blue-800">
+              <strong>Contenido Global:</strong> Los videos y FAQs que agregues aquí serán visibles para <strong>todas las tiendas</strong>. 
+              Solo el administrador master puede editar este contenido.
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* VIDEO TUTORIALS SECTION */}
