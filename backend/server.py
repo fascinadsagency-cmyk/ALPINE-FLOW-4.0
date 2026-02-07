@@ -1903,6 +1903,72 @@ async def auto_cleanup_empty_type(store_id: int, type_value: str):
         if type_deleted.deleted_count > 0 or tariff_deleted.deleted_count > 0:
             logger.info(f"🧹 Auto-cleanup: Removed empty type '{normalized}' from store {store_id}")
 
+
+async def sync_item_types_from_inventory(store_id: int) -> dict:
+    """
+    🔄 SELF-HEALING: Sincroniza la tabla item_types con el inventario real.
+    
+    Escanea todos los tipos DISTINCT que existen en los artículos de la tienda.
+    Si encuentra un tipo que no tiene ficha en la tabla item_types, LO CREA automáticamente.
+    
+    Esto garantiza que el sistema de tarifas pueda funcionar correctamente.
+    
+    Ejecutar después de:
+    - Cada importación CSV
+    - Al cargar la página de Inventario (o periódicamente)
+    
+    Returns: dict con stats de sincronización
+    """
+    store_filter = {"store_id": store_id}
+    
+    # Obtener todos los tipos DISTINCT del inventario (fuente de verdad)
+    inventory_types = await db.items.distinct("item_type", store_filter)
+    inventory_types = [t for t in inventory_types if t and t.strip()]
+    
+    # Obtener tipos existentes en la tabla
+    existing_type_docs = await db.item_types.find(store_filter, {"_id": 0, "value": 1}).to_list(5000)
+    existing_type_values = {doc["value"] for doc in existing_type_docs}
+    
+    # Encontrar tipos faltantes
+    missing_types = [t for t in inventory_types if t not in existing_type_values]
+    
+    # Crear los tipos faltantes
+    created_count = 0
+    for type_value in missing_types:
+        type_doc = {
+            "id": str(uuid.uuid4()),
+            "store_id": store_id,
+            "value": type_value,
+            "label": format_type_label(type_value),
+            "is_default": False,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.item_types.insert_one(type_doc)
+        
+        # También crear tarifa si no existe
+        tariff_exists = await db.tariffs.find_one({**store_filter, "item_type": type_value})
+        if not tariff_exists:
+            tariff_doc = {
+                "id": str(uuid.uuid4()),
+                "store_id": store_id,
+                "item_type": type_value,
+                "daily_rate": 0.0,
+                "deposit": 0.0,
+                "name": format_type_label(type_value),
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.tariffs.insert_one(tariff_doc)
+        
+        created_count += 1
+        logger.info(f"🔄 Self-healing: Created type+tariff '{type_value}' for store {store_id}")
+    
+    return {
+        "inventory_types_count": len(inventory_types),
+        "existing_types_count": len(existing_type_values),
+        "created_count": created_count,
+        "synced": True
+    }
+
 # ==================== ITEM TYPES ROUTES ====================
 
 @api_router.get("/item-types", response_model=List[ItemTypeResponse])
