@@ -2853,23 +2853,44 @@ export default function NewRental() {
           {/* Payment Card */}
           <Card className="border-slate-200">
             <CardContent className="pt-6">
-              {/* BOTONERA FIJA: Solo 3 botones en orden estricto */}
-              <div className="flex items-center gap-2 mb-4 pb-4 border-b border-slate-200">
-                <span className="text-sm text-slate-600 font-medium">Añadir rápido:</span>
-                {QUICK_ADD_CONFIG.map(config => (
-                  <Button
-                    key={config.key}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => quickAddGeneric(config)}
-                    className="h-8 px-3 text-sm hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700"
-                    data-testid={`quick-add-${config.key}`}
-                  >
-                    <Plus className="h-3.5 w-3.5 mr-1.5" />
-                    {config.label}
-                  </Button>
-                ))}
-              </div>
+              {/* QUICK ADD: Dynamic buttons from DB */}
+              {quickAddItems.length > 0 && (
+                <div className="mb-4 pb-4 border-b border-slate-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Zap className="h-4 w-4 text-amber-500" />
+                    <span className="text-sm text-slate-600 font-medium">Añadir rápido:</span>
+                  </div>
+                  <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-200">
+                    {quickAddItems.map(item => (
+                      <Button
+                        key={item.id}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => quickAddItem(item)}
+                        className="h-8 px-3 text-sm whitespace-nowrap hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700 flex-shrink-0"
+                        data-testid={`quick-add-${item.id}`}
+                        disabled={item.is_generic ? item.stock_available < 1 : item.status !== 'available'}
+                      >
+                        <Plus className="h-3.5 w-3.5 mr-1.5" />
+                        {item.is_generic 
+                          ? `${item.name || item.item_type} (${item.stock_available})`
+                          : item.internal_code || item.barcode
+                        }
+                        {item.rental_price > 0 && (
+                          <span className="ml-1 text-xs text-slate-400">€{item.rental_price}</span>
+                        )}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {quickAddItems.length === 0 && !loadingQuickAdd && (
+                <div className="mb-4 pb-4 border-b border-slate-200 text-center">
+                  <p className="text-xs text-slate-400">
+                    💡 Marca artículos en Inventario con "Mostrar en Añadir Rápido" para verlos aquí
+                  </p>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div>
