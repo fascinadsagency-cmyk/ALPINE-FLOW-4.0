@@ -21,6 +21,8 @@ import Providers from "@/pages/Providers";
 import Settings from "@/pages/Settings";
 import StoreManagement from "@/pages/StoreManagement";
 import StoreSettings from "@/pages/StoreSettings";
+import Help from "@/pages/Help";
+import Support from "@/pages/Support";
 import Layout from "@/components/Layout";
 
 // ============================================================
