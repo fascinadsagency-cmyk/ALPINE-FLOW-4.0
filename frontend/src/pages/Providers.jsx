@@ -753,47 +753,122 @@ export default function Providers() {
 
       {/* Delete Confirmation Dialog */}
       {deletingProvider && (
-        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-          <DialogContent className="sm:max-w-md">
+        <Dialog open={showDeleteDialog} onOpenChange={(open) => {
+          if (!open) {
+            setShowDeleteDialog(false);
+            setDeletingProvider(null);
+            setDeleteCheckResult(null);
+          }
+        }}>
+          <DialogContent className="sm:max-w-md" data-testid="delete-provider-dialog">
             <DialogHeader>
-              <DialogTitle>Eliminar Proveedor</DialogTitle>
+              <DialogTitle className="flex items-center gap-2 text-red-600">
+                <Trash2 className="h-5 w-5" />
+                Eliminar Proveedor
+              </DialogTitle>
               <DialogDescription>
-                ¿Estás seguro de que quieres eliminar este proveedor?
+                ¿Estás seguro de que quieres eliminar a este proveedor? <strong>Esta acción no se puede deshacer.</strong>
               </DialogDescription>
             </DialogHeader>
             
             <div className="py-4">
-              <div className="bg-slate-50 rounded-lg p-4 space-y-2">
-                <p className="font-medium text-slate-900">{deletingProvider.name}</p>
-                {deletingProvider.customer_count > 0 && (
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <Users className="h-4 w-4" />
-                    <span>{deletingProvider.customer_count} clientes asociados</span>
+              {/* Info del proveedor */}
+              <div className="bg-slate-50 rounded-lg p-4 space-y-2 border border-slate-200">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center">
+                    <Building2 className="h-5 w-5 text-red-600" />
                   </div>
-                )}
+                  <div>
+                    <p className="font-semibold text-slate-900">{deletingProvider.name}</p>
+                    {deletingProvider.contact_person && (
+                      <p className="text-sm text-slate-500">{deletingProvider.contact_person}</p>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              {deletingProvider.customer_count > 0 && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-                  <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm text-red-700">
-                    No se puede eliminar este proveedor porque tiene {deletingProvider.customer_count} clientes asociados.
-                  </p>
+              {/* Estado de verificación */}
+              {deleteLoading ? (
+                <div className="mt-4 p-4 bg-slate-100 rounded-lg flex items-center justify-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin text-slate-500" />
+                  <span className="text-slate-600">Verificando dependencias...</span>
                 </div>
+              ) : deleteCheckResult && (
+                <>
+                  {/* Clientes asociados */}
+                  {deleteCheckResult.customers > 0 && (
+                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-red-800">
+                          {deleteCheckResult.customers} cliente(s) asociado(s)
+                        </p>
+                        <p className="text-sm text-red-700 mt-1">
+                          No se puede eliminar el proveedor porque tiene clientes asociados. 
+                          Reasigna los clientes a otro proveedor primero.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Artículos asociados */}
+                  {deleteCheckResult.items > 0 && (
+                    <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-amber-800">
+                          {deleteCheckResult.items} artículo(s) asociado(s)
+                        </p>
+                        <p className="text-sm text-amber-700 mt-1">
+                          No se puede eliminar el proveedor porque tiene artículos asociados. 
+                          Reasigna los artículos a otro proveedor primero.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Todo OK */}
+                  {deleteCheckResult.canDelete && (
+                    <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-emerald-800">
+                          Sin dependencias
+                        </p>
+                        <p className="text-sm text-emerald-700 mt-1">
+                          El proveedor no tiene clientes ni artículos asociados y puede ser eliminado de forma segura.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowDeleteDialog(false);
+                  setDeletingProvider(null);
+                  setDeleteCheckResult(null);
+                }}
+                disabled={deleteLoading}
+              >
                 Cancelar
               </Button>
               <Button
                 variant="destructive"
                 onClick={handleDelete}
-                disabled={deletingProvider.customer_count > 0}
+                disabled={deleteLoading || !deleteCheckResult?.canDelete}
+                data-testid="confirm-delete-provider"
               >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Eliminar
+                {deleteLoading ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4 mr-2" />
+                )}
+                Eliminar Proveedor
               </Button>
             </DialogFooter>
           </DialogContent>
