@@ -122,11 +122,8 @@ async def repair_tariffs():
                     "tariff_id": tariff_data["id"],
                     "item_type": normalized_type  # Also normalize the type
                 }
-                # Update price only if tariff has a price
-                if tariff_price > 0:
-                    update_data["rental_price"] = tariff_price
-                elif current_price == 0:
-                    update_data["rental_price"] = tariff_price  # Will be 0 but at least it's set
+                # Always set rental_price to tariff price
+                update_data["rental_price"] = tariff_price
                 
                 await db.items.update_one(
                     {"id": item["id"]},
