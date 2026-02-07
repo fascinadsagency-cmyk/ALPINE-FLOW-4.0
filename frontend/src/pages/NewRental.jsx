@@ -3470,7 +3470,7 @@ export default function NewRental() {
                   }`}
                   onClick={() => {
                     setPaymentMethodSelected("pending");
-                    setPaidAmount("0");
+                    // No cambiar el paidAmount - dejar que el usuario lo edite
                     setCashGiven("");
                   }}
                 >
