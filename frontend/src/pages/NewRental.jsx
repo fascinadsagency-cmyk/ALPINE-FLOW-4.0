@@ -3542,6 +3542,52 @@ export default function NewRental() {
                 </p>
               </div>
             )}
+
+            {/* Pending Payment Info */}
+            {paymentMethodSelected === "pending" && (
+              <div className="p-4 rounded-lg bg-amber-50 border-2 border-amber-200">
+                <p className="text-sm text-amber-800">
+                  ⏳ Se guardará con 0€ pagados. El cliente debe pagar más adelante.
+                </p>
+              </div>
+            )}
+
+            {/* Online Payment Info */}
+            {paymentMethodSelected === "pago_online" && (
+              <div className="p-4 rounded-lg bg-purple-50 border-2 border-purple-200">
+                <p className="text-sm text-purple-800">
+                  🌐 Marcado como "Origen Web". No afecta la caja física.
+                </p>
+              </div>
+            )}
+
+            {/* VISUALIZACIÓN DE DEUDA EN TIEMPO REAL */}
+            {(() => {
+              const total = calculateTotal();
+              const paid = parseFloat(paidAmount) || 0;
+              const remaining = Math.max(0, total - paid);
+              
+              return (
+                <div className={`p-4 rounded-lg border-2 ${
+                  remaining > 0 
+                    ? 'bg-red-50 border-red-300' 
+                    : 'bg-emerald-50 border-emerald-300'
+                }`}>
+                  <p className="text-sm font-medium uppercase tracking-wide mb-1">
+                    {remaining > 0 ? '⚠️ Estado del Pago' : '✅ Estado del Pago'}
+                  </p>
+                  {remaining > 0 ? (
+                    <p className="text-3xl font-black text-red-700">
+                      Restante por pagar: €{remaining.toFixed(2)}
+                    </p>
+                  ) : (
+                    <p className="text-3xl font-black text-emerald-700">
+                      Pagado completo ✓
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           <DialogFooter className="gap-2">
