@@ -1271,6 +1271,43 @@ async def get_generic_items(
     items = await db.items.find(query, {"_id": 0}).to_list(5000)
     return [ItemResponse(**i) for i in items]
 
+
+@api_router.get("/items/quick-add")
+async def get_quick_add_items(current_user: CurrentUser = Depends(get_current_user)):
+    """Get all items marked for quick add (Añadir Rápido) section"""
+    query = {
+        **current_user.get_store_filter(),
+        "is_quick_add": True,
+        "$or": [
+            # Generic items with available stock
+            {"is_generic": True, "stock_available": {"$gt": 0}},
+            # Individual items that are available
+            {"is_generic": {"$ne": True}, "status": "available"}
+        ]
+    }
+    
+    items = await db.items.find(query, {"_id": 0}).to_list(50)  # Limit to 50 quick add items
+    return [ItemResponse(**i) for i in items]
+
+
+@api_router.patch("/items/{item_id}/quick-add")
+async def toggle_quick_add(
+    item_id: str, 
+    is_quick_add: bool,
+    current_user: CurrentUser = Depends(get_current_user)
+):
+    """Toggle quick add status for an item"""
+    result = await db.items.update_one(
+        {**current_user.get_store_filter(), "id": item_id},
+        {"$set": {"is_quick_add": is_quick_add}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Artículo no encontrado")
+    
+    return {"message": f"Acceso rápido {'activado' if is_quick_add else 'desactivado'}", "is_quick_add": is_quick_add}
+
+
 @api_router.post("/items/{item_id}/adjust-stock")
 async def adjust_generic_stock(
     item_id: str,
