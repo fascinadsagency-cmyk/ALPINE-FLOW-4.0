@@ -7205,13 +7205,14 @@ async def select_plan(
             }
         )
     
-    # Update store plan
+    # Update store plan (for direct activation without payment)
     await db.stores.update_one(
         {"store_id": current_user.store_id},
         {
             "$set": {
                 "plan_type": plan_type,
                 "plan_activated_at": datetime.now(timezone.utc).isoformat(),
+                "plan_expires_at": (datetime.now(timezone.utc) + timedelta(days=365)).isoformat(),
                 "settings.max_items": plan_info["max_items"],
                 "settings.max_customers": plan_info["max_customers"],
                 "settings.max_users": plan_info["max_users"]
@@ -7229,6 +7230,308 @@ async def select_plan(
         "plan_name": plan_info["name"]
     }
 
+
+# ==================== STRIPE PAYMENT INTEGRATION ====================
+
+class CreateCheckoutRequest(BaseModel):
+    plan_type: str  # 'basic', 'pro', 'enterprise'
+    origin_url: str  # Frontend origin for redirect URLs
+
+@api_router.post("/plan/checkout")
+async def create_stripe_checkout(
+    request: CreateCheckoutRequest,
+    http_request: Request,
+    current_user: CurrentUser = Depends(require_admin)
+):
+    """
+    Create a Stripe Checkout session for plan payment.
+    Returns checkout URL to redirect user to Stripe.
+    """
+    plan_type = request.plan_type
+    
+    if plan_type not in ["basic", "pro", "enterprise"]:
+        raise HTTPException(status_code=400, detail="Plan inválido")
+    
+    plan_info = PLAN_LIMITS[plan_type]
+    store_filter = current_user.get_store_filter()
+    
+    # Validate limits BEFORE creating checkout
+    current_items = await db.items.count_documents(store_filter)
+    current_customers = await db.customers.count_documents(store_filter)
+    
+    errors = []
+    if plan_info["max_items"] != 999999 and current_items > plan_info["max_items"]:
+        errors.append(f"Tu inventario actual ({current_items}) supera el límite del plan ({plan_info['max_items']})")
+    if plan_info["max_customers"] != 999999 and current_customers > plan_info["max_customers"]:
+        errors.append(f"Tus clientes ({current_customers}) superan el límite del plan ({plan_info['max_customers']})")
+    
+    if errors:
+        raise HTTPException(status_code=400, detail={"message": "Datos superan límites del plan", "errors": errors})
+    
+    # Get Stripe API key
+    stripe_api_key = os.environ.get("STRIPE_API_KEY")
+    if not stripe_api_key:
+        raise HTTPException(status_code=500, detail="Stripe no configurado")
+    
+    # Build URLs from frontend origin
+    origin_url = request.origin_url.rstrip("/")
+    success_url = f"{origin_url}/pago-exitoso?session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{origin_url}/seleccionar-plan"
+    
+    # Webhook URL
+    host_url = str(http_request.base_url).rstrip("/")
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    
+    # Initialize Stripe
+    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+    
+    # Get amount from server-side definition (SECURITY: Never accept amount from frontend)
+    amount = float(plan_info["price"])  # EUR
+    
+    # Create checkout session
+    checkout_request = CheckoutSessionRequest(
+        amount=amount,
+        currency="eur",
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata={
+            "store_id": str(current_user.store_id),
+            "plan_type": plan_type,
+            "user_id": current_user.user_id,
+            "username": current_user.username
+        }
+    )
+    
+    session = await stripe_checkout.create_checkout_session(checkout_request)
+    
+    # Create payment transaction record BEFORE redirect
+    payment_transaction = {
+        "id": str(uuid.uuid4()),
+        "session_id": session.session_id,
+        "store_id": current_user.store_id,
+        "user_id": current_user.user_id,
+        "username": current_user.username,
+        "plan_type": plan_type,
+        "plan_name": plan_info["name"],
+        "amount": amount,
+        "currency": "EUR",
+        "payment_status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.payment_transactions.insert_one(payment_transaction)
+    
+    return {
+        "checkout_url": session.url,
+        "session_id": session.session_id
+    }
+
+
+@api_router.get("/plan/checkout/status/{session_id}")
+async def get_checkout_status(
+    session_id: str,
+    current_user: CurrentUser = Depends(get_current_user)
+):
+    """
+    Check status of a Stripe checkout session and update payment accordingly.
+    """
+    # Find the payment transaction
+    transaction = await db.payment_transactions.find_one({"session_id": session_id})
+    
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transacción no encontrada")
+    
+    # Verify ownership (unless super_admin)
+    if current_user.role != "super_admin" and transaction.get("store_id") != current_user.store_id:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    
+    # If already processed, return current status
+    if transaction.get("payment_status") == "paid":
+        return {
+            "status": "complete",
+            "payment_status": "paid",
+            "plan_type": transaction.get("plan_type"),
+            "message": "Pago ya procesado"
+        }
+    
+    # Get Stripe API key
+    stripe_api_key = os.environ.get("STRIPE_API_KEY")
+    if not stripe_api_key:
+        raise HTTPException(status_code=500, detail="Stripe no configurado")
+    
+    # Check status with Stripe
+    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url="")
+    
+    try:
+        checkout_status = await stripe_checkout.get_checkout_status(session_id)
+    except Exception as e:
+        logger.error(f"Error checking Stripe status: {e}")
+        return {
+            "status": "pending",
+            "payment_status": "pending",
+            "message": "Verificando pago..."
+        }
+    
+    # Update based on Stripe status
+    if checkout_status.payment_status == "paid":
+        # Process successful payment
+        plan_type = transaction.get("plan_type")
+        store_id = transaction.get("store_id")
+        plan_info = PLAN_LIMITS.get(plan_type, {})
+        
+        # Update store with new plan
+        await db.stores.update_one(
+            {"store_id": store_id},
+            {
+                "$set": {
+                    "plan_type": plan_type,
+                    "plan_activated_at": datetime.now(timezone.utc).isoformat(),
+                    "plan_expires_at": (datetime.now(timezone.utc) + timedelta(days=365)).isoformat(),
+                    "status": "active",
+                    "settings.max_items": plan_info.get("max_items", 3000),
+                    "settings.max_customers": plan_info.get("max_customers", 10000),
+                    "settings.max_users": plan_info.get("max_users", 10)
+                },
+                "$unset": {"trial_start_date": ""}
+            }
+        )
+        
+        # Update transaction status
+        await db.payment_transactions.update_one(
+            {"session_id": session_id},
+            {
+                "$set": {
+                    "payment_status": "paid",
+                    "paid_at": datetime.now(timezone.utc).isoformat(),
+                    "stripe_payment_status": checkout_status.payment_status
+                }
+            }
+        )
+        
+        # Create billing payment record
+        invoice_number = f"ALF-{datetime.now().year}-{store_id:04d}-{str(uuid.uuid4())[:4].upper()}"
+        
+        await db.payments.insert_one({
+            "id": str(uuid.uuid4()),
+            "store_id": store_id,
+            "date": datetime.now(timezone.utc).isoformat(),
+            "plan": plan_type,
+            "plan_name": plan_info.get("name", plan_type),
+            "amount": transaction.get("amount", 0),
+            "status": "paid",
+            "invoice_number": invoice_number,
+            "stripe_session_id": session_id,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        return {
+            "status": "complete",
+            "payment_status": "paid",
+            "plan_type": plan_type,
+            "plan_name": plan_info.get("name"),
+            "message": f"¡Pago exitoso! Plan {plan_info.get('name')} activado."
+        }
+    
+    elif checkout_status.status == "expired":
+        await db.payment_transactions.update_one(
+            {"session_id": session_id},
+            {"$set": {"payment_status": "expired"}}
+        )
+        return {
+            "status": "expired",
+            "payment_status": "expired",
+            "message": "La sesión de pago ha expirado"
+        }
+    
+    return {
+        "status": checkout_status.status,
+        "payment_status": checkout_status.payment_status,
+        "message": "Procesando pago..."
+    }
+
+
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """
+    Handle Stripe webhook events (checkout.session.completed).
+    """
+    stripe_api_key = os.environ.get("STRIPE_API_KEY")
+    if not stripe_api_key:
+        raise HTTPException(status_code=500, detail="Stripe no configurado")
+    
+    # Get webhook body and signature
+    body = await request.body()
+    signature = request.headers.get("Stripe-Signature", "")
+    
+    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url="")
+    
+    try:
+        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        
+        if webhook_response.event_type == "checkout.session.completed":
+            session_id = webhook_response.session_id
+            metadata = webhook_response.metadata
+            
+            # Find transaction
+            transaction = await db.payment_transactions.find_one({"session_id": session_id})
+            
+            if transaction and transaction.get("payment_status") != "paid":
+                store_id = int(metadata.get("store_id", transaction.get("store_id")))
+                plan_type = metadata.get("plan_type", transaction.get("plan_type"))
+                plan_info = PLAN_LIMITS.get(plan_type, {})
+                
+                # Update store
+                await db.stores.update_one(
+                    {"store_id": store_id},
+                    {
+                        "$set": {
+                            "plan_type": plan_type,
+                            "plan_activated_at": datetime.now(timezone.utc).isoformat(),
+                            "plan_expires_at": (datetime.now(timezone.utc) + timedelta(days=365)).isoformat(),
+                            "status": "active",
+                            "settings.max_items": plan_info.get("max_items", 3000),
+                            "settings.max_customers": plan_info.get("max_customers", 10000),
+                            "settings.max_users": plan_info.get("max_users", 10)
+                        },
+                        "$unset": {"trial_start_date": ""}
+                    }
+                )
+                
+                # Update transaction
+                await db.payment_transactions.update_one(
+                    {"session_id": session_id},
+                    {
+                        "$set": {
+                            "payment_status": "paid",
+                            "paid_at": datetime.now(timezone.utc).isoformat()
+                        }
+                    }
+                )
+                
+                # Create billing record
+                invoice_number = f"ALF-{datetime.now().year}-{store_id:04d}-{str(uuid.uuid4())[:4].upper()}"
+                await db.payments.insert_one({
+                    "id": str(uuid.uuid4()),
+                    "store_id": store_id,
+                    "date": datetime.now(timezone.utc).isoformat(),
+                    "plan": plan_type,
+                    "plan_name": plan_info.get("name", plan_type),
+                    "amount": transaction.get("amount", 0),
+                    "status": "paid",
+                    "invoice_number": invoice_number,
+                    "stripe_session_id": session_id,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                })
+                
+                logger.info(f"Webhook: Payment processed for store {store_id}, plan {plan_type}")
+        
+        return {"status": "ok"}
+        
+    except Exception as e:
+        logger.error(f"Webhook error: {e}")
+        return {"status": "error", "message": str(e)}
+
+
 @api_router.post("/plan/simulate-payment")
 async def simulate_payment(
     request: PlanSelectionRequest,
@@ -7236,7 +7539,7 @@ async def simulate_payment(
 ):
     """
     Simulate payment success and activate plan.
-    In production, this would integrate with Stripe/PayPal.
+    For testing purposes - bypasses Stripe.
     """
     # First validate and select the plan
     return await select_plan(request, current_user)
