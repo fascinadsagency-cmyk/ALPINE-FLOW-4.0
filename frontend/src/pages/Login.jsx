@@ -11,6 +11,7 @@ import { toast } from "sonner";
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [storeName, setStoreName] = useState("");
   const [isRegister, setIsRegister] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login, register } = useAuth();
@@ -23,11 +24,16 @@ export default function Login() {
       return;
     }
 
+    if (isRegister && password.length < 6) {
+      toast.error("La contraseña debe tener al menos 6 caracteres");
+      return;
+    }
+
     setLoading(true);
     try {
       if (isRegister) {
-        await register(username, password);
-        toast.success("Cuenta creada correctamente");
+        await register(username, password, storeName || null);
+        toast.success("¡Cuenta creada! Bienvenido a tu período de prueba de 15 días.");
       } else {
         await login(username, password);
         toast.success("Bienvenido a AlpineFlow");
@@ -82,11 +88,11 @@ export default function Login() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username">Usuario</Label>
+                <Label htmlFor="username">{isRegister ? "Email" : "Usuario"}</Label>
                 <Input
                   id="username"
-                  type="text"
-                  placeholder="Tu nombre de usuario"
+                  type={isRegister ? "email" : "text"}
+                  placeholder={isRegister ? "tu@email.com" : "Tu nombre de usuario"}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="h-11"
@@ -94,12 +100,25 @@ export default function Login() {
                   autoFocus
                 />
               </div>
+              {isRegister && (
+                <div className="space-y-2">
+                  <Label htmlFor="storeName">Nombre de tu tienda (opcional)</Label>
+                  <Input
+                    id="storeName"
+                    type="text"
+                    placeholder="Ej: Ski Rental Madrid"
+                    value={storeName}
+                    onChange={(e) => setStoreName(e.target.value)}
+                    className="h-11"
+                  />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="password">Contraseña</Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Tu contraseña"
+                  placeholder={isRegister ? "Mínimo 6 caracteres" : "Tu contraseña"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="h-11"
