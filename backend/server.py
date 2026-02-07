@@ -1733,6 +1733,9 @@ async def update_item(item_id: str, item: ItemCreate, current_user: CurrentUser 
     # Only update status if explicitly provided (manual override)
     if item.status and item.status in ["available", "rented", "maintenance", "retired"]:
         update_doc["status"] = item.status
+    # Update quick add flag if provided
+    if item.is_quick_add is not None:
+        update_doc["is_quick_add"] = item.is_quick_add
     await db.items.update_one({**current_user.get_store_filter(), "id": item_id}, {"$set": update_doc})
     
     updated = await db.items.find_one({**current_user.get_store_filter(), **{"id": item_id}}, {"_id": 0})
