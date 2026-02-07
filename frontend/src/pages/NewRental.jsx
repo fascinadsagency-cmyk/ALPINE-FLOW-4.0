@@ -3110,10 +3110,10 @@ export default function NewRental() {
                       </div>
                     )}
                     
-                    {cleanDeposit > 0 && (
+                    {depositAmount > 0 && (
                       <div className="mt-2 p-2 rounded-lg bg-blue-50 border border-blue-200">
                         <p className="text-xs text-blue-800">
-                          ℹ️ El depósito de €{cleanDeposit.toFixed(2)} se devolverá al cliente cuando entregue los artículos.
+                          ℹ️ El depósito de €{depositAmount.toFixed(2)} se devolverá al cliente cuando entregue los artículos.
                         </p>
                       </div>
                     )}
