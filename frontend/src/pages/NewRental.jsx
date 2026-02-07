@@ -1639,16 +1639,27 @@ export default function NewRental() {
     
     const API = process.env.REACT_APP_BACKEND_URL;
     
-    // === VERIFICACIÓN SIMPLE DE CAJA (sin abrir automáticamente) ===
-    // NOTA: Solo verificar si NO es pendiente ni pago online
-    if (paymentMethodSelected !== 'pending' && paymentMethodSelected !== 'pago_online') {
+    // Calcular el monto a pagar para determinar si necesitamos verificar la caja
+    const cleanTotal = Number(total.toFixed(2));
+    const cleanDeposit = Number(parseFloat(deposit) || 0);
+    let cleanPaidAmount;
+    if (paidAmount !== "" && paidAmount !== null && !isNaN(paidAmount)) {
+      cleanPaidAmount = Number(parseFloat(paidAmount) || 0);
+    } else {
+      // Por defecto: si es pending sin cantidad, 0€; si no, pago completo
+      cleanPaidAmount = paymentMethodSelected === 'pending' ? 0 : cleanTotal;
+    }
+    
+    // === VERIFICACIÓN DE CAJA ===
+    // SOLO verificar si hay un pago > 0 (sin importar el método)
+    if (cleanPaidAmount > 0 || cleanDeposit > 0) {
       try {
         const sessionCheck = await fetch(`${API}/api/cash/sessions/active`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         
         if (!sessionCheck.ok) {
-          toast.warning("⚠️ Debe abrir la caja en el módulo de CAJA antes de procesar este alquiler.");
+          toast.error("⚠️ La caja debe estar abierta antes de procesar cobros. Ábrela desde el módulo de CAJA.");
           setProcessingPayment(false);
           return;
         }
@@ -1668,22 +1679,8 @@ export default function NewRental() {
       }
     }
     
-    // === ENVÍO SIMPLE DEL ALQUILER ===
+    // === ENVÍO DEL ALQUILER ===
     try {
-      const cleanTotal = Number(total.toFixed(2));
-      const cleanDeposit = Number(parseFloat(deposit) || 0);
-      
-      // NUEVO: Usar el importe pagado introducido por el usuario
-      // Si está vacío, usar el total (comportamiento por defecto)
-      // Permitir pagos parciales incluso con método "pending"
-      let cleanPaidAmount;
-      if (paidAmount !== "" && paidAmount !== null && !isNaN(paidAmount)) {
-        cleanPaidAmount = Number(parseFloat(paidAmount) || 0);
-      } else {
-        // Por defecto: si es pending sin cantidad, 0€; si no, pago completo
-        cleanPaidAmount = paymentMethodSelected === 'pending' ? 0 : cleanTotal;
-      }
-      
       // Calcular pendiente
       const pendingAmount = cleanTotal - cleanPaidAmount;
       
