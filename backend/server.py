@@ -1907,10 +1907,42 @@ async def auto_cleanup_empty_type(store_id: int, type_value: str):
 
 @api_router.get("/item-types", response_model=List[ItemTypeResponse])
 async def get_item_types(current_user: CurrentUser = Depends(get_current_user)):
-    """Get all item types (only custom types from database)"""
-    # Multi-tenant: Filter by store_id - Get custom types from database only
-    custom_types = await db.item_types.find(current_user.get_store_filter(), {"_id": 0}).to_list(5000)
-    return [ItemTypeResponse(**t) for t in custom_types]
+    """
+    Get all item types - CRITICAL FIX: Lee DIRECTAMENTE del inventario (DISTINCT)
+    
+    Esto garantiza matemáticamente que:
+    - Si un tipo existe en un artículo → aparecerá en el filtro
+    - Si se borran todos los artículos de un tipo → desaparecerá del filtro
+    - No depende de la sincronización de la tabla item_types
+    
+    La fuente de verdad es SIEMPRE el inventario real.
+    """
+    # Multi-tenant: Filter by store_id
+    store_filter = current_user.get_store_filter()
+    
+    # DISTINCT: Obtener todos los tipos únicos que REALMENTE EXISTEN en el inventario
+    distinct_types = await db.items.distinct("item_type", store_filter)
+    
+    # Filtrar valores nulos/vacíos y ordenar alfabéticamente
+    distinct_types = [t for t in distinct_types if t and t.strip()]
+    distinct_types.sort()
+    
+    # Obtener labels personalizados de la tabla item_types (si existen)
+    type_docs = await db.item_types.find(store_filter, {"_id": 0}).to_list(5000)
+    type_labels = {t["value"]: t["label"] for t in type_docs if "value" in t and "label" in t}
+    
+    # Construir respuesta: usar label personalizado si existe, sino usar el valor tal cual
+    result = []
+    for type_value in distinct_types:
+        result.append(ItemTypeResponse(
+            id=type_value,  # Para compatibilidad
+            value=type_value,
+            label=type_labels.get(type_value, type_value.replace('_', ' ').title()),
+            is_default=False,
+            store_id=current_user.store_id
+        ))
+    
+    return result
 
 @api_router.post("/item-types", response_model=ItemTypeResponse)
 async def create_item_type(item_type: ItemTypeCreate, current_user: CurrentUser = Depends(get_current_user)):
