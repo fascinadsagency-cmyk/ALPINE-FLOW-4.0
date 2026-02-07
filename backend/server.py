@@ -3685,7 +3685,6 @@ async def add_items_to_rental(
         days = add_items_input.days
     else:
         # Usar días restantes del alquiler original
-        from datetime import datetime
         end_date = datetime.fromisoformat(rental["end_date"].replace('Z', '+00:00'))
         start_date_new = datetime.now(timezone.utc)
         days = max(1, (end_date - start_date_new).days + 1)
