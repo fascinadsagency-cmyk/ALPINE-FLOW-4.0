@@ -3248,7 +3248,7 @@ export default function ActiveRentals() {
 
       {/* ============ MODAL AÑADIR ARTÍCULOS ============ */}
       <Dialog open={addItemsModalOpen} onOpenChange={setAddItemsModalOpen}>
-        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto" data-testid="add-items-modal">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5 text-emerald-600" />
@@ -3256,7 +3256,7 @@ export default function ActiveRentals() {
             </DialogTitle>
             <DialogDescription>
               Cliente: <strong>{addItemsRental?.customer_name}</strong> | 
-              Alquiler hasta: <strong>{addItemsRental?.end_date}</strong>
+              Alquiler hasta: <strong>{addItemsRental?.end_date?.split('T')[0]}</strong>
             </DialogDescription>
           </DialogHeader>
           
@@ -3271,6 +3271,7 @@ export default function ActiveRentals() {
                   onChange={(e) => setAddItemsDays(Number(e.target.value))}
                   min="1"
                   className="h-11 mt-1"
+                  data-testid="add-items-days-input"
                 />
                 <p className="text-xs text-slate-500 mt-1">
                   Por defecto: días restantes hasta el fin del alquiler original
@@ -3281,112 +3282,153 @@ export default function ActiveRentals() {
             {/* Búsqueda de artículos */}
             <div>
               <Label>Buscar artículo disponible</Label>
-              <Input
-                placeholder="Escanea código de barras o busca por nombre..."
-                value={addItemsSearch}
-                onChange={(e) => setAddItemsSearch(e.target.value)}
-                className="h-11 mt-1"
-                autoFocus
-              />
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  placeholder="Escanea código o busca por nombre/tipo..."
+                  value={addItemsSearch}
+                  onChange={handleAddItemsSearchChange}
+                  onKeyDown={handleAddItemsSearchKeyDown}
+                  className="h-11 mt-1 pl-10"
+                  autoFocus
+                  data-testid="add-items-search-input"
+                />
+                {addItemsSearchLoading && (
+                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-slate-400" />
+                )}
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                💡 Escanea con Enter para añadir directamente
+              </p>
             </div>
             
-            {/* Lista de artículos disponibles filtrados */}
-            {addItemsSearch && (
-              <div className="border rounded-lg p-3 max-h-[200px] overflow-y-auto">
-                <p className="text-sm font-medium mb-2">Artículos disponibles:</p>
-                {inventory.filter(item => 
-                  item.status === "available" &&
-                  (item.barcode?.toLowerCase().includes(addItemsSearch.toLowerCase()) ||
-                   item.name?.toLowerCase().includes(addItemsSearch.toLowerCase()) ||
-                   item.item_type?.toLowerCase().includes(addItemsSearch.toLowerCase()))
-                ).slice(0, 5).map(item => (
-                  <div key={item.barcode} className="flex items-center justify-between p-2 hover:bg-slate-50 rounded">
-                    <div>
-                      <p className="font-medium">{item.name || item.item_type}</p>
-                      <p className="text-xs text-slate-500">{item.barcode} - {item.size}</p>
+            {/* Lista de artículos disponibles encontrados */}
+            {addItemsSearchResults.length > 0 && (
+              <div className="border rounded-lg p-3 max-h-[200px] overflow-y-auto bg-slate-50">
+                <p className="text-sm font-medium mb-2 text-slate-700">
+                  Artículos disponibles ({addItemsSearchResults.length}):
+                </p>
+                <div className="space-y-1">
+                  {addItemsSearchResults.map(item => (
+                    <div 
+                      key={item.barcode} 
+                      className="flex items-center justify-between p-2 hover:bg-white rounded border border-transparent hover:border-slate-200 transition-colors cursor-pointer"
+                      onClick={() => addItemToRental(item)}
+                      data-testid={`add-item-result-${item.barcode}`}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-slate-900 truncate">
+                          {item.name || item.item_type}
+                          {item.size && <span className="text-slate-500 ml-2">({item.size})</span>}
+                        </p>
+                        <p className="text-xs text-slate-500 font-mono">
+                          {item.internal_code || item.barcode}
+                        </p>
+                      </div>
+                      <Button size="sm" variant="ghost" className="shrink-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50">
+                        <Plus className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <Button size="sm" onClick={() => addItemToRental(item)}>
-                      <Plus className="h-3 w-3 mr-1" /> Añadir
-                    </Button>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Mensaje si no hay resultados */}
+            {addItemsSearch.length >= 2 && !addItemsSearchLoading && addItemsSearchResults.length === 0 && (
+              <div className="border rounded-lg p-4 text-center text-slate-500 bg-slate-50">
+                <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>No se encontraron artículos disponibles para "{addItemsSearch}"</p>
               </div>
             )}
             
             {/* Artículos seleccionados para añadir */}
             {addItemsSelected.length > 0 && (
-              <div className="border rounded-lg p-3 bg-emerald-50">
-                <p className="text-sm font-semibold mb-2">Artículos a añadir ({addItemsSelected.length}):</p>
+              <div className="border-2 border-emerald-300 rounded-lg p-3 bg-emerald-50" data-testid="add-items-selected-list">
+                <p className="text-sm font-semibold mb-2 text-emerald-800">
+                  Artículos a añadir ({addItemsSelected.length}):
+                </p>
                 <div className="space-y-2">
-                  {addItemsSelected.map((item, idx) => (
-                    <div key={item.barcode} className="flex items-center justify-between p-2 bg-white rounded">
-                      <div className="flex-1">
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-xs text-slate-500">
-                          {item.barcode} | {item.days} días | €{item.unit_price.toFixed(2)}
+                  {addItemsSelected.map((item) => (
+                    <div key={item.barcode} className="flex items-center justify-between p-2 bg-white rounded border border-emerald-200">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-slate-900">{item.name}</p>
+                        <p className="text-xs text-slate-500 font-mono">
+                          {item.internal_code || item.barcode} | {item.size && `Talla: ${item.size} | `}{item.days} días
                         </p>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => removeItemFromAddList(item.barcode)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-emerald-700 font-bold">€{item.unit_price.toFixed(2)}</span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => removeItemFromAddList(item.barcode)}
+                          className="h-8 w-8 p-0 text-slate-400 hover:text-red-500"
+                          data-testid={`remove-item-${item.barcode}`}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
                 
                 {/* Resumen de cobro */}
-                <div className="mt-3 p-3 bg-white rounded border-2 border-emerald-300">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-semibold">Total adicional:</span>
-                    <span className="text-2xl font-bold text-emerald-700">
+                <div className="mt-3 p-3 bg-white rounded border-2 border-emerald-400">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="font-semibold text-slate-700">Total adicional:</span>
+                    <span className="text-2xl font-bold text-emerald-700" data-testid="add-items-total">
                       €{calculateAddItemsTotal().toFixed(2)}
                     </span>
                   </div>
                   
                   {/* Opción de cobrar ahora */}
-                  <div className="flex items-center gap-2 mt-3">
+                  <div className="flex items-center gap-2">
                     <input
                       type="checkbox"
                       id="charge-now"
                       checked={addItemsChargeNow}
                       onChange={(e) => setAddItemsChargeNow(e.target.checked)}
-                      className="h-4 w-4"
+                      className="h-4 w-4 rounded border-slate-300"
+                      data-testid="add-items-charge-now-checkbox"
                     />
-                    <Label htmlFor="charge-now" className="cursor-pointer">
+                    <Label htmlFor="charge-now" className="cursor-pointer text-sm">
                       Cobrar ahora (registrar en caja)
                     </Label>
                   </div>
                   
                   {addItemsChargeNow && (
-                    <div className="mt-2">
-                      <Label className="text-xs">Método de pago</Label>
+                    <div className="mt-3 pt-3 border-t">
+                      <Label className="text-xs text-slate-600">Método de pago</Label>
                       <div className="flex gap-2 mt-1">
                         <Button
                           type="button"
                           size="sm"
                           variant={addItemsPaymentMethod === "cash" ? "default" : "outline"}
                           onClick={() => setAddItemsPaymentMethod("cash")}
+                          className={addItemsPaymentMethod === "cash" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+                          data-testid="add-items-payment-cash"
                         >
-                          💵 Efectivo
+                          <Banknote className="h-4 w-4 mr-1" /> Efectivo
                         </Button>
                         <Button
                           type="button"
                           size="sm"
                           variant={addItemsPaymentMethod === "card" ? "default" : "outline"}
                           onClick={() => setAddItemsPaymentMethod("card")}
+                          className={addItemsPaymentMethod === "card" ? "bg-blue-600 hover:bg-blue-700" : ""}
+                          data-testid="add-items-payment-card"
                         >
-                          💳 Tarjeta
+                          <CreditCard className="h-4 w-4 mr-1" /> Tarjeta
                         </Button>
                       </div>
                     </div>
                   )}
                   
                   {!addItemsChargeNow && (
-                    <p className="text-xs text-amber-600 mt-2">
-                      ⚠️ El importe se sumará al saldo pendiente del alquiler
+                    <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      El importe se sumará al saldo pendiente del alquiler
                     </p>
                   )}
                 </div>
@@ -3401,9 +3443,14 @@ export default function ActiveRentals() {
             <Button
               onClick={confirmAddItems}
               disabled={addItemsSelected.length === 0 || addItemsProcessing}
+              className="bg-emerald-600 hover:bg-emerald-700"
+              data-testid="add-items-confirm-btn"
             >
               {addItemsProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Confirmar y Añadir
+              {addItemsChargeNow 
+                ? `Cobrar €${calculateAddItemsTotal().toFixed(2)} y Añadir`
+                : 'Añadir Artículos'
+              }
             </Button>
           </DialogFooter>
         </DialogContent>
