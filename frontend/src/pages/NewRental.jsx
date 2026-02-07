@@ -1655,13 +1655,16 @@ export default function NewRental() {
         
         const sessionText = await sessionCheck.text();
         if (!sessionText || sessionText.trim().startsWith('<') || !JSON.parse(sessionText)?.id) {
-          toast.warning("⚠️ Debe abrir la caja en el módulo de CAJA antes de procesar este alquiler.");
+          toast.error("⚠️ La caja debe estar abierta antes de procesar cobros. Ábrela desde el módulo de CAJA.");
           setProcessingPayment(false);
           return;
         }
       } catch (e) {
-        // Si falla la verificación, continuar igual (no bloquear)
-        console.log("No se pudo verificar caja, continuando...");
+        // Error al verificar la caja - BLOQUEAR por seguridad
+        console.error("Error verificando sesión de caja:", e);
+        toast.error("⚠️ No se puede verificar el estado de la caja. Por favor, verifica que la caja esté abierta.");
+        setProcessingPayment(false);
+        return;
       }
     }
     
@@ -1773,11 +1776,15 @@ export default function NewRental() {
       }
       
     } catch (error) {
-      console.error("Error:", error);
-      // Si hay error, redirigir a lista para verificar
-      toast.info("Verificando operación... Compruebe la lista de alquileres.");
-      setShowPaymentDialog(false);
-      setTimeout(() => window.location.href = '/rentals', 2000);
+      console.error("Error creando alquiler:", error);
+      setProcessingPayment(false);
+      
+      // Mostrar el error real del backend
+      const errorMessage = error.response?.data?.detail || error.message || "Error desconocido al crear el alquiler";
+      toast.error(`❌ ${errorMessage}`);
+      
+      // No redirigir - dejar al usuario en el formulario para que pueda corregir
+      return;
     } finally {
       setProcessingPayment(false);
     }
