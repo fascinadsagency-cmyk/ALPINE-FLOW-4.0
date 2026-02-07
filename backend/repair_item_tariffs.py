@@ -111,19 +111,16 @@ async def repair_tariffs():
             # Get tariff data
             tariff_data = tariff_cache[normalized_type]
             
-            # Only update if tariff has a price OR item has no tariff_id
-            current_price = item.get("rental_price", 0) or 0
-            tariff_price = tariff_data["daily_rate"]
+            # Always update to ensure tariff_id is set
             current_tariff_id = item.get("tariff_id", "")
             
-            # Update if: no tariff_id, OR tariff has higher price
-            if not current_tariff_id or (tariff_price > 0 and current_price == 0):
+            # Si no tiene tariff_id, lo asignamos
+            if not current_tariff_id:
                 update_data = {
                     "tariff_id": tariff_data["id"],
-                    "item_type": normalized_type  # Also normalize the type
+                    "item_type": normalized_type,
+                    "rental_price": tariff_data["daily_rate"]
                 }
-                # Always set rental_price to tariff price
-                update_data["rental_price"] = tariff_price
                 
                 await db.items.update_one(
                     {"id": item["id"]},
