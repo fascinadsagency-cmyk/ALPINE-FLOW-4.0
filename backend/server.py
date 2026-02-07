@@ -7073,6 +7073,23 @@ async def get_plan_status(current_user: CurrentUser = Depends(get_current_user))
     Get current plan status including trial information.
     Returns remaining trial days and current usage.
     """
+    # SUPER_ADMIN BYPASS: Always return active status
+    if current_user.role == "super_admin":
+        return PlanStatusResponse(
+            plan_type="enterprise",
+            plan_name="Admin Master (Bypass)",
+            is_trial=False,
+            trial_days_remaining=0,
+            trial_expired=False,
+            current_items=0,
+            current_customers=0,
+            current_users=0,
+            max_items=999999,
+            max_customers=999999,
+            max_users=999,
+            price=0
+        )
+    
     store = await db.stores.find_one({"store_id": current_user.store_id})
     if not store:
         raise HTTPException(status_code=404, detail="Store not found")
