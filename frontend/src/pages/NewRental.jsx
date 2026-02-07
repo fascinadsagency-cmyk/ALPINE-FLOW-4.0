@@ -1743,36 +1743,30 @@ export default function NewRental() {
         })
       });
       
-      // Verificar el status ANTES de leer el body
+      // Manejo robusto de respuesta
       if (!rentalResponse.ok) {
-        const errorText = await rentalResponse.text();
-        let errorMessage = 'Error al crear alquiler';
-        
+        // Leer como JSON directamente para errores
         try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.detail || errorMessage;
-        } catch (e) {
-          // Si no es JSON, usar el texto directamente
-          errorMessage = errorText || errorMessage;
+          const errorData = await rentalResponse.json();
+          toast.error(errorData.detail || 'Error al crear alquiler');
+        } catch {
+          // Si no es JSON válido, mostrar error genérico
+          toast.error('Error al crear alquiler');
         }
-        
-        toast.error(errorMessage);
         setProcessingPayment(false);
         return;
       }
       
-      // Si fue exitoso, leer el body
-      const responseText = await rentalResponse.text();
-      
-      // Si devuelve HTML o está vacío, redirigir a lista de alquileres
-      if (!responseText || responseText.trim().startsWith('<')) {
-        toast.info("Verificando alquiler... Redirigiendo a la lista.");
-        setShowPaymentDialog(false);
-        setTimeout(() => window.location.href = '/rentals', 1500);
+      // Respuesta exitosa - leer como JSON
+      let rentalData;
+      try {
+        rentalData = await rentalResponse.json();
+      } catch (e) {
+        console.error('[Rental] Error parseando respuesta:', e);
+        toast.error('Error al procesar la respuesta del servidor');
+        setProcessingPayment(false);
         return;
       }
-      
-      const rentalData = JSON.parse(responseText);
       
       // Calcular pendiente para mostrar en UI
       const pendingToShow = cleanTotal - cleanPaidAmount;
