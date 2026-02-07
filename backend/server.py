@@ -7179,10 +7179,10 @@ async def get_store_stats(store_id: int, current_user: CurrentUser = Depends(req
 
 @api_router.get("/help/videos", response_model=List[VideoTutorial])
 async def get_video_tutorials(current_user: CurrentUser = Depends(get_current_user)):
-    """Get all active video tutorials"""
-    store_filter = current_user.get_store_filter()
+    """Get all active video tutorials - GLOBAL CONTENT (visible for all stores)"""
+    # GLOBAL: No filter by store_id - all stores see the same help content
     videos = await db.video_tutorials.find(
-        {**store_filter, "active": True}, 
+        {"active": True}, 
         {"_id": 0}
     ).sort("order", 1).to_list(100)
     return [VideoTutorial(**v) for v in videos]
@@ -7190,9 +7190,9 @@ async def get_video_tutorials(current_user: CurrentUser = Depends(get_current_us
 @api_router.get("/help/videos/all", response_model=List[VideoTutorial])
 async def get_all_video_tutorials(current_user: CurrentUser = Depends(require_super_admin)):
     """Get all video tutorials (including inactive) - SUPER ADMIN ONLY"""
-    store_filter = current_user.get_store_filter()
+    # GLOBAL: No filter by store_id
     videos = await db.video_tutorials.find(
-        store_filter, 
+        {}, 
         {"_id": 0}
     ).sort("order", 1).to_list(100)
     return [VideoTutorial(**v) for v in videos]
@@ -7202,10 +7202,10 @@ async def create_video_tutorial(
     video: VideoTutorialCreate,
     current_user: CurrentUser = Depends(require_super_admin)
 ):
-    """Create new video tutorial - SUPER ADMIN ONLY"""
+    """Create new video tutorial - SUPER ADMIN ONLY (GLOBAL CONTENT)"""
     video_doc = {
         "id": str(uuid.uuid4()),
-        "store_id": current_user.store_id,
+        "store_id": None,  # GLOBAL: No store_id - visible for all stores
         "created_at": datetime.now(timezone.utc).isoformat(),
         **video.model_dump()
     }
@@ -7219,18 +7219,17 @@ async def update_video_tutorial(
     current_user: CurrentUser = Depends(require_super_admin)
 ):
     """Update video tutorial - SUPER ADMIN ONLY"""
-    store_filter = current_user.get_store_filter()
-    
+    # GLOBAL: No filter by store_id
     update_data = video.model_dump()
     result = await db.video_tutorials.update_one(
-        {**store_filter, "id": video_id},
+        {"id": video_id},
         {"$set": update_data}
     )
     
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Video no encontrado")
     
-    updated = await db.video_tutorials.find_one({**store_filter, "id": video_id}, {"_id": 0})
+    updated = await db.video_tutorials.find_one({"id": video_id}, {"_id": 0})
     return VideoTutorial(**updated)
 
 @api_router.delete("/help/videos/{video_id}")
@@ -7239,8 +7238,8 @@ async def delete_video_tutorial(
     current_user: CurrentUser = Depends(require_super_admin)
 ):
     """Delete video tutorial - SUPER ADMIN ONLY"""
-    store_filter = current_user.get_store_filter()
-    result = await db.video_tutorials.delete_one({**store_filter, "id": video_id})
+    # GLOBAL: No filter by store_id
+    result = await db.video_tutorials.delete_one({"id": video_id})
     
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Video no encontrado")
@@ -7248,8 +7247,6 @@ async def delete_video_tutorial(
     return {"message": "Video eliminado correctamente"}
 
 # FAQ ENDPOINTS
-
-@api_router.get("/help/videos", response_model=List[VideoTutorial])
 async def get_video_tutorials(current_user: CurrentUser = Depends(get_current_user)):
     """Get all active video tutorials - GLOBAL CONTENT (visible for all stores)"""
     # GLOBAL: No filter by store_id - all stores see the same help content
