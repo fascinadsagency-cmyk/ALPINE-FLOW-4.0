@@ -1,0 +1,62 @@
+{
+  "summary": "Testing 'Añadir Artículos a un Alquiler Activo' (Add Items to Active Rental) feature - ALL TESTS PASSED. Backend endpoint POST /api/rentals/{rental_id}/add-items works correctly. Frontend modal opens, search works, price calculation is correct (€72 for 5 days of ski), payment method selection works, and items are added successfully.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "backend_tests": {
+      "POST /api/rentals/{id}/add-items": "PASS - Added SKI001 with €72, rental updated correctly",
+      "Item status update": "PASS - SKI001 and SKI002 status changed to 'rented'",
+      "Rental total update": "PASS - Total updated from €192 to €336 (original + €144 for 2 skis)",
+      "Cash movement recorded": "PASS - Payment recorded in cash session"
+    },
+    "frontend_tests": {
+      "AÑADIR button visible": "PASS - Button appears in active rentals list",
+      "Modal opens correctly": "PASS - Modal shows customer name, end date, days input",
+      "Search functionality": "PASS - Typing 'SKI' shows available ski items",
+      "Item selection": "PASS - Clicking result adds item to selected list",
+      "Price calculation": "PASS - Shows €72.00 for 5 days (correct tariff day_5)",
+      "Payment method selection": "PASS - Efectivo/Tarjeta buttons work correctly",
+      "Confirm button state": "PASS - Enabled when items selected, disabled when empty",
+      "Submit and update": "PASS - Items added, toast shown, rental list refreshed"
+    }
+  },
+  "features_tested": [
+    "El botón 'AÑADIR' aparece correctamente en la lista de alquileres activos - PASS",
+    "El modal 'Añadir Artículos al Alquiler' se abre correctamente al hacer clic - PASS",
+    "La búsqueda de artículos disponibles funciona (escribir 'SKI' muestra esquís disponibles) - PASS",
+    "Al hacer clic en un resultado se añade a la lista de artículos seleccionados - PASS",
+    "El cálculo del precio muestra el total correcto (€72 para 5 días de esquí) - PASS",
+    "Se puede seleccionar el método de pago (Efectivo/Tarjeta) - PASS",
+    "El botón 'Cobrar €XX.XX y Añadir' está activo cuando hay artículos seleccionados - PASS",
+    "El endpoint POST /api/rentals/{rental_id}/add-items funciona correctamente - PASS"
+  ],
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "test_credentials": {
+    "username": "admin@test.com",
+    "password": "admin123"
+  },
+  "seed_data_used": {
+    "customer": "Juan García (12345678A)",
+    "rental_id": "43a62563-9f02-406b-b198-116a3377ec4e",
+    "original_items": ["SKI003", "BOT003", "CAS001", "BOT001"],
+    "items_added_during_test": ["SKI001", "SKI002"],
+    "available_items_tested": ["SKI-001", "SKI-002"]
+  },
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "The 'Añadir Artículos' feature is fully working. The rental for Juan García now has 6 items (4 original + 2 added during testing). Total is €336. Both SKI001 and SKI002 have been added and are marked as 'rented'. The tariff system correctly calculates €72 for 5-day ski rental (day_5 rate)."
+}
