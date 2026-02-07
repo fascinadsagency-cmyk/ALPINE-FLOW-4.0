@@ -3,6 +3,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { Button } from "@/components/ui/button";
 import OfflineIndicator from "@/components/OfflineIndicator";
+import TrialBanner from "@/components/TrialBanner";
+import PaywallOverlay from "@/components/PaywallOverlay";
 import {
   LayoutDashboard,
   ShoppingCart,
