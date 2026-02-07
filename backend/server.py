@@ -7201,7 +7201,6 @@ async def create_team_member(
     current_user: CurrentUser = Depends(require_admin)
 ):
     """Create new team member (STAFF) - ADMIN ONLY. Max 10 staff per store."""
-    from multitenant import require_admin
     
     store_filter = current_user.get_store_filter()
     
@@ -7259,7 +7258,6 @@ async def update_team_member(
     current_user: CurrentUser = Depends(require_admin)
 ):
     """Update team member - ADMIN ONLY"""
-    from multitenant import require_admin
     
     store_filter = current_user.get_store_filter()
     
@@ -7295,7 +7293,6 @@ async def delete_team_member(
     current_user: CurrentUser = Depends(require_admin)
 ):
     """Delete team member - ADMIN ONLY. Cannot delete yourself or other admins."""
-    from multitenant import require_admin
     
     store_filter = current_user.get_store_filter()
     
