@@ -53,6 +53,12 @@ export default function Layout() {
     navItems.push({ to: "/tiendas", icon: Building2, label: "🏪 Gestión de Tiendas", superAdmin: true });
   }
 
+  // Support items - always at the end
+  const supportItems = [
+    { to: "/ayuda", icon: HelpCircle, label: "Ayuda", isSupport: true },
+    { to: "/soporte", icon: Headphones, label: "Soporte", isSupport: true },
+  ];
+
   return (
     <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
       {/* Sidebar - Desktop */}
