@@ -3224,7 +3224,7 @@ export default function NewRental() {
                   value={newCustomer.source || "none"} 
                   onValueChange={(v) => setNewCustomer({ ...newCustomer, source: v === "none" ? "" : v })}
                 >
-                  <SelectTrigger className="h-11 mt-1">
+                  <SelectTrigger className="h-11 mt-1" tabIndex={7}>
                     <SelectValue placeholder="Seleccionar..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -3244,10 +3244,10 @@ export default function NewRental() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewCustomer(false)} tabIndex={10}>
+            <Button variant="outline" onClick={() => setShowNewCustomer(false)} tabIndex={8}>
               Cancelar
             </Button>
-            <Button onClick={createNewCustomer} data-testid="save-new-customer-btn" tabIndex={11}>
+            <Button onClick={createNewCustomer} data-testid="save-new-customer-btn" tabIndex={9}>
               Guardar Cliente
             </Button>
           </DialogFooter>
