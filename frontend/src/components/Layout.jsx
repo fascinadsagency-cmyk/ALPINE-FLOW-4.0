@@ -40,18 +40,45 @@ export default function Layout() {
     { to: "/clientes", icon: Users, label: t('nav.customers') },
     { to: "/proveedores", icon: Building2, label: t('nav.providers') },
     { to: "/inventario", icon: Package, label: t('nav.inventory') },
-    { to: "/tarifas", icon: DollarSign, label: t('nav.tariffs') },
+    { to: "/tarifas", icon: DollarSign, label: t('nav.tariffs'), adminOnly: true },
     { to: "/caja", icon: Wallet, label: t('nav.cashRegister') },
     { to: "/mantenimiento", icon: Wrench, label: t('nav.maintenance') },
-    { to: "/reportes", icon: BarChart3, label: t('nav.reports') },
-    { to: "/integraciones", icon: Settings, label: t('nav.integrations') },
-    { to: "/configuracion", icon: Cog, label: t('nav.settings') },
+    { to: "/reportes", icon: BarChart3, label: t('nav.reports'), adminOnly: true },
+    { to: "/integraciones", icon: Settings, label: t('nav.integrations'), adminOnly: true },
+    { to: "/configuracion", icon: Cog, label: t('nav.settings'), adminOnly: true },
   ];
+
+  // Add team management for ADMIN (not staff)
+  if (user?.role === "admin" || user?.role === "super_admin") {
+    navItems.push({ 
+      to: "/equipo", 
+      icon: Users, 
+      label: "Gestión de Equipo", 
+      adminOnly: true 
+    });
+  }
 
   // Add store management for SUPER_ADMIN only
   if (user?.role === "super_admin") {
     navItems.push({ to: "/tiendas", icon: Building2, label: "🏪 Gestión de Tiendas", superAdmin: true });
   }
+
+  // Filter nav items based on role
+  const filteredNavItems = navItems.filter(item => {
+    // STAFF cannot see admin-only sections
+    if (item.adminOnly && user?.role === "staff") {
+      return false;
+    }
+    // STAFF cannot see admin-only sections
+    if (item.adminOnly && user?.role === "employee") {
+      return false;
+    }
+    // Super admin sections
+    if (item.superAdmin && user?.role !== "super_admin") {
+      return false;
+    }
+    return true;
+  });
 
   // Support items - always at the end
   const supportItems = [
