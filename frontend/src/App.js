@@ -176,6 +176,7 @@ function AppRoutes() {
           <Route path="ayuda/admin" element={<HelpAdmin />} />
           <Route path="equipo" element={<TeamManagement />} />
           <Route path="soporte" element={<Support />} />
+          <Route path="seleccionar-plan" element={<PlanSelection />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
