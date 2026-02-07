@@ -6291,6 +6291,7 @@ async def create_cash_session(session: CashSessionCreate, current_user: CurrentU
     session_id = str(uuid.uuid4())
     doc = {
         "id": session_id,
+        "store_id": current_user.store_id,  # CRITICAL: Multi-tenant isolation
         "date": date,
         "session_number": session_number,
         "opened_at": datetime.now(timezone.utc).isoformat(),
