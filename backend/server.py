@@ -7175,6 +7175,170 @@ async def get_store_stats(store_id: int, current_user: CurrentUser = Depends(req
     }
 
 
+# ==================== TEAM MANAGEMENT ENDPOINTS ====================
+
+@api_router.get("/team/members")
+async def get_team_members(current_user: CurrentUser = Depends(get_current_user)):
+    """Get all team members of the current store - ADMIN and STAFF can view"""
+    store_filter = current_user.get_store_filter()
+    
+    # Get all users from this store
+    users = await db.users.find(store_filter, {"_id": 0, "hashed_password": 0}).to_list(100)
+    
+    return [{
+        "id": u["id"],
+        "username": u["username"],
+        "email": u.get("email", ""),
+        "role": u.get("role", "staff"),
+        "store_id": u.get("store_id"),
+        "created_at": u.get("created_at", ""),
+        "is_active": u.get("is_active", True)
+    } for u in users]
+
+@api_router.post("/team/members")
+async def create_team_member(
+    member: UserCreate,
+    current_user: CurrentUser = Depends(require_admin)
+):
+    """Create new team member (STAFF) - ADMIN ONLY. Max 10 staff per store."""
+    from multitenant import require_admin
+    
+    store_filter = current_user.get_store_filter()
+    
+    # VALIDATION: Count existing users in this store
+    current_users_count = await db.users.count_documents(store_filter)
+    
+    # BUSINESS RULE: Max 11 users per store (1 admin + 10 staff)
+    if current_users_count >= 11:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Límite alcanzado: Solo puedes tener hasta 10 empleados por tienda (actualmente: {current_users_count - 1})"
+        )
+    
+    # SECURITY: Check if username already exists globally
+    existing_user = await db.users.find_one({"username": member.username})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="El nombre de usuario ya existe")
+    
+    # SECURITY: STAFF cannot create admin users
+    if member.role not in ["staff", "employee"]:
+        if current_user.role != "super_admin":
+            raise HTTPException(status_code=403, detail="Solo puedes crear usuarios tipo 'staff'")
+    
+    # Create user
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    
+    user_doc = {
+        "id": str(uuid.uuid4()),
+        "username": member.username,
+        "email": member.username,  # Use username as email by default
+        "hashed_password": pwd_context.hash(member.password),
+        "role": "staff",  # Force staff role for team members
+        "store_id": current_user.store_id,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": current_user.user_id,
+        "is_active": True
+    }
+    
+    await db.users.insert_one(user_doc)
+    
+    return {
+        "id": user_doc["id"],
+        "username": user_doc["username"],
+        "email": user_doc["email"],
+        "role": user_doc["role"],
+        "store_id": user_doc["store_id"],
+        "created_at": user_doc["created_at"]
+    }
+
+@api_router.put("/team/members/{user_id}")
+async def update_team_member(
+    user_id: str,
+    updates: dict,
+    current_user: CurrentUser = Depends(require_admin)
+):
+    """Update team member - ADMIN ONLY"""
+    from multitenant import require_admin
+    
+    store_filter = current_user.get_store_filter()
+    
+    # SECURITY: Can only update users from same store
+    user = await db.users.find_one({**store_filter, "id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    # SECURITY: Cannot modify super_admin or change role to admin
+    if user.get("role") == "super_admin":
+        raise HTTPException(status_code=403, detail="No puedes modificar al super admin")
+    
+    if "role" in updates and updates["role"] not in ["staff", "employee"]:
+        if current_user.role != "super_admin":
+            raise HTTPException(status_code=403, detail="No puedes cambiar roles a admin")
+    
+    # Update allowed fields
+    allowed_fields = ["username", "email", "is_active"]
+    update_data = {k: v for k, v in updates.items() if k in allowed_fields}
+    
+    if update_data:
+        await db.users.update_one(
+            {**store_filter, "id": user_id},
+            {"$set": update_data}
+        )
+    
+    updated_user = await db.users.find_one({**store_filter, "id": user_id}, {"_id": 0, "hashed_password": 0})
+    return updated_user
+
+@api_router.delete("/team/members/{user_id}")
+async def delete_team_member(
+    user_id: str,
+    current_user: CurrentUser = Depends(require_admin)
+):
+    """Delete team member - ADMIN ONLY. Cannot delete yourself or other admins."""
+    from multitenant import require_admin
+    
+    store_filter = current_user.get_store_filter()
+    
+    # SECURITY: Cannot delete yourself
+    if user_id == current_user.user_id:
+        raise HTTPException(status_code=400, detail="No puedes eliminarte a ti mismo")
+    
+    # SECURITY: Can only delete users from same store
+    user = await db.users.find_one({**store_filter, "id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    # SECURITY: Cannot delete admin or super_admin
+    if user.get("role") in ["admin", "super_admin"]:
+        raise HTTPException(status_code=403, detail="No puedes eliminar a un administrador")
+    
+    result = await db.users.delete_one({**store_filter, "id": user_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    return {"message": "Usuario eliminado correctamente"}
+
+@api_router.get("/team/count")
+async def get_team_count(current_user: CurrentUser = Depends(get_current_user)):
+    """Get current team member count for limit validation"""
+    store_filter = current_user.get_store_filter()
+    
+    # Count all users (admin + staff)
+    total_count = await db.users.count_documents(store_filter)
+    
+    # Count by role
+    admin_count = await db.users.count_documents({**store_filter, "role": "admin"})
+    staff_count = await db.users.count_documents({**store_filter, "role": {"$in": ["staff", "employee"]}})
+    
+    return {
+        "total": total_count,
+        "admin": admin_count,
+        "staff": staff_count,
+        "max_staff": 10,
+        "can_add_more": staff_count < 10
+    }
+
 # ==================== HELP CENTER ENDPOINTS ====================
 
 @api_router.get("/help/videos", response_model=List[VideoTutorial])
