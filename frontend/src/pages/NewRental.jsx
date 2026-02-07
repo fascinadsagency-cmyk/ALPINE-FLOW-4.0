@@ -486,6 +486,23 @@ export default function NewRental() {
     }
   };
 
+  const syncAndLoadItemTypes = async () => {
+    try {
+      // 🔄 SELF-HEALING: Sincronizar tipos del inventario primero
+      await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/item-types/sync`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      // Luego cargar los tipos actualizados
+      await loadItemTypes();
+    } catch (error) {
+      console.error("Error syncing item types:", error);
+      // Si falla la sync, intentar cargar tipos de todos modos
+      loadItemTypes();
+    }
+  };
+
   const loadItemTypes = async () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/item-types`, {
