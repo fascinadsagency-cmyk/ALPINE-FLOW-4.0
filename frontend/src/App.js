@@ -169,6 +169,8 @@ function AppRoutes() {
           <Route path="configuracion" element={<Settings />} />
           <Route path="tiendas" element={<StoreManagement />} />
           <Route path="tiendas/:storeId/ajustes" element={<StoreSettings />} />
+          <Route path="ayuda" element={<Help />} />
+          <Route path="soporte" element={<Support />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
