@@ -418,6 +418,24 @@ export default function NewRental() {
     // Silent detection - no toasts or interruptions
   }, [items, packs, numDays]);
 
+  // Load Quick Add items from DB
+  useEffect(() => {
+    const loadQuickAddItems = async () => {
+      setLoadingQuickAdd(true);
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/items/quick-add`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        setQuickAddItems(response.data);
+      } catch (error) {
+        console.error("Error loading quick add items:", error);
+      } finally {
+        setLoadingQuickAdd(false);
+      }
+    };
+    loadQuickAddItems();
+  }, []);
+
   // Keyboard shortcut for item search (F3 or Alt+B)
   useEffect(() => {
     const handleKeyDown = (e) => {
