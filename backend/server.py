@@ -117,6 +117,8 @@ class ItemCreate(BaseModel):
     name: Optional[str] = ""  # Display name for generic items (e.g., "Casco Adulto")
     stock_total: Optional[int] = 0  # Total units for generic items
     rental_price: Optional[float] = None  # Quick rental price for generic items
+    # Quick Add feature
+    is_quick_add: Optional[bool] = False  # Show in "Añadir Rápido" section
 
 class BulkItemCreate(BaseModel):
     items: List[ItemCreate]
