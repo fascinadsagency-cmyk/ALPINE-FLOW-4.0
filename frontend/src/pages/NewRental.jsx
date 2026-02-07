@@ -121,11 +121,10 @@ const VirtualizedSearchResults = ({ items, onItemClick }) => {
 };
 
 const PAYMENT_METHODS = [
-  { value: "cash", label: "Efectivo" },
   { value: "card", label: "Tarjeta" },
-  { value: "pending", label: "Pendiente" },
+  { value: "cash", label: "Efectivo" },
+  { value: "pending", label: "Pendiente de pago" },
   { value: "pago_online", label: "Pago Online" },
-  { value: "other", label: "Otros" },
 ];
 
 
