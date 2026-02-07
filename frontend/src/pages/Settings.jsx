@@ -279,6 +279,39 @@ export default function Settings() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
+        {/* Quick Access - Billing (Admin Only) */}
+        {(user?.role === "admin" || user?.role === "super_admin") && (
+          <div className="lg:col-span-2">
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-lg ${
+                darkMode 
+                  ? 'bg-gradient-to-r from-emerald-900/20 to-teal-900/20 border-emerald-500/50 hover:border-emerald-400' 
+                  : 'bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200 hover:border-emerald-400'
+              }`}
+              onClick={() => navigate("/facturacion")}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-lg ${darkMode ? 'bg-emerald-500/20' : 'bg-emerald-100'}`}>
+                      <CreditCard className="h-6 w-6 text-emerald-600" />
+                    </div>
+                    <div>
+                      <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                        Facturación
+                      </h3>
+                      <p className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                        Gestiona tus datos fiscales y descarga tus facturas
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight className={`h-6 w-6 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Store Identifier Card */}
         {storeInfo && (
           <div className="lg:col-span-2">
