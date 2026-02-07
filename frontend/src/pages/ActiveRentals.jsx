@@ -134,6 +134,106 @@ export default function ActiveRentals() {
   const [addItemsPaymentMethod, setAddItemsPaymentMethod] = useState("cash");
   const [addItemsProcessing, setAddItemsProcessing] = useState(false);
 
+
+  // ============ ADD ITEMS MODAL FUNCTIONS ============
+  const openAddItemsModal = async (rental) => {
+    // Calcular días restantes por defecto
+    const today = new Date();
+    const endDate = new Date(rental.end_date);
+    const daysRemaining = Math.max(1, Math.ceil((endDate - today) / (1000 * 60 * 60 * 24)));
+    
+    setAddItemsRental(rental);
+    setAddItemsDays(daysRemaining);
+    setAddItemsSelected([]);
+    setAddItemsSearch("");
+    setAddItemsChargeNow(true);
+    setAddItemsPaymentMethod("cash");
+    setAddItemsModalOpen(true);
+  };
+  
+  const addItemToRental = (item) => {
+    // Verificar que no esté ya agregado
+    if (addItemsSelected.find(i => i.barcode === item.barcode)) {
+      toast.warning("Este artículo ya está en la lista");
+      return;
+    }
+    
+    // Calcular precio según días
+    const days = addItemsDays;
+    let unitPrice = 0;
+    
+    // Usar la tarifa según días disponibles
+    if (item[`day_${days}`]) {
+      unitPrice = item[`day_${days}`];
+    } else if (item.daily_rate) {
+      unitPrice = item.daily_rate * days;
+    }
+    
+    const newItem = {
+      barcode: item.barcode,
+      name: item.name || item.item_type,
+      item_type: item.item_type,
+      size: item.size,
+      days: days,
+      unit_price: unitPrice,
+      person_name: ""
+    };
+    
+    setAddItemsSelected([...addItemsSelected, newItem]);
+    setAddItemsSearch("");
+    toast.success(`Artículo añadido: ${newItem.name}`);
+  };
+  
+  const removeItemFromAddList = (barcode) => {
+    setAddItemsSelected(addItemsSelected.filter(i => i.barcode !== barcode));
+  };
+  
+  const calculateAddItemsTotal = () => {
+    return addItemsSelected.reduce((sum, item) => sum + (item.unit_price || 0), 0);
+  };
+  
+  const confirmAddItems = async () => {
+    if (addItemsSelected.length === 0) {
+      toast.error("Selecciona al menos un artículo");
+      return;
+    }
+    
+    setAddItemsProcessing(true);
+    try {
+      const response = await axios.post(
+        `${API}/rentals/${addItemsRental.id}/add-items`,
+        {
+          items: addItemsSelected.map(item => ({
+            barcode: item.barcode,
+            unit_price: item.unit_price,
+            person_name: item.person_name
+          })),
+          days: addItemsDays,
+          charge_now: addItemsChargeNow,
+          payment_method: addItemsPaymentMethod
+        }
+      );
+      
+      const addedCount = response.data.items_added;
+      const additionalAmount = response.data.additional_amount;
+      
+      if (response.data.charged_now) {
+        toast.success(`✅ ${addedCount} artículo(s) añadido(s) y cobrado €${additionalAmount.toFixed(2)}`);
+      } else {
+        toast.success(`✅ ${addedCount} artículo(s) añadido(s). €${additionalAmount.toFixed(2)} marcado como pendiente`);
+      }
+      
+      setAddItemsModalOpen(false);
+      loadRentals();
+    } catch (error) {
+      console.error("[AddItems] Error:", error);
+      const errorMsg = error.response?.data?.detail || error.message || "Error al añadir artículos";
+      toast.error(errorMsg);
+    } finally {
+      setAddItemsProcessing(false);
+    }
+  };
+
   // ============ LEGACY SWAP MODAL STATE (keeping for backward compatibility) ============
   const [swapModalOpen, setSwapModalOpen] = useState(false);
   const [swapRental, setSwapRental] = useState(null); // The rental being swapped
