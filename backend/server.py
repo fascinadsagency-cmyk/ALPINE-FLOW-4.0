@@ -2449,6 +2449,13 @@ async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUs
         except Exception as e:
             errors.append({"barcode": row.get('barcode', 'unknown'), "error": str(e)})
     
+    # 🔄 SELF-HEALING: Sincronizar tipos después de la importación
+    try:
+        await sync_item_types_from_inventory(current_user.store_id)
+        logger.info(f"✅ Auto-sync after CSV import for store {current_user.store_id}")
+    except Exception as e:
+        logger.error(f"Error auto-syncing types after CSV import: {e}")
+    
     return {
         "created": len(created), 
         "errors": errors, 
