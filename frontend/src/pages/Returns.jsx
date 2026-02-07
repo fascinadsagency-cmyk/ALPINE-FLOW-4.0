@@ -106,6 +106,11 @@ export default function Returns() {
   // NUEVO: Opción de anulación total / devolución completa
   const [fullRefundOverride, setFullRefundOverride] = useState(false);
   
+  // ============ GESTIÓN DE DEPÓSITOS ============
+  const [depositAction, setDepositAction] = useState("return"); // "return" or "forfeit"
+  const [forfeitReason, setForfeitReason] = useState("");
+  const [showDepositDialog, setShowDepositDialog] = useState(false);
+  
   // Customer modal state
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
