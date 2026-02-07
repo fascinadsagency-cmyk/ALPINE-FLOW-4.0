@@ -182,24 +182,65 @@ export default function Providers() {
     }
   };
 
-  const openDeleteDialog = (provider) => {
+  const openDeleteDialog = async (provider) => {
     setDeletingProvider(provider);
+    setDeleteCheckResult(null);
     setShowDeleteDialog(true);
+    
+    // Verificar si se puede eliminar (check clientes y artículos asociados)
+    setDeleteLoading(true);
+    try {
+      // Obtener conteo de clientes asociados a este proveedor
+      const customersRes = await axios.get(`${API}/customers?source=${encodeURIComponent(provider.name)}&limit=1`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      // El API ya devuelve el customer_count en el proveedor
+      const customerCount = provider.customer_count || 0;
+      
+      // Por ahora asumimos 0 artículos, el backend hará la validación final
+      const itemCount = 0;
+      
+      setDeleteCheckResult({
+        canDelete: customerCount === 0 && itemCount === 0,
+        customers: customerCount,
+        items: itemCount
+      });
+    } catch (error) {
+      console.error("Error checking delete eligibility:", error);
+      setDeleteCheckResult({
+        canDelete: false,
+        customers: provider.customer_count || 0,
+        items: 0,
+        error: "Error al verificar"
+      });
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   const handleDelete = async () => {
+    setDeleteLoading(true);
     try {
       await axios.delete(`${API}/sources/${deletingProvider.id}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
-      toast.success("Proveedor eliminado");
+      toast.success("Proveedor eliminado correctamente");
       setShowDeleteDialog(false);
       setDeletingProvider(null);
+      setDeleteCheckResult(null);
       loadProviders();
+      loadGlobalStats();
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Error al eliminar proveedor");
+      const errorMsg = error.response?.data?.detail || "Error al eliminar proveedor";
+      toast.error(errorMsg);
+    } finally {
+      setDeleteLoading(false);
     }
   };
+
+  // Verificar si el usuario puede eliminar (solo admin/super_admin)
+  const canDeleteProviders = userRole === 'admin' || userRole === 'super_admin';
 
   const openStatistics = async (provider) => {
     setStatsLoading(true);
