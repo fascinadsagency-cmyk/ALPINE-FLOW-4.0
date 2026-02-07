@@ -179,6 +179,7 @@ function AppRoutes() {
           <Route path="equipo" element={<TeamManagement />} />
           <Route path="soporte" element={<Support />} />
           <Route path="seleccionar-plan" element={<PlanSelection />} />
+          <Route path="pago-exitoso" element={<PaymentSuccess />} />
           <Route path="facturacion" element={<Billing />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
