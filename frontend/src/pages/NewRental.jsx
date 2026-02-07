@@ -3512,7 +3512,7 @@ export default function NewRental() {
                   }`}
                   onClick={() => {
                     setPaymentMethodSelected("pago_online");
-                    setPaidAmount(calculateTotal().toFixed(2));
+                    setPaidAmount(calculateTotalToPay().toFixed(2)); // Incluye depósito
                   }}
                 >
                   🌐 ONLINE
