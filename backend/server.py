@@ -159,6 +159,8 @@ class ItemResponse(BaseModel):
     stock_total: int = 0
     stock_available: int = 0
     rental_price: Optional[float] = None
+    # Quick Add feature
+    is_quick_add: bool = False
 
 class TariffCreate(BaseModel):
     item_type: str
