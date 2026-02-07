@@ -3577,6 +3577,7 @@ async def process_return(rental_id: str, return_input: ReturnInput, current_user
             cash_movement_id = str(uuid.uuid4())
             cash_doc = {
                 "id": cash_movement_id,
+                "store_id": current_user.store_id,  # CRITICAL: Multi-tenant isolation
                 "operation_number": operation_number,
                 "session_id": active_session["id"],
                 "movement_type": "expense",  # Salida de caja
@@ -3601,6 +3602,7 @@ async def process_return(rental_id: str, return_input: ReturnInput, current_user
             forfeit_reason = return_input.forfeit_reason or "Material dañado"
             cash_doc = {
                 "id": cash_movement_id,
+                "store_id": current_user.store_id,  # CRITICAL: Multi-tenant isolation
                 "operation_number": operation_number,
                 "session_id": active_session["id"],
                 "movement_type": "income",  # Ingreso (ya no se devuelve)
