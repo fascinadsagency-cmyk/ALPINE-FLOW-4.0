@@ -3465,7 +3465,7 @@ export default function NewRental() {
                   }`}
                   onClick={() => {
                     setPaymentMethodSelected("card");
-                    setPaidAmount(calculateTotal().toFixed(2));
+                    setPaidAmount(calculateTotalToPay().toFixed(2)); // Incluye depósito
                   }}
                 >
                   💳 TARJETA
@@ -3480,7 +3480,7 @@ export default function NewRental() {
                   }`}
                   onClick={() => {
                     setPaymentMethodSelected("cash");
-                    setPaidAmount(calculateTotal().toFixed(2));
+                    setPaidAmount(calculateTotalToPay().toFixed(2)); // Incluye depósito
                     setCashGiven("");
                   }}
                 >
