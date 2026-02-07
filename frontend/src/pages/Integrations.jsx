@@ -75,17 +75,6 @@ export default function Integrations() {
     company_logo_url: "",
     email_signature: ""
   });
-  const [calendarConfig, setCalendarConfig] = useState({
-    enabled: false,
-    google_client_id: "",
-    google_client_secret: "",
-    calendar_id: "",
-    sync_interval: "15",
-    auto_create_events: true,
-    color_code_by_status: true,
-    send_notifications: true,
-    default_duration: "60"
-  });
 
   useEffect(() => {
     loadConfigs();
