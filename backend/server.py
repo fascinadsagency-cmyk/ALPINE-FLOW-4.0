@@ -36,6 +36,39 @@ JWT_SECRET = os.environ.get('JWT_SECRET', 'alpineflow-secret-key-2024')
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24
 
+# ==================== PLAN DEFINITIONS ====================
+PLAN_LIMITS = {
+    "trial": {
+        "name": "Free Trial",
+        "max_items": 6000,       # Same as PRO during trial
+        "max_customers": 30000,  # Same as PRO during trial
+        "max_users": 10,
+        "price": 0,
+        "duration_days": 15
+    },
+    "basic": {
+        "name": "Plan Básico",
+        "max_items": 3000,
+        "max_customers": 10000,
+        "max_users": 10,
+        "price": 950
+    },
+    "pro": {
+        "name": "Plan PRO",
+        "max_items": 6000,
+        "max_customers": 30000,
+        "max_users": 10,
+        "price": 1450
+    },
+    "enterprise": {
+        "name": "Plan Enterprise",
+        "max_items": 999999,     # Unlimited
+        "max_customers": 999999, # Unlimited
+        "max_users": 50,
+        "price": 1950
+    }
+}
+
 app = FastAPI(title="AlpineFlow API")
 api_router = APIRouter(prefix="/api")
 security = HTTPBearer()
