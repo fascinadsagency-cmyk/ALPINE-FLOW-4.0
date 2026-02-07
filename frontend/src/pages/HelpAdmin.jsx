@@ -13,14 +13,17 @@ import {
   MessageCircle,
   Save,
   X,
-  GripVertical
+  GripVertical,
+  AlertTriangle
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import axios from "axios";
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
 export default function HelpAdmin() {
+  const { user } = useAuth();
   const [videos, setVideos] = useState([]);
   const [faqs, setFaqs] = useState([]);
   const [editingVideo, setEditingVideo] = useState(null);
@@ -29,10 +32,20 @@ export default function HelpAdmin() {
   const [showFaqDialog, setShowFaqDialog] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // PROTECCIÓN: Solo super_admin puede acceder
   useEffect(() => {
-    loadVideos();
-    loadFaqs();
-  }, []);
+    if (user && user.role !== "super_admin") {
+      toast.error("Acceso denegado: Solo el administrador master puede gestionar el contenido de ayuda");
+      window.location.href = "/ayuda";
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user && user.role === "super_admin") {
+      loadVideos();
+      loadFaqs();
+    }
+  }, [user]);
 
   const loadVideos = async () => {
     try {
@@ -189,6 +202,28 @@ export default function HelpAdmin() {
     });
     setShowFaqDialog(true);
   };
+
+  // Si no es super_admin, mostrar mensaje de acceso denegado
+  if (!user || user.role !== "super_admin") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Card className="max-w-md">
+          <CardContent className="py-12 text-center">
+            <AlertTriangle className="h-16 w-16 text-amber-500 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-slate-900 mb-2">
+              Acceso Restringido
+            </h3>
+            <p className="text-slate-600 mb-6">
+              Solo el administrador master puede gestionar el contenido de ayuda global.
+            </p>
+            <Button onClick={() => window.location.href = '/ayuda'}>
+              Volver al Centro de Ayuda
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
