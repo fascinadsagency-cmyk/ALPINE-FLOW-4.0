@@ -3443,11 +3443,11 @@ export default function NewRental() {
           </DialogHeader>
           
           <div className="space-y-6 py-4">
-            {/* Total to Pay - Highlighted */}
+            {/* Total to Pay - Highlighted (INCLUYE DEPÓSITO) */}
             <div className="p-6 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-300 shadow-lg">
               <p className="text-sm font-medium text-emerald-700 uppercase tracking-wide">Total a Pagar</p>
               <p className="text-5xl font-black text-emerald-900 mt-2">
-                €{calculateTotal().toFixed(2)}
+                €{calculateTotalToPay().toFixed(2)}
               </p>
             </div>
 
