@@ -451,12 +451,30 @@ async def get_me(current_user: CurrentUser = Depends(get_current_user)):
 
 @api_router.post("/customers", response_model=CustomerResponse)
 async def create_customer(customer: CustomerCreate, current_user: CurrentUser = Depends(get_current_user)):
-    # PLAN LIMIT VALIDATION: Check max_customers limit
-    store = await db.stores.find_one({"id": current_user.store_id})
+    # PLAN LIMIT VALIDATION: Check max_customers limit from active plan
+    store = await db.stores.find_one({"store_id": current_user.store_id})
     if store:
-        max_customers = store.get("settings", {}).get("max_customers", 30000)  # Default: 30000 for Standard
+        plan_type = store.get("plan_type", "trial")
+        plan_info = PLAN_LIMITS.get(plan_type, PLAN_LIMITS["trial"])
+        max_customers = plan_info["max_customers"]
+        
+        # Check if trial expired
+        if plan_type == "trial":
+            trial_start = store.get("trial_start_date")
+            if trial_start:
+                if isinstance(trial_start, str):
+                    trial_start_dt = datetime.fromisoformat(trial_start.replace('Z', '+00:00'))
+                else:
+                    trial_start_dt = trial_start
+                days_since_start = (datetime.now(timezone.utc) - trial_start_dt).days
+                if days_since_start > 15:
+                    raise HTTPException(
+                        status_code=403,
+                        detail="Tu período de prueba ha expirado. Por favor, selecciona un plan para continuar."
+                    )
+        
         current_customers = await db.customers.count_documents(current_user.get_store_filter())
-        if current_customers >= max_customers:
+        if max_customers != 999999 and current_customers >= max_customers:
             raise HTTPException(
                 status_code=403, 
                 detail=f"Límite de clientes alcanzado ({max_customers}). Actualiza tu plan para añadir más."
