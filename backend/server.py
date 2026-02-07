@@ -418,6 +418,17 @@ async def get_me(current_user: CurrentUser = Depends(get_current_user)):
 
 @api_router.post("/customers", response_model=CustomerResponse)
 async def create_customer(customer: CustomerCreate, current_user: CurrentUser = Depends(get_current_user)):
+    # PLAN LIMIT VALIDATION: Check max_customers limit
+    store = await db.stores.find_one({"id": current_user.store_id})
+    if store:
+        max_customers = store.get("settings", {}).get("max_customers", 30000)  # Default: 30000 for Standard
+        current_customers = await db.customers.count_documents(current_user.get_store_filter())
+        if current_customers >= max_customers:
+            raise HTTPException(
+                status_code=403, 
+                detail=f"Límite de clientes alcanzado ({max_customers}). Actualiza tu plan para añadir más."
+            )
+    
     # Check for duplicate within the same store
     query = {**current_user.get_store_filter(), "dni": customer.dni}
     existing = await db.customers.find_one(query)
