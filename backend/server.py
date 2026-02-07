@@ -7312,7 +7312,7 @@ async def get_payment_history(current_user: CurrentUser = Depends(require_admin)
     return {
         "payments": [
             {
-                "id": str(p.get("_id", p.get("id", ""))),
+                "id": p.get("id", str(p.get("_id", ""))),
                 "date": p.get("date", ""),
                 "plan": p.get("plan", ""),
                 "plan_name": p.get("plan_name", ""),
