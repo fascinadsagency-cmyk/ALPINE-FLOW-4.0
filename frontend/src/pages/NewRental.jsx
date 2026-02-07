@@ -3509,8 +3509,8 @@ export default function NewRental() {
                 </>
               ) : (
                 <>
-                  <CheckCircle className="h-5 w-5 mr-2" />
-                  Confirmar Pago
+                  <Check className="h-5 w-5 mr-2" />
+                  {paymentMethodSelected === "pending" ? "Guardar Pendiente" : "Cobrar y Guardar"}
                 </>
               )}
             </Button>
