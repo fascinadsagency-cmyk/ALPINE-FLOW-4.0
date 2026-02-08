@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="10" skipped="0" tests="11" time="0.935" timestamp="2026-02-08T10:24:52.122904+00:00" hostname="agent-env-0e987b31-ecc1-46f6-a35f-aeb4e3311240"><testcase classname="backend.tests.test_my_account_features.TestAuthMe" name="test_get_current_user_profile" time="0.378"><failure message="AssertionError: Expected 200, got 401: {&quot;detail&quot;:&quot;Invalid token&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_my_account_features.py:49: in test_get_current_user_profile
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+E   AssertionError: Expected 200, got 401: {"detail":"Invalid token"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_my_account_features.TestProfileUpdate" name="test_update_profile_username" time="0.054"><failure message="AssertionError: Expected 200, got 401: {&quot;detail&quot;:&quot;Invalid token&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_my_account_features.py:73: in test_update_profile_username
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+E   AssertionError: Expected 200, got 401: {"detail":"Invalid token"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_my_account_features.TestProfileUpdate" name="test_update_profile_email" time="0.036"><failure message="AssertionError: Expected 200, got 401: {&quot;detail&quot;:&quot;Invalid token&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_my_account_features.py:93: in test_update_profile_email
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+E   AssertionError: Expected 200, got 401: {"detail":"Invalid token"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_my_account_features.TestProfileUpdate" name="test_update_profile_invalid_email" time="0.039"><failure message="AssertionError: Expected 400 for invalid email, got 401&#10;assert 401 == 400&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_my_account_features.py:106: in test_update_profile_invalid_email
+    assert response.status_code == 400, f"Expected 400 for invalid email, got {response.status_code}"
+E   AssertionError: Expected 400 for invalid email, got 401
+E   assert 401 == 400
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_my_account_features.TestProfileUpdate" name="test_update_profile_no_data" time="0.033"><failure message="AssertionError: Expected 400 for empty data, got 401&#10;assert 401 == 400&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_my_account_features.py:113: in test_update_profile_no_data
+    assert response.status_code == 400, f"Expected 400 for empty data, got {response.status_code}"
+E   AssertionError: Expected 400 for empty data, got 401
+E   assert 401 == 400
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_my_account_features.TestPasswordChange" name="test_change_password_wrong_current" time="0.037" /><testcase classname="backend.tests.test_my_account_features.TestPasswordChange" name="test_change_password_short_new_password" time="0.040"><failure message="AssertionError: Expected 400, got 401: {&quot;detail&quot;:&quot;Invalid token&quot;}&#10;assert 401 == 400&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_my_account_features.py:137: in test_change_password_short_new_password
+    assert response.status_code == 400, f"Expected 400, got {response.status_code}: {response.text}"
+E   AssertionError: Expected 400, got 401: {"detail":"Invalid token"}
+E   assert 401 == 400
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_my_account_features.TestPasswordChange" name="test_change_password_success_and_revert" time="0.037"><failure message="AssertionError: Expected 200, got 401: {&quot;detail&quot;:&quot;Invalid token&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_my_account_features.py:148: in test_change_password_success_and_revert
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+E   AssertionError: Expected 200, got 401: {"detail":"Invalid token"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_my_account_features.TestPhotoUpload" name="test_upload_photo_success" time="0.039"><failure message="AssertionError: Expected 200, got 401: {&quot;detail&quot;:&quot;Invalid token&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_my_account_features.py:192: in test_upload_photo_success
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+E   AssertionError: Expected 200, got 401: {"detail":"Invalid token"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_my_account_features.TestPhotoUpload" name="test_upload_invalid_file_type" time="0.034"><failure message="AssertionError: Expected 400 for invalid file type, got 401&#10;assert 401 == 400&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_my_account_features.py:211: in test_upload_invalid_file_type
+    assert response.status_code == 400, f"Expected 400 for invalid file type, got {response.status_code}"
+E   AssertionError: Expected 400 for invalid file type, got 401
+E   assert 401 == 400
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_my_account_features.TestPlanLimitErrorFormat" name="test_plan_limit_error_structure" time="0.038"><failure message="AssertionError: Expected 200, got 401&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_my_account_features.py:227: in test_plan_limit_error_structure
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+E   AssertionError: Expected 200, got 401
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase></testsuite></testsuites>
