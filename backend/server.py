@@ -2666,13 +2666,16 @@ async def cleanup_item_type(type_id: str, current_user: CurrentUser = Depends(ge
 
 @api_router.post("/items/cleanup-orphans")
 async def cleanup_orphan_items(current_user: CurrentUser = Depends(get_current_user)):
-    """Find and clean up items with types that no longer exist"""
-    # Get all valid type values
-    valid_types = await db.item_types.distinct("value")
+    """Find and clean up items with types that no longer exist
+    Multi-tenant: Filters by store_id
+    """
+    store_filter = current_user.get_store_filter()
+    # Get all valid type values for this store
+    valid_types = await db.item_types.distinct("value", store_filter)
     
-    # Find items with invalid types
+    # Find items with invalid types - Multi-tenant: Filter by store
     orphan_items = await db.items.find(
-        {"item_type": {"$nin": valid_types}},
+        {**store_filter, "item_type": {"$nin": valid_types}},
         {"_id": 0, "id": 1, "item_type": 1, "barcode": 1, "status": 1}
     ).to_list(1000)
     
