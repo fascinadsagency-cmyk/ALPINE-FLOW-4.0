@@ -1212,7 +1212,9 @@ async def check_customers_active_rentals(request: BulkCustomerIdsRequest, curren
     customers_with_rentals = []
     
     for customer_id in request.customer_ids:
+        # Multi-tenant: Filter by store
         active_count = await db.rentals.count_documents({
+            **current_user.get_store_filter(),
             "customer_id": customer_id,
             "status": {"$in": ["active", "partial"]}
         })
