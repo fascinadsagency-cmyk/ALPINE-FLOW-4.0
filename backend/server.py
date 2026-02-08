@@ -8050,6 +8050,275 @@ async def simulate_payment(
     return await select_plan(request, current_user)
 
 
+# ==================== PLAN UPGRADE/DOWNGRADE WITH PRORATION ====================
+
+class PlanChangeRequest(BaseModel):
+    new_plan_type: str  # 'basic', 'pro', 'enterprise'
+    origin_url: str = ""
+
+class PlanChangeCalculation(BaseModel):
+    current_plan: str
+    new_plan: str
+    current_price: float
+    new_price: float
+    days_used: int
+    days_remaining: int
+    credit_amount: float  # Amount to credit from current plan
+    prorate_amount: float  # Amount to charge for new plan (prorated)
+    amount_to_pay: float  # Final amount (new_prorated - credit)
+    is_upgrade: bool
+    can_change: bool
+    blockers: list = []
+
+@api_router.get("/plan/change/calculate/{new_plan_type}")
+async def calculate_plan_change(
+    new_plan_type: str,
+    current_user: CurrentUser = Depends(require_admin)
+):
+    """
+    Calculate the prorated amount for a plan change.
+    Returns: credit from current plan, cost of new plan, and amount to pay.
+    """
+    if new_plan_type not in ["basic", "pro", "enterprise"]:
+        raise HTTPException(status_code=400, detail="Plan inválido")
+    
+    store = await db.stores.find_one({"store_id": current_user.store_id})
+    if not store:
+        raise HTTPException(status_code=404, detail="Tienda no encontrada")
+    
+    current_plan = store.get("plan_type", "trial")
+    
+    # If on trial, no proration needed
+    if current_plan == "trial":
+        new_plan_info = PLAN_LIMITS[new_plan_type]
+        return {
+            "current_plan": "trial",
+            "new_plan": new_plan_type,
+            "current_price": 0,
+            "new_price": new_plan_info["price"],
+            "days_used": 0,
+            "days_remaining": 365,
+            "credit_amount": 0,
+            "prorate_amount": new_plan_info["price"],
+            "amount_to_pay": new_plan_info["price"],
+            "is_upgrade": True,
+            "can_change": True,
+            "blockers": []
+        }
+    
+    # Get current plan info
+    current_plan_info = PLAN_LIMITS.get(current_plan, PLAN_LIMITS["basic"])
+    new_plan_info = PLAN_LIMITS[new_plan_type]
+    
+    # Calculate days used/remaining
+    plan_activated_at = store.get("plan_activated_at")
+    if plan_activated_at:
+        if isinstance(plan_activated_at, str):
+            activated_dt = datetime.fromisoformat(plan_activated_at.replace('Z', '+00:00'))
+        else:
+            activated_dt = plan_activated_at
+        days_used = (datetime.now(timezone.utc) - activated_dt).days
+        days_remaining = max(0, 365 - days_used)
+    else:
+        days_used = 0
+        days_remaining = 365
+    
+    # Calculate proration
+    current_daily_rate = current_plan_info["price"] / 365
+    new_daily_rate = new_plan_info["price"] / 365
+    
+    # Credit = unused portion of current plan
+    credit_amount = round(current_daily_rate * days_remaining, 2)
+    
+    # New plan cost = prorated for remaining days
+    prorate_amount = round(new_daily_rate * days_remaining, 2)
+    
+    # Amount to pay = new cost - credit
+    amount_to_pay = round(max(0, prorate_amount - credit_amount), 2)
+    
+    is_upgrade = new_plan_info["price"] > current_plan_info["price"]
+    
+    # Check for blockers (downgrade validation)
+    blockers = []
+    store_filter = current_user.get_store_filter()
+    current_items = await db.items.count_documents(store_filter)
+    current_customers = await db.customers.count_documents(store_filter)
+    current_users = await db.users.count_documents(store_filter)
+    
+    if new_plan_info["max_items"] != 999999 and current_items > new_plan_info["max_items"]:
+        excess = current_items - new_plan_info["max_items"]
+        blockers.append({
+            "type": "items",
+            "current": current_items,
+            "limit": new_plan_info["max_items"],
+            "excess": excess,
+            "message": f"Debes eliminar {excess} artículo(s) para cambiar al plan {new_plan_info['name']}"
+        })
+    
+    if new_plan_info["max_customers"] != 999999 and current_customers > new_plan_info["max_customers"]:
+        excess = current_customers - new_plan_info["max_customers"]
+        blockers.append({
+            "type": "customers",
+            "current": current_customers,
+            "limit": new_plan_info["max_customers"],
+            "excess": excess,
+            "message": f"Debes eliminar {excess} cliente(s) para cambiar al plan {new_plan_info['name']}"
+        })
+    
+    if current_users > new_plan_info["max_users"]:
+        excess = current_users - new_plan_info["max_users"]
+        blockers.append({
+            "type": "users",
+            "current": current_users,
+            "limit": new_plan_info["max_users"],
+            "excess": excess,
+            "message": f"Debes eliminar {excess} usuario(s) para cambiar al plan {new_plan_info['name']}"
+        })
+    
+    can_change = len(blockers) == 0
+    
+    return {
+        "current_plan": current_plan,
+        "current_plan_name": current_plan_info["name"],
+        "new_plan": new_plan_type,
+        "new_plan_name": new_plan_info["name"],
+        "current_price": current_plan_info["price"],
+        "new_price": new_plan_info["price"],
+        "days_used": days_used,
+        "days_remaining": days_remaining,
+        "credit_amount": credit_amount,
+        "prorate_amount": prorate_amount,
+        "amount_to_pay": amount_to_pay,
+        "is_upgrade": is_upgrade,
+        "can_change": can_change,
+        "blockers": blockers
+    }
+
+
+@api_router.post("/plan/upgrade")
+async def upgrade_plan(
+    request: PlanChangeRequest,
+    http_request: Request,
+    current_user: CurrentUser = Depends(require_admin)
+):
+    """
+    Create a Stripe checkout session for plan upgrade with proration.
+    Calculates the difference to pay and charges only that amount.
+    """
+    new_plan_type = request.new_plan_type
+    
+    if new_plan_type not in ["basic", "pro", "enterprise"]:
+        raise HTTPException(status_code=400, detail="Plan inválido")
+    
+    # Calculate proration
+    calculation = await calculate_plan_change(new_plan_type, current_user)
+    
+    # Check if change is allowed
+    if not calculation["can_change"]:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "No puedes cambiar a este plan",
+                "blockers": calculation["blockers"]
+            }
+        )
+    
+    # If amount to pay is 0 or negative (credit), just activate
+    if calculation["amount_to_pay"] <= 0:
+        # Direct activation with credit
+        plan_info = PLAN_LIMITS[new_plan_type]
+        await db.stores.update_one(
+            {"store_id": current_user.store_id},
+            {
+                "$set": {
+                    "plan_type": new_plan_type,
+                    "plan_activated_at": datetime.now(timezone.utc).isoformat(),
+                    "plan_expires_at": (datetime.now(timezone.utc) + timedelta(days=365)).isoformat(),
+                    "settings.max_items": plan_info["max_items"],
+                    "settings.max_customers": plan_info["max_customers"],
+                    "settings.max_users": plan_info["max_users"]
+                },
+                "$unset": {"trial_start_date": ""}
+            }
+        )
+        
+        return {
+            "success": True,
+            "message": f"Plan cambiado a {plan_info['name']}. Tienes un crédito de €{abs(calculation['amount_to_pay']):.2f}",
+            "requires_payment": False,
+            "plan": new_plan_type
+        }
+    
+    # Get Stripe API key
+    stripe_api_key = os.environ.get("STRIPE_API_KEY")
+    if not stripe_api_key:
+        raise HTTPException(status_code=500, detail="Stripe no configurado")
+    
+    # Build URLs
+    origin_url = request.origin_url.rstrip("/") if request.origin_url else str(http_request.base_url).rstrip("/")
+    success_url = f"{origin_url}/pago-exitoso?session_id={{CHECKOUT_SESSION_ID}}&upgrade=true"
+    cancel_url = f"{origin_url}/facturacion"
+    
+    host_url = str(http_request.base_url).rstrip("/")
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    
+    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+    
+    # Amount to charge (the difference)
+    amount = calculation["amount_to_pay"]
+    
+    checkout_request = CheckoutSessionRequest(
+        amount=amount,
+        currency="eur",
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata={
+            "store_id": str(current_user.store_id),
+            "plan_type": new_plan_type,
+            "user_id": current_user.user_id,
+            "username": current_user.username,
+            "is_upgrade": "true",
+            "previous_plan": calculation["current_plan"],
+            "credit_amount": str(calculation["credit_amount"]),
+            "prorate_amount": str(calculation["prorate_amount"])
+        }
+    )
+    
+    session = await stripe_checkout.create_checkout_session(checkout_request)
+    
+    # Record the transaction
+    plan_info = PLAN_LIMITS[new_plan_type]
+    payment_transaction = {
+        "id": str(uuid.uuid4()),
+        "session_id": session.session_id,
+        "store_id": current_user.store_id,
+        "user_id": current_user.user_id,
+        "username": current_user.username,
+        "plan_type": new_plan_type,
+        "plan_name": plan_info["name"],
+        "previous_plan": calculation["current_plan"],
+        "amount": amount,
+        "full_price": plan_info["price"],
+        "credit_amount": calculation["credit_amount"],
+        "prorate_amount": calculation["prorate_amount"],
+        "currency": "EUR",
+        "payment_status": "pending",
+        "is_upgrade": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.payment_transactions.insert_one(payment_transaction)
+    
+    return {
+        "success": True,
+        "requires_payment": True,
+        "checkout_url": session.url,
+        "session_id": session.session_id,
+        "amount_to_pay": amount,
+        "calculation": calculation
+    }
+
+
 # ==================== BILLING ROUTES (ADMIN ONLY) ====================
 
 # Platform fiscal data (AlpineFlow SaaS)
