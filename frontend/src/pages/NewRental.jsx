@@ -728,6 +728,113 @@ export default function NewRental() {
     return pack.day_1 || 0;
   };
 
+  // ═══════════════════════════════════════════════════════════════════
+  // 🎯 GLOBAL PRICE ENGINE - Función centralizada de cálculo de precios
+  // ═══════════════════════════════════════════════════════════════════
+  // Esta función se ejecuta CADA VEZ que el carrito cambia (añadir/quitar/editar días)
+  // Detecta packs, aplica precios de pack, y calcula items sueltos
+  // 
+  // ORDEN DE VALIDACIÓN OBLIGATORIA:
+  // - Escenario: Artículo A (10€), Artículo B (10€). Pack A+B (15€).
+  // - Usuario añade A: Total = 10€
+  // - Usuario añade B: Total = 15€ (NO 20€)
+  // ═══════════════════════════════════════════════════════════════════
+  const calculateBestPrice = useCallback((currentItems, availablePacks, days) => {
+    console.log('[PRICE ENGINE] Calculating best price for', currentItems.length, 'items');
+    
+    if (!currentItems || currentItems.length === 0) {
+      return {
+        totalPrice: 0,
+        detectedPacks: [],
+        itemsInPacks: [],
+        itemsOutOfPacks: [],
+        breakdown: { packsTotal: 0, individualsTotal: 0 }
+      };
+    }
+
+    // PASO 1: Detectar packs formados con los items actuales
+    const packsDetected = detectPacks(currentItems);
+    console.log('[PRICE ENGINE] Detected packs:', packsDetected.length);
+
+    // PASO 2: Marcar qué items están en packs
+    const itemsInPacksSet = new Set();
+    packsDetected.forEach(pack => {
+      pack.items.forEach(barcode => itemsInPacksSet.add(barcode));
+    });
+
+    // PASO 3: Calcular precio total de packs
+    let packsTotal = 0;
+    packsDetected.forEach(pack => {
+      // Get days from first item of the pack, or use global days
+      const packItems = currentItems.filter(item => pack.items.includes(item.barcode));
+      const packDays = packItems[0]?.itemDays || days;
+      
+      // Check for custom pack price
+      const customPackPrice = packItems[0]?.customPackPrice;
+      const basePackPrice = getPackPrice(pack.pack, packDays);
+      const finalPackPrice = customPackPrice !== null && customPackPrice !== undefined 
+        ? customPackPrice 
+        : basePackPrice;
+      
+      packsTotal += finalPackPrice;
+      console.log(`[PRICE ENGINE] Pack "${pack.pack.name}" → ${finalPackPrice}€ (${packDays} días)`);
+    });
+
+    // PASO 4: Identificar items sueltos (que NO están en ningún pack)
+    const itemsOutOfPacks = currentItems.filter(item => 
+      !itemsInPacksSet.has(item.barcode) && !itemsInPacksSet.has(item.id)
+    );
+
+    // PASO 5: Calcular precio total de items sueltos
+    let individualsTotal = 0;
+    itemsOutOfPacks.forEach(item => {
+      const itemDays = item.itemDays || days;
+      let itemPrice = 0;
+
+      // Precio personalizado tiene prioridad
+      if (item.customPrice !== null && item.customPrice !== undefined) {
+        itemPrice = item.customPrice;
+      } 
+      // Items genéricos con rental_price
+      else if (item.is_generic && item.rental_price) {
+        itemPrice = item.rental_price;
+      }
+      // Buscar en tarifas
+      else {
+        const tariff = tariffs.find(t => t.item_type === item.item_type);
+        if (tariff) {
+          const dayField = itemDays <= 10 ? `day_${itemDays}` : 'day_11_plus';
+          itemPrice = tariff[dayField] || tariff.day_1 || 0;
+        }
+      }
+
+      // Multiplicar por cantidad si es genérico
+      const quantity = item.quantity || 1;
+      individualsTotal += itemPrice * quantity;
+      
+      console.log(`[PRICE ENGINE] Item "${item.internal_code || item.barcode}" → ${itemPrice}€ × ${quantity} (${itemDays} días)`);
+    });
+
+    const totalPrice = packsTotal + individualsTotal;
+
+    console.log('[PRICE ENGINE] TOTAL:', {
+      packs: `${packsTotal}€`,
+      individuals: `${individualsTotal}€`,
+      total: `${totalPrice}€`
+    });
+
+    return {
+      totalPrice,
+      detectedPacks: packsDetected,
+      itemsInPacks: Array.from(itemsInPacksSet),
+      itemsOutOfPacks,
+      breakdown: {
+        packsTotal,
+        individualsTotal
+      }
+    };
+  }, [tariffs, numDays]);
+
   // Smart date handlers
   const handleNumDaysChange = (value) => {
     const days = Math.max(1, parseInt(value) || 1);
