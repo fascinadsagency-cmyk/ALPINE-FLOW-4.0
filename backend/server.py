@@ -56,16 +56,16 @@ PLAN_LIMITS = {
     },
     "basic": {
         "name": "Plan Básico",
-        "max_items": 2000,         # UPDATED: 2,000 artículos
-        "max_customers": 10000,    # 10,000 clientes
-        "max_users": 5,            # UPDATED: 5 usuarios
+        "max_items": 1000,         # UPDATED: 1,000 artículos (reducido desde 2,000)
+        "max_customers": 5000,     # UPDATED: 5,000 clientes (reducido desde 10,000)
+        "max_users": 5,            # 5 usuarios
         "price": 950,
         "stripe_price_id": "price_basic_annual"  # Para Stripe
     },
     "pro": {
         "name": "Plan PRO",
         "max_items": 6000,         # 6,000 artículos
-        "max_customers": 40000,    # UPDATED: 40,000 clientes
+        "max_customers": 40000,    # 40,000 clientes
         "max_users": 10,           # 10 usuarios
         "price": 1450,
         "stripe_price_id": "price_pro_annual"
@@ -74,7 +74,7 @@ PLAN_LIMITS = {
         "name": "Plan Enterprise",
         "max_items": 999999,       # Unlimited
         "max_customers": 999999,   # Unlimited
-        "max_users": 15,           # UPDATED: 15 usuarios máximo
+        "max_users": 15,           # 15 usuarios máximo
         "price": 1950,
         "stripe_price_id": "price_enterprise_annual"
     }
