@@ -2751,7 +2751,7 @@ async def complete_item_maintenance(item_id: str, current_user: CurrentUser = De
     
     return {
         "success": True,
-        "message": f"Mantenimiento completado. Contadores reseteados a 0.",
+        "message": "Mantenimiento completado. Contadores reseteados a 0.",
         "item": updated_item,
         "reset_info": {
             "previous_days_used": old_days_used,
@@ -7478,7 +7478,7 @@ async def revert_cash_closing(closing_id: str, current_user: CurrentUser = Depen
         raise HTTPException(status_code=404, detail="Cash closing not found")
     
     await db.cash_closings.delete_one({**current_user.get_store_filter(), "id": closing_id})
-    return {"message": f"Cash closing has been reverted", "id": closing_id}
+    return {"message": "Cash closing has been reverted", "id": closing_id}
 
 # ==================== INTEGRATIONS CONFIG ROUTES ====================
 
