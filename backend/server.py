@@ -7790,60 +7790,70 @@ async def get_plan_status(current_user: CurrentUser = Depends(get_current_user))
 
 @api_router.get("/plan/available")
 async def get_available_plans():
-    """Get all available plans with their limits and prices."""
-    return {
-        "plans": [
-            {
-                "id": "basic",
-                "name": "Plan Básico",
-                "max_items": 2000,
-                "max_customers": 10000,
-                "max_users": 5,
-                "price": 950,
-                "price_display": "950€/año",
-                "features": [
-                    "2.000 artículos",
-                    "10.000 clientes",
-                    "5 usuarios",
-                    "Soporte por email"
-                ]
-            },
-            {
-                "id": "pro",
-                "name": "Plan PRO",
-                "max_items": 6000,
-                "max_customers": 40000,
-                "max_users": 10,
-                "price": 1450,
-                "price_display": "1.450€/año",
-                "recommended": True,
-                "features": [
-                    "6.000 artículos",
-                    "40.000 clientes",
-                    "10 usuarios",
-                    "Soporte prioritario",
-                    "Informes avanzados"
-                ]
-            },
-            {
-                "id": "enterprise",
-                "name": "Plan Enterprise",
-                "max_items": -1,  # Unlimited
-                "max_customers": -1,  # Unlimited
-                "max_users": 15,
-                "price": 1950,
-                "price_display": "1.950€/año",
-                "features": [
-                    "Artículos ilimitados",
-                    "Clientes ilimitados",
-                    "15 usuarios",
-                    "Soporte 24/7",
-                    "API personalizada",
-                    "Integraciones premium"
-                ]
-            }
+    """Get all available plans with their limits and prices - Dynamically from PLAN_LIMITS."""
+    
+    # Build plans list dynamically from PLAN_LIMITS
+    plans = []
+    
+    # Basic Plan
+    basic = PLAN_LIMITS["basic"]
+    plans.append({
+        "id": "basic",
+        "name": basic["name"],
+        "max_items": basic["max_items"],
+        "max_customers": basic["max_customers"],
+        "max_users": basic["max_users"],
+        "price": basic["price"],
+        "price_display": f"{basic['price']}€/año",
+        "features": [
+            f"{basic['max_items']:,} artículos",
+            f"{basic['max_customers']:,} clientes",
+            f"{basic['max_users']} usuarios",
+            "Soporte por email"
         ]
-    }
+    })
+    
+    # PRO Plan
+    pro = PLAN_LIMITS["pro"]
+    plans.append({
+        "id": "pro",
+        "name": pro["name"],
+        "max_items": pro["max_items"],
+        "max_customers": pro["max_customers"],
+        "max_users": pro["max_users"],
+        "price": pro["price"],
+        "price_display": f"{pro['price']}€/año",
+        "recommended": True,
+        "features": [
+            f"{pro['max_items']:,} artículos",
+            f"{pro['max_customers']:,} clientes",
+            f"{pro['max_users']} usuarios",
+            "Soporte prioritario",
+            "Informes avanzados"
+        ]
+    })
+    
+    # Enterprise Plan
+    enterprise = PLAN_LIMITS["enterprise"]
+    plans.append({
+        "id": "enterprise",
+        "name": enterprise["name"],
+        "max_items": -1,  # Unlimited
+        "max_customers": -1,  # Unlimited
+        "max_users": enterprise["max_users"],
+        "price": enterprise["price"],
+        "price_display": f"{enterprise['price']}€/año",
+        "features": [
+            "Artículos ilimitados",
+            "Clientes ilimitados",
+            f"{enterprise['max_users']} usuarios",
+            "Soporte 24/7",
+            "API personalizada",
+            "Integraciones premium"
+        ]
+    })
+    
+    return {"plans": plans}
 
 @api_router.post("/plan/select")
 async def select_plan(
