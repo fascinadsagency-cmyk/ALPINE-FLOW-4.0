@@ -34,7 +34,7 @@ class TestMultiTenantAuth:
     
     def test_login_el_enebro_returns_store_id(self):
         """Login to EL ENEBRO should work and return a valid token"""
-        result = self.get_token("admin", "admin")
+        result = self.get_token(STORES["el_enebro"]["username"], STORES["el_enebro"]["password"])
         assert result is not None, "Login to EL ENEBRO failed"
         assert "access_token" in result, "No access_token in response"
         print(f"✅ EL ENEBRO login successful")
