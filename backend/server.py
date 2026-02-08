@@ -3489,7 +3489,7 @@ async def process_return(rental_id: str, return_input: ReturnInput, current_user
     for item in rental["items"]:
         if item["barcode"] in return_input.barcodes:
             # Get the item document to check if it's generic
-            item_doc = await db.items.find_one({**current_user.get_store_filter(), **{"id": item["item_id"]}})
+            item_doc = await db.items.find_one({**current_user.get_store_filter(), "barcode": item["barcode"]})
             
             if item_doc and item_doc.get("is_generic"):
                 # GENERIC ITEM with PARTIAL RETURN support
