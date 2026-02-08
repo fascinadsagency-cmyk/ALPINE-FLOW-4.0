@@ -667,7 +667,7 @@ async def update_profile(
         {"$set": update_data}
     )
     
-    if result.modified_count == 0:
+    if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     
     return {"message": "Perfil actualizado correctamente", "updated": update_data}
