@@ -1238,8 +1238,9 @@ async def bulk_delete_customers(request: BulkCustomerIdsRequest, current_user: C
     failed_customers = []
     
     for customer_id in request.customer_ids:
-        # Check if customer has active rentals
+        # Check if customer has active rentals - Multi-tenant: Filter by store
         active_count = await db.rentals.count_documents({
+            **current_user.get_store_filter(),
             "customer_id": customer_id,
             "status": {"$in": ["active", "partial"]}
         })
