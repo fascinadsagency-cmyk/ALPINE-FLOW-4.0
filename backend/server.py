@@ -6151,10 +6151,10 @@ async def get_dashboard(current_user: CurrentUser = Depends(get_current_user)):
     # Alerts
     alerts = maintenance_alerts
     
-    # Overdue rentals
+    # Overdue rentals - Multi-tenant: Filter by store
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     overdue_rentals = await db.rentals.find(
-        {"status": {"$in": ["active", "partial"]}, "end_date": {"$lt": today}},
+        {**current_user.get_store_filter(), "status": {"$in": ["active", "partial"]}, "end_date": {"$lt": today}},
         {"_id": 0}
     ).to_list(10)
     for rental in overdue_rentals:
