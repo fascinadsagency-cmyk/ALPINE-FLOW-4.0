@@ -3646,41 +3646,46 @@ export default function ActiveRentals() {
                   Artículos a añadir ({addItemsSelected.length}):
                 </p>
                 <div className="space-y-2">
-                  {addItemsSelected.map((item) => {
-                    // Verificar si este item forma parte de un pack
-                    const isInPack = addItemsDetectedPacks.some(dp => dp.items.includes(item.barcode));
+                  {(() => {
+                    const { detectedPacks } = calculateAddItemsTotalWithPacks();
+                    const itemsInPacks = new Set();
+                    detectedPacks.forEach(dp => dp.items.forEach(bc => itemsInPacks.add(bc)));
                     
-                    return (
-                      <div key={item.barcode} className={`flex items-center justify-between p-2 bg-white rounded border ${isInPack ? 'border-purple-300' : 'border-emerald-200'}`}>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-slate-900">
-                            {item.name}
-                            {isInPack && <Package className="inline h-3 w-3 ml-1 text-purple-500" />}
-                          </p>
-                          <p className="text-xs text-slate-500 font-mono">
-                            {item.internal_code || item.barcode} | {item.size && `Talla: ${item.size} | `}{addItemsDays} días
-                          </p>
+                    return addItemsSelected.map((item) => {
+                      const isInPack = itemsInPacks.has(item.barcode);
+                      
+                      return (
+                        <div key={item.barcode} className={`flex items-center justify-between p-2 bg-white rounded border ${isInPack ? 'border-purple-300' : 'border-emerald-200'}`}>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-slate-900">
+                              {item.name}
+                              {isInPack && <Package className="inline h-3 w-3 ml-1 text-purple-500" />}
+                            </p>
+                            <p className="text-xs text-slate-500 font-mono">
+                              {item.internal_code || item.barcode} | {item.size && `Talla: ${item.size} | `}{addItemsDays} días
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {!isInPack && (
+                              <span className="text-emerald-700 font-bold">€{item.unit_price.toFixed(2)}</span>
+                            )}
+                            {isInPack && (
+                              <span className="text-xs text-purple-500">(en pack)</span>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeItemFromAddList(item.barcode)}
+                              className="h-8 w-8 p-0 text-slate-400 hover:text-red-500"
+                              data-testid={`remove-item-${item.barcode}`}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          {!isInPack && (
-                            <span className="text-emerald-700 font-bold">€{item.unit_price.toFixed(2)}</span>
-                          )}
-                          {isInPack && (
-                            <span className="text-xs text-purple-500">(en pack)</span>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => removeItemFromAddList(item.barcode)}
-                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-500"
-                            data-testid={`remove-item-${item.barcode}`}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    });
+                  })()}
                 </div>
                 
                 {/* Resumen de cobro con lógica de packs */}
