@@ -3541,12 +3541,14 @@ async def process_return(rental_id: str, return_input: ReturnInput, current_user
                     # Get tariff (within same store)
                     tariff = await db.tariffs.find_one({**current_user.get_store_filter(), "item_type": item_doc.get("item_type")})
                     if tariff:
-                        daily_rate = tariff.get("day_1", 0) or tariff.get("days_1", 0)
-                        amortization = item_doc.get("days_used", 0) * daily_rate
-                        await db.items.update_one(
-                            {**current_user.get_store_filter(), "barcode": item["barcode"]},
-                            {"$set": {"amortization": amortization}}
-                        )
+                        daily_rate = tariff.get("day_1") or tariff.get("days_1") or 0
+                        if daily_rate:
+                            days_used = item_doc.get("days_used", 0) or 0
+                            amortization = days_used * daily_rate
+                            await db.items.update_one(
+                                {**current_user.get_store_filter(), "barcode": item["barcode"]},
+                                {"$set": {"amortization": amortization}}
+                            )
         elif not item.get("returned", False):
             pending_items.append(item)
     
