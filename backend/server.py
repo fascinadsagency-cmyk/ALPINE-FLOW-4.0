@@ -2127,12 +2127,17 @@ async def update_item(item_id: str, item: ItemCreate, current_user: CurrentUser 
         if barcode_exists:
             raise HTTPException(status_code=400, detail="Barcode already exists")
     
+    # ⚠️  CRITICAL: Normalize item_type to prevent duplicates
+    normalized_item_type = normalize_type_name(item.item_type)
+    if not normalized_item_type:
+        raise HTTPException(status_code=400, detail="El tipo de artículo no puede estar vacío")
+    
     update_doc = {
         "barcode": item.barcode,
         "barcode_2": item.barcode_2 or "",  # Secondary barcode
         "internal_code": item.internal_code,
         "serial_number": item.serial_number or "",
-        "item_type": item.item_type,
+        "item_type": normalized_item_type,  # ✅ NORMALIZED
         "brand": item.brand,
         "model": item.model,
         "size": item.size,
