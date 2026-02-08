@@ -9156,6 +9156,12 @@ async def get_team_count(current_user: CurrentUser = Depends(get_current_user)):
     """Get current team member count for limit validation"""
     store_filter = current_user.get_store_filter()
     
+    # Get plan info for limits
+    store = await db.stores.find_one({"store_id": current_user.store_id})
+    plan_type = store.get("plan_type", "trial") if store else "trial"
+    plan_info = PLAN_LIMITS.get(plan_type, PLAN_LIMITS["trial"])
+    max_users = plan_info["max_users"]
+    
     # Count all users (admin + staff)
     total_count = await db.users.count_documents(store_filter)
     
@@ -9167,8 +9173,10 @@ async def get_team_count(current_user: CurrentUser = Depends(get_current_user)):
         "total": total_count,
         "admin": admin_count,
         "staff": staff_count,
-        "max_staff": 10,
-        "can_add_more": staff_count < 10
+        "max_users": max_users,
+        "max_staff": max_users - 1 if max_users != 999 else 999,  # Reserve 1 for admin
+        "can_add_more": total_count < max_users,
+        "plan_name": plan_info["name"]
     }
 
 # ==================== HELP CENTER ENDPOINTS ====================
