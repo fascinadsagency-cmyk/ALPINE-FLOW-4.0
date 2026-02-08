@@ -83,11 +83,10 @@ export default function Layout() {
     return true;
   });
 
-  // Account items - for admin/super_admin only
-  const accountItems = [];
-  if (user?.role === "admin" || user?.role === "super_admin") {
-    accountItems.push({ to: "/mi-cuenta", icon: UserCircle, label: "Mi Cuenta", isAccount: true });
-  }
+  // Account items - for all authenticated users
+  const accountItems = [
+    { to: "/mi-cuenta", icon: UserCircle, label: "Mi Cuenta", isAccount: true }
+  ];
 
   // Support items - always at the end
   const supportItems = [
