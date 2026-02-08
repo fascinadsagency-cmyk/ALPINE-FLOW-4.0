@@ -88,7 +88,7 @@ export default function PlanLimitModal({
 
   const handleUpgrade = () => {
     onClose();
-    navigate('/facturacion');
+    navigate('/seleccionar-plan');
   };
 
   return (

@@ -64,7 +64,7 @@ export default function UpgradePlanModal({
 
   const handleUpgrade = () => {
     onClose();
-    navigate("/facturacion");
+    navigate("/seleccionar-plan");
   };
 
   return (
