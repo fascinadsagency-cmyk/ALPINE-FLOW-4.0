@@ -2632,21 +2632,26 @@ async def delete_item_type(
 
 @api_router.post("/item-types/{type_id}/cleanup")
 async def cleanup_item_type(type_id: str, current_user: CurrentUser = Depends(get_current_user)):
-    """Clean up ghost items for a type (retired, deleted, archived, soft-deleted)"""
-    item_type = await db.item_types.find_one({"id": type_id})
+    """Clean up ghost items for a type (retired, deleted, archived, soft-deleted)
+    Multi-tenant: Filters by store_id
+    """
+    store_filter = current_user.get_store_filter()
+    item_type = await db.item_types.find_one({**store_filter, "id": type_id})
     if not item_type:
         raise HTTPException(status_code=404, detail="Tipo de artículo no encontrado")
     
     type_value = item_type["value"]
     
-    # Delete ghost items
+    # Delete ghost items - Multi-tenant: Filter by store
     result1 = await db.items.delete_many({
+        **store_filter,
         "item_type": type_value,
         "status": {"$in": ["retired", "deleted", "archived"]}
     })
     
-    # Delete soft-deleted items
+    # Delete soft-deleted items - Multi-tenant: Filter by store
     result2 = await db.items.delete_many({
+        **store_filter,
         "item_type": type_value,
         "deleted_at": {"$exists": True, "$ne": None}
     })
