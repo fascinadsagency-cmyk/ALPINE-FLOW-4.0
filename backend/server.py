@@ -769,7 +769,14 @@ async def create_customer(customer: CustomerCreate, current_user: CurrentUser = 
         if max_customers != 999999 and current_customers >= max_customers:
             raise HTTPException(
                 status_code=403, 
-                detail=f"Límite de clientes alcanzado ({max_customers}). Actualiza tu plan para añadir más."
+                detail={
+                    "error": "PLAN_LIMIT_EXCEEDED",
+                    "limit_type": "customers",
+                    "current_count": current_customers,
+                    "max_allowed": max_customers,
+                    "plan_name": plan_info["name"],
+                    "message": f"Límite de clientes alcanzado ({max_customers}). Actualiza tu plan para añadir más."
+                }
             )
     
     # Check for duplicate within the same store
