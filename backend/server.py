@@ -48,32 +48,35 @@ JWT_EXPIRATION_HOURS = 24
 PLAN_LIMITS = {
     "trial": {
         "name": "Free Trial",
-        "max_items": 6000,       # Same as PRO during trial
-        "max_customers": 30000,  # Same as PRO during trial
-        "max_users": 10,
+        "max_items": 999999,       # UNLIMITED during trial (Full Access)
+        "max_customers": 999999,   # UNLIMITED during trial (Full Access)
+        "max_users": 999,          # UNLIMITED during trial (Full Access)
         "price": 0,
         "duration_days": 15
     },
     "basic": {
         "name": "Plan Básico",
-        "max_items": 3000,
-        "max_customers": 10000,
-        "max_users": 10,
-        "price": 950
+        "max_items": 2000,         # UPDATED: 2,000 artículos
+        "max_customers": 10000,    # 10,000 clientes
+        "max_users": 5,            # UPDATED: 5 usuarios
+        "price": 950,
+        "stripe_price_id": "price_basic_annual"  # Para Stripe
     },
     "pro": {
         "name": "Plan PRO",
-        "max_items": 6000,
-        "max_customers": 30000,
-        "max_users": 10,
-        "price": 1450
+        "max_items": 6000,         # 6,000 artículos
+        "max_customers": 40000,    # UPDATED: 40,000 clientes
+        "max_users": 10,           # 10 usuarios
+        "price": 1450,
+        "stripe_price_id": "price_pro_annual"
     },
     "enterprise": {
         "name": "Plan Enterprise",
-        "max_items": 999999,     # Unlimited
-        "max_customers": 999999, # Unlimited
-        "max_users": 50,
-        "price": 1950
+        "max_items": 999999,       # Unlimited
+        "max_customers": 999999,   # Unlimited
+        "max_users": 15,           # UPDATED: 15 usuarios máximo
+        "price": 1950,
+        "stripe_price_id": "price_enterprise_annual"
     }
 }
 
