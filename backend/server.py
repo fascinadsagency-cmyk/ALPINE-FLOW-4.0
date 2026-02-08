@@ -2774,10 +2774,17 @@ async def create_items_bulk(data: BulkItemCreate, current_user: CurrentUser = De
             continue
         
         item_id = str(uuid.uuid4())
+        
+        # ⚠️  CRITICAL: Normalize item_type to prevent duplicates
+        normalized_item_type = normalize_type_name(item.item_type)
+        if not normalized_item_type:
+            errors.append({"barcode": item.barcode, "error": "Empty item_type"})
+            continue
+        
         doc = {
             "id": item_id,
             "barcode": item.barcode,
-            "item_type": item.item_type,
+            "item_type": normalized_item_type,  # ✅ NORMALIZED
             "brand": item.brand,
             "model": item.model,
             "size": item.size,
