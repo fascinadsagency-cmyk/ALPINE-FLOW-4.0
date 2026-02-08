@@ -917,11 +917,15 @@ async def get_customers_paginated(
     total = await db.customers.count_documents(query)
     
     # Get active customer IDs if status filter is needed
+    # 🚀 OPTIMIZACIÓN: Incluir store_filter para evitar traer datos de otras tiendas
     active_customer_ids = set()
     active_customer_dnis = set()
     if status in ["active", "inactive"]:
         active_rentals = await db.rentals.find(
-            {"status": {"$in": ["active", "partial"]}},
+            {
+                **current_user.get_store_filter(),  # ✅ Multi-tenant filter
+                "status": {"$in": ["active", "partial"]}
+            },
             {"customer_id": 1, "customer_dni": 1, "_id": 0}
         ).to_list(None)
         
