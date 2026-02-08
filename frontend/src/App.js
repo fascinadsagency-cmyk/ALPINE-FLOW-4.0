@@ -193,6 +193,23 @@ function AppRoutes() {
 }
 
 function App() {
+  const [limitModalData, setLimitModalData] = useState(null);
+
+  // Configurar interceptor de Axios y registrar manejador de límites
+  useEffect(() => {
+    setupAxiosInterceptors();
+    
+    registerLimitExceededHandler((data) => {
+      setLimitModalData({
+        isOpen: true,
+        limitType: data.limitType,
+        currentCount: data.currentCount || 0,
+        maxAllowed: data.maxAllowed || 0,
+        planName: data.planName || "Plan Actual"
+      });
+    });
+  }, []);
+
   // Registrar Service Worker al montar
   useEffect(() => {
     registerServiceWorker();
@@ -205,6 +222,18 @@ function App() {
           <OfflineProvider>
             <AppRoutes />
             <Toaster position="top-right" richColors closeButton />
+            
+            {/* Modal Global de Límites de Plan */}
+            {limitModalData && (
+              <UpgradePlanModal
+                isOpen={limitModalData.isOpen}
+                onClose={() => setLimitModalData(null)}
+                limitType={limitModalData.limitType}
+                currentCount={limitModalData.currentCount}
+                maxAllowed={limitModalData.maxAllowed}
+                planName={limitModalData.planName}
+              />
+            )}
           </OfflineProvider>
         </AuthProvider>
       </SettingsProvider>
