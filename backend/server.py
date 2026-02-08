@@ -2694,7 +2694,10 @@ async def cleanup_orphan_items(current_user: CurrentUser = Depends(get_current_u
 
 @api_router.post("/item-types/migrate-legacy")
 async def migrate_legacy_types(current_user: CurrentUser = Depends(get_current_user)):
-    """Migrate items with legacy hardcoded types to 'sin_categoria' or create new custom types"""
+    """Migrate items with legacy hardcoded types to 'sin_categoria' or create new custom types
+    Multi-tenant: Filters by store_id
+    """
+    store_filter = current_user.get_store_filter()
     legacy_types = ["ski", "snowboard", "boots", "helmet", "poles", "goggles"]
     legacy_labels = {
         "ski": "Esquís", "snowboard": "Snowboard", "boots": "Botas",
@@ -2704,16 +2707,17 @@ async def migrate_legacy_types(current_user: CurrentUser = Depends(get_current_u
     migrated = []
     
     for legacy_type in legacy_types:
-        # Count items with this legacy type
-        count = await db.items.count_documents({"item_type": legacy_type})
+        # Count items with this legacy type - Multi-tenant: Filter by store
+        count = await db.items.count_documents({**store_filter, "item_type": legacy_type})
         if count > 0:
-            # Check if custom type already exists
-            existing = await db.item_types.find_one({"value": legacy_type})
+            # Check if custom type already exists for this store
+            existing = await db.item_types.find_one({**store_filter, "value": legacy_type})
             if not existing:
-                # Create custom type to preserve the data
+                # Create custom type to preserve the data - Multi-tenant: Add store_id
                 type_id = str(uuid.uuid4())
                 doc = {
                     "id": type_id,
+                    "store_id": current_user.store_id,
                     "value": legacy_type,
                     "label": legacy_labels.get(legacy_type, legacy_type.capitalize()),
                     "is_default": False,
