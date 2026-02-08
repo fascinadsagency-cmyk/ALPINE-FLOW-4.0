@@ -157,7 +157,8 @@ class TestPasswordChange:
         })
         
         if login_response.status_code == 200:
-            new_token = login_response.json().get("token")
+            login_data = login_response.json()
+            new_token = login_data.get("access_token") or login_data.get("token")
             revert_response = requests.put(
                 f"{BASE_URL}/api/auth/password",
                 json={
