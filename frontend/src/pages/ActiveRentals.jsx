@@ -144,6 +144,25 @@ export default function ActiveRentals() {
 
 
   // ============ ADD ITEMS MODAL FUNCTIONS ============
+  
+  // Cargar packs y tarifas de la tienda
+  const loadPacksAndTariffs = async () => {
+    try {
+      const [packsRes, tariffsRes] = await Promise.all([
+        axios.get(`${API}/packs`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        }),
+        axios.get(`${API}/tariffs`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        })
+      ]);
+      setAddItemsPacks(packsRes.data || []);
+      setAddItemsTariffs(tariffsRes.data || []);
+    } catch (error) {
+      console.error("[AddItems] Error cargando packs/tarifas:", error);
+    }
+  };
+
   const openAddItemsModal = async (rental) => {
     // Calcular días restantes por defecto
     const today = new Date();
@@ -157,7 +176,28 @@ export default function ActiveRentals() {
     setAddItemsSearchResults([]);
     setAddItemsChargeNow(true);
     setAddItemsPaymentMethod("cash");
+    setAddItemsDetectedPacks([]);
+    
+    // Guardar los items existentes del alquiler para detección de packs
+    const existingItems = (rental.items || []).filter(i => !i.returned).map(i => ({
+      barcode: i.barcode,
+      item_type: i.item_type,
+      name: i.name || i.item_type,
+      unit_price: i.unit_price || 0
+    }));
+    setAddItemsExistingItems(existingItems);
+    
+    // Cargar packs y tarifas
+    await loadPacksAndTariffs();
+    
     setAddItemsModalOpen(true);
+    
+    // Focus en el input de búsqueda después de abrir
+    setTimeout(() => {
+      if (addItemsSearchRef.current) {
+        addItemsSearchRef.current.focus();
+      }
+    }, 100);
   };
 
   // Buscar artículos disponibles para añadir
@@ -224,41 +264,205 @@ export default function ActiveRentals() {
     }
   };
   
-  const addItemToRental = async (item) => {
+  // Obtener precio de tarifa para un tipo de artículo
+  const getAddItemsTariffPrice = (itemType, days) => {
+    const tariff = addItemsTariffs.find(t => 
+      t.item_type?.toLowerCase() === itemType?.toLowerCase()
+    );
+    
+    if (!tariff) return 0;
+    
+    // Usar tarifa escalonada
+    if (days <= 10) {
+      return tariff[`day_${days}`] || tariff.day_1 || 0;
+    }
+    return tariff.day_11_plus || tariff.day_1 || 0;
+  };
+  
+  // Obtener precio de pack para días específicos
+  const getAddItemsPackPrice = (pack, days) => {
+    if (!pack) return 0;
+    
+    if (days <= 10 && pack[`day_${days}`]) {
+      return pack[`day_${days}`];
+    }
+    if (days > 10 && pack.day_11_plus) {
+      return pack.day_11_plus;
+    }
+    return pack.day_1 || 0;
+  };
+  
+  // Detectar packs en el carrito combinado (items existentes + nuevos)
+  const detectAddItemsPacks = (newItems) => {
+    if (!addItemsPacks || addItemsPacks.length === 0) return [];
+    
+    // Combinar items existentes con nuevos
+    const allItems = [...addItemsExistingItems, ...newItems];
+    if (allItems.length === 0) return [];
+    
+    const detectedPackInstances = [];
+    const usedBarcodes = new Set();
+    
+    // Intentar formar packs
+    let foundPack = true;
+    while (foundPack) {
+      foundPack = false;
+      
+      for (const pack of addItemsPacks) {
+        // Items disponibles (no usados aún)
+        const availableItems = allItems.filter(item => !usedBarcodes.has(item.barcode));
+        
+        // Contar tipos disponibles
+        const availableTypeCounts = availableItems.reduce((acc, item) => {
+          acc[item.item_type] = (acc[item.item_type] || 0) + 1;
+          return acc;
+        }, {});
+        
+        // Contar componentes requeridos
+        const requiredComponents = pack.items.reduce((acc, itemType) => {
+          acc[itemType] = (acc[itemType] || 0) + 1;
+          return acc;
+        }, {});
+        
+        // Verificar si podemos formar este pack
+        let canFormPack = true;
+        for (const [type, count] of Object.entries(requiredComponents)) {
+          if ((availableTypeCounts[type] || 0) < count) {
+            canFormPack = false;
+            break;
+          }
+        }
+        
+        if (canFormPack) {
+          const packInstanceItems = [];
+          
+          for (const requiredType of pack.items) {
+            const item = availableItems.find(i => 
+              i.item_type === requiredType && 
+              !packInstanceItems.includes(i.barcode) &&
+              !usedBarcodes.has(i.barcode)
+            );
+            if (item) {
+              packInstanceItems.push(item.barcode);
+              usedBarcodes.add(item.barcode);
+            }
+          }
+          
+          if (packInstanceItems.length === pack.items.length) {
+            // Determinar qué items son nuevos vs existentes
+            const existingBarcodes = new Set(addItemsExistingItems.map(i => i.barcode));
+            const isNewPack = packInstanceItems.some(bc => !existingBarcodes.has(bc));
+            const hasExistingItems = packInstanceItems.some(bc => existingBarcodes.has(bc));
+            
+            detectedPackInstances.push({
+              pack: pack,
+              items: packInstanceItems,
+              instanceId: `pack-${Date.now()}-${detectedPackInstances.length}`,
+              isNewPack: isNewPack,
+              hasExistingItems: hasExistingItems,
+              // Marcar si es un pack mixto (existente + nuevo)
+              isMixedPack: isNewPack && hasExistingItems
+            });
+            
+            foundPack = true;
+            break;
+          }
+        }
+      }
+    }
+    
+    return detectedPackInstances;
+  };
+  
+  // Calcular precio total considerando packs
+  const calculateAddItemsTotalWithPacks = () => {
+    const days = addItemsDays;
+    const detectedPacks = detectAddItemsPacks(addItemsSelected);
+    setAddItemsDetectedPacks(detectedPacks);
+    
+    // Combinar todos los items
+    const allItems = [...addItemsExistingItems, ...addItemsSelected];
+    
+    // Identificar qué items están en packs
+    const itemsInPacks = new Set();
+    detectedPacks.forEach(dp => {
+      dp.items.forEach(bc => itemsInPacks.add(bc));
+    });
+    
+    let totalNew = 0;
+    let totalExisting = 0;
+    
+    // Calcular precio de packs
+    detectedPacks.forEach(dp => {
+      const packPrice = getAddItemsPackPrice(dp.pack, days);
+      
+      if (dp.isMixedPack) {
+        // Pack mixto: cobrar precio del pack completo
+        // pero descontar lo que ya se pagó por los items existentes
+        const existingBarcodes = new Set(addItemsExistingItems.map(i => i.barcode));
+        const existingItemsInPack = dp.items.filter(bc => existingBarcodes.has(bc));
+        const existingItemsPrice = existingItemsInPack.reduce((sum, bc) => {
+          const item = addItemsExistingItems.find(i => i.barcode === bc);
+          return sum + (item?.unit_price || 0);
+        }, 0);
+        
+        // La diferencia a cobrar es: precio pack - lo ya pagado
+        const difference = Math.max(0, packPrice - existingItemsPrice);
+        totalNew += difference;
+      } else if (dp.isNewPack) {
+        // Pack completamente nuevo
+        totalNew += packPrice;
+      }
+      // Los packs que son solo de items existentes no se cobran de nuevo
+    });
+    
+    // Calcular precio de items sueltos (no en packs)
+    addItemsSelected.forEach(item => {
+      if (!itemsInPacks.has(item.barcode)) {
+        const itemPrice = getAddItemsTariffPrice(item.item_type, days);
+        totalNew += itemPrice;
+      }
+    });
+    
+    return {
+      total: totalNew,
+      detectedPacks: detectedPacks,
+      packSavings: calculatePackSavings(detectedPacks, days)
+    };
+  };
+  
+  // Calcular ahorro por usar packs
+  const calculatePackSavings = (detectedPacks, days) => {
+    let savings = 0;
+    
+    detectedPacks.forEach(dp => {
+      if (dp.isNewPack || dp.isMixedPack) {
+        // Precio si se cobraran individualmente
+        const individualPrice = dp.pack.items.reduce((sum, itemType) => {
+          return sum + getAddItemsTariffPrice(itemType, days);
+        }, 0);
+        
+        // Precio del pack
+        const packPrice = getAddItemsPackPrice(dp.pack, days);
+        
+        savings += Math.max(0, individualPrice - packPrice);
+      }
+    });
+    
+    return savings;
+  };
+  
+  const addItemToRental = (item) => {
     // Verificar que no esté ya agregado
     if (addItemsSelected.find(i => i.barcode === item.barcode)) {
       toast.warning("Este artículo ya está en la lista");
       return;
     }
     
-    // Calcular precio usando tarifas
-    const days = addItemsDays;
-    let unitPrice = 0;
-    
-    try {
-      // Obtener tarifas para calcular precio correcto
-      const tariffsRes = await axios.get(`${API}/tariffs`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      const tariffs = tariffsRes.data;
-      
-      // Buscar tarifa para este tipo de item
-      const tariff = tariffs.find(t => t.item_type?.toLowerCase() === item.item_type?.toLowerCase());
-      
-      if (tariff) {
-        // Usar tarifa escalonada: day_1, day_2, ..., day_10, day_11_plus
-        const dayField = days <= 10 ? `day_${days}` : 'day_11_plus';
-        unitPrice = tariff[dayField] || tariff.day_1 || 0;
-      } else if (item.rental_price) {
-        // Fallback al precio base del artículo
-        unitPrice = item.rental_price * days;
-      }
-    } catch (error) {
-      console.error("[AddItems] Error obteniendo tarifas:", error);
-      // Fallback si falla
-      if (item.rental_price) {
-        unitPrice = item.rental_price * days;
-      }
+    // Verificar que no esté en el alquiler original
+    if (addItemsExistingItems.find(i => i.barcode === item.barcode)) {
+      toast.warning("Este artículo ya está en el alquiler");
+      return;
     }
     
     const newItem = {
@@ -267,23 +471,48 @@ export default function ActiveRentals() {
       name: item.name || item.item_type,
       item_type: item.item_type,
       size: item.size,
-      days: days,
-      unit_price: unitPrice,
+      days: addItemsDays,
+      unit_price: getAddItemsTariffPrice(item.item_type, addItemsDays),
       person_name: ""
     };
     
-    setAddItemsSelected([...addItemsSelected, newItem]);
+    const newSelected = [...addItemsSelected, newItem];
+    setAddItemsSelected(newSelected);
     setAddItemsSearch("");
     setAddItemsSearchResults([]);
+    
+    // Re-detectar packs
+    const detected = detectAddItemsPacks(newSelected);
+    setAddItemsDetectedPacks(detected);
+    
     toast.success(`Artículo añadido: ${newItem.name} (${item.internal_code || item.barcode})`);
   };
   
   const removeItemFromAddList = (barcode) => {
-    setAddItemsSelected(addItemsSelected.filter(i => i.barcode !== barcode));
+    const newSelected = addItemsSelected.filter(i => i.barcode !== barcode);
+    setAddItemsSelected(newSelected);
+    
+    // Re-detectar packs
+    const detected = detectAddItemsPacks(newSelected);
+    setAddItemsDetectedPacks(detected);
   };
   
-  const calculateAddItemsTotal = () => {
-    return addItemsSelected.reduce((sum, item) => sum + (item.unit_price || 0), 0);
+  // Manejar cambio de días - recalcular precios
+  const handleAddItemsDaysChange = (newDays) => {
+    const days = Math.max(1, parseInt(newDays) || 1);
+    setAddItemsDays(days);
+    
+    // Recalcular precios de todos los items
+    const updatedItems = addItemsSelected.map(item => ({
+      ...item,
+      days: days,
+      unit_price: getAddItemsTariffPrice(item.item_type, days)
+    }));
+    setAddItemsSelected(updatedItems);
+    
+    // Re-detectar packs con nuevos días
+    const detected = detectAddItemsPacks(updatedItems);
+    setAddItemsDetectedPacks(detected);
   };
   
   const confirmAddItems = async () => {
@@ -291,6 +520,9 @@ export default function ActiveRentals() {
       toast.error("Selecciona al menos un artículo");
       return;
     }
+    
+    // Calcular total con lógica de packs
+    const { total } = calculateAddItemsTotalWithPacks();
     
     setAddItemsProcessing(true);
     try {
@@ -304,7 +536,9 @@ export default function ActiveRentals() {
           })),
           days: addItemsDays,
           charge_now: addItemsChargeNow,
-          payment_method: addItemsPaymentMethod
+          payment_method: addItemsPaymentMethod,
+          // Enviar el total calculado con packs
+          calculated_total: total
         },
         {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
