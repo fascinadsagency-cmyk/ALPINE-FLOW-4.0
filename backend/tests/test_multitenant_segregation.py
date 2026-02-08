@@ -15,7 +15,7 @@ BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
 # Test credentials per store
 STORES = {
-    "el_enebro": {"store_id": 1, "username": "admin", "password": "admin"},
+    "el_enebro": {"store_id": 1, "username": "admin@test.com", "password": "admin123"},
     "test_store_1": {"store_id": 22, "username": "test1@test.com", "password": "test123"},
     "test_store_2": {"store_id": 23, "username": "test2@test.com", "password": "test123"},
 }
