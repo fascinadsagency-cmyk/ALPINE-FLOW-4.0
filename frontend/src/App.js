@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { OfflineProvider, useOffline } from "@/contexts/OfflineContext";
+import { setupAxiosInterceptors, registerLimitExceededHandler } from "@/lib/axiosInterceptor";
+import UpgradePlanModal from "@/components/UpgradePlanModal";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import NewRental from "@/pages/NewRental";
