@@ -25,7 +25,9 @@ def auth_token():
         "password": "admin123"
     })
     if response.status_code == 200:
-        return response.json().get("token")
+        data = response.json()
+        # Handle both 'token' and 'access_token' keys
+        return data.get("access_token") or data.get("token")
     pytest.skip(f"Authentication failed: {response.status_code} - {response.text}")
 
 @pytest.fixture
