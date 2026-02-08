@@ -7554,7 +7554,9 @@ async def get_plan_status(current_user: CurrentUser = Depends(get_current_user))
     # Calculate trial status
     is_trial = plan_type == "trial"
     trial_days_remaining = 0
+    trial_hours_remaining = 0
     trial_expired = False
+    trial_end_date = ""
     
     if is_trial:
         if trial_start:
@@ -7564,9 +7566,18 @@ async def get_plan_status(current_user: CurrentUser = Depends(get_current_user))
             else:
                 trial_start_dt = trial_start
             
-            days_since_start = (datetime.now(timezone.utc) - trial_start_dt).days
-            trial_days_remaining = max(0, 15 - days_since_start)
-            trial_expired = days_since_start > 15
+            # Calculate exact time remaining
+            trial_end_dt = trial_start_dt + timedelta(days=15)
+            trial_end_date = trial_end_dt.isoformat()
+            time_remaining = trial_end_dt - datetime.now(timezone.utc)
+            
+            if time_remaining.total_seconds() > 0:
+                trial_days_remaining = time_remaining.days
+                # If less than 24 hours, show hours
+                if trial_days_remaining == 0:
+                    trial_hours_remaining = int(time_remaining.total_seconds() // 3600)
+            else:
+                trial_expired = True
         else:
             # No trial start date, set it now
             await db.stores.update_one(
@@ -7574,6 +7585,7 @@ async def get_plan_status(current_user: CurrentUser = Depends(get_current_user))
                 {"$set": {"trial_start_date": datetime.now(timezone.utc).isoformat()}}
             )
             trial_days_remaining = 15
+            trial_end_date = (datetime.now(timezone.utc) + timedelta(days=15)).isoformat()
     
     # Get plan limits
     plan_info = PLAN_LIMITS.get(plan_type, PLAN_LIMITS["trial"])
