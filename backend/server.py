@@ -5751,41 +5751,27 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
         today_revenue = sum(r.get("paid_amount", 0) for r in rentals)
         unpaid_amount = 0
     
-    # ========== RETURNS TODAY (COUNT UNITS, NOT LINES) ==========
-    # FIXED: Count items returned TODAY regardless of rental status
-    # A rental can be "active" or "partial" and still have items returned today
+    # ========== RETURNS TODAY (PENDING RETURNS DUE TODAY) ==========
+    # Count items that are DUE to be returned today (expected_return_date = today)
+    # AND have not been returned yet (returned = False)
+    # This matches the "Pendientes de hoy" section in Devoluciones page
     # Multi-tenant: Filter by store
     returns_today = 0
     
-    # Query ALL rentals (not just status="returned") and check items
-    all_rentals_with_items = await db.rentals.find(
-        current_user.get_store_filter(),
+    # Find rentals where expected_return_date is today
+    rentals_due_today = await db.rentals.find(
+        {
+            **current_user.get_store_filter(),
+            "expected_return_date": {"$gte": start, "$lte": end}
+        },
         {"_id": 0, "items": 1}
-    ).to_list(10000)
+    ).to_list(1000)
     
-    # Count items where return_date is today OR actual_return_date is today
-    for rental in all_rentals_with_items:
+    # Count items that are NOT returned yet
+    for rental in rentals_due_today:
         for item in rental.get("items", []):
-            if item.get("returned", False):
-                # Check item-level return_date
-                item_return_date = item.get("return_date", "")
-                if item_return_date and item_return_date >= start and item_return_date <= end:
-                    returns_today += item.get("quantity", 1)
-    
-    # If still 0, try rental-level actual_return_date
-    if returns_today == 0:
-        rentals_with_returns_today = await db.rentals.find(
-            {
-                **current_user.get_store_filter(),
-                "actual_return_date": {"$gte": start, "$lte": end}
-            },
-            {"_id": 0, "items": 1}
-        ).to_list(1000)
-        
-        for rental in rentals_with_returns_today:
-            for item in rental.get("items", []):
-                if item.get("returned", False):
-                    returns_today += item.get("quantity", 1)
+            if not item.get("returned", False):  # Item NOT returned yet
+                returns_today += item.get("quantity", 1)
     
     # ========== CUSTOMERS TODAY (COUNT DISTINCT customer_id) ==========
     # Count unique customers who had a rental created today
