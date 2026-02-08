@@ -3282,8 +3282,8 @@ export default function NewRental() {
           setItemSearchTerm("");
         }
       }}>
-        <DialogContent className="sm:max-w-2xl max-h-[80vh]">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="flex items-center gap-2">
               {searchFilter ? (
                 <>
@@ -3302,7 +3302,7 @@ export default function NewRental() {
           </DialogHeader>
           
           {/* Search Filters */}
-          <div className="grid grid-cols-3 gap-3 py-4">
+          <div className="grid grid-cols-3 gap-3 py-4 flex-shrink-0">
             <Input
               placeholder="Código, marca, modelo..."
               value={itemSearchTerm}
@@ -3323,7 +3323,7 @@ export default function NewRental() {
           </div>
 
           {/* Results - VIRTUALIZADO para rendimiento */}
-          <div className="h-96 overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-hidden">
             {searchingItems ? (
               <div className="p-4">
                 <SearchResultsSkeleton count={5} />
@@ -3338,7 +3338,7 @@ export default function NewRental() {
             )}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0">
             <Button variant="outline" onClick={() => {
               setShowItemSearch(false);
               refocusBarcodeInput(); // Auto-focus barcode after closing search
