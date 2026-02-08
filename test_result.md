@@ -102,9 +102,34 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test Completo de Edición de Métodos de Pago y Reconciliación de Caja: Testing payment method editing system with automatic cash register reconciliation. Each payment method change should reflect correctly in Cash Register (Arqueo de Caja) with cash_movements created with session_id. Test scenarios: 1) Cash→Card, 2) Cash→Pending, 3) Pending→Card, 4) Integrity verification."
+user_problem_statement: "Implementación de dos nuevas características: 1) Sistema de Bloqueo Proactivo - Modal de upgrade cuando el usuario alcanza límites del plan (clientes, artículos, miembros del equipo). 2) Sección 'Mi Cuenta' - Página donde los usuarios pueden editar perfil (nombre, email) y cambiar contraseña."
 
 backend:
+
+  - task: "My Account Section - Profile and Password Management"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/MyAccount.jsx, /app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented complete My Account section with profile editing (username, email), password change, and photo upload. Added route /mi-cuenta in App.js, added navigation link in Layout.jsx for all authenticated users. Updated backend endpoints to allow all authenticated users (not just admins) to access these features."
+        
+  - task: "Plan Limit Upgrade Modal System"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/lib/axiosInterceptor.js, /app/frontend/src/App.js, /app/frontend/src/components/UpgradePlanModal.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented global Axios interceptor to detect 403 errors with PLAN_LIMIT_EXCEEDED. Created axiosInterceptor.js that listens for limit exceeded errors and triggers UpgradePlanModal. Modal already existed, integrated it globally in App.js. Backend already returns proper error format when limits are reached (customers, items, users). Ready for testing but requires user to hit actual limits to verify modal triggers correctly."
+
   - task: "Inventory Internal Code Flow"
     implemented: true
     working: true
