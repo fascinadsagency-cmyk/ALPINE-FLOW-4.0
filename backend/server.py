@@ -1399,7 +1399,14 @@ async def create_item(item: ItemCreate, current_user: CurrentUser = Depends(get_
         if max_items != 999999 and current_items >= max_items:
             raise HTTPException(
                 status_code=403, 
-                detail=f"Límite de artículos alcanzado ({max_items}). Actualiza tu plan para añadir más."
+                detail={
+                    "error": "PLAN_LIMIT_EXCEEDED",
+                    "limit_type": "items",
+                    "current_count": current_items,
+                    "max_allowed": max_items,
+                    "plan_name": plan_info["name"],
+                    "message": f"Límite de artículos alcanzado ({max_items}). Actualiza tu plan para añadir más."
+                }
             )
     
     # For generic items, generate auto ID and skip duplicate checks for barcode/internal_code
