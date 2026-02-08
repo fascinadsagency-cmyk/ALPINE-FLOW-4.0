@@ -1666,12 +1666,15 @@ async def get_items_paginated(
 async def get_items_stats(
     current_user: CurrentUser = Depends(get_current_user)
 ):
-    """Get inventory statistics without loading all records - optimized for large datasets"""
-    total = await db.items.count_documents({"status": {"$nin": ["deleted"]}})
-    available = await db.items.count_documents({"status": "available"})
-    rented = await db.items.count_documents({"status": "rented"})
-    maintenance = await db.items.count_documents({"status": "maintenance"})
-    retired = await db.items.count_documents({"status": "retired"})
+    """Get inventory statistics without loading all records - optimized for large datasets
+    Multi-tenant: Filters by store_id
+    """
+    store_filter = current_user.get_store_filter()
+    total = await db.items.count_documents({**store_filter, "status": {"$nin": ["deleted"]}})
+    available = await db.items.count_documents({**store_filter, "status": "available"})
+    rented = await db.items.count_documents({**store_filter, "status": "rented"})
+    maintenance = await db.items.count_documents({**store_filter, "status": "maintenance"})
+    retired = await db.items.count_documents({**store_filter, "status": "retired"})
     
     return {
         "total": total,
