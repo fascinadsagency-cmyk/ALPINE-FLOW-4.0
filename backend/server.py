@@ -612,11 +612,132 @@ async def login(user: UserLogin):
 
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_me(current_user: CurrentUser = Depends(get_current_user)):
-    return UserResponse(
-        id=current_user.user_id,
-        username=current_user.username,
-        role=current_user.role
+    # Get full user data including photo
+    user_doc = await db.users.find_one({"id": current_user.user_id}, {"_id": 0, "password": 0, "hashed_password": 0})
+    return {
+        "id": current_user.user_id,
+        "username": current_user.username,
+        "role": current_user.role,
+        "email": user_doc.get("email", current_user.username) if user_doc else current_user.username,
+        "photo_url": user_doc.get("photo_url", "") if user_doc else ""
+    }
+
+
+# ==================== PROFILE MANAGEMENT ROUTES ====================
+
+class ProfileUpdateRequest(BaseModel):
+    username: Optional[str] = None
+    email: Optional[str] = None
+
+class PasswordChangeRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+@api_router.put("/auth/profile")
+async def update_profile(
+    request: ProfileUpdateRequest,
+    current_user: CurrentUser = Depends(require_admin)
+):
+    """Update user profile (username/email) - ADMIN ONLY"""
+    
+    update_data = {}
+    
+    if request.username:
+        # Check if username is taken (by another user)
+        existing = await db.users.find_one({
+            "username": request.username,
+            "id": {"$ne": current_user.user_id}
+        })
+        if existing:
+            raise HTTPException(status_code=400, detail="Este nombre de usuario ya está en uso")
+        update_data["username"] = request.username
+    
+    if request.email:
+        # Validate email format
+        if "@" not in request.email or "." not in request.email.split("@")[-1]:
+            raise HTTPException(status_code=400, detail="Formato de email inválido")
+        update_data["email"] = request.email.lower().strip()
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No hay datos para actualizar")
+    
+    # Update user
+    result = await db.users.update_one(
+        {"id": current_user.user_id},
+        {"$set": update_data}
     )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    return {"message": "Perfil actualizado correctamente", "updated": update_data}
+
+
+@api_router.put("/auth/password")
+async def change_password(
+    request: PasswordChangeRequest,
+    current_user: CurrentUser = Depends(require_admin)
+):
+    """Change user password - ADMIN ONLY. Requires current password validation."""
+    
+    # Get current user's password hash
+    user = await db.users.find_one({"id": current_user.user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    # Verify current password
+    stored_password = user.get("password") or user.get("hashed_password")
+    if not stored_password:
+        raise HTTPException(status_code=400, detail="Error de configuración de cuenta")
+    
+    if not verify_password(request.current_password, stored_password):
+        raise HTTPException(status_code=401, detail="La contraseña actual es incorrecta")
+    
+    # Validate new password
+    if len(request.new_password) < 6:
+        raise HTTPException(status_code=400, detail="La nueva contraseña debe tener al menos 6 caracteres")
+    
+    # Hash and update new password
+    new_hashed = hash_password(request.new_password)
+    
+    await db.users.update_one(
+        {"id": current_user.user_id},
+        {"$set": {"password": new_hashed, "hashed_password": new_hashed}}
+    )
+    
+    return {"message": "Contraseña actualizada correctamente"}
+
+
+@api_router.post("/auth/photo")
+async def upload_profile_photo(
+    photo: UploadFile = File(...),
+    current_user: CurrentUser = Depends(require_admin)
+):
+    """Upload profile photo - ADMIN ONLY"""
+    import base64
+    
+    # Validate file type
+    if not photo.content_type or not photo.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Solo se permiten imágenes")
+    
+    # Read and validate file size (max 2MB)
+    contents = await photo.read()
+    if len(contents) > 2 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="La imagen no puede superar 2MB")
+    
+    # Convert to base64 data URL for storage
+    mime_type = photo.content_type or "image/jpeg"
+    base64_data = base64.b64encode(contents).decode("utf-8")
+    photo_url = f"data:{mime_type};base64,{base64_data}"
+    
+    # Update user
+    await db.users.update_one(
+        {"id": current_user.user_id},
+        {"$set": {"photo_url": photo_url}}
+    )
+    
+    return {"message": "Foto actualizada correctamente", "photo_url": photo_url}
+
 
 # ==================== CUSTOMER ROUTES ====================
 
