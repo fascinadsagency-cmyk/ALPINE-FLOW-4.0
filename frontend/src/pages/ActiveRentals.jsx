@@ -374,11 +374,10 @@ export default function ActiveRentals() {
     return detectedPackInstances;
   };
   
-  // Calcular precio total considerando packs
+  // Calcular precio total considerando packs (sin modificar estado)
   const calculateAddItemsTotalWithPacks = () => {
     const days = addItemsDays;
     const detectedPacks = detectAddItemsPacks(addItemsSelected);
-    setAddItemsDetectedPacks(detectedPacks);
     
     // Combinar todos los items
     const allItems = [...addItemsExistingItems, ...addItemsSelected];
@@ -390,7 +389,6 @@ export default function ActiveRentals() {
     });
     
     let totalNew = 0;
-    let totalExisting = 0;
     
     // Calcular precio de packs
     detectedPacks.forEach(dp => {
