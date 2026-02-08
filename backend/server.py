@@ -1422,12 +1422,17 @@ async def create_item(item: ItemCreate, current_user: CurrentUser = Depends(get_
         item_id = str(uuid.uuid4())
         auto_code = f"GEN-{item_id[:8].upper()}"
         
+        # ⚠️  CRITICAL: Normalize item_type to prevent duplicates
+        normalized_item_type = normalize_type_name(item.item_type)
+        if not normalized_item_type:
+            raise HTTPException(status_code=400, detail="El tipo de artículo no puede estar vacío")
+        
         doc = {
             "id": item_id,
             "barcode": auto_code,  # Auto-generated for generic
             "internal_code": auto_code,
             "serial_number": "",
-            "item_type": item.item_type,
+            "item_type": normalized_item_type,  # ✅ NORMALIZED
             "brand": item.brand or "",
             "model": item.model or "",
             "size": item.size or "",
