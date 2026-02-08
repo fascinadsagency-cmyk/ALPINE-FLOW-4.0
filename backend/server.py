@@ -2736,15 +2736,18 @@ async def reassign_item_types(
     new_type: str,
     current_user: CurrentUser = Depends(get_current_user)
 ):
-    """Reassign all items from one type to another"""
-    # Verify new type exists
-    new_type_doc = await db.item_types.find_one({"value": new_type})
+    """Reassign all items from one type to another
+    Multi-tenant: Filters by store_id
+    """
+    store_filter = current_user.get_store_filter()
+    # Verify new type exists for this store
+    new_type_doc = await db.item_types.find_one({**store_filter, "value": new_type})
     if not new_type_doc:
         raise HTTPException(status_code=404, detail="El tipo de destino no existe")
     
-    # Update all items
+    # Update all items for this store
     result = await db.items.update_many(
-        {"item_type": old_type},
+        {**store_filter, "item_type": old_type},
         {"$set": {"item_type": new_type}}
     )
     
