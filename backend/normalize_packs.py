@@ -33,7 +33,7 @@ async def normalize_packs():
     """Normalizar item_type en todos los packs"""
     
     print("=" * 70)
-    print("🔧 NORMALIZANDO PACKS")
+    print("🔧 NORMALIZANDO PACKS (MULTI-TENANT)")
     print("=" * 70)
     print()
     
@@ -41,16 +41,17 @@ async def normalize_packs():
     db = client[DB_NAME]
     
     try:
-        # Obtener todos los packs
-        packs = await db.packs.find({}, {"_id": 0}).to_list(None)
+        # Obtener todos los packs (todas las tiendas)
+        packs = await db.packs.find({}).to_list(None)
         
-        print(f"📦 Total packs: {len(packs)}")
+        print(f"📦 Total packs (todas las tiendas): {len(packs)}")
         print()
         
         updated_count = 0
         
         for pack in packs:
             pack_id = pack.get('id')
+            store_id = pack.get('store_id', 'N/A')
             name = pack.get('name')
             original_items = pack.get('items', [])
             
@@ -59,13 +60,13 @@ async def normalize_packs():
             
             # Verificar si hay cambios
             if original_items != normalized_items:
-                print(f"📝 Pack: {name}")
+                print(f"📝 Pack: {name} (Store: {store_id})")
                 print(f"   Original: {original_items}")
                 print(f"   Normalizado: {normalized_items}")
                 
                 # Actualizar en BD
                 result = await db.packs.update_one(
-                    {"id": pack_id},
+                    {"id": pack_id, "store_id": store_id},
                     {
                         "$set": {
                             "items": normalized_items,
@@ -82,7 +83,7 @@ async def normalize_packs():
                 
                 print()
             else:
-                print(f"✅ Pack '{name}' ya está normalizado")
+                print(f"✅ Pack '{name}' (Store: {store_id}) ya está normalizado")
         
         print("=" * 70)
         print("✅ NORMALIZACIÓN COMPLETADA")
