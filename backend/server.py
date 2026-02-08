@@ -3523,7 +3523,7 @@ async def process_return(rental_id: str, return_input: ReturnInput, current_user
                 new_available = min(current_available + qty_to_return, total_stock)
                 
                 await db.items.update_one(
-                    {"id": item["item_id"]},
+                    {**current_user.get_store_filter(), "barcode": item["barcode"]},
                     {"$set": {"stock_available": new_available}}
                 )
             else:
@@ -3533,7 +3533,7 @@ async def process_return(rental_id: str, return_input: ReturnInput, current_user
                 
                 # Update status and days used
                 await db.items.update_one(
-                    {"id": item["item_id"]},
+                    {**current_user.get_store_filter(), "barcode": item["barcode"]},
                     {"$set": {"status": "available"}, "$inc": {"days_used": days}}
                 )
                 # Update amortization for regular items
@@ -3544,7 +3544,7 @@ async def process_return(rental_id: str, return_input: ReturnInput, current_user
                         daily_rate = tariff.get("day_1", 0) or tariff.get("days_1", 0)
                         amortization = item_doc.get("days_used", 0) * daily_rate
                         await db.items.update_one(
-                            {"id": item["item_id"]},
+                            {**current_user.get_store_filter(), "barcode": item["barcode"]},
                             {"$set": {"amortization": amortization}}
                         )
         elif not item.get("returned", False):
