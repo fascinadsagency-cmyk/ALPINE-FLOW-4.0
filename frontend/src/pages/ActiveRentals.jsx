@@ -135,10 +135,9 @@ export default function ActiveRentals() {
   const [addItemsProcessing, setAddItemsProcessing] = useState(false);
   const [addItemsSearchResults, setAddItemsSearchResults] = useState([]);
   const [addItemsSearchLoading, setAddItemsSearchLoading] = useState(false);
-  // Nuevos estados para lógica de packs
+  // Estados para lógica de packs
   const [addItemsPacks, setAddItemsPacks] = useState([]); // Packs disponibles de la tienda
   const [addItemsTariffs, setAddItemsTariffs] = useState([]); // Tarifas disponibles
-  const [addItemsDetectedPacks, setAddItemsDetectedPacks] = useState([]); // Packs detectados en el carrito combinado
   const [addItemsExistingItems, setAddItemsExistingItems] = useState([]); // Items del alquiler original
   const addItemsSearchRef = useRef(null); // Ref para autofocus
 
