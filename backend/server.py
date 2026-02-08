@@ -1489,6 +1489,7 @@ async def create_item(item: ItemCreate, current_user: CurrentUser = Depends(get_
     
     doc = {
         "id": item_id,
+        "store_id": current_user.store_id,  # ✅ Multi-tenant: assign to user's store
         "barcode": item.barcode,
         "barcode_2": item.barcode_2 or "",  # Secondary barcode
         "internal_code": item.internal_code,
