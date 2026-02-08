@@ -1473,13 +1473,19 @@ async def create_item(item: ItemCreate, current_user: CurrentUser = Depends(get_
         raise HTTPException(status_code=400, detail=f"Ya existe un artículo con código '{item.barcode}'")
     
     item_id = str(uuid.uuid4())
+    
+    # ⚠️  CRITICAL: Normalize item_type to prevent duplicates
+    normalized_item_type = normalize_type_name(item.item_type)
+    if not normalized_item_type:
+        raise HTTPException(status_code=400, detail="El tipo de artículo no puede estar vacío")
+    
     doc = {
         "id": item_id,
         "barcode": item.barcode,
         "barcode_2": item.barcode_2 or "",  # Secondary barcode
         "internal_code": item.internal_code,
         "serial_number": item.serial_number or "",
-        "item_type": item.item_type,
+        "item_type": normalized_item_type,  # ✅ NORMALIZED
         "brand": item.brand or "",
         "model": item.model or "",
         "size": item.size or "",
