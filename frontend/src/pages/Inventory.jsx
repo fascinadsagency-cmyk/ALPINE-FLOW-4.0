@@ -1293,44 +1293,68 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
     const results = { success: 0, softDeleted: 0, failed: 0, failedIds: [] };
     const itemsToDelete = Array.from(selectedItems);
     
-    // Process ALL items - don't stop on individual failures
-    const deletePromises = itemsToDelete.map(async (itemId) => {
-      try {
-        const response = await axios.delete(`${API}/items/${itemId}`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
-        
-        if (response.data?.action === "hard_delete") {
+    // 🚦 RATE LIMITING: Process in batches to avoid 429 errors
+    const BATCH_SIZE = 5; // Process 5 items at a time
+    const DELAY_MS = 500; // Wait 500ms between batches
+    
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    
+    console.log(`[BULK DELETE] Processing ${itemsToDelete.length} items in batches of ${BATCH_SIZE}`);
+    
+    // Process items in batches
+    for (let i = 0; i < itemsToDelete.length; i += BATCH_SIZE) {
+      const batch = itemsToDelete.slice(i, i + BATCH_SIZE);
+      const batchNum = Math.floor(i / BATCH_SIZE) + 1;
+      const totalBatches = Math.ceil(itemsToDelete.length / BATCH_SIZE);
+      
+      console.log(`[BULK DELETE] Processing batch ${batchNum}/${totalBatches} (${batch.length} items)`);
+      
+      // Process current batch in parallel
+      const deletePromises = batch.map(async (itemId) => {
+        try {
+          const response = await axios.delete(`${API}/items/${itemId}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          });
+          
+          if (response.data?.action === "hard_delete") {
+            return { status: "success", itemId };
+          } else if (response.data?.action === "soft_delete") {
+            return { status: "soft_delete", itemId };
+          }
           return { status: "success", itemId };
-        } else if (response.data?.action === "soft_delete") {
-          return { status: "soft_delete", itemId };
+        } catch (error) {
+          console.error(`Failed to delete item ${itemId}:`, error.response?.data?.detail);
+          return { 
+            status: "failed", 
+            itemId, 
+            reason: error.response?.data?.detail || "Error desconocido" 
+          };
         }
-        return { status: "success", itemId };
-      } catch (error) {
-        // If deletion fails (item rented), don't try to retire - just record failure
-        console.error(`Failed to delete item ${itemId}:`, error.response?.data?.detail);
-        return { 
-          status: "failed", 
-          itemId, 
-          reason: error.response?.data?.detail || "Error desconocido" 
-        };
+      });
+      
+      // Wait for current batch to complete
+      const batchResults = await Promise.all(deletePromises);
+      
+      // Count results
+      for (const result of batchResults) {
+        if (result.status === "success") {
+          results.success++;
+        } else if (result.status === "soft_delete") {
+          results.softDeleted++;
+        } else {
+          results.failed++;
+          results.failedIds.push(result.itemId);
+        }
       }
-    });
-    
-    // Wait for all delete operations to complete
-    const deleteResults = await Promise.all(deletePromises);
-    
-    // Count results
-    for (const result of deleteResults) {
-      if (result.status === "success") {
-        results.success++;
-      } else if (result.status === "soft_delete") {
-        results.softDeleted++;
-      } else {
-        results.failed++;
-        results.failedIds.push(result.itemId);
+      
+      // Wait before processing next batch (except for the last batch)
+      if (i + BATCH_SIZE < itemsToDelete.length) {
+        console.log(`[BULK DELETE] Waiting ${DELAY_MS}ms before next batch...`);
+        await sleep(DELAY_MS);
       }
     }
+    
+    console.log(`[BULK DELETE] Completed: ${results.success} success, ${results.softDeleted} soft-deleted, ${results.failed} failed`);
     
     setBulkDeleting(false);
     setShowBulkDeleteDialog(false);
@@ -1355,11 +1379,11 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
     // VERIFICATION: Check if any deleted items are still in the list
     setTimeout(async () => {
       const currentItems = await itemApi.getAll({});
-      const stillPresent = deleteResults
-        .filter(r => r.status === "success")
-        .filter(r => currentItems.data.some(item => item.id === r.itemId));
+      const stillPresent = results.success > 0 && currentItems.data.some(item => 
+        itemsToDelete.includes(item.id) && !results.failedIds.includes(item.id)
+      );
       
-      if (stillPresent.length > 0) {
+      if (stillPresent) {
         console.error("SYNC ERROR: Some items were not properly deleted");
         toast.error("Error de sincronización detectado. Recargando página...");
         window.location.reload();
