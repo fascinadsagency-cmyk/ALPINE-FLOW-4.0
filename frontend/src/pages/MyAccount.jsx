@@ -65,15 +65,12 @@ export default function MyAccount() {
   
   const [passwordErrors, setPasswordErrors] = useState({});
 
-  // Protección: Solo admins pueden acceder
+  // Cargar datos del perfil al montar el componente
   useEffect(() => {
-    if (user && user.role !== "admin" && user.role !== "super_admin") {
-      toast.error("Acceso denegado");
-      navigate("/");
-      return;
+    if (user) {
+      fetchProfileData();
     }
-    fetchProfileData();
-  }, [user, navigate]);
+  }, [user]);
 
   const fetchProfileData = async () => {
     try {
