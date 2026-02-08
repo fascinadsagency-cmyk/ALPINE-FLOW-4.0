@@ -127,14 +127,20 @@ export default function ActiveRentals() {
   // ============ ADD ITEMS MODAL STATE ============
   const [addItemsModalOpen, setAddItemsModalOpen] = useState(false);
   const [addItemsRental, setAddItemsRental] = useState(null);
-  const [addItemsSelected, setAddItemsSelected] = useState([]); // Array de {barcode, name, days, unit_price, person_name}
+  const [addItemsSelected, setAddItemsSelected] = useState([]); // Items nuevos a añadir
   const [addItemsSearch, setAddItemsSearch] = useState("");
-  const [addItemsDays, setAddItemsDays] = useState(0); // Días por defecto = días restantes
+  const [addItemsDays, setAddItemsDays] = useState(0); // Días restantes del alquiler
   const [addItemsChargeNow, setAddItemsChargeNow] = useState(true);
   const [addItemsPaymentMethod, setAddItemsPaymentMethod] = useState("cash");
   const [addItemsProcessing, setAddItemsProcessing] = useState(false);
-  const [addItemsSearchResults, setAddItemsSearchResults] = useState([]); // Resultados de búsqueda de artículos
+  const [addItemsSearchResults, setAddItemsSearchResults] = useState([]);
   const [addItemsSearchLoading, setAddItemsSearchLoading] = useState(false);
+  // Nuevos estados para lógica de packs
+  const [addItemsPacks, setAddItemsPacks] = useState([]); // Packs disponibles de la tienda
+  const [addItemsTariffs, setAddItemsTariffs] = useState([]); // Tarifas disponibles
+  const [addItemsDetectedPacks, setAddItemsDetectedPacks] = useState([]); // Packs detectados en el carrito combinado
+  const [addItemsExistingItems, setAddItemsExistingItems] = useState([]); // Items del alquiler original
+  const addItemsSearchRef = useRef(null); // Ref para autofocus
 
 
   // ============ ADD ITEMS MODAL FUNCTIONS ============
