@@ -3603,36 +3603,41 @@ export default function ActiveRentals() {
             )}
             
             {/* Packs detectados */}
-            {addItemsDetectedPacks.length > 0 && (
-              <div className="bg-purple-50 border-2 border-purple-300 rounded-lg p-3">
-                <p className="text-sm font-semibold text-purple-800 mb-2 flex items-center gap-2">
-                  <Package className="h-4 w-4" />
-                  Packs detectados:
-                </p>
-                <div className="space-y-2">
-                  {addItemsDetectedPacks.map((dp, idx) => (
-                    <div key={dp.instanceId || idx} className="bg-white rounded p-2 border border-purple-200">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <span className="font-medium text-purple-900">{dp.pack.name}</span>
-                          {dp.isMixedPack && (
-                            <Badge variant="outline" className="ml-2 text-xs border-purple-400 text-purple-600">
-                              Completa pack existente
-                            </Badge>
-                          )}
+            {(() => {
+              const { detectedPacks } = calculateAddItemsTotalWithPacks();
+              if (detectedPacks.length === 0) return null;
+              
+              return (
+                <div className="bg-purple-50 border-2 border-purple-300 rounded-lg p-3">
+                  <p className="text-sm font-semibold text-purple-800 mb-2 flex items-center gap-2">
+                    <Package className="h-4 w-4" />
+                    Packs detectados:
+                  </p>
+                  <div className="space-y-2">
+                    {detectedPacks.map((dp, idx) => (
+                      <div key={dp.instanceId || idx} className="bg-white rounded p-2 border border-purple-200">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <span className="font-medium text-purple-900">{dp.pack.name}</span>
+                            {dp.isMixedPack && (
+                              <Badge variant="outline" className="ml-2 text-xs border-purple-400 text-purple-600">
+                                Completa pack existente
+                              </Badge>
+                            )}
+                          </div>
+                          <span className="font-bold text-purple-700">
+                            €{getAddItemsPackPrice(dp.pack, addItemsDays).toFixed(2)}
+                          </span>
                         </div>
-                        <span className="font-bold text-purple-700">
-                          €{getAddItemsPackPrice(dp.pack, addItemsDays).toFixed(2)}
-                        </span>
+                        <p className="text-xs text-purple-600 mt-1">
+                          Componentes: {dp.pack.items.join(' + ')}
+                        </p>
                       </div>
-                      <p className="text-xs text-purple-600 mt-1">
-                        Componentes: {dp.pack.items.join(' + ')}
-                      </p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
             
             {/* Artículos seleccionados para añadir */}
             {addItemsSelected.length > 0 && (
