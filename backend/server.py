@@ -2391,11 +2391,12 @@ async def sync_item_types_from_inventory(store_id: int) -> dict:
 @api_router.get("/item-types", response_model=List[ItemTypeResponse])
 async def get_item_types(current_user: CurrentUser = Depends(get_current_user)):
     """
-    Get all item types - CRITICAL FIX: Lee DIRECTAMENTE del inventario (DISTINCT)
+    Get all item types - CRITICAL FIX: Lee DIRECTAMENTE del inventario (DISTINCT) + DEDUPLICA
     
     Esto garantiza matemáticamente que:
     - Si un tipo existe en un artículo → aparecerá en el filtro
     - Si se borran todos los artículos de un tipo → desaparecerá del filtro
+    - SIEMPRE deduplica tipos similares (ej: "bota" y "Bota" → solo "bota")
     - No depende de la sincronización de la tabla item_types
     
     La fuente de verdad es SIEMPRE el inventario real.
@@ -2406,9 +2407,25 @@ async def get_item_types(current_user: CurrentUser = Depends(get_current_user)):
     # DISTINCT: Obtener todos los tipos únicos que REALMENTE EXISTEN en el inventario
     distinct_types = await db.items.distinct("item_type", store_filter)
     
-    # Filtrar valores nulos/vacíos y ordenar alfabéticamente
+    # Filtrar valores nulos/vacíos
     distinct_types = [t for t in distinct_types if t and t.strip()]
-    distinct_types.sort()
+    
+    # 🔥 DEDUPLICACIÓN: Agrupar por valor normalizado
+    # Si hay "bota snowboard" y "bota_snowboard", solo se mostrará uno
+    normalized_map = {}  # normalized_value -> original_value (primer encontrado)
+    
+    for original_value in distinct_types:
+        normalized = normalize_type_name(original_value)
+        
+        # Si ya existe este normalizado, ignorar (usar el primero encontrado)
+        if normalized not in normalized_map:
+            normalized_map[normalized] = original_value
+    
+    # Usar solo los valores deduplicados
+    deduplicated_types = list(normalized_map.values())
+    deduplicated_types.sort()
+    
+    logger.info(f"[ITEM TYPES] Original distinct: {len(distinct_types)}, After dedup: {len(deduplicated_types)}")
     
     # Obtener labels personalizados de la tabla item_types (si existen)
     type_docs = await db.item_types.find(store_filter, {"_id": 0}).to_list(5000)
