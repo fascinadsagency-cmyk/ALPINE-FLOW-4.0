@@ -477,20 +477,12 @@ export default function ActiveRentals() {
     setAddItemsSearch("");
     setAddItemsSearchResults([]);
     
-    // Re-detectar packs
-    const detected = detectAddItemsPacks(newSelected);
-    setAddItemsDetectedPacks(detected);
-    
     toast.success(`Artículo añadido: ${newItem.name} (${item.internal_code || item.barcode})`);
   };
   
   const removeItemFromAddList = (barcode) => {
     const newSelected = addItemsSelected.filter(i => i.barcode !== barcode);
     setAddItemsSelected(newSelected);
-    
-    // Re-detectar packs
-    const detected = detectAddItemsPacks(newSelected);
-    setAddItemsDetectedPacks(detected);
   };
   
   // Manejar cambio de días - recalcular precios
@@ -505,10 +497,6 @@ export default function ActiveRentals() {
       unit_price: getAddItemsTariffPrice(item.item_type, days)
     }));
     setAddItemsSelected(updatedItems);
-    
-    // Re-detectar packs con nuevos días
-    const detected = detectAddItemsPacks(updatedItems);
-    setAddItemsDetectedPacks(detected);
   };
   
   const confirmAddItems = async () => {
