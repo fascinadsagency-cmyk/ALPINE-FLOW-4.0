@@ -3501,14 +3501,30 @@ export default function ActiveRentals() {
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            {/* Días para los nuevos artículos */}
+            {/* Items existentes del alquiler */}
+            {addItemsExistingItems.length > 0 && (
+              <div className="bg-slate-50 border rounded-lg p-3">
+                <p className="text-sm font-medium text-slate-600 mb-2">
+                  Material actual en el alquiler ({addItemsExistingItems.length}):
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {addItemsExistingItems.map(item => (
+                    <Badge key={item.barcode} variant="secondary" className="text-xs">
+                      {item.item_type} {item.size && `(${item.size})`}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Días para los nuevos artículos - CON REACTIVIDAD */}
             <div className="flex items-end gap-3">
               <div className="flex-1">
                 <Label>Días de alquiler para los nuevos artículos</Label>
                 <Input
                   type="number"
                   value={addItemsDays}
-                  onChange={(e) => setAddItemsDays(Number(e.target.value))}
+                  onChange={(e) => handleAddItemsDaysChange(e.target.value)}
                   min="1"
                   className="h-11 mt-1"
                   data-testid="add-items-days-input"
@@ -3525,7 +3541,8 @@ export default function ActiveRentals() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
-                  placeholder="Escanea código o busca por nombre/tipo..."
+                  ref={addItemsSearchRef}
+                  placeholder="Escanea código o busca por nombre/tipo/marca..."
                   value={addItemsSearch}
                   onChange={handleAddItemsSearchChange}
                   onKeyDown={handleAddItemsSearchKeyDown}
@@ -3538,7 +3555,7 @@ export default function ActiveRentals() {
                 )}
               </div>
               <p className="text-xs text-slate-500 mt-1">
-                💡 Escanea con Enter para añadir directamente
+                💡 Escanea con Enter para añadir directamente | Busca por nombre, tipo, marca o modelo
               </p>
             </div>
             
@@ -3565,9 +3582,14 @@ export default function ActiveRentals() {
                           {item.internal_code || item.barcode}
                         </p>
                       </div>
-                      <Button size="sm" variant="ghost" className="shrink-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50">
-                        <Plus className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-400">
+                          €{getAddItemsTariffPrice(item.item_type, addItemsDays).toFixed(2)}
+                        </span>
+                        <Button size="sm" variant="ghost" className="shrink-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50">
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -3582,6 +3604,38 @@ export default function ActiveRentals() {
               </div>
             )}
             
+            {/* Packs detectados */}
+            {addItemsDetectedPacks.length > 0 && (
+              <div className="bg-purple-50 border-2 border-purple-300 rounded-lg p-3">
+                <p className="text-sm font-semibold text-purple-800 mb-2 flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Packs detectados:
+                </p>
+                <div className="space-y-2">
+                  {addItemsDetectedPacks.map((dp, idx) => (
+                    <div key={dp.instanceId || idx} className="bg-white rounded p-2 border border-purple-200">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="font-medium text-purple-900">{dp.pack.name}</span>
+                          {dp.isMixedPack && (
+                            <Badge variant="outline" className="ml-2 text-xs border-purple-400 text-purple-600">
+                              Completa pack existente
+                            </Badge>
+                          )}
+                        </div>
+                        <span className="font-bold text-purple-700">
+                          €{getAddItemsPackPrice(dp.pack, addItemsDays).toFixed(2)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-purple-600 mt-1">
+                        Componentes: {dp.pack.items.join(' + ')}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             {/* Artículos seleccionados para añadir */}
             {addItemsSelected.length > 0 && (
               <div className="border-2 border-emerald-300 rounded-lg p-3 bg-emerald-50" data-testid="add-items-selected-list">
@@ -3589,38 +3643,64 @@ export default function ActiveRentals() {
                   Artículos a añadir ({addItemsSelected.length}):
                 </p>
                 <div className="space-y-2">
-                  {addItemsSelected.map((item) => (
-                    <div key={item.barcode} className="flex items-center justify-between p-2 bg-white rounded border border-emerald-200">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-slate-900">{item.name}</p>
-                        <p className="text-xs text-slate-500 font-mono">
-                          {item.internal_code || item.barcode} | {item.size && `Talla: ${item.size} | `}{item.days} días
-                        </p>
+                  {addItemsSelected.map((item) => {
+                    // Verificar si este item forma parte de un pack
+                    const isInPack = addItemsDetectedPacks.some(dp => dp.items.includes(item.barcode));
+                    
+                    return (
+                      <div key={item.barcode} className={`flex items-center justify-between p-2 bg-white rounded border ${isInPack ? 'border-purple-300' : 'border-emerald-200'}`}>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-slate-900">
+                            {item.name}
+                            {isInPack && <Package className="inline h-3 w-3 ml-1 text-purple-500" />}
+                          </p>
+                          <p className="text-xs text-slate-500 font-mono">
+                            {item.internal_code || item.barcode} | {item.size && `Talla: ${item.size} | `}{addItemsDays} días
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {!isInPack && (
+                            <span className="text-emerald-700 font-bold">€{item.unit_price.toFixed(2)}</span>
+                          )}
+                          {isInPack && (
+                            <span className="text-xs text-purple-500">(en pack)</span>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => removeItemFromAddList(item.barcode)}
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-500"
+                            data-testid={`remove-item-${item.barcode}`}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-emerald-700 font-bold">€{item.unit_price.toFixed(2)}</span>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => removeItemFromAddList(item.barcode)}
-                          className="h-8 w-8 p-0 text-slate-400 hover:text-red-500"
-                          data-testid={`remove-item-${item.barcode}`}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 
-                {/* Resumen de cobro */}
+                {/* Resumen de cobro con lógica de packs */}
                 <div className="mt-3 p-3 bg-white rounded border-2 border-emerald-400">
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="font-semibold text-slate-700">Total adicional:</span>
-                    <span className="text-2xl font-bold text-emerald-700" data-testid="add-items-total">
-                      €{calculateAddItemsTotal().toFixed(2)}
-                    </span>
-                  </div>
+                  {(() => {
+                    const { total, packSavings } = calculateAddItemsTotalWithPacks();
+                    return (
+                      <>
+                        {packSavings > 0 && (
+                          <div className="flex justify-between items-center mb-2 text-sm text-purple-600">
+                            <span>Ahorro por pack:</span>
+                            <span className="font-medium">-€{packSavings.toFixed(2)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between items-center mb-3">
+                          <span className="font-semibold text-slate-700">Total adicional a cobrar:</span>
+                          <span className="text-2xl font-bold text-emerald-700" data-testid="add-items-total">
+                            €{total.toFixed(2)}
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
                   
                   {/* Opción de cobrar ahora */}
                   <div className="flex items-center gap-2">
@@ -3688,7 +3768,7 @@ export default function ActiveRentals() {
             >
               {addItemsProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {addItemsChargeNow 
-                ? `Cobrar €${calculateAddItemsTotal().toFixed(2)} y Añadir`
+                ? `Cobrar €${calculateAddItemsTotalWithPacks().total.toFixed(2)} y Añadir`
                 : 'Añadir Artículos'
               }
             </Button>
