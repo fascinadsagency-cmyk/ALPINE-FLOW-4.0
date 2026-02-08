@@ -88,15 +88,17 @@ class TestProfileUpdate:
     
     def test_update_profile_email(self, api_client):
         """Should update email successfully"""
+        import time
+        unique_email = f"admin_test_{int(time.time())}@example.com"
         response = api_client.put(f"{BASE_URL}/api/auth/profile", json={
-            "email": "admin_test@example.com"
+            "email": unique_email
         })
         
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
         assert "message" in data
-        print(f"✓ PUT /api/auth/profile - Email update successful")
+        print(f"✓ PUT /api/auth/profile - Email update successful: {unique_email}")
     
     def test_update_profile_invalid_email(self, api_client):
         """Should reject invalid email format"""
