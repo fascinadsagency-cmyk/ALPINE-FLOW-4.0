@@ -28,6 +28,7 @@ import TeamManagement from "@/pages/TeamManagement";
 import PlanSelection from "@/pages/PlanSelection";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import Billing from "@/pages/Billing";
+import MyAccount from "@/pages/MyAccount";
 import Layout from "@/components/Layout";
 
 // ============================================================
@@ -181,6 +182,7 @@ function AppRoutes() {
           <Route path="seleccionar-plan" element={<PlanSelection />} />
           <Route path="pago-exitoso" element={<PaymentSuccess />} />
           <Route path="facturacion" element={<Billing />} />
+          <Route path="mi-cuenta" element={<MyAccount />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

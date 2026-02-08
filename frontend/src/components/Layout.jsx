@@ -83,6 +83,12 @@ export default function Layout() {
     return true;
   });
 
+  // Account items - for admin/super_admin only
+  const accountItems = [];
+  if (user?.role === "admin" || user?.role === "super_admin") {
+    accountItems.push({ to: "/mi-cuenta", icon: UserCircle, label: "Mi Cuenta", isAccount: true });
+  }
+
   // Support items - always at the end
   const supportItems = [
     { to: "/ayuda", icon: HelpCircle, label: "Ayuda", isSupport: true },
@@ -131,6 +137,32 @@ export default function Layout() {
                 {item.label}
               </NavLink>
             ))}
+
+            {/* Account Section */}
+            {accountItems.length > 0 && (
+              <div className={`pt-4 mt-4 border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+                {accountItems.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    tabIndex={-1}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-purple-600/10 text-purple-600"
+                          : darkMode 
+                            ? "text-slate-300 hover:bg-slate-700 hover:text-white"
+                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                      )
+                    }
+                  >
+                    <item.icon className="h-5 w-5" aria-hidden="true" tabIndex={-1} />
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
+            )}
 
             {/* Support Section */}
             <div className={`pt-4 mt-4 border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
@@ -231,6 +263,33 @@ export default function Layout() {
                 {item.label}
               </NavLink>
             ))}
+
+            {/* Account Section Mobile */}
+            {accountItems.length > 0 && (
+              <div className={`pt-4 mt-4 border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+                {accountItems.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setMobileMenuOpen(false)}
+                    tabIndex={-1}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium transition-colors",
+                        isActive
+                          ? "bg-purple-600/10 text-purple-600"
+                          : darkMode
+                            ? "text-slate-300 hover:bg-slate-700"
+                            : "text-slate-600 hover:bg-slate-100"
+                      )
+                    }
+                  >
+                    <item.icon className="h-5 w-5" aria-hidden="true" tabIndex={-1} />
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
+            )}
 
             {/* Support Section Mobile */}
             <div className={`pt-4 mt-4 border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
