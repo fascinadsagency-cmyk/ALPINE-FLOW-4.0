@@ -1182,8 +1182,9 @@ async def delete_customer(customer_id: str, current_user: CurrentUser = Depends(
     if not existing:
         raise HTTPException(status_code=404, detail="Customer not found")
     
-    # Check if customer has active rentals
+    # Check if customer has active rentals - Multi-tenant: Filter by store
     active_rentals = await db.rentals.count_documents({
+        **current_user.get_store_filter(),
         "customer_id": customer_id,
         "status": "active"
     })
