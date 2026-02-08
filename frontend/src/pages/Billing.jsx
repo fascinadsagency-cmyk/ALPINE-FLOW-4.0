@@ -89,7 +89,7 @@ export default function Billing() {
       ]);
       
       setBillingData(billingRes.data);
-      setPayments(paymentsRes.data || []);
+      setPayments(paymentsRes.data?.payments || paymentsRes.data || []);
       setPlanStatus(planRes.data);
       setAvailablePlans(plansRes.data.plans || []);
     } catch (error) {
