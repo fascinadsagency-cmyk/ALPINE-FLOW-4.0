@@ -840,9 +840,12 @@ async def get_customers_with_status(
     
     customers = await db.customers.find(query, {"_id": 0}).to_list(10000)
     
-    # Get all active rentals
+    # 🚀 OPTIMIZACIÓN: Get active rentals with store_filter for efficiency
     active_rentals = await db.rentals.find(
-        {"status": {"$in": ["active", "partial"]}},
+        {
+            **current_user.get_store_filter(),  # ✅ Multi-tenant filter
+            "status": {"$in": ["active", "partial"]}
+        },
         {"customer_id": 1, "customer_dni": 1, "end_date": 1, "_id": 0}
     ).to_list(1000)
     
