@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 import sys
 
 # Configuration
-BACKEND_URL = "https://rental-mgmt-upgrade.preview.emergentagent.com/api"
+BACKEND_URL = "https://plan-guard-1.preview.emergentagent.com/api"
 TEST_DATE = "2026-02-04"
 
 class PaymentMethodTester:
