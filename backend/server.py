@@ -5752,17 +5752,17 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
         unpaid_amount = 0
     
     # ========== RETURNS TODAY (PENDING RETURNS DUE TODAY) ==========
-    # Count items that are DUE to be returned today (expected_return_date = today)
+    # Count items that are DUE to be returned today (end_date = today)
     # AND have not been returned yet (returned = False)
     # This matches the "Pendientes de hoy" section in Devoluciones page
     # Multi-tenant: Filter by store
     returns_today = 0
     
-    # Find rentals where expected_return_date is today
+    # Find rentals where end_date is today (not expected_return_date, use end_date)
     rentals_due_today = await db.rentals.find(
         {
             **current_user.get_store_filter(),
-            "expected_return_date": {"$gte": start, "$lte": end}
+            "end_date": today  # end_date is stored as "YYYY-MM-DD" (without time)
         },
         {"_id": 0, "items": 1}
     ).to_list(1000)
