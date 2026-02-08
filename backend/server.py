@@ -9007,18 +9007,46 @@ async def create_team_member(
     member: UserCreate,
     current_user: CurrentUser = Depends(require_admin)
 ):
-    """Create new team member (STAFF) - ADMIN ONLY. Max 10 staff per store."""
+    """Create new team member (STAFF) - ADMIN ONLY. Respects plan limits."""
     
     store_filter = current_user.get_store_filter()
+    
+    # Get store and plan info for limit validation
+    store = await db.stores.find_one({"store_id": current_user.store_id})
+    plan_type = store.get("plan_type", "trial") if store else "trial"
+    plan_info = PLAN_LIMITS.get(plan_type, PLAN_LIMITS["trial"])
+    max_users = plan_info["max_users"]
+    
+    # Check if trial expired (only applies to trial plans, not paid plans)
+    if plan_type == "trial" and store:
+        trial_start = store.get("trial_start_date")
+        if trial_start:
+            if isinstance(trial_start, str):
+                trial_start_dt = datetime.fromisoformat(trial_start.replace('Z', '+00:00'))
+            else:
+                trial_start_dt = trial_start
+            days_since_start = (datetime.now(timezone.utc) - trial_start_dt).days
+            if days_since_start > 15:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Tu período de prueba ha expirado. Por favor, selecciona un plan para continuar."
+                )
     
     # VALIDATION: Count existing users in this store
     current_users_count = await db.users.count_documents(store_filter)
     
-    # BUSINESS RULE: Max 11 users per store (1 admin + 10 staff)
-    if current_users_count >= 11:
+    # PLAN LIMIT: Check max_users from plan
+    if max_users != 999 and current_users_count >= max_users:
         raise HTTPException(
-            status_code=400,
-            detail=f"Límite alcanzado: Solo puedes tener hasta 10 empleados por tienda (actualmente: {current_users_count - 1})"
+            status_code=403,
+            detail={
+                "error": "PLAN_LIMIT_EXCEEDED",
+                "limit_type": "users",
+                "current_count": current_users_count,
+                "max_allowed": max_users,
+                "plan_name": plan_info["name"],
+                "message": f"Límite de usuarios alcanzado ({max_users}). Actualiza tu plan para añadir más."
+            }
         )
     
     # SECURITY: Check if username already exists globally
