@@ -636,9 +636,9 @@ class PasswordChangeRequest(BaseModel):
 @api_router.put("/auth/profile")
 async def update_profile(
     request: ProfileUpdateRequest,
-    current_user: CurrentUser = Depends(require_admin)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
-    """Update user profile (username/email) - ADMIN ONLY"""
+    """Update user profile (username/email) - All authenticated users"""
     
     update_data = {}
     
@@ -676,9 +676,9 @@ async def update_profile(
 @api_router.put("/auth/password")
 async def change_password(
     request: PasswordChangeRequest,
-    current_user: CurrentUser = Depends(require_admin)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
-    """Change user password - ADMIN ONLY. Requires current password validation."""
+    """Change user password - All authenticated users. Requires current password validation."""
     
     # Get current user's password hash
     user = await db.users.find_one({"id": current_user.user_id})
@@ -711,9 +711,9 @@ async def change_password(
 @api_router.post("/auth/photo")
 async def upload_profile_photo(
     photo: UploadFile = File(...),
-    current_user: CurrentUser = Depends(require_admin)
+    current_user: CurrentUser = Depends(get_current_user)
 ):
-    """Upload profile photo - ADMIN ONLY"""
+    """Upload profile photo - All authenticated users"""
     import base64
     
     # Validate file type
