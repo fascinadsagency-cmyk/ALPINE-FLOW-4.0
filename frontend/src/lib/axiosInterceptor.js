@@ -27,14 +27,17 @@ export const setupAxiosInterceptors = () => {
         const errorData = error.response.data;
         
         // Detectar el error específico de límite de plan
-        if (errorData?.detail === "limit_exceeded" && errorData?.limit_type) {
+        // El backend devuelve: detail: { error: "PLAN_LIMIT_EXCEEDED", limit_type: "...", ... }
+        if (errorData?.detail?.error === "PLAN_LIMIT_EXCEEDED" && errorData?.detail?.limit_type) {
+          const limitData = errorData.detail;
+          
           // Si hay un manejador registrado, llamarlo
           if (limitExceededHandler) {
             limitExceededHandler({
-              limitType: errorData.limit_type,
-              currentCount: errorData.current_count,
-              maxAllowed: errorData.max_allowed,
-              planName: errorData.plan_name
+              limitType: limitData.limit_type,
+              currentCount: limitData.current_count || 0,
+              maxAllowed: limitData.max_allowed || 0,
+              planName: limitData.plan_name || "Plan Actual"
             });
           }
           
