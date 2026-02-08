@@ -175,7 +175,6 @@ export default function ActiveRentals() {
     setAddItemsSearchResults([]);
     setAddItemsChargeNow(true);
     setAddItemsPaymentMethod("cash");
-    setAddItemsDetectedPacks([]);
     
     // Guardar los items existentes del alquiler para detección de packs
     const existingItems = (rental.items || []).filter(i => !i.returned).map(i => ({
