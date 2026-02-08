@@ -7506,6 +7506,7 @@ class PlanStatusResponse(BaseModel):
     plan_name: str
     is_trial: bool
     trial_days_remaining: int
+    trial_hours_remaining: int = 0  # NEW: Horas restantes si menos de 24h
     trial_expired: bool
     current_items: int
     current_customers: int
@@ -7514,6 +7515,7 @@ class PlanStatusResponse(BaseModel):
     max_customers: int
     max_users: int
     price: int
+    trial_end_date: str = ""  # NEW: Fecha exacta de fin de trial
 
 class PlanSelectionRequest(BaseModel):
     plan_type: str  # 'basic', 'pro', 'enterprise'
