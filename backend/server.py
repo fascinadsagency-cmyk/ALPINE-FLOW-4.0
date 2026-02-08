@@ -7621,30 +7621,51 @@ async def get_available_plans():
             {
                 "id": "basic",
                 "name": "Plan Básico",
-                "max_items": 3000,
+                "max_items": 2000,
                 "max_customers": 10000,
-                "max_users": 10,
+                "max_users": 5,
                 "price": 950,
-                "price_display": "950€/año"
+                "price_display": "950€/año",
+                "features": [
+                    "2.000 artículos",
+                    "10.000 clientes",
+                    "5 usuarios",
+                    "Soporte por email"
+                ]
             },
             {
                 "id": "pro",
                 "name": "Plan PRO",
                 "max_items": 6000,
-                "max_customers": 30000,
+                "max_customers": 40000,
                 "max_users": 10,
                 "price": 1450,
                 "price_display": "1.450€/año",
-                "recommended": True
+                "recommended": True,
+                "features": [
+                    "6.000 artículos",
+                    "40.000 clientes",
+                    "10 usuarios",
+                    "Soporte prioritario",
+                    "Informes avanzados"
+                ]
             },
             {
                 "id": "enterprise",
                 "name": "Plan Enterprise",
                 "max_items": -1,  # Unlimited
                 "max_customers": -1,  # Unlimited
-                "max_users": 50,
+                "max_users": 15,
                 "price": 1950,
-                "price_display": "1.950€/año"
+                "price_display": "1.950€/año",
+                "features": [
+                    "Artículos ilimitados",
+                    "Clientes ilimitados",
+                    "15 usuarios",
+                    "Soporte 24/7",
+                    "API personalizada",
+                    "Integraciones premium"
+                ]
             }
         ]
     }
