@@ -2436,7 +2436,7 @@ async def get_item_types(current_user: CurrentUser = Depends(get_current_user)):
     type_created_at = {t["value"]: t.get("created_at", "") for t in type_docs if "value" in t}
     
     result = []
-    for type_value in distinct_types:
+    for type_value in deduplicated_types:  # ✅ USAR DEDUPLICADOS
         result.append(ItemTypeResponse(
             id=type_value,  # Para compatibilidad
             value=type_value,
