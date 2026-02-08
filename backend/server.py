@@ -1352,9 +1352,9 @@ async def export_all_customers(
         return {"total": total}
     
     # For full export, use cursor to stream data efficiently
-    # Return minimal fields for export
+    # Return minimal fields for export - Multi-tenant: Filter by store
     customers = await db.customers.find(
-        {},
+        current_user.get_store_filter(),
         {
             "_id": 0,
             "id": 1,
