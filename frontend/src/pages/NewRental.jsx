@@ -852,7 +852,7 @@ export default function NewRental() {
         individualsTotal
       }
     };
-  }, [tariffs, numDays]);
+  }, [tariffs, numDays, detectPacks]);
 
   // Smart date handlers
   const handleNumDaysChange = (value) => {
