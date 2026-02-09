@@ -518,21 +518,27 @@ export default function NewRental() {
   };
 
   // AUTO-COMBO: Detect packs formed by current items
-  const detectPacks = (currentItems) => {
+  // IMPORTANT: Once a pack is formed, it stays LOCKED. We only form NEW packs with items not already in packs.
+  // This prevents the system from "undoing" existing packs to optimize for a better pack.
+  const detectPacks = (currentItems, existingPacks = []) => {
     if (!packs || packs.length === 0 || currentItems.length === 0) {
-      return [];
+      return existingPacks; // Return existing packs if no new detection possible
     }
 
-    const detected = [];
-    
-    // Create a copy of items to track which ones are used
-    const availableItems = [...currentItems];
-    
-    // Try to detect packs with current items
-    // Since all individual items are now "STANDARD", we detect packs regardless of item category
-    // The pack itself has the category (MEDIA, ALTA, SUPERIOR, OTRO)
-    const detectedPackInstances = [];
+    // STEP 1: Preserve existing packs (LOCKED)
+    // Extract barcodes from all existing packs to mark them as "used"
     const usedBarcodes = new Set();
+    const lockedPacks = [...existingPacks]; // Keep all existing packs
+    
+    existingPacks.forEach(pack => {
+      pack.items.forEach(barcode => usedBarcodes.add(barcode));
+    });
+    
+    console.log('[PACK DETECTION] Starting with', existingPacks.length, 'locked packs');
+    console.log('[PACK DETECTION] Used barcodes from locked packs:', Array.from(usedBarcodes));
+    
+    // STEP 2: Detect NEW packs ONLY with items NOT already in a pack
+    const detectedPackInstances = [];
     
     // Keep trying to form packs until no more can be formed
     let foundPack = true;
@@ -541,10 +547,14 @@ export default function NewRental() {
       
       // Try each pack definition
       for (const pack of packs) {
-        // Get available items (not yet used in a pack)
+        // Get available items (not yet used in ANY pack - existing OR new)
         const availableItems = currentItems.filter(
-          item => !usedBarcodes.has(item.barcode)
+          item => !usedBarcodes.has(item.barcode) && !usedBarcodes.has(item.id)
         );
+        
+        if (availableItems.length === 0) {
+          continue; // No items left to form packs
+        }
         
         // Count available item types
         const availableTypeCounts = availableItems.reduce((acc, item) => {
@@ -575,11 +585,13 @@ export default function NewRental() {
               const item = availableItems.find(i => 
                 i.item_type === requiredType && 
                 !packInstanceItems.includes(i.barcode) &&
-                !usedBarcodes.has(i.barcode)
+                !usedBarcodes.has(i.barcode) &&
+                !usedBarcodes.has(i.id)
               );
               if (item) {
-                packInstanceItems.push(item.barcode);
-                usedBarcodes.add(item.barcode);
+                const itemBarcode = item.barcode || item.id;
+                packInstanceItems.push(itemBarcode);
+                usedBarcodes.add(itemBarcode);
               }
             }
 
@@ -593,6 +605,8 @@ export default function NewRental() {
                 instanceId: instanceId  // Unique ID for this specific pack instance
               });
               
+              console.log('[PACK DETECTION] NEW pack formed:', pack.name, 'with items:', packInstanceItems);
+              
               foundPack = true;
               break; // Start over to check for more packs
             }
@@ -600,7 +614,11 @@ export default function NewRental() {
         }
       }
 
-    return detectedPackInstances;
+    // STEP 3: Return locked packs + newly detected packs
+    const allPacks = [...lockedPacks, ...detectedPackInstances];
+    console.log('[PACK DETECTION] Total packs:', allPacks.length, '(', lockedPacks.length, 'locked +', detectedPackInstances.length, 'new)');
+    
+    return allPacks;
   };
 
   // SMART UPSELLING: Detect partial packs (when missing components to complete a pack)
