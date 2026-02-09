@@ -399,6 +399,7 @@ export default function ActiveRentals() {
       }
     }
     
+    console.log(`[DetectPacks] Resultado final: ${detectedPackInstances.length} pack(s) detectado(s)`, detectedPackInstances);
     return detectedPackInstances;
   };
   
