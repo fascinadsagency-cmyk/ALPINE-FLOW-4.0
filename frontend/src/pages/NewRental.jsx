@@ -48,6 +48,7 @@ import {
   Zap
 } from "lucide-react";
 import { toast } from "sonner";
+import { useRef } from 'react';
 
 // COMPONENTE VIRTUALIZADO para listas de búsqueda
 const VirtualizedSearchResults = ({ items, onItemClick }) => {
@@ -248,6 +249,9 @@ export default function NewRental() {
   const [editingPackPrice, setEditingPackPrice] = useState(null); // Moved here for scanner disable check
   const [editingItemType, setEditingItemType] = useState(null); // Track which item is editing its type
   const [editingPackName, setEditingPackName] = useState(null); // Track which pack is editing its name
+  
+  // Ref to track previous items for pack stability
+  const prevItemsRef = useRef([]);
   
   // Pack expansion state - which pack is currently expanded to show components
   const [expandedPackId, setExpandedPackId] = useState(null);
