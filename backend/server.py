@@ -1013,7 +1013,10 @@ async def get_customers_paginated(
     pipeline.append({
         "$lookup": {
             "from": "rentals",
-            "let": {"customer_id": "$id", "customer_dni": "$dni"},
+            "let": {
+                "customer_id": "$id",
+                "customer_dni": {"$toUpper": "$dni"}
+            },
             "pipeline": [
                 {
                     "$match": {
@@ -1024,7 +1027,7 @@ async def get_customers_paginated(
                                 {
                                     "$or": [
                                         {"$eq": ["$customer_id", "$$customer_id"]},
-                                        {"$eq": [{"$toUpper": "$customer_dni"}, {"$toUpper": "$$customer_dni"}]}
+                                        {"$eq": [{"$toUpper": "$customer_dni"}, "$$customer_dni"]}
                                     ]
                                 }
                             ]
