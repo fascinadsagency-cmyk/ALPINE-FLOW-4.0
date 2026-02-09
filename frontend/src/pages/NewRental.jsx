@@ -757,7 +757,7 @@ export default function NewRental() {
   // - Usuario añade A: Total = 10€
   // - Usuario añade B: Total = 15€ (NO 20€)
   // ═══════════════════════════════════════════════════════════════════
-  const calculateBestPrice = useCallback((currentItems, availablePacks, days) => {
+  const calculateBestPrice = useCallback((currentItems, availablePacks, days, existingDetectedPacks = []) => {
     console.log('[PRICE ENGINE] Calculating best price for', currentItems.length, 'items');
     
     if (!currentItems || currentItems.length === 0) {
@@ -771,8 +771,9 @@ export default function NewRental() {
     }
 
     // PASO 1: Detectar packs formados con los items actuales
-    const packsDetected = detectPacks(currentItems);
-    console.log('[PRICE ENGINE] Detected packs:', packsDetected.length);
+    // IMPORTANT: Pass existing packs to keep them LOCKED
+    const packsDetected = detectPacks(currentItems, existingDetectedPacks);
+    console.log('[PRICE ENGINE] Detected packs:', packsDetected.length, '(including locked packs)');
 
     // PASO 2: Marcar qué items están en packs
     const itemsInPacksSet = new Set();
