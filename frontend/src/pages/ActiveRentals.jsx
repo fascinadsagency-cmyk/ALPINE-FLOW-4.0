@@ -326,13 +326,15 @@ export default function ActiveRentals() {
         
         // Contar tipos disponibles
         const availableTypeCounts = availableItems.reduce((acc, item) => {
-          acc[item.item_type] = (acc[item.item_type] || 0) + 1;
+          const normalizedType = item.item_type?.toLowerCase() || '';
+          acc[normalizedType] = (acc[normalizedType] || 0) + 1;
           return acc;
         }, {});
         
         // Contar componentes requeridos
         const requiredComponents = pack.items.reduce((acc, itemType) => {
-          acc[itemType] = (acc[itemType] || 0) + 1;
+          const normalizedType = itemType?.toLowerCase() || '';
+          acc[normalizedType] = (acc[normalizedType] || 0) + 1;
           return acc;
         }, {});
         
@@ -357,7 +359,7 @@ export default function ActiveRentals() {
           
           for (const requiredType of pack.items) {
             const item = availableItems.find(i => 
-              i.item_type === requiredType && 
+              i.item_type?.toLowerCase() === requiredType?.toLowerCase() && 
               !packInstanceItems.includes(i.barcode) &&
               !usedBarcodes.has(i.barcode)
             );
