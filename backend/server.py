@@ -5812,27 +5812,36 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
         today_revenue = sum(r.get("paid_amount", 0) for r in rentals)
         unpaid_amount = 0
     
-    # ========== RETURNS TODAY (PENDING RETURNS DUE TODAY) ==========
-    # Count items that are DUE to be returned today (end_date = today)
-    # AND have not been returned yet (returned = False)
-    # This matches the "Pendientes de hoy" section in Devoluciones page
+    # ========== PENDING RETURNS (HOY + ATRASADAS) ==========
+    # NEW LOGIC: Count ALL pending returns (today + overdue)
+    # - Returns DUE TODAY: end_date = today
+    # - Returns OVERDUE: end_date < today
+    # - Only rentals with status: active, partial (exclude finalized, returned, cancelled)
+    # - Count rentals (not items) that have at least 1 unreturned item
+    # This MUST match the count in "Devoluciones" page
     # Multi-tenant: Filter by store
-    returns_today = 0
     
-    # Find rentals where end_date is today (not expected_return_date, use end_date)
-    rentals_due_today = await db.rentals.find(
+    # Find all active/partial rentals with end_date <= today
+    rentals_pending_return = await db.rentals.find(
         {
             **current_user.get_store_filter(),
-            "end_date": today  # end_date is stored as "YYYY-MM-DD" (without time)
+            "status": {"$in": ["active", "partial"]},
+            "end_date": {"$lte": today}  # Today OR overdue
         },
-        {"_id": 0, "items": 1}
+        {"_id": 0, "id": 1, "items": 1}
     ).to_list(1000)
     
-    # Count items that are NOT returned yet
-    for rental in rentals_due_today:
+    # Count rentals that have at least 1 unreturned item
+    pending_returns_count = 0
+    for rental in rentals_pending_return:
+        has_pending_item = False
         for item in rental.get("items", []):
-            if not item.get("returned", False):  # Item NOT returned yet
-                returns_today += item.get("quantity", 1)
+            if not item.get("returned", False):
+                has_pending_item = True
+                break
+        
+        if has_pending_item:
+            pending_returns_count += 1
     
     # ========== CUSTOMERS TODAY (COUNT DISTINCT customer_id) ==========
     # Count unique customers who had a rental created today
@@ -5861,12 +5870,18 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
     # Active rentals - Multi-tenant: Filter by store
     active_rentals = await db.rentals.count_documents({**current_user.get_store_filter(), "status": {"$in": ["active", "partial"]}})
     
-    # Pending returns (overdue) - Multi-tenant: Filter by store
-    overdue = await db.rentals.count_documents({
-        **current_user.get_store_filter(),
-        "status": {"$in": ["active", "partial"]},
-        "end_date": {"$lt": today}
-    })
+    # Separate count for overdue returns (for dashboard alerts)
+    # Multi-tenant: Filter by store
+    overdue_returns = 0
+    for rental in rentals_pending_return:
+        if rental.get("end_date", "") < today:  # Only overdue (not today)
+            has_pending_item = False
+            for item in rental.get("items", []):
+                if not item.get("returned", False):
+                    has_pending_item = True
+                    break
+            if has_pending_item:
+                overdue_returns += 1
     
     # Inventory stats (now with proper occupancy calculation)
     inventory = await get_inventory_stats(current_user)
