@@ -8,8 +8,18 @@ import requests
 import json
 from datetime import datetime, timedelta
 
-# Configuración
-API_URL = "https://39f97af1-e3a2-4757-b38b-39e61130ce9c-00-3uztqraqv68b0.riker.replit.dev/api"
+# Configuración - Leer del .env
+import os
+import sys
+
+# Leer backend URL del .env
+with open('/app/frontend/.env', 'r') as f:
+    for line in f:
+        if 'REACT_APP_BACKEND_URL' in line:
+            backend_url = line.split('=')[1].strip()
+            API_URL = f"{backend_url}/api"
+            break
+
 ADMIN_EMAIL = "admin@enebro.com"
 ADMIN_PASSWORD = "new_password_123"
 
