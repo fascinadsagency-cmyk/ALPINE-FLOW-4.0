@@ -9185,6 +9185,52 @@ async def update_team_member(
     updated_user = await db.users.find_one({**store_filter, "id": user_id}, {"_id": 0, "hashed_password": 0})
     return updated_user
 
+class ResetPasswordRequest(BaseModel):
+    new_password: str
+
+@api_router.put("/team/members/{user_id}/reset-password")
+async def reset_user_password(
+    user_id: str,
+    request: ResetPasswordRequest,
+    current_user: CurrentUser = Depends(require_admin)
+):
+    """
+    Reset user password - ADMIN ONLY
+    Admins can reset passwords for users in their store
+    """
+    
+    store_filter = current_user.get_store_filter()
+    
+    # Validate new password length
+    if len(request.new_password) < 6:
+        raise HTTPException(status_code=400, detail="La contraseña debe tener al menos 6 caracteres")
+    
+    # SECURITY: Can only reset passwords for users from same store
+    user = await db.users.find_one({**store_filter, "id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado en tu tienda")
+    
+    # SECURITY: Cannot reset super_admin password unless you are super_admin
+    if user.get("role") == "super_admin" and current_user.role != "super_admin":
+        raise HTTPException(status_code=403, detail="No puedes cambiar la contraseña del super admin")
+    
+    # Hash the new password
+    new_password_hash = hash_password(request.new_password)
+    
+    # Update password (remove old hashed_password field if exists)
+    await db.users.update_one(
+        {**store_filter, "id": user_id},
+        {
+            "$set": {"password": new_password_hash},
+            "$unset": {"hashed_password": ""}
+        }
+    )
+    
+    return {
+        "message": "Contraseña actualizada correctamente",
+        "username": user.get("username")
+    }
+
 @api_router.delete("/team/members/{user_id}")
 async def delete_team_member(
     user_id: str,
