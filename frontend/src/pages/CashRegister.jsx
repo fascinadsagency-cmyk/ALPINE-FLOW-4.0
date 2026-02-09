@@ -186,10 +186,13 @@ export default function CashRegister() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (activeTab === "today") loadData();
-    }, 10000);
+      // Actualización silenciosa en background sin mostrar loading
+      if (activeTab === "today") {
+        loadDataSilently();
+      }
+    }, 30000); // Aumentado a 30 segundos
     return () => clearInterval(interval);
-  }, [activeTab]); // Removed date dependency
+  }, [activeTab]);
 
   useEffect(() => {
     if (activeTab === "closures") loadClosureHistory();
@@ -292,6 +295,24 @@ export default function CashRegister() {
       toast.error("Error al cargar datos de caja");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Actualización silenciosa sin mostrar loading (para auto-refresh)
+  const loadDataSilently = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const [summaryRes, movementsRes, sessionRes] = await Promise.all([
+        axios.get(`${API}/cash/summary/realtime`, { params: { date: today } }),
+        axios.get(`${API}/cash/movements`, { params: { date: today } }),
+        axios.get(`${API}/cash/sessions/active`)
+      ]);
+      setSummary(summaryRes.data);
+      setMovements(movementsRes.data);
+      setActiveSession(sessionRes.data);
+    } catch (error) {
+      // Silenciar error en actualizaciones automáticas
+      console.error("Error en actualización silenciosa:", error);
     }
   };
 
