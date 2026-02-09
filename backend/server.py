@@ -1132,29 +1132,71 @@ async def get_customers_paginated(
 async def get_customers_stats(
     current_user: CurrentUser = Depends(get_current_user)
 ):
-    """Get customer statistics without loading all records - optimized for large datasets
+    """Get customer statistics - OPTIMIZED to match paginated list logic
     Multi-tenant: Filters by store_id
     """
-    total = await db.customers.count_documents(current_user.get_store_filter())
+    store_filter = current_user.get_store_filter()
+    total = await db.customers.count_documents(store_filter)
     
-    # Get active rentals count - Multi-tenant: Filter by store
-    active_rentals = await db.rentals.distinct(
-        "customer_id",
-        {**current_user.get_store_filter(), "status": {"$in": ["active", "partial"]}}
-    )
-    active_count = len(active_rentals)
+    # Use aggregation to count unique active customers (same logic as list)
+    pipeline = [
+        {"$match": store_filter},
+        {
+            "$lookup": {
+                "from": "rentals",
+                "let": {
+                    "customer_id": "$id",
+                    "customer_dni": {"$toUpper": "$dni"}
+                },
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$and": [
+                                    {"$eq": ["$store_id", store_filter["store_id"]]},
+                                    {"$in": ["$status", ["active", "partial"]]},
+                                    {
+                                        "$or": [
+                                            {"$eq": ["$customer_id", "$$customer_id"]},
+                                            {"$eq": [{"$toUpper": "$customer_dni"}, "$$customer_dni"]}
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {"$limit": 1}
+                ],
+                "as": "active_rentals"
+            }
+        },
+        {
+            "$addFields": {
+                "has_active_rental": {"$gt": [{"$size": "$active_rentals"}, 0]}
+            }
+        },
+        {
+            "$group": {
+                "_id": None,
+                "active": {"$sum": {"$cond": ["$has_active_rental", 1, 0]}},
+                "inactive": {"$sum": {"$cond": ["$has_active_rental", 0, 1]}}
+            }
+        }
+    ]
     
-    # Get active by DNI as fallback - Multi-tenant: Filter by store
-    active_dnis = await db.rentals.distinct(
-        "customer_dni",
-        {**current_user.get_store_filter(), "status": {"$in": ["active", "partial"]}}
-    )
-    active_count += len(active_dnis)
+    result = await db.customers.aggregate(pipeline).to_list(1)
+    
+    if result:
+        active_count = result[0]["active"]
+        inactive_count = result[0]["inactive"]
+    else:
+        active_count = 0
+        inactive_count = total
     
     return {
         "total": total,
         "active": active_count,
-        "inactive": total - active_count
+        "inactive": inactive_count
     }
 
 @api_router.get("/customers/{customer_id}", response_model=CustomerResponse)
