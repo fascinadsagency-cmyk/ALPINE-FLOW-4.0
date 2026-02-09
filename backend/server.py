@@ -5873,15 +5873,21 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
     # Separate count for overdue returns (for dashboard alerts)
     # Multi-tenant: Filter by store
     overdue_returns = 0
+    rentals_due_today = []
+    
     for rental in rentals_pending_return:
-        if rental.get("end_date", "") < today:  # Only overdue (not today)
-            has_pending_item = False
-            for item in rental.get("items", []):
-                if not item.get("returned", False):
-                    has_pending_item = True
-                    break
-            if has_pending_item:
+        end_date = rental.get("end_date", "")
+        has_pending_item = False
+        for item in rental.get("items", []):
+            if not item.get("returned", False):
+                has_pending_item = True
+                break
+        
+        if has_pending_item:
+            if end_date < today:  # Only overdue (not today)
                 overdue_returns += 1
+            elif end_date == today:
+                rentals_due_today.append(rental)
     
     # Inventory stats (now with proper occupancy calculation)
     inventory = await get_inventory_stats(current_user)
