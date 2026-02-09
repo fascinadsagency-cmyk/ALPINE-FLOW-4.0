@@ -3710,22 +3710,14 @@ export default function ActiveRentals() {
                 {/* Resumen de cobro con lógica de packs */}
                 <div className="mt-3 p-3 bg-white rounded border-2 border-emerald-400">
                   {(() => {
-                    const { total, packSavings } = calculateAddItemsTotalWithPacks();
+                    const { total } = calculateAddItemsTotalWithPacks();
                     return (
-                      <>
-                        {packSavings > 0 && (
-                          <div className="flex justify-between items-center mb-2 text-sm text-purple-600">
-                            <span>Ahorro por pack:</span>
-                            <span className="font-medium">-€{packSavings.toFixed(2)}</span>
-                          </div>
-                        )}
-                        <div className="flex justify-between items-center mb-3">
-                          <span className="font-semibold text-slate-700">Total adicional a cobrar:</span>
-                          <span className="text-2xl font-bold text-emerald-700" data-testid="add-items-total">
-                            €{total.toFixed(2)}
-                          </span>
-                        </div>
-                      </>
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="font-semibold text-slate-700">Total adicional a cobrar:</span>
+                        <span className="text-2xl font-bold text-emerald-700" data-testid="add-items-total">
+                          €{total.toFixed(2)}
+                        </span>
+                      </div>
                     );
                   })()}
                   
