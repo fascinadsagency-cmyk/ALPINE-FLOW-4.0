@@ -1622,17 +1622,37 @@ export default function NewRental() {
   // 🎯 USANDO GLOBAL PRICE ENGINE para cálculo centralizado
   // IMPORTANT: Pasa detectedPacks existentes para mantener packs bloqueados (no deshacer packs)
   const calculateSubtotal = () => {
+    console.log('[SUBTOTAL] ========== START CALCULATION ==========');
+    console.log('[SUBTOTAL] Current items count:', items.length);
+    console.log('[SUBTOTAL] Current detectedPacks count:', detectedPacks.length);
+    console.log('[SUBTOTAL] Current detectedPacks:', detectedPacks.map(p => ({
+      name: p.pack?.name,
+      items: p.items
+    })));
+    
     // Usar el Global Price Engine para calcular el mejor precio
     const priceResult = calculateBestPrice(items, packs, numDays, detectedPacks);
     
+    console.log('[SUBTOTAL] Result detectedPacks count:', priceResult.detectedPacks.length);
+    console.log('[SUBTOTAL] Result detectedPacks:', priceResult.detectedPacks.map(p => ({
+      name: p.pack?.name,
+      items: p.items
+    })));
     console.log('[SUBTOTAL] Using Global Price Engine:', priceResult.totalPrice);
     
     // CRITICAL: Update detectedPacks ONLY if they changed
     // This keeps packs stable and prevents unnecessary rerenders
-    if (JSON.stringify(priceResult.detectedPacks) !== JSON.stringify(detectedPacks)) {
-      console.log('[SUBTOTAL] Detected packs changed, updating state');
+    const packsChanged = JSON.stringify(priceResult.detectedPacks) !== JSON.stringify(detectedPacks);
+    console.log('[SUBTOTAL] Packs changed?', packsChanged);
+    
+    if (packsChanged) {
+      console.log('[SUBTOTAL] ⚠️  UPDATING DETECTED PACKS STATE');
       setDetectedPacks(priceResult.detectedPacks);
+    } else {
+      console.log('[SUBTOTAL] ✅ Packs unchanged, keeping stable');
     }
+    
+    console.log('[SUBTOTAL] ========== END CALCULATION ==========\n');
     
     return priceResult.totalPrice;
   };
