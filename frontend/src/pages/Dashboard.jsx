@@ -244,17 +244,31 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Card 2: Devoluciones Hoy */}
+        {/* Card 2: Devoluciones Pendientes (Hoy + Atrasadas) */}
         <Card 
           className="cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-amber-500"
           onClick={() => navigate('/devoluciones')}
         >
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-500">Devoluciones Hoy</p>
-                <p className="text-3xl font-bold text-slate-900 mt-1">{stats.returns_today || 0}</p>
-                <p className="text-xs text-slate-500 mt-1">Equipos por recoger</p>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-500">Devoluciones Pendientes</p>
+                <p className="text-3xl font-bold text-slate-900 mt-1">{stats.pending_returns || 0}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  {stats.overdue_returns > 0 && (
+                    <Badge variant="destructive" className="text-xs">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      {stats.overdue_returns} atrasada{stats.overdue_returns !== 1 ? 's' : ''}
+                    </Badge>
+                  )}
+                  <p className="text-xs text-slate-500">
+                    {stats.overdue_returns === 0 && stats.pending_returns > 0 
+                      ? "Todas para hoy" 
+                      : stats.pending_returns === 0 
+                      ? "Sin pendientes" 
+                      : "Hoy + atrasadas"}
+                  </p>
+                </div>
               </div>
               <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
                 <RotateCcw className="h-6 w-6 text-amber-600" />
