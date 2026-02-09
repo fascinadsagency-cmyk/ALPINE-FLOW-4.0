@@ -930,17 +930,8 @@ async def get_customers_paginated(
     """
     store_filter = current_user.get_store_filter()
     
-    import logging
-    logger = logging.getLogger("uvicorn")
-    logger.info(f"[CUSTOMERS] store_id={store_filter.get('store_id')}, status='{status}', page={page}")
-    
     # Si NO se filtra por active/inactive, usar consulta simple (más rápida)
     if status == "all":
-        logger.info(f"[CUSTOMERS] Using SIMPLE query")
-        
-        # DEBUG
-        with open("/tmp/customers_debug.log", "a") as f:
-            f.write(f"\n[{datetime.now()}] SIMPLE query: status={status}, store_id={store_filter.get('store_id')}\n")
         
         # Build base query
         query = {**store_filter}
@@ -981,7 +972,6 @@ async def get_customers_paginated(
         for customer in customers:
             customer["has_active_rental"] = False
         
-        logger.info(f"[CUSTOMERS] Returning {len(customers)} customers (status=all, total={total})")
         total_pages = (total + limit - 1) // limit
         
         return {
@@ -997,13 +987,6 @@ async def get_customers_paginated(
         }
     
     # Si se filtra por active/inactive, usar AGREGACIÓN optimizada
-    # 🚀 OPTIMIZACIÓN: Usar MongoDB aggregation para hacer JOIN y filtrado en BD
-    logger.info(f"[CUSTOMERS] Using AGGREGATION (status={status})")
-    
-    # DEBUG: Guardar en archivo temporal
-    with open("/tmp/customers_debug.log", "a") as f:
-        f.write(f"\n[{datetime.now()}] AGGREGATION called: status={status}, store_id={store_filter.get('store_id')}\n")
-    
     pipeline = []
     
     # Stage 1: Match customers del store
@@ -1098,16 +1081,6 @@ async def get_customers_paginated(
     
     customers = await db.customers.aggregate(data_pipeline).to_list(limit)
     
-    # DEBUG: Guardar resultado
-    with open("/tmp/customers_debug.log", "a") as f:
-        f.write(f"  → Found {len(customers)} customers (total={total})\n")
-        if customers:
-            f.write(f"  → First 3: {[c.get('name', 'N/A')[:30] for c in customers[:3]]}\n")
-    
-    logger.info(f"[CUSTOMERS] Aggregation done: {len(customers)} customers found (total={total})")
-    if customers:
-        logger.info(f"[CUSTOMERS] First 3: {[c.get('name', 'N/A')[:30] for c in customers[:3]]}")
-    
     total_pages = (total + limit - 1) // limit if total > 0 else 1
     
     return {
@@ -1119,12 +1092,6 @@ async def get_customers_paginated(
             "total_pages": total_pages,
             "has_next": page < total_pages,
             "has_prev": page > 1
-        },
-        "_debug": {
-            "query_type": "aggregation",
-            "status_filter": status,
-            "store_id": store_filter.get("store_id"),
-            "customers_returned": len(customers)
         }
     }
 
