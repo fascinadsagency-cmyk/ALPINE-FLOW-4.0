@@ -26,7 +26,7 @@ ADMIN_PASSWORD = "new_password_123"
 def login():
     """Login y obtener token"""
     response = requests.post(f"{API_URL}/auth/login", json={
-        "email": ADMIN_EMAIL,
+        "username": ADMIN_EMAIL,
         "password": ADMIN_PASSWORD
     })
     if response.status_code != 200:
