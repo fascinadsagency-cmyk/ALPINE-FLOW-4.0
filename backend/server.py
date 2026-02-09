@@ -5890,10 +5890,10 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
         "today_rentals": today_rentals,
         "revenue_today": today_revenue,  # Unified with cash register - EXCLUDES unpaid
         "unpaid_amount": unpaid_amount,  # NEW: Separate tracking of unpaid (pending + reservations)
-        "returns_today": returns_today,  # COUNT UNITS returned today (not lines)
+        "pending_returns": pending_returns_count,  # TOTAL pending returns (today + overdue)
         "customers_today": customers_today,  # COUNT DISTINCT customers served today
         "active_rentals": active_rentals,
-        "overdue_returns": overdue,
+        "overdue_returns": overdue_returns,  # Only overdue (for alerts)
         "inventory": inventory
     }
 
