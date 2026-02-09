@@ -186,6 +186,7 @@ export default function Customers() {
       const pagination = response.data.pagination;
       
       console.log(`[Customers] Recibidos ${newCustomers.length} clientes. Total: ${pagination.total}`);
+      console.log(`[Customers] Debug info:`, response.data._debug);
       console.log(`[Customers] Primeros 3 clientes:`, newCustomers.slice(0, 3).map(c => ({
         name: c.name,
         has_active_rental: c.has_active_rental

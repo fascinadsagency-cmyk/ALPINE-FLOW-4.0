@@ -1119,6 +1119,12 @@ async def get_customers_paginated(
             "total_pages": total_pages,
             "has_next": page < total_pages,
             "has_prev": page > 1
+        },
+        "_debug": {
+            "query_type": "aggregation",
+            "status_filter": status,
+            "store_id": store_filter.get("store_id"),
+            "customers_returned": len(customers)
         }
     }
 
