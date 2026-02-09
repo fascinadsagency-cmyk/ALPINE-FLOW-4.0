@@ -153,8 +153,6 @@ export default function Customers() {
   const loadCustomers = async (reset = false) => {
     const currentPage = reset ? 1 : page;
     
-    console.log(`[Customers] loadCustomers called - status: ${selectedStatus}, page: ${currentPage}, reset: ${reset}`);
-    
     if (reset) {
       setLoading(true);
     } else {
@@ -167,8 +165,6 @@ export default function Customers() {
         limit: '200',
         status: selectedStatus,
       });
-      
-      console.log(`[Customers] API params:`, params.toString());
       
       if (debouncedSearch) {
         params.append('search', debouncedSearch);
@@ -184,13 +180,6 @@ export default function Customers() {
 
       const newCustomers = response.data.customers;
       const pagination = response.data.pagination;
-      
-      console.log(`[Customers] Recibidos ${newCustomers.length} clientes. Total: ${pagination.total}`);
-      console.log(`[Customers] Debug info:`, response.data._debug);
-      console.log(`[Customers] Primeros 3 clientes:`, newCustomers.slice(0, 3).map(c => ({
-        name: c.name,
-        has_active_rental: c.has_active_rental
-      })));
 
       if (reset) {
         setCustomers(newCustomers);
