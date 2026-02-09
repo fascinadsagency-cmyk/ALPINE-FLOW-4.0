@@ -1620,11 +1620,19 @@ export default function NewRental() {
 
   // Calculate subtotal using grouped items - TARIFAS ESCALONADAS (sin multiplicación)
   // 🎯 USANDO GLOBAL PRICE ENGINE para cálculo centralizado
+  // IMPORTANT: Pasa detectedPacks existentes para mantener packs bloqueados (no deshacer packs)
   const calculateSubtotal = () => {
     // Usar el Global Price Engine para calcular el mejor precio
-    const priceResult = calculateBestPrice(items, packs, numDays);
+    const priceResult = calculateBestPrice(items, packs, numDays, detectedPacks);
     
     console.log('[SUBTOTAL] Using Global Price Engine:', priceResult.totalPrice);
+    
+    // CRITICAL: Update detectedPacks ONLY if they changed
+    // This keeps packs stable and prevents unnecessary rerenders
+    if (JSON.stringify(priceResult.detectedPacks) !== JSON.stringify(detectedPacks)) {
+      console.log('[SUBTOTAL] Detected packs changed, updating state');
+      setDetectedPacks(priceResult.detectedPacks);
+    }
     
     return priceResult.totalPrice;
   };
