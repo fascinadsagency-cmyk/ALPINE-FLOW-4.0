@@ -310,6 +310,7 @@ class AddItemsToRentalInput(BaseModel):
     end_date: Optional[str] = None  # Fecha fin específica (None = usar la del alquiler)
     charge_now: bool = True  # Si se cobra ahora o queda pendiente
     payment_method: Optional[str] = "cash"  # Método de pago si se cobra ahora
+    calculated_total: Optional[float] = None  # Total calculado con packs desde el frontend
 
 class MaintenanceResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -3954,9 +3955,8 @@ async def add_items_to_rental(
             {"$set": {"status": "rented"}}
         )
         
-        # Calcular precio usando unit_price o 0
+        # Calcular precio usando unit_price o 0 (solo para guardar en el item)
         item_price = item_input.unit_price or 0
-        additional_rental_amount += item_price
         
         # Agregar al array de items del rental
         new_item_entry = {
@@ -3972,6 +3972,14 @@ async def add_items_to_rental(
             "days": days
         }
         new_items_processed.append(new_item_entry)
+    
+    # CORRECCIÓN: Usar calculated_total del frontend si está disponible (incluye lógica de packs)
+    # Si no, usar la suma de unit_price (legacy)
+    if add_items_input.calculated_total is not None:
+        additional_rental_amount = add_items_input.calculated_total
+    else:
+        # Fallback: sumar precios individuales
+        additional_rental_amount = sum(item["unit_price"] for item in new_items_processed)
     
     # Actualizar el alquiler con los nuevos items y montos
     rental["items"].extend(new_items_processed)
