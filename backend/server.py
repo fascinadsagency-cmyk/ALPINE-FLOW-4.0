@@ -417,6 +417,36 @@ def verify_password(plain: str, hashed: str) -> bool:
 # Use multitenant create_token instead of local one
 create_token = mt_create_token
 
+# ==================== PLAN HELPERS ====================
+
+def get_plan_limits(store: dict) -> dict:
+    """
+    Get plan limits from store document.
+    Priority: plan > plan_type > settings.max_users > default to trial
+    """
+    # Try to get plan from 'plan' field first, then 'plan_type'
+    plan_name = store.get("plan") or store.get("plan_type", "trial")
+    
+    # If plan is not in PLAN_LIMITS, default to trial
+    if plan_name not in PLAN_LIMITS:
+        plan_name = "trial"
+    
+    plan_info = PLAN_LIMITS[plan_name]
+    
+    # Check if store has custom limits in settings (override plan defaults)
+    settings = store.get("settings", {})
+    if settings.get("max_users"):
+        plan_info = plan_info.copy()  # Don't modify original
+        plan_info["max_users"] = settings["max_users"]
+    if settings.get("max_items"):
+        plan_info = plan_info.copy()
+        plan_info["max_items"] = settings["max_items"]
+    if settings.get("max_customers"):
+        plan_info = plan_info.copy()
+        plan_info["max_customers"] = settings["max_customers"]
+    
+    return plan_info
+
 # ==================== AUTH ROUTES ====================
 
 class PublicRegisterRequest(BaseModel):
