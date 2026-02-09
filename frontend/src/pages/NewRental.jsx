@@ -425,7 +425,7 @@ export default function NewRental() {
       }
     }
     // Silent detection - no toasts or interruptions
-  }, [items, packs, numDays, detectedPacks, detectPacks]);
+  }, [items, packs, numDays, detectedPacks]);
 
   // Load Quick Add items from DB
   useEffect(() => {
