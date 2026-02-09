@@ -24,7 +24,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 export default function TeamManagement() {
   const { user } = useAuth();
   const [teamMembers, setTeamMembers] = useState([]);
-  const [teamCount, setTeamCount] = useState({ total: 0, staff: 0, max_staff: 10, can_add_more: true });
+  const [teamCount, setTeamCount] = useState({ total: 0, staff: 0, admin: 0, max_users: 15, max_staff: 10, can_add_more: true, plan_name: "Plan Enterprise" });
   const [showDialog, setShowDialog] = useState(false);
   const [editingMember, setEditingMember] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -183,11 +183,11 @@ export default function TeamManagement() {
             <Users className={`h-6 w-6 ${teamCount.can_add_more ? "text-blue-600" : "text-amber-600"}`} />
             <div>
               <p className="font-semibold text-slate-900">
-                {teamCount.staff} / {teamCount.max_staff} empleados
+                {teamCount.total} / {teamCount.max_users} empleados
               </p>
               <p className="text-sm text-slate-600">
                 {teamCount.can_add_more 
-                  ? `Puedes añadir ${teamCount.max_staff - teamCount.staff} empleados más` 
+                  ? `Puedes añadir ${teamCount.max_users - teamCount.total} empleados más` 
                   : "Has alcanzado el límite de empleados"
                 }
               </p>
