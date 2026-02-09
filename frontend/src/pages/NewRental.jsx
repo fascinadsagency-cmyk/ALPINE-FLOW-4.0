@@ -402,8 +402,9 @@ export default function NewRental() {
       });
       
       // Items without forcedPackId - detect their packs normally
+      // IMPORTANT: Pass existing detected packs to keep them locked
       const itemsWithoutForcedPack = items.filter(i => !i.forcedPackId);
-      const autoDetected = detectPacks(itemsWithoutForcedPack);
+      const autoDetected = detectPacks(itemsWithoutForcedPack, detectedPacks.filter(p => !p.pack?.forced));
       
       // Combine forced packs with auto-detected packs
       const allPacks = [...Object.values(forcedPackGroups), ...autoDetected];
@@ -412,8 +413,16 @@ export default function NewRental() {
       setDetectedPacks(allPacks);
     } else {
       // No forced packs - use automatic detection
-      const detected = detectPacks(items);
-      setDetectedPacks(detected);
+      // IMPORTANT: Pass existing detected packs to keep them LOCKED
+      const detected = detectPacks(items, detectedPacks);
+      
+      // Only update if packs actually changed
+      if (JSON.stringify(detected) !== JSON.stringify(detectedPacks)) {
+        console.log('[PackDetection] Auto-detected packs changed, updating');
+        setDetectedPacks(detected);
+      } else {
+        console.log('[PackDetection] Packs unchanged, keeping stable');
+      }
     }
     // Silent detection - no toasts or interruptions
   }, [items, packs, numDays]);
