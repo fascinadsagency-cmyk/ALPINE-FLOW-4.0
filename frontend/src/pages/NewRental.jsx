@@ -406,30 +406,33 @@ export default function NewRental() {
       });
       
       // Items without forcedPackId - detect their packs normally
-      // IMPORTANT: Pass existing detected packs to keep them locked
-      const itemsWithoutForcedPack = items.filter(i => !i.forcedPackId);
-      const autoDetected = detectPacks(itemsWithoutForcedPack, detectedPacks.filter(p => !p.pack?.forced));
-      
-      // Combine forced packs with auto-detected packs
-      const allPacks = [...Object.values(forcedPackGroups), ...autoDetected];
-      
-      console.log('[PackDetection] Using forced packs:', Object.values(forcedPackGroups).map(p => p.pack.name));
-      setDetectedPacks(allPacks);
+      setDetectedPacks(prev => {
+        const itemsWithoutForcedPack = items.filter(i => !i.forcedPackId);
+        const autoDetected = detectPacks(itemsWithoutForcedPack, prev.filter(p => !p.pack?.forced));
+        
+        // Combine forced packs with auto-detected packs
+        const allPacks = [...Object.values(forcedPackGroups), ...autoDetected];
+        
+        console.log('[PackDetection] Using forced packs:', Object.values(forcedPackGroups).map(p => p.pack.name));
+        return allPacks;
+      });
     } else {
       // No forced packs - use automatic detection
-      // IMPORTANT: Pass existing detected packs to keep them LOCKED
-      const detected = detectPacks(items, detectedPacks);
-      
-      // Only update if packs actually changed
-      if (JSON.stringify(detected) !== JSON.stringify(detectedPacks)) {
-        console.log('[PackDetection] Auto-detected packs changed, updating');
-        setDetectedPacks(detected);
-      } else {
-        console.log('[PackDetection] Packs unchanged, keeping stable');
-      }
+      setDetectedPacks(prev => {
+        const detected = detectPacks(items, prev);
+        
+        // Only update if packs actually changed
+        if (JSON.stringify(detected) !== JSON.stringify(prev)) {
+          console.log('[PackDetection] Auto-detected packs changed, updating');
+          return detected;
+        } else {
+          console.log('[PackDetection] Packs unchanged, keeping stable');
+          return prev;
+        }
+      });
     }
     // Silent detection - no toasts or interruptions
-  }, [items, packs, numDays, detectedPacks]);
+  }, [items, packs, numDays]);
 
   // Load Quick Add items from DB
   useEffect(() => {
