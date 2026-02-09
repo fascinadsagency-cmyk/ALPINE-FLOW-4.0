@@ -9106,12 +9106,15 @@ async def create_team_member(
     
     # Get store and plan info for limit validation
     store = await db.stores.find_one({"store_id": current_user.store_id})
-    plan_type = store.get("plan_type", "trial") if store else "trial"
-    plan_info = PLAN_LIMITS.get(plan_type, PLAN_LIMITS["trial"])
+    if not store:
+        raise HTTPException(status_code=404, detail="Tienda no encontrada")
+    
+    plan_info = get_plan_limits(store)
     max_users = plan_info["max_users"]
+    plan_name = store.get("plan") or store.get("plan_type", "trial")
     
     # Check if trial expired (only applies to trial plans, not paid plans)
-    if plan_type == "trial" and store:
+    if plan_name == "trial" and store:
         trial_start = store.get("trial_start_date")
         if trial_start:
             if isinstance(trial_start, str):
@@ -9297,8 +9300,10 @@ async def get_team_count(current_user: CurrentUser = Depends(get_current_user)):
     
     # Get plan info for limits
     store = await db.stores.find_one({"store_id": current_user.store_id})
-    plan_type = store.get("plan_type", "trial") if store else "trial"
-    plan_info = PLAN_LIMITS.get(plan_type, PLAN_LIMITS["trial"])
+    if not store:
+        raise HTTPException(status_code=404, detail="Tienda no encontrada")
+    
+    plan_info = get_plan_limits(store)
     max_users = plan_info["max_users"]
     
     # Count all users (admin + staff)
