@@ -17,14 +17,16 @@ load_dotenv()
 async def create_indexes():
     """Crear índices para optimizar rendimiento"""
     mongo_url = os.getenv("MONGO_URL")
+    db_name = os.getenv("DB_NAME", "rental_system")
+    
     if not mongo_url:
         print("❌ MONGO_URL no encontrada en .env")
         return
     
     client = AsyncIOMotorClient(mongo_url)
-    db = client.get_database()
+    db = client[db_name]
     
-    print("🔧 Creando índices para optimización de clientes activos...")
+    print(f"🔧 Creando índices para optimización de clientes activos en BD: {db_name}...")
     
     # Índices para customers
     print("\n📊 Índices en 'customers':")
