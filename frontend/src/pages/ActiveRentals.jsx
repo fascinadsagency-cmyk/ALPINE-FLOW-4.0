@@ -292,11 +292,25 @@ export default function ActiveRentals() {
   
   // Detectar packs en el carrito combinado (items existentes + nuevos)
   const detectAddItemsPacks = (newItems) => {
-    if (!addItemsPacks || addItemsPacks.length === 0) return [];
+    if (!addItemsPacks || addItemsPacks.length === 0) {
+      console.log("[DetectPacks] No hay packs configurados", { addItemsPacks });
+      return [];
+    }
     
     // Combinar items existentes con nuevos
     const allItems = [...addItemsExistingItems, ...newItems];
-    if (allItems.length === 0) return [];
+    if (allItems.length === 0) {
+      console.log("[DetectPacks] No hay items (existentes + nuevos)");
+      return [];
+    }
+    
+    console.log("[DetectPacks] Iniciando detección", {
+      existingItems: addItemsExistingItems.length,
+      newItems: newItems.length,
+      totalItems: allItems.length,
+      packsDisponibles: addItemsPacks.length,
+      itemTypes: allItems.map(i => i.item_type)
+    });
     
     const detectedPackInstances = [];
     const usedBarcodes = new Set();
@@ -322,11 +336,18 @@ export default function ActiveRentals() {
           return acc;
         }, {});
         
+        console.log(`[DetectPacks] Evaluando pack "${pack.name}"`, {
+          requiredComponents,
+          availableTypeCounts,
+          packItems: pack.items
+        });
+        
         // Verificar si podemos formar este pack
         let canFormPack = true;
         for (const [type, count] of Object.entries(requiredComponents)) {
           if ((availableTypeCounts[type] || 0) < count) {
             canFormPack = false;
+            console.log(`[DetectPacks] ❌ Pack "${pack.name}" no se puede formar: falta tipo "${type}" (necesita ${count}, tiene ${availableTypeCounts[type] || 0})`);
             break;
           }
         }
@@ -352,6 +373,13 @@ export default function ActiveRentals() {
             const isNewPack = packInstanceItems.some(bc => !existingBarcodes.has(bc));
             const hasExistingItems = packInstanceItems.some(bc => existingBarcodes.has(bc));
             
+            console.log(`[DetectPacks] ✅ Pack "${pack.name}" formado!`, {
+              items: packInstanceItems,
+              isNewPack,
+              hasExistingItems,
+              isMixedPack: isNewPack && hasExistingItems
+            });
+            
             detectedPackInstances.push({
               pack: pack,
               items: packInstanceItems,
@@ -364,6 +392,8 @@ export default function ActiveRentals() {
             
             foundPack = true;
             break;
+          } else {
+            console.log(`[DetectPacks] ⚠️ Pack "${pack.name}" no completado (${packInstanceItems.length}/${pack.items.length})`);
           }
         }
       }
