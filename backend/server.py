@@ -5890,6 +5890,8 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
                 break
         
         if has_pending_item:
+            # DEBUG: Log the comparison
+            # print(f"DEBUG: end_date={end_date}, today={today}, comparison={end_date < today}")
             if end_date < today:  # Only overdue (not today)
                 overdue_returns += 1
             elif end_date == today:
