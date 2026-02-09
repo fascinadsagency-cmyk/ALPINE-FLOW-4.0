@@ -930,8 +930,14 @@ async def get_customers_paginated(
     """
     store_filter = current_user.get_store_filter()
     
+    print(f"[CUSTOMERS API] ===== INICIO =====")
+    print(f"[CUSTOMERS API] store_id: {store_filter.get('store_id')}")
+    print(f"[CUSTOMERS API] status parameter: '{status}'")
+    print(f"[CUSTOMERS API] page: {page}, limit: {limit}")
+    
     # Si NO se filtra por active/inactive, usar consulta simple (más rápida)
     if status == "all":
+        print(f"[CUSTOMERS API] Usando consulta SIMPLE (status=all)")
         # Build base query
         query = {**store_filter}
         
@@ -971,6 +977,7 @@ async def get_customers_paginated(
         for customer in customers:
             customer["has_active_rental"] = False
         
+        print(f"[CUSTOMERS API] Devolviendo {len(customers)} clientes (status=all)")
         total_pages = (total + limit - 1) // limit
         
         return {
@@ -987,6 +994,7 @@ async def get_customers_paginated(
     
     # Si se filtra por active/inactive, usar AGREGACIÓN optimizada
     # 🚀 OPTIMIZACIÓN: Usar MongoDB aggregation para hacer JOIN y filtrado en BD
+    print(f"[CUSTOMERS API] Usando AGREGACIÓN (status={status})")
     pipeline = []
     
     # Stage 1: Match customers del store
@@ -1080,6 +1088,10 @@ async def get_customers_paginated(
     total = count_result[0]["total"] if count_result else 0
     
     customers = await db.customers.aggregate(data_pipeline).to_list(limit)
+    
+    print(f"[CUSTOMERS API] Agregación completada: {len(customers)} clientes encontrados")
+    if customers:
+        print(f"[CUSTOMERS API] Primeros 3: {[c['name'] for c in customers[:3]]}")
     
     total_pages = (total + limit - 1) // limit if total > 0 else 1
     
