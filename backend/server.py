@@ -1047,8 +1047,12 @@ async def get_customers_paginated(
     # Stage 4: Filter by active/inactive
     if status == "active":
         pipeline.append({"$match": {"has_active_rental": True}})
+        print(f"[DEBUG] Filtrando por clientes activos (has_active_rental: True)")
     elif status == "inactive":
         pipeline.append({"$match": {"has_active_rental": False}})
+        print(f"[DEBUG] Filtrando por clientes inactivos (has_active_rental: False)")
+    
+    print(f"[DEBUG] Pipeline completo: {pipeline}")
     
     # Stage 5: Project only needed fields
     pipeline.append({
