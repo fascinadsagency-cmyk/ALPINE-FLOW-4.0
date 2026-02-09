@@ -48,7 +48,6 @@ import {
   Zap
 } from "lucide-react";
 import { toast } from "sonner";
-import { useRef } from 'react';
 
 // COMPONENTE VIRTUALIZADO para listas de búsqueda
 const VirtualizedSearchResults = ({ items, onItemClick }) => {
