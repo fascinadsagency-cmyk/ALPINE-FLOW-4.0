@@ -926,15 +926,75 @@ async def get_customers_paginated(
     current_user: CurrentUser = Depends(get_current_user)
 ):
     """
-    Get customers with server-side pagination for handling large datasets (50K+ records)
-    Optimized for scroll-infinite pattern with minimal data transfer
+    Get customers with server-side pagination - OPTIMIZED with MongoDB aggregation
     """
-    # Build base query
-    query = {**current_user.get_store_filter()}
+    store_filter = current_user.get_store_filter()
+    
+    # Si NO se filtra por active/inactive, usar consulta simple (más rápida)
+    if status == "all":
+        # Build base query
+        query = {**store_filter}
+        
+        # Search filter
+        if search and search.strip():
+            query["$or"] = [
+                {"dni": {"$regex": search, "$options": "i"}},
+                {"name": {"$regex": search, "$options": "i"}},
+                {"phone": {"$regex": search, "$options": "i"}}
+            ]
+        
+        # Provider filter
+        if provider and provider != "all":
+            if provider == "none":
+                query["$or"] = [{"source": {"$exists": False}}, {"source": ""}]
+            else:
+                query["source"] = provider
+        
+        total = await db.customers.count_documents(query)
+        skip = (page - 1) * limit
+        
+        customers = await db.customers.find(
+            query,
+            {
+                "_id": 0,
+                "id": 1,
+                "dni": 1,
+                "name": 1,
+                "phone": 1,
+                "city": 1,
+                "source": 1,
+                "total_rentals": 1,
+                "created_at": 1
+            }
+        ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+        
+        for customer in customers:
+            customer["has_active_rental"] = False
+        
+        total_pages = (total + limit - 1) // limit
+        
+        return {
+            "customers": customers,
+            "pagination": {
+                "page": page,
+                "limit": limit,
+                "total": total,
+                "total_pages": total_pages,
+                "has_next": page < total_pages,
+                "has_prev": page > 1
+            }
+        }
+    
+    # Si se filtra por active/inactive, usar AGREGACIÓN optimizada
+    # 🚀 OPTIMIZACIÓN: Usar MongoDB aggregation para hacer JOIN y filtrado en BD
+    pipeline = []
+    
+    # Stage 1: Match customers del store
+    match_stage = {**store_filter}
     
     # Search filter
     if search and search.strip():
-        query["$or"] = [
+        match_stage["$or"] = [
             {"dni": {"$regex": search, "$options": "i"}},
             {"name": {"$regex": search, "$options": "i"}},
             {"phone": {"$regex": search, "$options": "i"}}
@@ -943,37 +1003,56 @@ async def get_customers_paginated(
     # Provider filter
     if provider and provider != "all":
         if provider == "none":
-            query["$or"] = [{"source": {"$exists": False}}, {"source": ""}]
+            match_stage["$or"] = match_stage.get("$or", []) + [{"source": {"$exists": False}}, {"source": ""}]
         else:
-            query["source"] = provider
+            match_stage["source"] = provider
     
-    # Calculate total count (optimized - only when needed)
-    total = await db.customers.count_documents(query)
+    pipeline.append({"$match": match_stage})
     
-    # Get active customer IDs if status filter is needed
-    # 🚀 OPTIMIZACIÓN: Incluir store_filter para evitar traer datos de otras tiendas
-    active_customer_ids = set()
-    active_customer_dnis = set()
-    if status in ["active", "inactive"]:
-        active_rentals = await db.rentals.find(
-            {
-                **current_user.get_store_filter(),  # ✅ Multi-tenant filter
-                "status": {"$in": ["active", "partial"]}
-            },
-            {"customer_id": 1, "customer_dni": 1, "_id": 0}
-        ).to_list(None)
-        
-        for rental in active_rentals:
-            if rental.get("customer_id"):
-                active_customer_ids.add(rental["customer_id"])
-            if rental.get("customer_dni"):
-                active_customer_dnis.add(rental["customer_dni"].upper())
+    # Stage 2: Lookup active rentals
+    pipeline.append({
+        "$lookup": {
+            "from": "rentals",
+            "let": {"customer_id": "$id", "customer_dni": "$dni"},
+            "pipeline": [
+                {
+                    "$match": {
+                        "$expr": {
+                            "$and": [
+                                {"$eq": ["$store_id", store_filter["store_id"]]},
+                                {"$in": ["$status", ["active", "partial"]]},
+                                {
+                                    "$or": [
+                                        {"$eq": ["$customer_id", "$$customer_id"]},
+                                        {"$eq": [{"$toUpper": "$customer_dni"}, {"$toUpper": "$$customer_dni"}]}
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                {"$limit": 1}
+            ],
+            "as": "active_rentals"
+        }
+    })
     
-    # Get paginated customers - minimal fields for performance
-    skip = (page - 1) * limit
-    customers = await db.customers.find(
-        query,
-        {
+    # Stage 3: Add computed field has_active_rental
+    pipeline.append({
+        "$addFields": {
+            "has_active_rental": {"$gt": [{"$size": "$active_rentals"}, 0]}
+        }
+    })
+    
+    # Stage 4: Filter by active/inactive
+    if status == "active":
+        pipeline.append({"$match": {"has_active_rental": True}})
+    elif status == "inactive":
+        pipeline.append({"$match": {"has_active_rental": False}})
+    
+    # Stage 5: Project only needed fields
+    pipeline.append({
+        "$project": {
             "_id": 0,
             "id": 1,
             "dni": 1,
@@ -982,37 +1061,24 @@ async def get_customers_paginated(
             "city": 1,
             "source": 1,
             "total_rentals": 1,
-            "created_at": 1
+            "created_at": 1,
+            "has_active_rental": 1
         }
-    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    })
     
-    # Add active status if needed
-    if status in ["active", "inactive"]:
-        filtered_customers = []
-        for customer in customers:
-            is_active = (
-                customer.get("id") in active_customer_ids or 
-                customer.get("dni", "").upper() in active_customer_dnis
-            )
-            customer["has_active_rental"] = is_active
-            
-            # Filter by status
-            if status == "active" and is_active:
-                filtered_customers.append(customer)
-            elif status == "inactive" and not is_active:
-                filtered_customers.append(customer)
-        
-        customers = filtered_customers
-    else:
-        # Add has_active_rental for display purposes
-        for customer in customers:
-            is_active = (
-                customer.get("id") in active_customer_ids or 
-                customer.get("dni", "").upper() in active_customer_dnis
-            ) if active_customer_ids else False
-            customer["has_active_rental"] = is_active
+    # Stage 6: Sort
+    pipeline.append({"$sort": {"created_at": -1}})
     
-    total_pages = (total + limit - 1) // limit
+    # Get total count with facet (más eficiente que count separado)
+    count_pipeline = pipeline + [{"$count": "total"}]
+    data_pipeline = pipeline + [{"$skip": (page - 1) * limit}, {"$limit": limit}]
+    
+    count_result = await db.customers.aggregate(count_pipeline).to_list(1)
+    total = count_result[0]["total"] if count_result else 0
+    
+    customers = await db.customers.aggregate(data_pipeline).to_list(limit)
+    
+    total_pages = (total + limit - 1) // limit if total > 0 else 1
     
     return {
         "customers": customers,
