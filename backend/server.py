@@ -5744,11 +5744,17 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
     This ensures Dashboard shows same value as Cash Register.
     
     AUDITED METRICS:
-    - returns_today: COUNT DISTINCT rentals returned today (not individual items)
+    - pending_returns: COUNT rentals pending return (today + overdue)
     - customers_today: COUNT DISTINCT customers with rentals created today (unique clients)
     - occupancy_percent: Calculated over rentable inventory (excludes retired/lost/deleted)
+    
+    TIMEZONE: Uses Europe/Madrid for consistent date comparison
     """
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    import pytz
+    
+    # Use Europe/Madrid timezone for consistent date handling
+    madrid_tz = pytz.timezone('Europe/Madrid')
+    today = datetime.now(madrid_tz).strftime("%Y-%m-%d")
     start = f"{today}T00:00:00"
     end = f"{today}T23:59:59"
     
