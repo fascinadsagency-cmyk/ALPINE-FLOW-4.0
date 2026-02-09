@@ -79,7 +79,7 @@ async def create_indexes():
         print("  ✅ idx_store_status_dni")
         
     except Exception as e:
-        print(f("  ⚠️  Error en rentals: {e}")
+        print(f"  ⚠️  Error en rentals: {e}")
     
     # Listar todos los índices
     print("\n📋 Índices actuales en 'customers':")
