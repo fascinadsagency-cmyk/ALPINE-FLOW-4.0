@@ -994,6 +994,11 @@ async def get_customers_paginated(
     # Si se filtra por active/inactive, usar AGREGACIÓN optimizada
     # 🚀 OPTIMIZACIÓN: Usar MongoDB aggregation para hacer JOIN y filtrado en BD
     logger.info(f"[CUSTOMERS] Using AGGREGATION (status={status})")
+    
+    # DEBUG: Guardar en archivo temporal
+    with open("/tmp/customers_debug.log", "a") as f:
+        f.write(f"\n[{datetime.now()}] AGGREGATION called: status={status}, store_id={store_filter.get('store_id')}\n")
+    
     pipeline = []
     
     # Stage 1: Match customers del store
@@ -1087,6 +1092,12 @@ async def get_customers_paginated(
     total = count_result[0]["total"] if count_result else 0
     
     customers = await db.customers.aggregate(data_pipeline).to_list(limit)
+    
+    # DEBUG: Guardar resultado
+    with open("/tmp/customers_debug.log", "a") as f:
+        f.write(f"  → Found {len(customers)} customers (total={total})\n")
+        if customers:
+            f.write(f"  → First 3: {[c.get('name', 'N/A')[:30] for c in customers[:3]]}\n")
     
     logger.info(f"[CUSTOMERS] Aggregation done: {len(customers)} customers found (total={total})")
     if customers:
