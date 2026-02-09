@@ -937,6 +937,11 @@ async def get_customers_paginated(
     # Si NO se filtra por active/inactive, usar consulta simple (más rápida)
     if status == "all":
         logger.info(f"[CUSTOMERS] Using SIMPLE query")
+        
+        # DEBUG
+        with open("/tmp/customers_debug.log", "a") as f:
+            f.write(f"\n[{datetime.now()}] SIMPLE query: status={status}, store_id={store_filter.get('store_id')}\n")
+        
         # Build base query
         query = {**store_filter}
         
