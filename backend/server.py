@@ -5876,7 +5876,7 @@ async def get_stats(current_user: CurrentUser = Depends(get_current_user)):
     rentals_due_today = []
     
     for rental in rentals_pending_return:
-        end_date = rental.get("end_date", "")
+        end_date = rental.get("end_date", "").split("T")[0]  # Remove timestamp if present
         has_pending_item = False
         for item in rental.get("items", []):
             if not item.get("returned", False):
