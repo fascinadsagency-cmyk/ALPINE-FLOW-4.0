@@ -2168,13 +2168,13 @@ export default function NewRental() {
           
           {/* Cliente */}
           <Card className="border-slate-200">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <User className="h-5 w-5 text-slate-500" />
+            <CardHeader className="py-2 px-4">
+              <CardTitle className="text-base flex items-center gap-2">
+                <User className="h-4 w-4 text-slate-500" />
                 Cliente
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-2 px-4 pb-3">
               {/* Smart Autocomplete Search */}
               <div className="relative">
                 <div className="flex gap-2">
@@ -2484,14 +2484,14 @@ export default function NewRental() {
           {/* Fechas */}
           {/* Smart Dates Card */}
           <Card className="border-slate-200 border-primary/50">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-primary" tabIndex={-1} aria-hidden="true" />
+            <CardHeader className="py-2 px-4">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-primary" tabIndex={-1} aria-hidden="true" />
                 Duración del Alquiler
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="bg-primary/5 rounded-xl p-4">
+            <CardContent className="space-y-2 px-4 pb-3">
+              <div className="bg-primary/5 rounded-lg p-3">
                 <Label className="text-sm font-medium text-slate-700">Número de días</Label>
                 <div className="flex items-center gap-3 mt-2">
                   <Input
