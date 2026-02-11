@@ -2492,8 +2492,8 @@ export default function NewRental() {
             </CardHeader>
             <CardContent className="space-y-2 px-4 pb-3">
               <div className="bg-primary/5 rounded-lg p-3">
-                <Label className="text-sm font-medium text-slate-700">Número de días</Label>
-                <div className="flex items-center gap-3 mt-2">
+                <Label className="text-xs font-medium text-slate-700">Número de días</Label>
+                <div className="flex items-center gap-2 mt-1">
                   <Input
                     ref={daysRef}
                     type="number"
@@ -2515,19 +2515,16 @@ export default function NewRental() {
                       handleDaysKeyDown(e);
                     }}
                     tabIndex={3}
-                    className="h-14 text-3xl font-bold text-center w-24 border-primary/30"
+                    className="h-10 text-xl font-bold text-center w-20 border-primary/30"
                     data-testid="num-days-input"
                     autoComplete="off"
                   />
                   <div className="flex-1 text-center" tabIndex={-1}>
-                    <div className="flex items-center justify-center gap-2 text-lg font-medium text-slate-700">
+                    <div className="flex items-center justify-center gap-2 text-sm font-medium text-slate-700">
                       <span>{formatDateDisplay(startDate)}</span>
-                      <ArrowRight className="h-4 w-4 text-primary" tabIndex={-1} aria-hidden="true" />
+                      <ArrowRight className="h-3 w-3 text-primary" tabIndex={-1} aria-hidden="true" />
                       <span>{formatDateDisplay(endDate)}</span>
                     </div>
-                    <p className="text-sm text-slate-500 mt-1">
-                      {numDays} {numDays === 1 ? 'día' : 'días'}
-                    </p>
                   </div>
                 </div>
               </div>
@@ -2539,14 +2536,14 @@ export default function NewRental() {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label className="text-xs text-slate-500">Desde</Label>
                   <Input
                     type="date"
                     value={startDate}
                     onChange={(e) => handleStartDateChange(e.target.value)}
-                    className="h-10 mt-1 text-sm"
+                    className="h-8 mt-0.5 text-xs"
                     data-testid="start-date-input"
                     tabIndex={-1}
                   />
@@ -2557,20 +2554,20 @@ export default function NewRental() {
                     type="date"
                     value={endDate}
                     onChange={(e) => handleEndDateChange(e.target.value)}
-                    className="h-10 mt-1 text-sm"
+                    className="h-8 mt-0.5 text-xs"
                     data-testid="end-date-input"
                   />
                 </div>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-1">
                 {[1, 2, 3, 5, 7].map(d => (
                   <Button
                     key={d}
                     variant={numDays === d ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleNumDaysChange(d)}
-                    className="flex-1"
+                    className="flex-1 h-7 text-xs"
                   >
                     {d}d
                   </Button>
