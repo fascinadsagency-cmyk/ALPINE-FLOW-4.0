@@ -3231,85 +3231,70 @@ export default function NewRental() {
       {/* STICKY FOOTER - Resumen y Botón de Acción */}
       <div className="flex-shrink-0 bg-white border-t-2 border-slate-200 shadow-2xl">
         <div className="px-6 py-3">
-          <div className="flex items-center justify-between gap-6">
+          <div className="flex items-center justify-between gap-4">
             {/* Resumen Compacto - Izquierda */}
-            <div className="flex-1">
+            <div className="flex items-center gap-4">
               {(() => {
                 const rentalAmount = total;
                 const depositAmount = Number(parseFloat(deposit) || 0);
                 const totalToPay = rentalAmount + depositAmount;
                 
                 return (
-                  <div className="flex items-center gap-6">
+                  <>
                     {/* Total del Alquiler */}
                     <div>
-                      <p className="text-xs text-slate-500 uppercase font-medium">Total Alquiler</p>
-                      <p className="text-2xl font-bold text-slate-900">€{total.toFixed(2)}</p>
+                      <p className="text-xs text-slate-500 uppercase font-medium">Total</p>
+                      <p className="text-xl font-bold text-slate-900">€{total.toFixed(2)}</p>
                     </div>
                     
                     {/* Depósito si existe */}
                     {depositAmount > 0 && (
                       <>
-                        <div className="h-8 w-px bg-slate-300"></div>
+                        <div className="h-6 w-px bg-slate-300"></div>
                         <div>
                           <p className="text-xs text-amber-600 uppercase font-medium">Depósito</p>
-                          <p className="text-xl font-bold text-amber-600">€{depositAmount.toFixed(2)}</p>
-                        </div>
-                      </>
-                    )}
-                    
-                    {/* Total a Cobrar Hoy */}
-                    {depositAmount > 0 && (
-                      <>
-                        <div className="h-8 w-px bg-slate-300"></div>
-                        <div>
-                          <p className="text-xs text-emerald-600 uppercase font-medium">Total a Cobrar</p>
-                          <p className="text-2xl font-bold text-emerald-600">€{totalToPay.toFixed(2)}</p>
+                          <p className="text-lg font-bold text-amber-600">€{depositAmount.toFixed(2)}</p>
                         </div>
                       </>
                     )}
                     
                     {/* Items count */}
-                    <div className="ml-4">
-                      <Badge variant="secondary" className="text-sm">
-                        {items.length} artículo{items.length !== 1 ? 's' : ''}
-                      </Badge>
-                    </div>
-                  </div>
+                    <Badge variant="secondary" className="text-sm ml-2">
+                      {items.length} artículo{items.length !== 1 ? 's' : ''}
+                    </Badge>
+                  </>
                 );
               })()}
             </div>
             
             {/* Botón de Acción - Derecha */}
-            <div className="flex-shrink-0">
-              <Button
-                ref={submitRef}
-                size="lg"
-                onClick={completeRental}
-                disabled={loading || !customer || items.length === 0}
-                tabIndex={4}
-                onKeyDown={(e) => {
-                  if (e.key === 'Tab' && !isEditingCartItem) {
-                    e.preventDefault();
-                    if (e.shiftKey) {
-                      focusPrevField('submit');
-                    } else {
-                      focusNextField('submit');
-                    }
-                    return;
+            <Button
+              ref={submitRef}
+              size="lg"
+              onClick={completeRental}
+              disabled={loading || !customer || items.length === 0}
+              tabIndex={4}
+              onKeyDown={(e) => {
+                if (e.key === 'Tab' && !isEditingCartItem) {
+                  e.preventDefault();
+                  if (e.shiftKey) {
+                    focusPrevField('submit');
+                  } else {
+                    focusNextField('submit');
                   }
-                }}
-                className="h-14 px-10 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
-                data-testid="complete-rental-btn"
-              >
-                {loading ? (
-                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                ) : (
-                  <Check className="h-5 w-5 mr-2" />
-                )}
-                Completar Alquiler
-              </Button>
-            </div>
+                  return;
+                }
+              }}
+              className="h-12 px-8 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+              data-testid="complete-rental-btn"
+            >
+              {loading ? (
+                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+              ) : (
+                <Check className="h-5 w-5 mr-2" />
+              )}
+              Completar Alquiler
+            </Button>
           </div>
         </div>
       </div>
