@@ -279,9 +279,33 @@ export default function NewRental() {
   const daysRef = useRef(null);         // Selector de días
   const customerSearchRef = useRef(null); // Input de búsqueda de cliente
   const submitRef = useRef(null);       // Botón de cobrar
+  const mainContainerRef = useRef(null); // Contenedor principal para navegación
+  const cartGridRef = useRef(null);     // Grid de artículos del carrito
 
   // Check if any cart item is being edited (to disable global scanner and Tab navigation)
   const isEditingCartItem = editingItemDays !== null || editingItemPrice !== null || editingPackPrice !== null;
+
+  // ============ NAVEGACIÓN POR TECLADO GLOBAL ============
+  // Hook para navegación tipo spreadsheet con flechas, Enter como Tab
+  useKeyboardNavigation({
+    containerRef: mainContainerRef,
+    enabled: !showItemSearch && !showNewCustomer && !showPaymentDialog && !showSuccessDialog && !isEditingCartItem,
+    enterAsTab: true,
+    arrowNavigation: true,
+    gridMode: false,
+    onNavigate: (direction, element) => {
+      console.log('[KEYBOARD NAV] Direction:', direction, 'Element:', element?.tagName);
+    }
+  });
+
+  // Hook especializado para navegación en la tabla del carrito
+  useGridNavigation({
+    gridRef: cartGridRef,
+    enabled: !showItemSearch && !showNewCustomer && !showPaymentDialog,
+    onCellChange: (element, direction) => {
+      console.log('[GRID NAV] Cell change:', direction, element?.name || element?.tagName);
+    }
+  });
 
   // Secuencia de navegación: Cliente -> Días -> Código -> Cobrar
   const focusNextField = useCallback((currentField) => {
