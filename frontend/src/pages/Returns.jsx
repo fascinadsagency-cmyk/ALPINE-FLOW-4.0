@@ -2406,7 +2406,7 @@ export default function Returns() {
                           {item.isSwapping ? (
                             <>
                               <div className="text-right mr-2">
-                                <p className="text-xs text-orange-600 font-medium">→ {item.swapNewItem?.internal_code || item.swapNewItem?.item_type}</p>
+                                <p className="text-xs text-orange-600 font-medium">→ {item.swapNewItem?.internal_code || item.swapNewItem?.barcode}</p>
                                 <p className="text-xs text-slate-500">
                                   Delta: {item.swapDelta >= 0 ? '+' : ''}€{item.swapDelta?.toFixed(2)}
                                 </p>
