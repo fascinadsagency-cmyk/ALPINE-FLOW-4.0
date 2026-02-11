@@ -37,52 +37,65 @@
  * FOCUS RING GLOBAL - NAVEGACIÓN POR TECLADO
  * ============================================================================
  * Estilos para navegación tipo software de escritorio / spreadsheet
+ * El usuario debe ver SIEMPRE dónde está el foco sin tocar el ratón
  */
 
-/* Focus ring visible para todos los elementos interactivos */
+/* Focus ring visible y grueso para todos los elementos interactivos */
+input:focus,
 input:focus-visible,
+select:focus,
 select:focus-visible,
+textarea:focus,
 textarea:focus-visible,
-button:focus-visible,
-[tabindex]:focus-visible,
-a:focus-visible {
-    outline: 2px solid #0056b3 !important;
-    outline-offset: 2px !important;
-    box-shadow: 0 0 0 4px rgba(0, 86, 179, 0.15) !important;
+button:focus,
+button:focus-visible {
+    outline: 3px solid #0056b3 !important;
+    outline-offset: 1px !important;
+    box-shadow: 0 0 0 5px rgba(0, 86, 179, 0.2) !important;
+    position: relative;
+    z-index: 5;
+}
+
+/* Transición suave */
+input, select, textarea, button, [tabindex], a {
+    transition: outline 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
 }
 
 /* Focus ring en modo oscuro */
+.dark input:focus,
 .dark input:focus-visible,
+.dark select:focus,
 .dark select:focus-visible,
+.dark textarea:focus,
 .dark textarea:focus-visible,
-.dark button:focus-visible,
-.dark [tabindex]:focus-visible,
-.dark a:focus-visible {
-    outline: 2px solid #60a5fa !important;
-    outline-offset: 2px !important;
-    box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.2) !important;
+.dark button:focus,
+.dark button:focus-visible {
+    outline: 3px solid #60a5fa !important;
+    outline-offset: 1px !important;
+    box-shadow: 0 0 0 5px rgba(96, 165, 250, 0.25) !important;
 }
 
 /* Focus especial para elementos en grids/tablas navegables */
+.keyboard-nav-grid input:focus,
 .keyboard-nav-grid input:focus-visible,
+.keyboard-nav-grid select:focus,
 .keyboard-nav-grid select:focus-visible,
+.keyboard-nav-grid button:focus,
 .keyboard-nav-grid button:focus-visible {
-    outline: 3px solid #0056b3 !important;
+    outline: 4px solid #0056b3 !important;
     outline-offset: 0px !important;
     background-color: #fffbeb !important;
     z-index: 10;
 }
 
+.dark .keyboard-nav-grid input:focus,
 .dark .keyboard-nav-grid input:focus-visible,
+.dark .keyboard-nav-grid select:focus,
 .dark .keyboard-nav-grid select:focus-visible,
+.dark .keyboard-nav-grid button:focus,
 .dark .keyboard-nav-grid button:focus-visible {
-    outline: 3px solid #60a5fa !important;
-    background-color: rgba(96, 165, 250, 0.1) !important;
-}
-
-/* Transición suave para focus */
-input, select, textarea, button, [tabindex], a {
-    transition: outline 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    outline: 4px solid #60a5fa !important;
+    background-color: rgba(96, 165, 250, 0.15) !important;
 }
 
 /* ============================================================================
