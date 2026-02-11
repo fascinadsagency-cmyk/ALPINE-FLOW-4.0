@@ -3224,128 +3224,95 @@ export default function NewRental() {
                 </div>
               )}
 
-              <div className="flex items-center justify-between p-4 rounded-xl bg-primary/5 mt-4">
-                <div className="flex-1" tabIndex={-1}>
-                  {(hasDiscount || getProviderDiscount() > 0) && (
-                    <p className="text-sm text-slate-500 line-through">€{subtotal.toFixed(2)}</p>
-                  )}
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm text-slate-500">Total del alquiler</p>
-                      </div>
-                      <p className="text-3xl font-bold text-slate-900">€{total.toFixed(2)}</p>
-                      {getProviderDiscount() > 0 && (
-                        <p className="text-xs text-slate-500 mt-1">
-                          Incluye descuento {customer.source}
-                        </p>
-                      )}
-                    </div>
-                    {(hasDiscount || getProviderDiscount() > 0) && (
-                      <Badge className="bg-emerald-100 text-emerald-700" tabIndex={-1}>
-                        -€{(subtotal - total).toFixed(2)}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              {/* RESUMEN FINANCIERO DINÁMICO */}
-              {(() => {
-                const rentalAmount = total; // Importe del alquiler
-                const depositAmount = Number(parseFloat(deposit) || 0);
-                const totalToPay = rentalAmount + depositAmount; // TOTAL A COBRAR HOY
-                const cleanPaidAmount = paidAmount !== "" ? Number(parseFloat(paidAmount) || 0) : totalToPay;
-                const pendingAmount = Math.max(0, rentalAmount - cleanPaidAmount);
-                
-                return (
-                  <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-                    <p className="text-sm font-semibold text-slate-700 uppercase">Resumen de la Operación</p>
-                    
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Importe Alquiler:</span>
-                        <span className="font-medium">€{rentalAmount.toFixed(2)}</span>
-                      </div>
-                      
-                      {depositAmount > 0 && (
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Depósito (reembolsable):</span>
-                          <span className="font-medium text-amber-600">€{depositAmount.toFixed(2)}</span>
-                        </div>
-                      )}
-                      
-                      <div className="flex justify-between pt-2 border-t border-slate-300">
-                        <span className="text-slate-900 font-semibold">Total a Recibir HOY:</span>
-                        <span className="font-bold text-lg text-primary">€{totalToPay.toFixed(2)}</span>
-                      </div>
-                      
-                      <div className="flex justify-between pt-2 border-t">
-                        <span className="text-slate-600">Importe pagado ahora:</span>
-                        <span className={`font-medium ${cleanPaidAmount === 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
-                          €{cleanPaidAmount.toFixed(2)}
-                        </span>
-                      </div>
-                      
-                      {pendingAmount > 0 && (
-                        <div className="flex justify-between pt-2 border-t border-slate-200">
-                          <span className="text-amber-700 font-medium">Pendiente de pago:</span>
-                          <span className="font-bold text-amber-600">€{pendingAmount.toFixed(2)}</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {pendingAmount > 0 && (
-                      <div className="mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200">
-                        <p className="text-xs text-amber-800">
-                          ⚠️ Este alquiler quedará con saldo pendiente. Se cobrará al devolver los artículos.
-                        </p>
-                      </div>
-                    )}
-                    
-                    {depositAmount > 0 && (
-                      <div className="mt-2 p-2 rounded-lg bg-blue-50 border border-blue-200">
-                        <p className="text-xs text-blue-800">
-                          ℹ️ El depósito de €{depositAmount.toFixed(2)} se devolverá al cliente cuando entregue los artículos.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-
-              <div className="mt-4 flex justify-end">
-                <Button
-                  ref={submitRef}
-                  size="lg"
-                  onClick={completeRental}
-                  disabled={loading || !customer || items.length === 0}
-                  tabIndex={4}
-                  onKeyDown={(e) => {
-                    // Tab navigation
-                    if (e.key === 'Tab' && !isEditingCartItem) {
-                      e.preventDefault();
-                      if (e.shiftKey) {
-                        focusPrevField('submit');
-                      } else {
-                        focusNextField('submit');
-                      }
-                      return;
-                    }
-                  }}
-                  className="h-14 px-8 text-lg font-semibold"
-                  data-testid="complete-rental-btn"
-                >
-                  {loading ? (
-                    <Loader2 className="h-5 w-5 animate-spin mr-2" tabIndex={-1} aria-hidden="true" />
-                  ) : (
-                    <Check className="h-5 w-5 mr-2" tabIndex={-1} aria-hidden="true" />
-                  )}
-                  Completar Alquiler
-                </Button>
               </div>
             </CardContent>
           </Card>
+        </section>
+      </div>
+
+      {/* STICKY FOOTER - Resumen y Botón de Acción */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-slate-200 shadow-2xl z-50">
+        <div className="max-w-[1000px] mx-auto px-6 py-4">
+          <div className="flex items-center justify-between gap-6">
+            {/* Resumen Compacto - Izquierda */}
+            <div className="flex-1">
+              {(() => {
+                const rentalAmount = total;
+                const depositAmount = Number(parseFloat(deposit) || 0);
+                const totalToPay = rentalAmount + depositAmount;
+                
+                return (
+                  <div className="flex items-center gap-6">
+                    {/* Total del Alquiler */}
+                    <div>
+                      <p className="text-xs text-slate-500 uppercase font-medium">Total Alquiler</p>
+                      <p className="text-2xl font-bold text-slate-900">€{total.toFixed(2)}</p>
+                    </div>
+                    
+                    {/* Depósito si existe */}
+                    {depositAmount > 0 && (
+                      <>
+                        <div className="h-8 w-px bg-slate-300"></div>
+                        <div>
+                          <p className="text-xs text-amber-600 uppercase font-medium">Depósito</p>
+                          <p className="text-xl font-bold text-amber-600">€{depositAmount.toFixed(2)}</p>
+                        </div>
+                      </>
+                    )}
+                    
+                    {/* Total a Cobrar Hoy */}
+                    {depositAmount > 0 && (
+                      <>
+                        <div className="h-8 w-px bg-slate-300"></div>
+                        <div>
+                          <p className="text-xs text-emerald-600 uppercase font-medium">Total a Cobrar</p>
+                          <p className="text-2xl font-bold text-emerald-600">€{totalToPay.toFixed(2)}</p>
+                        </div>
+                      </>
+                    )}
+                    
+                    {/* Items count */}
+                    <div className="ml-4">
+                      <Badge variant="secondary" className="text-sm">
+                        {items.length} artículo{items.length !== 1 ? 's' : ''}
+                      </Badge>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+            
+            {/* Botón de Acción - Derecha */}
+            <div className="flex-shrink-0">
+              <Button
+                ref={submitRef}
+                size="lg"
+                onClick={completeRental}
+                disabled={loading || !customer || items.length === 0}
+                tabIndex={4}
+                onKeyDown={(e) => {
+                  if (e.key === 'Tab' && !isEditingCartItem) {
+                    e.preventDefault();
+                    if (e.shiftKey) {
+                      focusPrevField('submit');
+                    } else {
+                      focusNextField('submit');
+                    }
+                    return;
+                  }
+                }}
+                className="h-14 px-10 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+                data-testid="complete-rental-btn"
+              >
+                {loading ? (
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                ) : (
+                  <Check className="h-5 w-5 mr-2" />
+                )}
+                Completar Alquiler
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
