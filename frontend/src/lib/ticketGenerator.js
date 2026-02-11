@@ -24,26 +24,49 @@ const getMasterCSS = (paperWidth = '80mm') => `
   /* ========== RESET GLOBAL ========== */
   * { margin: 0; padding: 0; box-sizing: border-box; }
   
-  /* ========== THERMAL PRINTER OPTIMIZATION ========== */
+  /* ========== THERMAL PRINTER - REGLA DE ORO ========== */
+  /* Forzar márgenes 0 para que el navegador no añada cabeceras/pies */
   @page { 
-    size: ${paperWidth} auto;
-    margin: 0;
+    size: auto;
+    margin: 0mm;
   }
   
   @media print {
-    * {
+    /* ========== CONFIGURACIÓN CRÍTICA PARA TÉRMICA ========== */
+    @page {
+      size: auto;
+      margin: 0mm;
+    }
+    
+    html {
+      width: ${paperWidth} !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    body {
+      width: ${paperWidth} !important;
+      max-width: ${paperWidth} !important;
+      margin: 0px !important;
+      padding: 2mm !important;
+      background: #ffffff !important;
+      color: #000000 !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
       color-adjust: exact !important;
     }
     
-    html, body {
+    /* Ocultar cabeceras y pies de página del navegador */
+    header, footer, .no-print, .print-btn { 
+      display: none !important; 
+    }
+    
+    /* Forzar ancho del contenedor del ticket */
+    .ticket-container {
       width: ${paperWidth} !important;
       max-width: ${paperWidth} !important;
       margin: 0 !important;
-      padding: 2mm !important;
-      background: #ffffff !important;
-      color: #000000 !important;
+      padding: 0 !important;
     }
     
     /* Forzar texto negro en impresión */
@@ -51,11 +74,6 @@ const getMasterCSS = (paperWidth = '80mm') => `
     .info-row, .item-row, .total-row, .section-title, .header-text, 
     .footer-text, .terms-text, .block-title, .row, .row-value {
       color: #000000 !important;
-    }
-    
-    /* Ocultar botones de impresión */
-    .print-btn, .no-print { 
-      display: none !important; 
     }
     
     /* Prevenir cortes de página */
