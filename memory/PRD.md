@@ -10,57 +10,57 @@ Sistema completo de gestión de alquileres para tiendas de equipos de esquí con
 
 ## Funcionalidades Implementadas
 
-### Página "Nuevo Alquiler" (Última actualización: 11/02/2026)
+### Página "Nuevo Alquiler" (Actualizada: 11/02/2026)
 - **Layout de 3 columnas**: Cliente | Duración | Artículos (búsqueda)
-- **Artículos Seleccionados**: Ancho completo debajo de las 3 columnas
+- **Artículos Seleccionados**: Ancho completo debajo
 - **Sistema de Tickets Paralelos (Cuentas Paralelas)**:
-  - Barra de pestañas en la parte superior
-  - Crear/eliminar tickets con botón +/X
-  - Cambiar entre tickets manteniendo estado aislado
+  - Barra de pestañas para múltiples alquileres simultáneos
   - Persistencia en localStorage (24 horas)
-  - Auto-renombrado de pestaña con nombre del cliente
-  - Al completar alquiler, cierra ticket y pasa al siguiente
+  - Auto-renombrado con nombre del cliente
 - **Footer fijo de cobro** (margen inferior 23px):
-  - Descuento de proveedor (ej: HAPPY SKI -10%)
-  - Total
-  - Método de pago (dropdown)
-  - Importe
-  - Depósito
-  - Descuento manual (%, €)
-  - Contador de artículos
+  - Descuento de proveedor visible
+  - Total, Método de pago, Importe, Depósito, Descuento
   - Botón "Completar"
-- **Navegación Tab**: Cliente → Días → Buscar Artículos → Completar
-- **Popup de pago compacto**: Reducido para caber en pantalla al 100%
+- **Navegación Tab optimizada**: Cliente → Días → Buscar Artículos → Completar
+- **Popup de pago compacto**
 
 ### Página "Clientes"
 - **Filtros**: Todos | Activos Hoy | Inactivos
-- **Bug corregido**: Endpoint de estadísticas y lista paginada para super_admin
+- **Bug corregido**: Endpoint para super_admin
 
-### Bugs Corregidos (Sesión 11/02/2026)
-1. ✅ Integridad financiera con Packs
-2. ✅ Flicker en Caja Registradora
-3. ✅ Carga lenta de Clientes Activos (optimización con agregación)
-4. ✅ Desajuste de conteo de clientes activos
-5. ✅ KeyError store_id para super_admin en endpoints de clientes
+### Página "Devoluciones" y "Alquileres Activos"
+- **Código interno**: Ahora muestra el código interno de cada artículo en lugar del código de barras
+- **Enriquecimiento automático**: Backend enriquece items con internal_code
+
+### Página "Proveedores" (Nueva funcionalidad: 11/02/2026)
+- **Filtro por fecha en estadísticas**: Campos Desde/Hasta para filtrar período
+- **Impresión de ticket**: Genera informe de comisiones para compartir con proveedor
+- **Estadísticas mejoradas**: Clientes, Ingresos, Ticket medio, Comisión, Lista detallada
+
+## Bugs Corregidos (Sesión 11/02/2026)
+1. ✅ Layout de Nuevo Alquiler (3 columnas)
+2. ✅ Footer fijo con campos de pago integrados
+3. ✅ Margen inferior 23px para evitar barra de herramientas
+4. ✅ Descuento de proveedor en footer
+5. ✅ KeyError store_id para super_admin
+6. ✅ Código interno en lugar de barcode en toda la app
 
 ## Archivos Principales
 - `/app/frontend/src/pages/NewRental.jsx` - Página de nuevo alquiler
 - `/app/frontend/src/hooks/useMultiTicketPersistence.js` - Hook de tickets paralelos
-- `/app/frontend/src/pages/Customers.jsx` - Página de clientes
+- `/app/frontend/src/pages/Returns.jsx` - Página de devoluciones
+- `/app/frontend/src/pages/ActiveRentals.jsx` - Alquileres activos
+- `/app/frontend/src/pages/Providers.jsx` - Proveedores con estadísticas
+- `/app/frontend/src/pages/Customers.jsx` - Clientes
 - `/app/backend/server.py` - Backend API
 
-## Esquema de Base de Datos
-- `customers`: {id, dni, name, phone, city, source, store_id, ...}
-- `rentals`: {id, customer_id, customer_dni, status, start_date, end_date, store_id, ...}
-- `items`: {id, barcode, name, item_type, status, store_id, ...}
-- `tariffs`: {id, item_type, prices_by_days, store_id, ...}
-- `cash_movements`: {id, amount, type, rental_id, store_id, ...}
-
-## Notas Importantes
-- Los precios se calculan según las tarifas configuradas por tipo de artículo
-- Artículos sin tarifa muestran €0.00 y "Sin tarifa"
-- El sistema es multi-tenant (filtrado por store_id)
-- Super_admin puede ver todas las tiendas
+## Endpoints Actualizados
+- `GET /api/rentals` - Enriquece items con internal_code
+- `GET /api/rentals/{rental_id}` - Enriquece items con internal_code
+- `GET /api/rentals/barcode/{barcode}` - Enriquece items con internal_code
+- `GET /api/rentals/pending/returns` - Enriquece items con internal_code
+- `GET /api/items/by-barcodes` - Nuevo endpoint para buscar códigos internos
+- `GET /api/sources/{source_id}/stats` - Filtros de fecha añadidos
 
 ## Backlog / Tareas Futuras
 - Refactorizar NewRental.jsx (archivo muy grande, +3000 líneas)
