@@ -44,6 +44,10 @@ export default function Providers() {
   const [globalStats, setGlobalStats] = useState(null);
   const [showGlobalMetrics, setShowGlobalMetrics] = useState(true);
   const [userRole, setUserRole] = useState(null);
+  const [statsDateFrom, setStatsDateFrom] = useState("");
+  const [statsDateTo, setStatsDateTo] = useState("");
+  const [selectedProviderForStats, setSelectedProviderForStats] = useState(null);
+  const printRef = useRef(null);
   const [formData, setFormData] = useState({
     name: "",
     discount_percent: "0",
