@@ -3765,7 +3765,10 @@ export default function ActiveRentals() {
                           type="button"
                           size="sm"
                           variant={addItemsPaymentMethod === "pending" ? "default" : "outline"}
-                          onClick={() => setAddItemsPaymentMethod("pending")}
+                          onClick={() => {
+                            setAddItemsPaymentMethod("pending");
+                            setAddItemsChargeNow(false); // Pendiente significa no cobrar ahora
+                          }}
                           className={addItemsPaymentMethod === "pending" ? "bg-amber-600 hover:bg-amber-700" : ""}
                           data-testid="add-items-payment-pending"
                         >
