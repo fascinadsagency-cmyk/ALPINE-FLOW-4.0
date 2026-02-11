@@ -632,7 +632,7 @@ export default function Returns() {
       contractId: changeRental.id,
       // Items cambiados
       oldItems: itemsSwapped.map(item => ({
-        name: `${item.internal_code || item.item_type} - ${item.item_type}`,
+        name: `${item.internal_code || item.barcode} - ${item.item_type}`,
         item_type: item.item_type
       })),
       newItems: itemsSwapped.map(item => ({
