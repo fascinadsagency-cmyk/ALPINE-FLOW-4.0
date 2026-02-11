@@ -3407,7 +3407,6 @@ export default function NewRental() {
       {/* New Customer Dialog - With Focus Trap */}
       <Dialog open={showNewCustomer} onOpenChange={setShowNewCustomer}>
         <DialogContent className="sm:max-w-md">
-          <FocusTrap active={showNewCustomer} onEscape={() => setShowNewCustomer(false)}>
             <DialogHeader>
               <DialogTitle>Nuevo Cliente</DialogTitle>
             </DialogHeader>
@@ -3420,7 +3419,6 @@ export default function NewRental() {
                     onChange={(e) => setNewCustomer({ ...newCustomer, dni: e.target.value.toUpperCase() })}
                     className="h-11 mt-1"
                     data-testid="new-customer-dni"
-                    tabIndex={1}
                     autoFocus
                     autoComplete="off"
                   />
@@ -3432,7 +3430,6 @@ export default function NewRental() {
                     onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
                     className="h-11 mt-1"
                     data-testid="new-customer-phone"
-                    tabIndex={2}
                     autoComplete="off"
                   />
                 </div>
@@ -3444,7 +3441,6 @@ export default function NewRental() {
                 onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
                 className="h-11 mt-1"
                 data-testid="new-customer-name"
-                tabIndex={3}
               />
             </div>
             <div>
@@ -3456,7 +3452,6 @@ export default function NewRental() {
                 className="h-11 mt-1"
                 placeholder="email@ejemplo.com"
                 autoComplete="off"
-                tabIndex={4}
               />
             </div>
             <div>
@@ -3465,7 +3460,6 @@ export default function NewRental() {
                 value={newCustomer.address}
                 onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
                 className="h-11 mt-1"
-                tabIndex={5}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -3475,7 +3469,6 @@ export default function NewRental() {
                   value={newCustomer.city}
                   onChange={(e) => setNewCustomer({ ...newCustomer, city: e.target.value })}
                   className="h-11 mt-1"
-                  tabIndex={6}
                 />
               </div>
               <div>
@@ -3484,7 +3477,7 @@ export default function NewRental() {
                   value={newCustomer.source || "none"} 
                   onValueChange={(v) => setNewCustomer({ ...newCustomer, source: v === "none" ? "" : v })}
                 >
-                  <SelectTrigger className="h-11 mt-1" tabIndex={7}>
+                  <SelectTrigger className="h-11 mt-1">
                     <SelectValue placeholder="Seleccionar..." />
                   </SelectTrigger>
                   <SelectContent>
