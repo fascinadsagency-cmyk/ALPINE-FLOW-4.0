@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import sys
 
 # Configuration
-BACKEND_URL = "https://rental-layout-fix.preview.emergentagent.com/api"
+BACKEND_URL = "https://user-edit-bug.preview.emergentagent.com/api"
 TEST_DATE = "2026-01-29"
 
 class CashSessionTester:
