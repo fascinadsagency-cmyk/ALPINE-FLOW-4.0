@@ -1001,8 +1001,15 @@ export default function Providers() {
       )}
 
       {/* Statistics Dialog */}
-      <Dialog open={showStatsDialog} onOpenChange={setShowStatsDialog}>
-        <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
+      <Dialog open={showStatsDialog} onOpenChange={(open) => {
+        setShowStatsDialog(open);
+        if (!open) {
+          setStatsDateFrom("");
+          setStatsDateTo("");
+          setSelectedProviderForStats(null);
+        }
+      }}>
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-primary" />
@@ -1013,12 +1020,53 @@ export default function Providers() {
             </DialogDescription>
           </DialogHeader>
 
+          {/* Date Filters */}
+          <div className="flex flex-wrap items-end gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-slate-500" />
+              <span className="text-sm font-medium text-slate-700">Filtrar por fecha:</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label className="text-xs text-slate-500">Desde</Label>
+              <Input
+                type="date"
+                value={statsDateFrom}
+                onChange={(e) => setStatsDateFrom(e.target.value)}
+                className="h-8 w-36 text-sm"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Label className="text-xs text-slate-500">Hasta</Label>
+              <Input
+                type="date"
+                value={statsDateTo}
+                onChange={(e) => setStatsDateTo(e.target.value)}
+                className="h-8 w-36 text-sm"
+              />
+            </div>
+            <Button size="sm" onClick={applyDateFilter} className="h-8">
+              <Calendar className="h-3.5 w-3.5 mr-1" />
+              Aplicar
+            </Button>
+            {(statsDateFrom || statsDateTo) && (
+              <Button size="sm" variant="outline" onClick={clearDateFilter} className="h-8">
+                Limpiar
+              </Button>
+            )}
+            <div className="ml-auto">
+              <Button size="sm" variant="outline" onClick={printProviderStats} className="h-8" disabled={!statsData || statsLoading}>
+                <Printer className="h-3.5 w-3.5 mr-1" />
+                Imprimir
+              </Button>
+            </div>
+          </div>
+
           {statsLoading ? (
             <div className="flex justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : statsData && (
-            <div className="space-y-6 py-4">
+            <div className="space-y-6 py-4" ref={printRef}>
               {/* Metrics Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <Card className="bg-blue-50 border-blue-200">
