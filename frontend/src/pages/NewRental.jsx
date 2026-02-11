@@ -2491,9 +2491,10 @@ export default function NewRental() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 px-4 pb-3">
-              <div className="bg-primary/5 rounded-lg p-3">
-                <Label className="text-xs font-medium text-slate-700">Número de días</Label>
-                <div className="flex items-center gap-2 mt-1">
+              {/* Fila principal: Días + Fechas en línea */}
+              <div className="flex items-center gap-3 bg-primary/5 rounded-lg px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs font-medium text-slate-600 whitespace-nowrap">Días:</Label>
                   <Input
                     ref={daysRef}
                     type="number"
@@ -2501,7 +2502,6 @@ export default function NewRental() {
                     value={numDays}
                     onChange={(e) => handleNumDaysChange(e.target.value)}
                     onKeyDown={(e) => {
-                      // Tab navigation
                       if (e.key === 'Tab' && !isEditingCartItem) {
                         e.preventDefault();
                         if (e.shiftKey) {
@@ -2511,67 +2511,64 @@ export default function NewRental() {
                         }
                         return;
                       }
-                      // Normal days handling
                       handleDaysKeyDown(e);
                     }}
                     tabIndex={3}
-                    className="h-10 text-xl font-bold text-center w-20 border-primary/30"
+                    className="h-8 text-lg font-bold text-center w-14 border-primary/30"
                     data-testid="num-days-input"
                     autoComplete="off"
                   />
-                  <div className="flex-1 text-center" tabIndex={-1}>
-                    <div className="flex items-center justify-center gap-2 text-sm font-medium text-slate-700">
-                      <span>{formatDateDisplay(startDate)}</span>
-                      <ArrowRight className="h-3 w-3 text-primary" tabIndex={-1} aria-hidden="true" />
-                      <span>{formatDateDisplay(endDate)}</span>
-                    </div>
-                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-700" tabIndex={-1}>
+                  <span>{formatDateDisplay(startDate)}</span>
+                  <ArrowRight className="h-3 w-3 text-primary" tabIndex={-1} aria-hidden="true" />
+                  <span>{formatDateDisplay(endDate)}</span>
+                </div>
+                <div className="flex gap-1 ml-auto">
+                  {[1, 2, 3, 5, 7].map(d => (
+                    <Button
+                      key={d}
+                      variant={numDays === d ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleNumDaysChange(d)}
+                      className="h-6 w-6 p-0 text-xs"
+                    >
+                      {d}
+                    </Button>
+                  ))}
                 </div>
               </div>
 
               {showTimeHint && (
-                <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 p-2 rounded-lg animate-fade-in" tabIndex={-1}>
+                <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded animate-fade-in" tabIndex={-1}>
                   <Clock className="h-3 w-3" tabIndex={-1} aria-hidden="true" />
                   <span>{getTimeHintMessage()}</span>
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label className="text-xs text-slate-500">Desde</Label>
+              {/* Fechas en línea compacta */}
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 flex-1">
+                  <Label className="text-xs text-slate-500">Desde:</Label>
                   <Input
                     type="date"
                     value={startDate}
                     onChange={(e) => handleStartDateChange(e.target.value)}
-                    className="h-8 mt-0.5 text-xs"
+                    className="h-7 text-xs flex-1"
                     data-testid="start-date-input"
                     tabIndex={-1}
                   />
                 </div>
-                <div>
-                  <Label className="text-xs text-slate-500">Hasta</Label>
+                <div className="flex items-center gap-1 flex-1">
+                  <Label className="text-xs text-slate-500">Hasta:</Label>
                   <Input
                     type="date"
                     value={endDate}
                     onChange={(e) => handleEndDateChange(e.target.value)}
-                    className="h-8 mt-0.5 text-xs"
+                    className="h-7 text-xs flex-1"
                     data-testid="end-date-input"
                   />
                 </div>
-              </div>
-
-              <div className="flex gap-1">
-                {[1, 2, 3, 5, 7].map(d => (
-                  <Button
-                    key={d}
-                    variant={numDays === d ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleNumDaysChange(d)}
-                    className="flex-1 h-7 text-xs"
-                  >
-                    {d}d
-                  </Button>
-                ))}
               </div>
             </CardContent>
           </Card>
