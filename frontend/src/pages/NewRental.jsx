@@ -2168,9 +2168,8 @@ export default function NewRental() {
           <div className="flex flex-col gap-4 overflow-y-auto">
             
             {/* FILA 1: Selección de Cliente */}
-            <Card className="border-slate-200 flex-shrink-0">
           {/* Customer Card */}
-          <Card className="border-slate-200">
+          <Card className="border-slate-200 flex-shrink-0">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <User className="h-5 w-5 text-slate-500" />
