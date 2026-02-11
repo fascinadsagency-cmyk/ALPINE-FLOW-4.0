@@ -2160,16 +2160,14 @@ export default function NewRental() {
         </h1>
       </div>
 
-      {/* Main Content - Grid de 2 columnas en desktop, sin scroll */}
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
+      {/* Main Content - Todo el ancho */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+        
+        {/* FILA 1: Cliente + Fechas en 2 columnas */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           
-          {/* COLUMNA IZQUIERDA: Cliente + Fechas */}
-          <div className="flex flex-col gap-4 overflow-y-auto">
-            
-            {/* FILA 1: Selección de Cliente */}
-          {/* Customer Card */}
-          <Card className="border-slate-200 flex-shrink-0">
+          {/* Cliente */}
+          <Card className="border-slate-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <User className="h-5 w-5 text-slate-500" />
@@ -2483,9 +2481,9 @@ export default function NewRental() {
             </CardContent>
           </Card>
 
-          {/* FILA 2: Duración del Alquiler */}
+          {/* Fechas */}
           {/* Smart Dates Card */}
-          <Card className="border-slate-200 border-primary/50 flex-shrink-0">
+          <Card className="border-slate-200 border-primary/50">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-primary" tabIndex={-1} aria-hidden="true" />
@@ -2580,13 +2578,10 @@ export default function NewRental() {
               </div>
             </CardContent>
           </Card>
-          </div>
+        </div>
 
-          {/* COLUMNA DERECHA: Búsqueda Items + Carrito */}
-          <div className="flex flex-col gap-4 overflow-hidden">
-            
-            {/* FILA 3: Búsqueda de Artículos */}
-            <Card className="border-slate-200 flex-shrink-0">
+        {/* FILA 2: Búsqueda de Artículos (Ancho Completo) */}
+        <Card className="border-slate-200">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -2677,8 +2672,8 @@ export default function NewRental() {
             </CardContent>
           </Card>
 
-          {/* FILA 4: Carrito - Ocupa el espacio restante con scroll interno */}
-          <Card className="border-slate-200 flex-1 overflow-hidden flex flex-col">
+        {/* FILA 3: Carrito (Ancho Completo) - Con altura máxima para scroll interno */}
+        <Card className="border-slate-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Package className="h-5 w-5 text-slate-500" />
@@ -2686,9 +2681,9 @@ export default function NewRental() {
                 {items.length > 0 && <Badge className="ml-2">{items.length}</Badge>}
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 overflow-y-auto">
-              {/* LISTA DE ARTÍCULOS - Altura expandida para mostrar más items */}
-              <div className="space-y-2">
+            <CardContent>
+              {/* LISTA DE ARTÍCULOS */}
+              <div className="max-h-[400px] overflow-y-auto">
                 {items.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-48 text-slate-400">
                     <Package className="h-12 w-12 mb-2" />
@@ -3083,7 +3078,7 @@ export default function NewRental() {
                 )}
               </div>
 
-              {/* Payment Inputs Section - DENTRO del carrito */}
+              {/* Payment Inputs Section */}
               <div className="mt-6 pt-6 border-t-2 border-slate-200">
                 {/* QUICK ADD: Dynamic buttons from DB */}
               {quickAddItems.length > 0 && (
@@ -3219,14 +3214,11 @@ export default function NewRental() {
                   </Badge>
                 </div>
               )}
-              </div>
             </CardContent>
           </Card>
-          </div>
-        </div>
       </div>
 
-      {/* STICKY FOOTER - Resumen y Botón de Acción */}
+      {/* FOOTER - Resumen y Botón */}
       <div className="flex-shrink-0 bg-white border-t-2 border-slate-200 shadow-2xl">
         <div className="px-6 py-3">
           <div className="flex items-center justify-between gap-4">
