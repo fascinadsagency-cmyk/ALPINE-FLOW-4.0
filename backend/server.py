@@ -507,7 +507,9 @@ async def register_public(request: PublicRegisterRequest):
             "language": "es",
             "max_items": PLAN_LIMITS["trial"]["max_items"],
             "max_customers": PLAN_LIMITS["trial"]["max_customers"],
-            "max_users": PLAN_LIMITS["trial"]["max_users"]
+            "max_users": PLAN_LIMITS["trial"]["max_users"],
+            "auto_print_ticket": True,  # Impresión automática al finalizar alquiler
+            "quick_scan_mode": True      # Modo pistola de códigos/lectura rápida
         },
         "billing_data": {},
         "requires_setup": True  # Flag to force initial configuration
@@ -9188,7 +9190,9 @@ async def create_store(store: StoreCreate, current_user: CurrentUser = Depends(r
         "settings": {
             "max_users": store.max_users,
             "max_items": store.max_items,
-            "max_customers": store.max_customers
+            "max_customers": store.max_customers,
+            "auto_print_ticket": True,  # Impresión automática al finalizar alquiler
+            "quick_scan_mode": True      # Modo pistola de códigos/lectura rápida
         },
         "contact": {
             "email": store.contact_email or "",
