@@ -287,9 +287,10 @@ export default function NewRental() {
 
   // ============ NAVEGACIÓN POR TECLADO GLOBAL ============
   // Hook para navegación tipo spreadsheet con flechas, Enter como Tab
+  // IMPORTANTE: Deshabilitado cuando hay sugerencias de cliente visibles
   useKeyboardNavigation({
     containerRef: mainContainerRef,
-    enabled: !showItemSearch && !showNewCustomer && !showPaymentDialog && !showSuccessDialog && !isEditingCartItem,
+    enabled: !showItemSearch && !showNewCustomer && !showPaymentDialog && !showSuccessDialog && !isEditingCartItem && !showSuggestions,
     enterAsTab: true,
     arrowNavigation: true,
     gridMode: false,
@@ -301,7 +302,7 @@ export default function NewRental() {
   // Hook especializado para navegación en la tabla del carrito
   useGridNavigation({
     gridRef: cartGridRef,
-    enabled: !showItemSearch && !showNewCustomer && !showPaymentDialog,
+    enabled: !showItemSearch && !showNewCustomer && !showPaymentDialog && !showSuggestions,
     onCellChange: (element, direction) => {
       console.log('[GRID NAV] Cell change:', direction, element?.name || element?.tagName);
     }
