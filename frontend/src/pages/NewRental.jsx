@@ -274,13 +274,13 @@ export default function NewRental() {
   // Check if any cart item is being edited (to disable global scanner and Tab navigation)
   const isEditingCartItem = editingItemDays !== null || editingItemPrice !== null || editingPackPrice !== null;
 
-  // Secuencia de navegación: Código -> Cliente -> Días -> Cobrar
+  // Secuencia de navegación: Cliente -> Días -> Código -> Cobrar
   const focusNextField = useCallback((currentField) => {
     const sequence = {
-      'barcode': customerSearchRef,
       'customer': daysRef,
-      'days': submitRef,
-      'submit': barcodeRef
+      'days': barcodeRef,
+      'barcode': submitRef,
+      'submit': customerSearchRef
     };
     const nextRef = sequence[currentField];
     if (nextRef?.current) {
@@ -291,10 +291,10 @@ export default function NewRental() {
 
   const focusPrevField = useCallback((currentField) => {
     const sequence = {
-      'customer': barcodeRef,
       'days': customerSearchRef,
-      'submit': daysRef,
-      'barcode': submitRef
+      'barcode': daysRef,
+      'submit': barcodeRef,
+      'customer': submitRef
     };
     const prevRef = sequence[currentField];
     if (prevRef?.current) {
