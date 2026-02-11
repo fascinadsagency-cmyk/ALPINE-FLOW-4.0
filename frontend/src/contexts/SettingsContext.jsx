@@ -335,7 +335,7 @@ export function SettingsProvider({ children }) {
         
         if (response.ok) {
           const settings = await response.json();
-          console.log('[Settings] Configuración cargada desde backend');
+          console.log('[Settings] Configuración cargada desde backend:', settings);
           
           // Solo actualizar si hay datos en el backend
           if (settings.company_logo && !companyLogo) {
@@ -349,6 +349,31 @@ export function SettingsProvider({ children }) {
           if (settings.show_vat_on_ticket !== undefined) setShowVatOnTicket(settings.show_vat_on_ticket);
           if (settings.default_vat !== undefined) setDefaultVat(settings.default_vat);
           if (settings.vat_included_in_prices !== undefined) setVatIncludedInPrices(settings.vat_included_in_prices);
+          
+          // ========== HARDWARE SETTINGS FROM STORE ==========
+          // Solo aplicar valores del backend si NO hay valor guardado en localStorage (nuevas tiendas)
+          const hasAutoPrintLocal = localStorage.getItem('auto_print_enabled') !== null;
+          const hasQuickScanLocal = localStorage.getItem('quick_scan_mode') !== null;
+          const hasAutoPrintOnPaymentLocal = localStorage.getItem('auto_print_on_payment') !== null;
+          
+          if (!hasAutoPrintLocal && settings.auto_print_ticket !== undefined) {
+            console.log('[Settings] Aplicando auto_print_ticket desde backend:', settings.auto_print_ticket);
+            setAutoPrint(settings.auto_print_ticket);
+            localStorage.setItem('auto_print_enabled', settings.auto_print_ticket.toString());
+          }
+          
+          if (!hasQuickScanLocal && settings.quick_scan_mode !== undefined) {
+            console.log('[Settings] Aplicando quick_scan_mode desde backend:', settings.quick_scan_mode);
+            setQuickScanMode(settings.quick_scan_mode);
+            localStorage.setItem('quick_scan_mode', settings.quick_scan_mode.toString());
+          }
+          
+          if (!hasAutoPrintOnPaymentLocal && settings.auto_print_ticket !== undefined) {
+            // auto_print_on_payment también usa el mismo valor inicial
+            console.log('[Settings] Aplicando auto_print_on_payment desde backend:', settings.auto_print_ticket);
+            setAutoPrintOnPayment(settings.auto_print_ticket);
+            localStorage.setItem('auto_print_on_payment', settings.auto_print_ticket.toString());
+          }
           
           setSettingsLoaded(true);
         }
