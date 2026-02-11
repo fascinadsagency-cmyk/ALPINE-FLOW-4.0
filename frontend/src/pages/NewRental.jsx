@@ -164,10 +164,12 @@ export default function NewRental() {
   // Settings context for ticket configuration
   const settings = useSettings();
   
-  // ============ PERSISTENT CART STATE ============
-  // Este hook persiste el carrito en localStorage para que no se pierda al navegar
+  // ============ MULTI-TICKET PERSISTENT STATE ============
+  // Este hook persiste múltiples tickets en localStorage para que no se pierdan
   const {
     isInitialized: cartInitialized,
+    tickets,
+    activeTicketId,
     customer,
     customerHistory,
     items,
@@ -191,8 +193,14 @@ export default function NewRental() {
     setDiscountValue,
     setDiscountReason,
     clearCart,
-    hasCartData
-  } = useCartPersistence();
+    hasCartData,
+    // Multi-ticket functions
+    createTicket,
+    switchToTicket,
+    closeTicket,
+    completeAndCloseActiveTicket,
+    getTicketDisplayName
+  } = useMultiTicketPersistence();
   
   // ============ NON-PERSISTENT STATE (UI/Transient) ============
   const [searchTerm, setSearchTerm] = useState("");
