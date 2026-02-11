@@ -39,6 +39,8 @@ const translations = {
     "settings.language.desc": "Selecciona el idioma de la interfaz",
     "settings.language.es": "Español",
     "settings.language.en": "English",
+    "settings.language.ca": "Català",
+    "settings.language.fr": "Français",
     
     // Ticket Design section
     "settings.ticketDesign": "Diseño de Ticket",
