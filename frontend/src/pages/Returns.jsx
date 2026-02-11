@@ -278,11 +278,39 @@ export default function Returns() {
 
   // ============ GESTIONAR CAMBIO FUNCTIONS ============
   
+  // Función para obtener el código interno de un item por su barcode
+  const enrichItemsWithInternalCode = async (items) => {
+    const barcodes = items.map(i => i.barcode).filter(Boolean);
+    if (barcodes.length === 0) return items;
+    
+    try {
+      // Buscar los items por sus barcodes para obtener internal_code
+      const response = await axios.get(`${API_URL}/items/by-barcodes`, {
+        params: { barcodes: barcodes.join(',') },
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      const itemsMap = {};
+      (response.data || []).forEach(item => {
+        itemsMap[item.barcode] = item;
+      });
+      
+      // Enriquecer cada item con su internal_code
+      return items.map(item => ({
+        ...item,
+        internal_code: itemsMap[item.barcode]?.internal_code || item.internal_code || ''
+      }));
+    } catch (error) {
+      console.error('Error enriching items with internal_code:', error);
+      return items;
+    }
+  };
+  
   const openChangeModal = async (rental) => {
     const rentalDays = rental.days || 1;
     
     // Get all pending items from the rental
-    const pendingItems = (rental.pending_items || rental.items || [])
+    let pendingItems = (rental.pending_items || rental.items || [])
       .filter(i => !i.returned)
       .map((item, idx) => ({
         ...item,
@@ -292,6 +320,9 @@ export default function Returns() {
         isSwapping: false,
         swapType: null // 'upgrade', 'downgrade', 'technical'
       }));
+    
+    // Enriquecer items con internal_code
+    pendingItems = await enrichItemsWithInternalCode(pendingItems);
     
     // Calculate REAL days remaining: End Date - Today
     const today = new Date();
