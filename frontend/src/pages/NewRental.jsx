@@ -14,7 +14,7 @@ import { printTicket, getStoredSettings } from "@/lib/ticketGenerator";
 import { PrintService } from "@/lib/printService";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useScannerListener } from "@/hooks/useScannerListener";
-import { useCartPersistence } from "@/hooks/useCartPersistence";
+import { useMultiTicketPersistence } from "@/hooks/useMultiTicketPersistence";
 import { useDebounce, useDebouncedCallback } from "@/hooks/useDebounce";
 import { FocusTrap } from "@/components/FocusTrap";
 import { 
