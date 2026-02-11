@@ -2481,7 +2481,10 @@ export default function NewRental() {
               )}
             </CardContent>
           </Card>
+        </section>
 
+        {/* FILA 2: Duración del Alquiler (Fechas) */}
+        <section>
           {/* Smart Dates Card */}
           <Card className="border-slate-200 border-primary/50">
             <CardHeader className="pb-3">
