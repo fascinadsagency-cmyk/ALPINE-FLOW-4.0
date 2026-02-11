@@ -1105,6 +1105,11 @@ async def get_customers_stats(
     store_filter = current_user.get_store_filter()
     total = await db.customers.count_documents(store_filter)
     
+    # Build rental match conditions based on store filter
+    rental_store_condition = []
+    if "store_id" in store_filter:
+        rental_store_condition = [{"$eq": ["$store_id", store_filter["store_id"]]}]
+    
     # Use aggregation to count unique active customers (same logic as list)
     pipeline = [
         {"$match": store_filter},
@@ -1119,8 +1124,7 @@ async def get_customers_stats(
                     {
                         "$match": {
                             "$expr": {
-                                "$and": [
-                                    {"$eq": ["$store_id", store_filter["store_id"]]},
+                                "$and": rental_store_condition + [
                                     {"$in": ["$status", ["active", "partial"]]},
                                     {
                                         "$or": [
