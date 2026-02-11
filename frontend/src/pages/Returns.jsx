@@ -2388,7 +2388,7 @@ export default function Returns() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <span className="font-mono font-bold text-sm">
-                              {item.internal_code || item.item_type}
+                              {item.internal_code || item.barcode}
                             </span>
                             <Badge variant="outline" className="text-xs">
                               {item.item_type}
