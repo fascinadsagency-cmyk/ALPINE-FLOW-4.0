@@ -6918,51 +6918,88 @@ async def update_source(source_id: str, source: SourceCreate, current_user: Curr
     return SourceResponse(**updated)
 
 @api_router.get("/sources/{source_id}/stats")
-async def get_source_stats(source_id: str, current_user: CurrentUser = Depends(get_current_user)):
-    """Get statistics for a specific provider/source"""
+async def get_source_stats(
+    source_id: str,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    current_user: CurrentUser = Depends(get_current_user)
+):
+    """Get statistics for a specific provider/source with optional date filtering"""
     # Multi-tenant: Check source exists in same store
     source = await db.sources.find_one({**current_user.get_store_filter(), "id": source_id}, {"_id": 0})
     if not source:
         raise HTTPException(status_code=404, detail="Source not found")
     
     # Get customers from this source (within same store)
-    customers = await db.customers.find({**current_user.get_store_filter(), "source": source["name"]}, {"_id": 0}).to_list(1000)
+    customers = await db.customers.find({**current_user.get_store_filter(), "source": source["name"]}, {"_id": 0}).to_list(10000)
     customer_ids = [c["id"] for c in customers]
+    customer_dnis = [c["dni"].upper() for c in customers if c.get("dni")]
+    
+    # Build rental query with optional date filters
+    rental_query = {
+        **current_user.get_store_filter(),
+        "$or": [
+            {"customer_id": {"$in": customer_ids}},
+            {"customer_dni": {"$in": customer_dnis}}
+        ]
+    }
+    
+    # Add date filters if provided
+    if date_from or date_to:
+        date_filter = {}
+        if date_from:
+            date_filter["$gte"] = date_from
+        if date_to:
+            date_filter["$lte"] = date_to + "T23:59:59"
+        if date_filter:
+            rental_query["created_at"] = date_filter
     
     # Get rentals from these customers (within same store)
     rentals = await db.rentals.find(
-        {**current_user.get_store_filter(), "customer_id": {"$in": customer_ids}},
+        rental_query,
         {"_id": 0}
-    ).sort("created_at", -1).to_list(1000)
+    ).sort("created_at", -1).to_list(10000)
     
     # Calculate statistics
-    total_customers = len(customers)
-    total_revenue = sum(r["total_amount"] for r in rentals)
-    total_commission = total_revenue * (source["commission_percent"] / 100)
+    total_revenue = sum(r.get("total_amount", 0) for r in rentals)
+    total_commission = total_revenue * (source.get("commission_percent", 0) / 100)
     average_ticket = total_revenue / len(rentals) if rentals else 0
+    
+    # Count unique customers in filtered rentals
+    unique_customers = set()
+    for r in rentals:
+        if r.get("customer_id"):
+            unique_customers.add(r["customer_id"])
+        elif r.get("customer_dni"):
+            unique_customers.add(r["customer_dni"].upper())
     
     # Prepare detailed rental list
     rental_details = []
     for rental in rentals:
-        commission = rental["total_amount"] * (source["commission_percent"] / 100)
+        commission = rental.get("total_amount", 0) * (source.get("commission_percent", 0) / 100)
         rental_details.append({
             "date": rental.get("created_at", ""),
-            "customer_name": rental["customer_name"],
-            "customer_dni": rental["customer_dni"],
-            "amount": rental["total_amount"],
+            "customer_name": rental.get("customer_name", ""),
+            "customer_dni": rental.get("customer_dni", ""),
+            "amount": rental.get("total_amount", 0),
             "commission": commission,
-            "rental_id": rental["id"]
+            "rental_id": rental.get("id", "")
         })
     
     return {
         "source": source,
         "stats": {
-            "total_customers": total_customers,
+            "total_customers": len(unique_customers) if date_from or date_to else len(customers),
             "total_revenue": total_revenue,
             "average_ticket": average_ticket,
-            "total_commission": total_commission
+            "total_commission": total_commission,
+            "total_rentals": len(rentals)
         },
-        "rentals": rental_details
+        "rentals": rental_details,
+        "date_filter": {
+            "from": date_from,
+            "to": date_to
+        }
     }
 
 # ==================== CASH REGISTER (CAJA) ROUTES ====================
