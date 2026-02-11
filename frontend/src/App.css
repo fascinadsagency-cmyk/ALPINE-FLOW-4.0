@@ -48,13 +48,21 @@
         color-adjust: exact !important;
     }
 
-    /* Configuración de página para rollo térmico 80mm */
+    /* ========== REGLA DE ORO - THERMAL PRINTER ========== */
+    /* size: auto permite que la impresora use su tamaño nativo */
+    /* margin: 0mm elimina márgenes y cabeceras del navegador */
     @page {
-        size: 80mm auto;
-        margin: 0;
+        size: auto;
+        margin: 0mm;
     }
 
-    /* Ocultar elementos no imprimibles */
+    /* Configuración crítica del body */
+    body {
+        margin: 0px !important;
+        padding: 0px !important;
+    }
+
+    /* Ocultar cabeceras/pies del navegador y elementos no imprimibles */
     .no-print,
     .print-hidden,
     [data-print="hide"],
