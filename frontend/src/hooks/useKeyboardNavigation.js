@@ -190,6 +190,14 @@ export function useKeyboardNavigation({
     const activeElement = document.activeElement;
     if (!activeElement) return;
     
+    // ========== DETECTAR DROPDOWNS/LISTBOXES ABIERTOS ==========
+    // No interferir si hay un menú desplegable abierto
+    const openListbox = document.querySelector('[role="listbox"], [role="menu"], [data-radix-menu-content], [data-state="open"]');
+    if (openListbox) {
+      // Permitir navegación nativa dentro del dropdown
+      return;
+    }
+    
     // Obtener contenedor de navegación
     const container = containerRef?.current || document.body;
     const focusableElements = getFocusableElements(container);
