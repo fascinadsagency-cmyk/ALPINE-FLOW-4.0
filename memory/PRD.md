@@ -62,6 +62,15 @@ Sistema completo de gestión de alquileres para tiendas de equipos de esquí con
 - `GET /api/items/by-barcodes` - Nuevo endpoint para buscar códigos internos
 - `GET /api/sources/{source_id}/stats` - Filtros de fecha añadidos
 
+### Configuración por Defecto para Nuevas Tiendas (11/02/2026)
+- **auto_print_ticket**: ACTIVADO por defecto
+- **quick_scan_mode**: ACTIVADO por defecto
+- Backend: Modificados endpoints de creación de tiendas (registro y super admin)
+- Frontend: SettingsContext carga valores del store al iniciar sesión
+- No afecta tiendas existentes
+
 ## Backlog / Tareas Futuras
 - Refactorizar NewRental.jsx (archivo muy grande, +3000 líneas)
 - Dividir en componentes más pequeños
+- Bug: Editar email/contraseña del admin desde Gestión de Equipo
+- Verificar: Opción "Pendiente" en alquileres activos
