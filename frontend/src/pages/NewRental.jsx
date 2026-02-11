@@ -3211,23 +3211,6 @@ export default function NewRental() {
                   />
                 </div>
               )}
-
-              {/* Provider Discount Info */}
-              {customer?.source && getProviderDiscount() > 0 && (
-                <div className="mb-4 p-3 rounded-lg bg-blue-50 border border-blue-200 flex items-center gap-2">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-blue-900">
-                      Descuento {customer.source}
-                    </p>
-                    <p className="text-xs text-blue-700">
-                      Se aplicará automáticamente {getProviderDiscount()}% de descuento
-                    </p>
-                  </div>
-                  <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                    -{getProviderDiscount()}%
-                  </Badge>
-                </div>
-              )}
               </div>
             </CardContent>
           </Card>
@@ -3237,6 +3220,16 @@ export default function NewRental() {
       <div className="fixed bottom-[23px] right-4 bg-white border-2 border-slate-200 rounded-xl shadow-[0_-4px_20px_rgba(0,0,0,0.15)] z-50 left-[272px]">
         <div className="px-4 py-2">
           <div className="flex items-center gap-3">
+            {/* Descuento de Proveedor */}
+            {customer?.source && getProviderDiscount() > 0 && (
+              <div className="flex-shrink-0 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-blue-50 border border-blue-200">
+                <span className="text-xs text-blue-700">{customer.source}</span>
+                <Badge className="bg-blue-600 text-white text-xs px-1.5 py-0">
+                  -{getProviderDiscount()}%
+                </Badge>
+              </div>
+            )}
+            
             {/* Total */}
             <div className="flex-shrink-0">
               <p className="text-[10px] text-slate-500 uppercase font-medium">Total</p>
