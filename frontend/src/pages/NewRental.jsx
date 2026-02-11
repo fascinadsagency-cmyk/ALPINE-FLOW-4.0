@@ -2676,101 +2676,84 @@ export default function NewRental() {
               </div>
             </CardContent>
           </Card>
-        </div>
 
-        {/* FILA 2: Búsqueda de Artículos (Ancho Completo) */}
-        <Card className="border-slate-200">
-            <CardHeader className="pb-3">
+          {/* Artículos (Búsqueda) - Tercera columna */}
+          <Card className="border-slate-200">
+            <CardHeader className="py-2 px-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Package className="h-5 w-5 text-slate-500" />
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Package className="h-4 w-4 text-slate-500" />
                   Artículos
-                  {items.length > 0 && (
-                    <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-700">
-                      {items.length}
-                    </Badge>
-                  )}
                 </CardTitle>
-                {/* Indicador de persistencia + Botón vaciar carrito */}
-                <div className="flex items-center gap-2">
-                  {hasCartData && (
-                    <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-300 bg-emerald-50">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Guardado
-                    </Badge>
-                  )}
-                  {(items.length > 0 || customer) && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleClearCart}
-                      className="text-slate-500 hover:text-red-600 hover:bg-red-50"
-                      data-testid="clear-cart-btn"
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Vaciar
-                    </Button>
-                  )}
-                </div>
+                {(items.length > 0 || customer) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearCart}
+                    className="h-6 text-xs text-slate-500 hover:text-red-600 hover:bg-red-50 px-2"
+                    data-testid="clear-cart-btn"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                )}
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Barcode + Manual Search */}
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Barcode className={`absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors ${globalScannerActive ? 'text-emerald-500 animate-pulse' : 'text-slate-400'}`} tabIndex={-1} aria-hidden="true" />
-                  <Input
-                    ref={barcodeRef}
-                    placeholder={globalScannerActive ? "📡 Escáner listo..." : "Escanear código de barras..."}
-                    value={barcodeInput}
-                    onChange={(e) => setBarcodeInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      // Tab navigation
-                      if (e.key === 'Tab' && !isEditingCartItem) {
-                        e.preventDefault();
-                        if (e.shiftKey) {
-                          focusPrevField('barcode');
-                        } else {
-                          focusNextField('barcode');
-                        }
-                        return;
+            <CardContent className="space-y-2 px-4 pb-3">
+              {/* Barcode Input */}
+              <div className="relative">
+                <Barcode className={`absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${globalScannerActive ? 'text-emerald-500 animate-pulse' : 'text-slate-400'}`} tabIndex={-1} aria-hidden="true" />
+                <Input
+                  ref={barcodeRef}
+                  placeholder={globalScannerActive ? "Escáner listo..." : "Código de barras..."}
+                  value={barcodeInput}
+                  onChange={(e) => setBarcodeInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Tab' && !isEditingCartItem) {
+                      e.preventDefault();
+                      if (e.shiftKey) {
+                        focusPrevField('barcode');
+                      } else {
+                        focusNextField('barcode');
                       }
-                      // Normal barcode processing
-                      addItemByBarcode(e);
-                    }}
-                    tabIndex={1}
-                    className={`h-12 pl-10 pr-10 text-lg font-mono transition-all ${
-                      globalScannerActive 
-                        ? 'border-emerald-400 ring-2 ring-emerald-200 bg-emerald-50' 
-                        : ''
-                    }`}
-                    data-testid="barcode-input"
-                    autoComplete="off"
-                  />
-                  {globalScannerActive && (
-                    <Radio className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500 animate-pulse" tabIndex={-1} aria-hidden="true" />
-                  )}
-                </div>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowItemSearch(true)}
-                  className="h-12 px-4"
-                  data-testid="manual-search-btn"
-                  tabIndex={-1}
-                >
-                  <Search className="h-4 w-4 mr-2" tabIndex={-1} aria-hidden="true" />
-                  Buscar
-                </Button>
+                      return;
+                    }
+                    addItemByBarcode(e);
+                  }}
+                  tabIndex={1}
+                  className={`h-9 pl-8 text-sm font-mono transition-all ${
+                    globalScannerActive 
+                      ? 'border-emerald-400 ring-1 ring-emerald-200 bg-emerald-50' 
+                      : ''
+                  }`}
+                  data-testid="barcode-input"
+                  autoComplete="off"
+                />
               </div>
-              <p className={`text-xs transition-colors ${globalScannerActive ? 'text-emerald-600 font-medium' : 'text-slate-500'}`} tabIndex={-1}>
-                {globalScannerActive 
-                  ? '📡 Escáner HID detectado - Escanea para añadir artículos automáticamente' 
-                  : 'Tab: siguiente campo | Escanea el código o pulsa F3 para buscar'}
-              </p>
+              
+              {/* Botón Buscar */}
+              <Button 
+                variant="outline" 
+                onClick={() => setShowItemSearch(true)}
+                className="w-full h-8 text-sm"
+                data-testid="manual-search-btn"
+                tabIndex={-1}
+              >
+                <Search className="h-3.5 w-3.5 mr-2" tabIndex={-1} aria-hidden="true" />
+                Buscar
+              </Button>
+              
+              {/* Indicador */}
+              {hasCartData && (
+                <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-300 bg-emerald-50 w-full justify-center">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  {items.length} guardado{items.length !== 1 ? 's' : ''}
+                </Badge>
+              )}
             </CardContent>
           </Card>
+        </div>
 
-        {/* FILA 3: Carrito (Ancho Completo) - Con altura máxima para scroll interno */}
+        {/* FILA 2: Artículos Seleccionados (Ancho Completo) */}
         <Card className="border-slate-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
