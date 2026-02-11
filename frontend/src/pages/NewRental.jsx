@@ -3213,8 +3213,8 @@ export default function NewRental() {
           </Card>
       </div>
 
-      {/* FOOTER - Resumen y Botón - SIEMPRE VISIBLE */}
-      <div className="flex-shrink-0 bg-white border-t-2 border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] sticky bottom-0 z-50">
+      {/* FOOTER - Resumen y Botón - SIEMPRE FIJO EN PANTALLA */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.15)] z-50 ml-[200px]">
         <div className="px-6 py-3">
           <div className="flex items-center justify-between gap-4">
             {/* Resumen Compacto - Izquierda */}
