@@ -69,6 +69,20 @@ Sistema completo de gestión de alquileres para tiendas de equipos de esquí con
 - Frontend: SettingsContext carga valores del store al iniciar sesión
 - No afecta tiendas existentes
 
+### Navegación por Teclado Global (11/02/2026)
+- **Hook**: `useKeyboardNavigation` para navegación tipo spreadsheet
+- **Enter como Tab**: En formularios, Enter avanza al siguiente campo
+- **Flechas direccionales**: ArrowUp/Down/Left/Right navegan entre campos
+- **Excepción cursor**: Flechas solo mueven foco si cursor está al inicio/fin del texto
+- **Focus Ring**: Borde azul grueso (3px) visible en todos los elementos focusados
+- **Grid Navigation**: Hook `useGridNavigation` para tablas con navegación columna por columna
+- Archivos: `/app/frontend/src/hooks/useKeyboardNavigation.js`, `/app/frontend/src/App.css`
+
+### CSS Impresión Térmica (11/02/2026)
+- `@page { size: auto; margin: 0mm; }` - Elimina márgenes del navegador
+- `.ticket-container` forzado a 80mm de ancho
+- Archivos: `/app/frontend/src/lib/ticketGenerator.js`, `/app/frontend/src/App.css`
+
 ## Backlog / Tareas Futuras
 - Refactorizar NewRental.jsx (archivo muy grande, +3000 líneas)
 - Dividir en componentes más pequeños
