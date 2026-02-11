@@ -3200,80 +3200,13 @@ export default function NewRental() {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div>
-                  <Label>Método de Pago</Label>
-                  <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <SelectTrigger className="h-11 mt-1" data-testid="payment-method-select" tabIndex={10}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PAYMENT_METHODS.map(method => (
-                        <SelectItem key={method.value} value={method.value}>
-                          {method.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Importe Pagado</Label>
-                  <Input
-                    type="number"
-                    placeholder={total.toFixed(2)}
-                    value={paidAmount}
-                    onChange={(e) => setPaidAmount(e.target.value)}
-                    className="h-11 mt-1"
-                    data-testid="paid-amount-input"
-                    tabIndex={11}
-                  />
-                </div>
-                <div>
-                  <Label>Depósito</Label>
-                  <Input
-                    type="number"
-                    placeholder="0.00"
-                    value={deposit}
-                    onChange={(e) => setDeposit(e.target.value)}
-                    className="h-11 mt-1"
-                    data-testid="deposit-input"
-                    tabIndex={12}
-                  />
-                </div>
-                <div>
-                  <Label>Descuento</Label>
-                  <div className="flex gap-1 mt-1">
-                    <Select value={discountType} onValueChange={setDiscountType}>
-                      <SelectTrigger className="w-20 h-11" tabIndex={13}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">-</SelectItem>
-                        <SelectItem value="percent">%</SelectItem>
-                        <SelectItem value="fixed">€</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {discountType !== 'none' && (
-                      <Input
-                        type="number"
-                        placeholder="0"
-                        value={discountValue}
-                        onChange={(e) => setDiscountValue(e.target.value)}
-                        className="h-11 flex-1"
-                        tabIndex={14}
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-
               {hasDiscount && (
                 <div className="mb-4">
                   <Input
                     placeholder="Motivo del descuento (opcional): grupo, VIP, etc."
                     value={discountReason}
                     onChange={(e) => setDiscountReason(e.target.value)}
-                    className="h-10 text-sm"
+                    className="h-8 text-sm"
                     tabIndex={15}
                   />
                 </div>
