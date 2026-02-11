@@ -2357,7 +2357,7 @@ export default function Returns() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <span className="font-mono font-bold text-sm">
-                              {item.internal_code || item.barcode}
+                              {item.internal_code || item.item_type}
                             </span>
                             <Badge variant="outline" className="text-xs">
                               {item.item_type}
@@ -2375,7 +2375,7 @@ export default function Returns() {
                           {item.isSwapping ? (
                             <>
                               <div className="text-right mr-2">
-                                <p className="text-xs text-orange-600 font-medium">→ {item.swapNewItem?.internal_code}</p>
+                                <p className="text-xs text-orange-600 font-medium">→ {item.swapNewItem?.internal_code || item.swapNewItem?.item_type}</p>
                                 <p className="text-xs text-slate-500">
                                   Delta: {item.swapDelta >= 0 ? '+' : ''}€{item.swapDelta?.toFixed(2)}
                                 </p>
