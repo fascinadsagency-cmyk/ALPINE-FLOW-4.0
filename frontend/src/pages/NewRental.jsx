@@ -3234,7 +3234,7 @@ export default function NewRental() {
       </div>
 
       {/* FOOTER - Resumen, Pagos y Botón - SIEMPRE FIJO EN PANTALLA */}
-      <div className="fixed bottom-4 right-4 bg-white border-2 border-slate-200 rounded-xl shadow-[0_-4px_20px_rgba(0,0,0,0.15)] z-50 left-[272px]">
+      <div className="fixed bottom-[23px] right-4 bg-white border-2 border-slate-200 rounded-xl shadow-[0_-4px_20px_rgba(0,0,0,0.15)] z-50 left-[272px]">
         <div className="px-4 py-2">
           <div className="flex items-center gap-3">
             {/* Total */}
