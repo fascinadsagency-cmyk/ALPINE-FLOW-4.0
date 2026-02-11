@@ -7997,7 +7997,7 @@ async def get_settings(current_user: CurrentUser = Depends(get_current_user)):
         result.update({k: v for k, v in settings.items() if k != "type"})
     
     # Get store-level hardware settings (auto_print_ticket, quick_scan_mode)
-    store_id = current_user.get("store_id")
+    store_id = current_user.store_id
     if store_id:
         store = await db.stores.find_one({"store_id": store_id}, {"settings": 1})
         if store and store.get("settings"):
