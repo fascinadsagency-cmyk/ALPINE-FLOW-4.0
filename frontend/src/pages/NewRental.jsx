@@ -2123,11 +2123,20 @@ export default function NewRental() {
   const closeSuccessDialog = () => {
     setShowSuccessDialog(false);
     setCompletedRental(null);
-    resetForm();
+    
+    // Cerrar el ticket actual y pasar al siguiente
+    completeAndCloseActiveTicket();
+    
+    // Limpiar estados transitorios adicionales
+    setSearchTerm("");
+    setPaidAmount("");
+    setDeposit("");
+    
+    if (searchRef.current) searchRef.current.focus();
   };
 
   const resetForm = () => {
-    // Usar clearCart() para limpiar el estado persistido
+    // Usar clearCart() para limpiar el estado persistido del ticket actual
     clearCart();
     
     // Limpiar estados transitorios adicionales
