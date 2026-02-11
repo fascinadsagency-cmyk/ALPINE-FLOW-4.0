@@ -3795,21 +3795,38 @@ async def get_pending_returns(current_user: CurrentUser = Depends(get_current_us
         {"_id": 0}
     ).sort("end_date", 1).to_list(200)
     
-    # Get item details for item_type
+    # Get item details for item_type AND internal_code
     all_item_ids = []
+    all_barcodes = []
     for rental in rentals:
         for item in rental.get("items", []):
             all_item_ids.append(item.get("item_id"))
+            all_barcodes.append(item.get("barcode"))
     
     items_map = {}
-    if all_item_ids:
-        # Multi-tenant: Filter items by store
+    if all_item_ids or all_barcodes:
+        # Multi-tenant: Filter items by store - get internal_code too
         items_cursor = await db.items.find(
-            {**current_user.get_store_filter(), "id": {"$in": all_item_ids}},
-            {"_id": 0, "id": 1, "item_type": 1}
+            {
+                **current_user.get_store_filter(), 
+                "$or": [
+                    {"id": {"$in": all_item_ids}},
+                    {"barcode": {"$in": all_barcodes}}
+                ]
+            },
+            {"_id": 0, "id": 1, "barcode": 1, "item_type": 1, "internal_code": 1}
         ).to_list(10000)
         for item in items_cursor:
-            items_map[item["id"]] = item.get("item_type", "unknown")
+            items_map[item["id"]] = {
+                "item_type": item.get("item_type", "unknown"),
+                "internal_code": item.get("internal_code", "")
+            }
+            # Also map by barcode
+            if item.get("barcode"):
+                items_map[item["barcode"]] = {
+                    "item_type": item.get("item_type", "unknown"),
+                    "internal_code": item.get("internal_code", "")
+                }
     
     today_returns = []
     other_returns = []
