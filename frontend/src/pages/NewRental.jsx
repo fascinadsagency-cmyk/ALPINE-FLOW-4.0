@@ -2152,21 +2152,23 @@ export default function NewRental() {
   const hasDiscount = total < subtotal;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-40" data-testid="new-rental-page">
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 px-6 py-4">
-        <div className="max-w-[1000px] mx-auto">
-          <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans' }}>
-            Nuevo Alquiler
-          </h1>
-        </div>
+    <div className="h-screen flex flex-col bg-slate-50 overflow-hidden" data-testid="new-rental-page">
+      {/* Header - Compacto */}
+      <div className="bg-white border-b border-slate-200 px-6 py-3 flex-shrink-0">
+        <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+          Nuevo Alquiler
+        </h1>
       </div>
 
-      {/* Main Content - Vertical Stack */}
-      <div className="max-w-[1000px] mx-auto px-6 py-6 space-y-6">
-        
-        {/* FILA 1: Selección de Cliente */}
-        <section>
+      {/* Main Content - Grid de 2 columnas en desktop, sin scroll */}
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
+          
+          {/* COLUMNA IZQUIERDA: Cliente + Fechas */}
+          <div className="flex flex-col gap-4 overflow-y-auto">
+            
+            {/* FILA 1: Selección de Cliente */}
+            <Card className="border-slate-200 flex-shrink-0">
           {/* Customer Card */}
           <Card className="border-slate-200">
             <CardHeader className="pb-3">
@@ -2481,10 +2483,9 @@ export default function NewRental() {
               )}
             </CardContent>
           </Card>
-        </section>
 
-        {/* FILA 2: Duración del Alquiler (Fechas) */}
-        <section>
+          {/* FILA 2: Duración del Alquiler */}
+          <Card className="border-slate-200 border-primary/50 flex-shrink-0">
           {/* Smart Dates Card */}
           <Card className="border-slate-200 border-primary/50">
             <CardHeader className="pb-3">
@@ -2581,11 +2582,13 @@ export default function NewRental() {
               </div>
             </CardContent>
           </Card>
-        </section>
+          </div>
 
-        {/* FILA 3: Selección de Artículos (Buscador + Categorías) */}
-        <section>
-          <Card className="border-slate-200">
+          {/* COLUMNA DERECHA: Búsqueda Items + Carrito */}
+          <div className="flex flex-col gap-4 overflow-hidden">
+            
+            {/* FILA 3: Búsqueda de Artículos */}
+            <Card className="border-slate-200 flex-shrink-0">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -2675,11 +2678,9 @@ export default function NewRental() {
               </p>
             </CardContent>
           </Card>
-        </section>
 
-        {/* FILA 4: Lista de Artículos (Carrito) */}
-        <section>
-          <Card className="border-slate-200">
+          {/* FILA 4: Carrito - Ocupa el espacio restante con scroll interno */}
+          <Card className="border-slate-200 flex-1 overflow-hidden flex flex-col">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Package className="h-5 w-5 text-slate-500" />
@@ -2687,9 +2688,9 @@ export default function NewRental() {
                 {items.length > 0 && <Badge className="ml-2">{items.length}</Badge>}
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1 overflow-y-auto">
               {/* LISTA DE ARTÍCULOS - Altura expandida para mostrar más items */}
-              <div className="min-h-[200px] max-h-[580px] overflow-y-auto">
+              <div className="space-y-2">
                 {items.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-48 text-slate-400">
                     <Package className="h-12 w-12 mb-2" />
@@ -3223,12 +3224,13 @@ export default function NewRental() {
               </div>
             </CardContent>
           </Card>
-        </section>
+          </div>
+        </div>
       </div>
 
       {/* STICKY FOOTER - Resumen y Botón de Acción */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-slate-200 shadow-2xl z-50">
-        <div className="max-w-[1000px] mx-auto px-6 py-4">
+      <div className="flex-shrink-0 bg-white border-t-2 border-slate-200 shadow-2xl">
+        <div className="px-6 py-3">
           <div className="flex items-center justify-between gap-6">
             {/* Resumen Compacto - Izquierda */}
             <div className="flex-1">
