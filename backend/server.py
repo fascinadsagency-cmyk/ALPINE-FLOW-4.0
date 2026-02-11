@@ -1009,6 +1009,11 @@ async def get_customers_paginated(
     
     pipeline.append({"$match": match_stage})
     
+    # Build rental match conditions based on store filter
+    rental_store_condition = []
+    if "store_id" in store_filter:
+        rental_store_condition = [{"$eq": ["$store_id", store_filter["store_id"]]}]
+    
     # Stage 2: Lookup active rentals
     pipeline.append({
         "$lookup": {
@@ -1021,8 +1026,7 @@ async def get_customers_paginated(
                 {
                     "$match": {
                         "$expr": {
-                            "$and": [
-                                {"$eq": ["$store_id", store_filter["store_id"]]},
+                            "$and": rental_store_condition + [
                                 {"$in": ["$status", ["active", "partial"]]},
                                 {
                                     "$or": [
