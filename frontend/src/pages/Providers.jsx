@@ -249,11 +249,18 @@ export default function Providers() {
   // Verificar si el usuario puede eliminar (solo admin/super_admin)
   const canDeleteProviders = userRole === 'admin' || userRole === 'super_admin';
 
-  const openStatistics = async (provider) => {
+  const openStatistics = async (provider, dateFrom = "", dateTo = "") => {
     setStatsLoading(true);
     setShowStatsDialog(true);
+    setSelectedProviderForStats(provider);
     try {
-      const response = await axios.get(`${API}/sources/${provider.id}/stats`, {
+      let url = `${API}/sources/${provider.id}/stats`;
+      const params = new URLSearchParams();
+      if (dateFrom) params.append('date_from', dateFrom);
+      if (dateTo) params.append('date_to', dateTo);
+      if (params.toString()) url += `?${params.toString()}`;
+      
+      const response = await axios.get(url, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       setStatsData(response.data);
@@ -263,6 +270,117 @@ export default function Providers() {
     } finally {
       setStatsLoading(false);
     }
+  };
+  
+  const applyDateFilter = () => {
+    if (selectedProviderForStats) {
+      openStatistics(selectedProviderForStats, statsDateFrom, statsDateTo);
+    }
+  };
+  
+  const clearDateFilter = () => {
+    setStatsDateFrom("");
+    setStatsDateTo("");
+    if (selectedProviderForStats) {
+      openStatistics(selectedProviderForStats, "", "");
+    }
+  };
+  
+  const printProviderStats = () => {
+    if (!statsData) return;
+    
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Estadísticas - ${statsData.source.name}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: 'Courier New', monospace; font-size: 12px; padding: 20px; max-width: 80mm; }
+          .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
+          .title { font-size: 16px; font-weight: bold; }
+          .subtitle { font-size: 11px; color: #666; }
+          .date-range { font-size: 10px; margin-top: 5px; }
+          .metrics { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; padding: 10px 0; border-top: 1px dashed #000; border-bottom: 1px dashed #000; }
+          .metric { flex: 1; min-width: 45%; }
+          .metric-label { font-size: 10px; color: #666; }
+          .metric-value { font-size: 14px; font-weight: bold; }
+          .table { width: 100%; margin-top: 15px; border-collapse: collapse; }
+          .table th, .table td { padding: 5px 3px; text-align: left; border-bottom: 1px solid #eee; font-size: 10px; }
+          .table th { font-weight: bold; background: #f5f5f5; }
+          .table .right { text-align: right; }
+          .footer { margin-top: 20px; text-align: center; font-size: 10px; color: #666; border-top: 1px dashed #000; padding-top: 10px; }
+          .total-row { font-weight: bold; border-top: 2px solid #000; }
+          @media print { body { padding: 0; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="title">${statsData.source.name}</div>
+          <div class="subtitle">Informe de Comisiones</div>
+          ${statsDateFrom || statsDateTo ? `<div class="date-range">Período: ${statsDateFrom || 'Inicio'} - ${statsDateTo || 'Hoy'}</div>` : '<div class="date-range">Histórico completo</div>'}
+        </div>
+        
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-label">Total Clientes</div>
+            <div class="metric-value">${statsData.stats.total_customers}</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Ingresos</div>
+            <div class="metric-value">€${statsData.stats.total_revenue.toFixed(2)}</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Ticket Medio</div>
+            <div class="metric-value">€${statsData.stats.average_ticket.toFixed(2)}</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Comisión (${statsData.source.commission_percent}%)</div>
+            <div class="metric-value">€${statsData.stats.total_commission.toFixed(2)}</div>
+          </div>
+        </div>
+        
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Cliente</th>
+              <th class="right">Importe</th>
+              <th class="right">Comisión</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${statsData.rentals.map(r => `
+              <tr>
+                <td>${formatDate(r.date)}</td>
+                <td>${r.customer_name}</td>
+                <td class="right">€${r.amount.toFixed(2)}</td>
+                <td class="right">€${r.commission.toFixed(2)}</td>
+              </tr>
+            `).join('')}
+            <tr class="total-row">
+              <td colspan="2">TOTAL (${statsData.rentals.length} alquileres)</td>
+              <td class="right">€${statsData.stats.total_revenue.toFixed(2)}</td>
+              <td class="right">€${statsData.stats.total_commission.toFixed(2)}</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div class="footer">
+          Generado: ${new Date().toLocaleString('es-ES')}<br/>
+          AlpineFlow - Sistema de Gestión
+        </div>
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
   };
 
   const formatCurrency = (amount) => {
