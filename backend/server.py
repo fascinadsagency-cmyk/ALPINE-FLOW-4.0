@@ -3836,7 +3836,13 @@ async def get_pending_returns(current_user: CurrentUser = Depends(get_current_us
         pending_items = []
         for i in rental["items"]:
             if not i.get("returned", False):
-                item_with_type = {**i, "item_type": items_map.get(i.get("item_id"), "unknown")}
+                # Get item info from map by item_id or barcode
+                item_info = items_map.get(i.get("item_id")) or items_map.get(i.get("barcode")) or {"item_type": "unknown", "internal_code": ""}
+                item_with_type = {
+                    **i, 
+                    "item_type": item_info.get("item_type", i.get("item_type", "unknown")),
+                    "internal_code": item_info.get("internal_code", i.get("internal_code", ""))
+                }
                 pending_items.append(item_with_type)
         
         if not pending_items:
