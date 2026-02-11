@@ -3220,8 +3220,6 @@ export default function NewRental() {
                   </Badge>
                 </div>
               )}
-
-              </div>
             </CardContent>
           </Card>
         </section>
