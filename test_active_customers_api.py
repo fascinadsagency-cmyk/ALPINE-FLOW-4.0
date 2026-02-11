@@ -5,7 +5,7 @@ Test del endpoint de clientes activos con usuario real
 import requests
 import json
 
-API_URL = "https://rental-pack-fix.preview.emergentagent.com/api"
+API_URL = "https://rental-layout-fix.preview.emergentagent.com/api"
 
 # Necesitamos un token real - vamos a intentar hacer login primero
 print("🔐 Intentando login...")

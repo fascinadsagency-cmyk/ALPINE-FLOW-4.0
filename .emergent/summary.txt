@@ -1,166 +1,186 @@
-<analysis>An analysis of the conversation and codebase has been conducted. Here is the summary:
+<analysis>**original_problem_statement:**
+The user initially reported a critical financial integrity bug where applying a Pack discount to an active rental would charge the customer the correct discounted price but record the original, non-discounted price in the cash movements table.
 
-**original_problem_statement**: The user initiated a project to convert a single-tenant application into a multi-tenant one. After the main migration, several follow-up requests and bug reports were made:
-1.  **Multi-Tenancy**: Ensure the application is fully multi-tenant, with data segregated by store. This was the primary objective.
-2.  **Password Reset**: The user was locked out and requested a feature to allow admins to edit/reset user passwords within their store.
-3.  **Plan Limits**: The employee counter was showing 19 / 999. The user requested this to reflect the actual limits based on the store's subscription plan.
-4.  **Dashboard Metric Accuracy (Devoluciones)**: The Returns counter on the dashboard was not considered operationally useful. The user provided a new logic for its calculation (Today's returns + Overdue returns).
-5.  **Rental Pack Logic**: The system was re-optimizing rental packs when new items were added to the cart. The user requested that once a pack is formed, it should be locked and not be broken up to form a different, cheaper pack later.
+Subsequently, the user requested fixes for several other issues and a major feature change:
+1.  **UI Cleanup**: Do not show Discount as a separate line item when a Pack is applied automatically.
+2.  **Cash Register Flicker**: The cash register page flickers every few seconds due to an auto-refresh. This needs to be stopped.
+3.  **Slow Customer Loading**: The Active Customers list takes a very long time to load. It needs to be optimized to load instantly.
+4.  **Customer Data Mismatch**: After optimizing the customer list, it showed all customers instead of just active ones. This was followed by a bug where the count of active customers (badge) mismatched the number of customers shown in the list.
+5.  **New Rental Page Redesign (Current Task)**: A complete layout restructure of the Nuevo Alquiler (New Rental) page.
+    *   **PRODUCT REQUIREMENTS**:
+        *   Abandon the two-column layout for a linear, top-to-bottom flow.
+        *   The main container should have a controlled max-width (e.g., ) and be centered.
+        *   **Strict Order**:
+            1.  Customer Selection
+            2.  Rental Duration (Dates/Time)
+            3.  Item Selection (Search + Grid)
+            4.  Item Cart (List of added items)
+        *   A **sticky footer/action bar** must be implemented to keep the Totals Summary and the COBRAR / GUARDAR button visible at all times, regardless of scroll position.
+        *   The layout was later updated by the user to be: Customer and Dates side-by-side in two columns at the top, with everything else (Item Search, Cart) in a single, full-width column below.
+        *   The final request was to reduce the vertical height of the top two sections (Customer and Dates).
 
-**User's preferred language**: Spanish. The next agent MUST respond in Spanish.
+**User's preferred language**: The user communicates in **Spanish**. The next agent MUST respond in Spanish.
 
 **what currently exists?**
-The application is now largely multi-tenant, with most data models and API endpoints filtering by . A full database backup was created before major changes. Test stores and users were created to verify data segregation, which was confirmed to be working. A testing agent was run and fixed 10 critical bugs related to missing  filters. Features for resetting user passwords and displaying plan-based employee limits have been implemented and verified. The logic for the Devoluciones (Returns) dashboard metric has been updated. An attempt was made to fix the rental pack logic, which introduced a crash that has since been resolved, but the core functionality of sticky packs is still pending verification.
+The project is a rental management application with a React frontend and a Python (Flask) backend using a MongoDB database. Several critical bugs related to financial integrity, pack detection, UI flickering, and database performance have just been fixed. The application is now in the middle of a major UI refactoring for the New Rental page.
 
 **Last working item**:
--   **Last item agent was working**: Fixing a crash on the Nuevo Alquiler (New Rental) page, which was showing a blank screen. This error was introduced while attempting to implement the sticky packs logic.
--   **Status**: USER VERIFICATION PENDING
--   **Agent Testing Done**: Y (Agent confirmed the page loads via screenshot).
--   **Which testing method agent to use?**: manual testing by user. The user confirmed the crash is gone by saying Perfecto! Ahora sí amigui!, but the underlying feature that caused the crash (sticky packs) needs to be re-tested.
--   **User Testing Done**: N (User has not re-tested the sticky packs scenario since the crash was fixed).
+*   **Last item agent was working**: The agent was refining the layout of the  page. The user requested that the two top sections, Selección de Cliente (Customer Selection) and Duración del Alquiler (Rental Duration), which are arranged in a two-column layout, be made shorter to take up less vertical space.
+*   **Status**: IN PROGRESS
+*   **Agent Testing Done**: N (Agent attempted a screenshot but it showed the login page, so the new layout was not visually confirmed by the agent).
+*   **Which testing method agent to use?**: Use the screenshot tool after logging in to visually verify the layout of the  page.
+*   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Sticky Rental Pack logic is not working as intended (P0)
--   Issue 2: Dashboard Devoluciones (Returns) metric shows an incorrect breakdown (P1)
+*   **Issue 1**: The layout of the  page is not yet finalized.
+    *   **Description**: The user wants the Customer and Rental Duration sections to have less vertical height to maximize screen real estate and reduce scrolling. This is a refinement of the new layout being implemented.
+    *   **Priority**: P0
+*   **Issue 2**: The new layout for the New Rental page has not been fully validated.
+    *   **Description**: The user's original request included specific validation criteria (Scroll Test and Tabulation Test) that have not been performed yet because the layout is still in flux.
+    *   **Priority**: P1
 
 **Issues Detail**:
--   **Issue 1**: **Sticky Rental Pack logic is not working as intended**
-    -   **Attempted fixes**: The agent modified  to prevent the recalculation of existing packs. This was done by passing  into the  function and modifying a  hook. However, this fix was flawed and caused the Nuevo Alquiler page to crash. The agent then fixed the crash, but the original problem of packs being re-optimized likely remains.
-    -   **Next debug checklist**:
-        1.  Verify the Nuevo Alquiler page at  loads correctly.
-        2.  Follow the user's exact test case: add items , then , then  to the cart.
-        3.  Observe if the first pack created () is modified when the fifth item () is added. It should not be.
-        4.  Investigate the  hook in  (around line 398) and the  function. The state management around  is the source of the issue.
-    -   **Why fix this issue and what will be achieved with the fix?**: To ensure a stable and predictable pricing experience for the user. Once a pack is formed, it should be considered locked, preventing user confusion.
-    -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: Y (Fixing this has caused other bugs).
-    -   **Should Test frontend/backend/both after fix?**: Frontend.
-    -   **Blocked on other issue**: None.
+*   **Issue 1: Reduce Height of Top Sections**
+    *   **Attempted fixes**: The agent has iterated through three different layouts for this page based on user feedback: a single vertical column, a full-width two-column grid, and the current hybrid layout (2 columns on top, 1 below). The current structure is correct, but requires visual refinement.
+    *   **Next debug checklist**:
+        1.  Open .
+        2.  Locate the parent containers for the Customer section (around line 2168) and the Rental Duration section (around line 2484).
+        3.  Reduce their vertical height by adjusting Tailwind CSS classes. For example, change padding ( to ), remove  properties, or adjust margins.
+    *   **Why fix this issue and what will be achieved with the fix?**: To finalize the UI/UX of the critical New Rental page according to the user's explicit request for a more compact and visible layout.
+    *   **Status**: IN PROGRESS
+    *   **Is recurring issue?**: Y (This is the 4th iteration on this page's layout design).
+    *   **Should Test frontend/backend/both after fix?**: Frontend.
+    *   **Blocked on other issue**: None.
 
--   **Issue 2**: **Dashboard Devoluciones (Returns) metric shows an incorrect breakdown**
-    -   **Attempted fixes**: The agent updated the backend endpoint  in  to calculate a new metric, , which correctly sums today's and overdue returns. The frontend was also updated. However, during debugging, the agent noticed that while the total was correct (e.g., 6), the breakdown shown in a badge was incorrect (e.g., 6 atrasadas instead of 5 atrasadas and 1 de hoy). The agent moved on because the total count was correct.
-    -   **Next debug checklist**:
-        1.  Call the  endpoint and check the values for , , and .
-        2.  Review the logic for  in  (around line 5751). The issue might be related to how dates are compared (e.g., timezone handling with  or including/excluding the current day).
-        3.  Review the frontend component  to see how it displays the breakdown.
-    -   **Why fix this issue and what will be achieved with the fix?**: Provides the user with an accurate, at-a-glance operational view of pending returns, broken down by urgency (today vs. overdue).
-    -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Both.
-    -   **Blocked on other issue**: None.
+*   **Issue 2: Functional Validation of New Layout**
+    *   **Attempted fixes**: None, as this depends on the layout being finalized.
+    *   **Next debug checklist**:
+        1.  Once the layout is visually approved, perform the Scroll Test: Add 10+ items to the rental cart and confirm the sticky footer containing the Cobrar button remains visible without needing to scroll to the bottom of the page.
+        2.  Perform the Tabulation Test: Ensure the keyboard Tab key navigates through the form fields in a logical order (Customer -> Dates -> Item Search).
+    *   **Why fix this issue and what will be achieved with the fix?**: To ensure the new layout is not only visually correct but also functional and accessible, meeting the user's core requirements for the redesign.
+    *   **Status**: NOT STARTED
+    *   **Is recurring issue?**: N
+    *   **Should Test frontend/backend/both after fix?**: Frontend.
+    *   **Blocked on other issue**: Issue 1: Reduce Height of Top Sections.
 
 **In progress Task List**:
-There are no partially completed tasks; the focus is on fixing the issues listed above.
+*   **Task 1: Complete the refactoring of the New Rental page layout**
+    *   **Where to resume**: . Resume by modifying the Tailwind CSS classes for the Customer and Date selection sections to reduce their height.
+    *   **What will be achieved with this?**: A user-approved layout for creating new rentals, which is a core workflow of the application.
+    *   **Status**: IN PROGRESS
+    *   **Priority**: P0
+    *   **Should Test frontend/backend/both after fix?**: Frontend.
+    *   **Blocked on something**: Awaiting implementation of the height reduction.
 
 **Upcoming and Future Tasks**
-- **Upcoming Tasks**:
-    - P0: Final validation and fix for the Sticky Rental Pack logic as described in Issue 1.
-    - P1: Final validation and fix for the Devoluciones dashboard metric as described in Issue 2.
-- **Future Tasks**:
-    - No new future tasks were requested by the user.
+*   **Upcoming Tasks**:
+    *   **P0**: Validate the functionality of the new  page layout (Scroll Test and Tabulation Test) after the visual design is approved by the user.
 
 **Completed work in this session**
--   **Multi-Tenancy Implementation**:
-    -   Data Migration: Assigned  to all relevant records in the database.
-    -   Segregation Verified: Created test stores and confirmed data isolation is working correctly.
-    -   Automated Bug Fixes: Ran a testing agent that found and fixed 10 endpoints in  that were missing  filters.
--   **User Management**:
-    -   Password Reset: Created a new endpoint  to allow admins to change user passwords.
-    -   List Users: Created a new endpoint  to list all users belonging to a store.
--   **Plan & Subscription Logic**:
-    -   Employee Limits: Implemented a helper function  in  and fixed the frontend in  to correctly display the number of employees against the plan limit (e.g., 18 / 20).
--   **Dashboard & KPI Audit**:
-    -   Verified that all Dashboard KPIs from  are correctly filtered by .
--   **Bug Fixes**:
-    -   Resolved a crash on the Nuevo Alquiler page () caused by a faulty  implementation.
+- **Financial Integrity Bug (FIXED)**: Corrected backend logic in  () to use the  from the frontend. This ensures rental extensions with Packs record the correct discounted amount in the  table.
+- **Pack Detection Bug (FIXED)**: Made the  comparison case-insensitive in the pack detection logic within , ensuring packs are correctly identified.
+- **UI Cleanup for Pack Savings (DONE)**: Removed the Ahorro por pack (savings from pack) display from the UI in  as requested.
+- **Cash Register Flicker (FIXED)**: Eliminated the UI flicker on  by implementing a silent data refresh () and increasing the refresh interval to 30 seconds.
+- **Slow Active Customer Loading (OPTIMIZED)**: Replaced the inefficient, multi-query customer filtering logic in  () with a highly efficient MongoDB aggregation pipeline, reducing load times from ~10 seconds to <0.5 seconds.
+- **Active Customer Count Mismatch (FIXED)**: Corrected a double-counting bug in the  () endpoint. The endpoint now uses the same aggregation logic as the customer list, ensuring the summary badge count always matches the list count.
 
 **Earlier issues found/mentioned but not fixed**
--   The incorrect breakdown of the Devoluciones (Returns) metric on the dashboard was identified by the agent but not fully resolved. The total count is correct, but the distinction between today and overdue is flawed. This is captured as Issue 2 in the pending list.
+None. All issues raised by the user during the session were addressed sequentially.
 
 **Known issue recurrence from previous fork**
--   The logic for detecting and managing rental packs in  is fragile. The  hooks in this file have been a recurring source of bugs, including infinite loops and incorrect state updates, leading to crashes or unexpected behavior. This is the root cause of Issue 1.
+None.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Backend**: FastAPI, SQLAlchemy ORM, Pydantic for data validation.
--   **Frontend**: React (with hooks like , , ).
--   **Database**: PostgreSQL.
--   **Multi-tenancy**: Application-level, row-based security using a  column on all relevant tables. A  function is used in the backend to apply this filter to database queries based on the authenticated user.
+*   **Frontend**: React, Tailwind CSS
+*   **Backend**: Python (Flask)
+*   **Database**: MongoDB
+*   **Architecture**: Monolithic repository with separate frontend and backend folders.
 
 **key DB schema**
--   : {id, name, plan, plan_type, timezone, max_users}
--   : {id, email, hashed_password, **store_id**}
--   : {id, name, code, **store_id**}
--   : {id, customer_id, start_date, end_date, **store_id**}
--   : {id, name, **store_id**}
--   : {id, name, **store_id**}
+*   : {, , , , ...}
+*   : {, , , , , , , ...}
+*   : {, , , , , ...}
+*   : {, , , , , ...}
+*   : {, , , , , ...}
 
 **changes in tech stack**
--   No changes to the core tech stack. The project remains on FastAPI, React, and PostgreSQL.
+None.
 
 **All files of reference**
--   : The main backend application file. Modified extensively to add multi-tenant filters, new endpoints for password resets and user listing, and updated dashboard logic.
--   : Contains the store-related models and the new  helper function for enforcing employee limits.
--   : The frontend file for creating new rentals. Contains the complex (and buggy) logic for rental pack detection. It was the last file edited to fix a crash.
--   : Frontend file for the team management page. Was updated to display the correct employee count based on the store's plan.
--   : Frontend component for the main dashboard statistics. Was updated to display the new  metric.
+*   : Modified for multiple bug fixes and performance optimizations.
+*   : Target of a major, ongoing layout refactoring.
+*   : Modified to fix pack detection and UI text.
+*   : Modified to fix UI flickering.
+*   : Modified to add debug logs for a data mismatch issue.
+*   : Script created to ensure optimal DB performance.
+*   : Documentation for a completed fix.
+*   : Documentation for a completed fix.
+*   : Documentation for a completed optimization.
+*   : Documentation for a completed fix.
+*   : Documentation for the ongoing refactor.
 
-**Areas that need refactoring**:
--   : This component is overly complex and fragile. The state management for , , and pricing calculations relies on multiple interconnected  hooks, which has proven to be a major source of bugs. This logic should be refactored, potentially by extracting it into a dedicated custom hook (e.g., ) to simplify the main component and isolate the business logic.
+**Areas that need refactoring**
+*    is an extremely large file (over 3,000 lines). It desperately needs to be broken down into smaller, more manageable components to improve maintainability. The agent has noted this complexity.
 
 **key api endpoints**
--   : Retrieves KPI data for the dashboard.
--   : Allows an admin to set a new password for a user in their store.
--   : Lists all users associated with the current user's store.
--   : Creates a new rental, internally calculating the best price using pack logic.
+*   : Used to add items to an existing rental. (Bug Fixed)
+*   : Fetches a paginated list of customers, with filters. (Optimized)
+*   : Fetches summary statistics about customers. (Bug Fixed)
 
 **Critical Info for New Agent**
--   The sticky packs logic in  is extremely delicate. Any changes have a high risk of causing regressions (crashes or incorrect calculations). The user's test case (, , ) is the definitive test for this feature.
--   The multi-tenancy migration is complete and stable. Focus should be on the specific feature bugs reported by the user.
--   Always use the  timezone for date calculations related to business logic, as requested by the user. The backend was fixed to use this, but it's a critical detail to remember.
+*   **Primary focus is the  layout**. The user is very specific about the visual structure. Follow the latest instructions to reduce the height of the top two sections.
+*   Once the layout is visually approved by the user, you **must** perform the validation tests (Scroll Test, Tabulation Test) that were part of the original request.
+*   The agent has struggled with credentials for automated testing. User verification has been the primary method of confirmation. Be prepared to ask the user to test changes.
+*   The  file is very complex. Be careful when making edits to avoid breaking existing logic.
 
 **documents and test reports created in this job**
--   : A full database backup taken before the multi-tenancy migration.
--   : Report from the testing agent that fixed multi-tenancy bugs.
--   : A temporary document created by the previous agent to outline the plan for fixing the pack logic.
+*   
+*   
+*   
+*   
+*   
+*   
 
 **Last 10 User Messages and any pending HUMAN messages**
-10.  - User confirms the Nuevo Alquiler page is no longer crashing. *Status: Acknowledged, but the underlying bug is likely not fixed.*
-9.  - User reports the New Rental page is crashing. *Status: Resolved.*
-8.  - User reports the sticky packs logic is still broken and provides a specific test case. *Status: Unresolved.*
-7.  - User explains the desired sticky packs behavior. *Status: Understood, implementation in progress.*
-6.  - User requests a change in the logic for the Returns dashboard counter. *Status: Partially resolved (total is correct, breakdown is not).*
-5.  - User requests a password reset feature. *Status: Completed.*
-4.  - User requests the employee counter to reflect plan limits. *Status: Completed.*
-3.  - User confirms proceeding with the plan.
-2.  - User gives the agent full control to proceed with the production migration.
-1. ,  - User providing initial confirmations.
+1.  **Vamos avanzando, esta bien pero quiero que la sección de duración de alquiler tenga menos altura aún junto con la de cliente. (We're making progress, it's good, but I want the rental duration section to have even less height, along with the customer section.)**
+    *   **Status**: PENDING. This is the current active task.
+2.  **Quiero todo en una única clumna por favor a no ser que las dos secciones actuales de la izquierda están en dos columnas pero debajo añadir articulos y lo siguiente en una única columna. Todo esto aprovechando el 100% de la pantalla y el espacio, con el fin de aprovechas el máximo espacio y máxima visibilidad. (I want everything in a single column please, unless the two current sections on the left are in two columns and then add items and the rest below in a single column. All this taking advantage of 100% of the screen and space, in order to take advantage of maximum space and maximum visibility.)**
+    *   **Status**: COMPLETED. The agent implemented this hybrid layout.
+3.  **Necesito que ocupe todo el ancho, esto evitará menos scroll. Sería posible que ocupara toda la pantalla sin scroll? (I need it to take up the full width, this will avoid less scrolling. Would it be possible for it to take up the whole screen without scrolling?)**
+    *   **Status**: SUPERSEDED. The user provided more detailed layout instructions later.
+4.  **Si, adelante. (Yes, go ahead.)**
+    *   **Status**: COMPLETED. User gave permission to proceed with the refactor.
+5.  **Necesito reestructurar completamente el layout de la página Nuevo Alquiler... (I need to completely restructure the layout of the 'New Rental' page...)**
+    *   **Status**: IN PROGRESS. This initiated the major refactoring task.
+6.  **Ahora muestra dos clientes activos en la pestaña, pero 1 en la línea. No tiene sentido (Now it shows two active clients in the tab, but 1 in the line. It doesn't make sense.)**
+    *   **Status**: COMPLETED. Agent found and fixed the double-counting bug in the stats endpoint.
+7.  **En clientes , en la pestaña activos hoy debe de mostrar el numero de clientes activos únicamente. (In customers, the active today tab should show only the number of active customers.)**
+    *   **Status**: COMPLETED. This was part of debugging the data mismatch.
+8.  **La página muestra todos los clientes de la base de datos, en vez los activos. Debe aparecer los clientes activos... (The page shows all customers from the database, instead of the active ones. The active customers should appear...)**
+    *   **Status**: COMPLETED. This was the first report of the data mismatch after the performance optimization.
+9.  **En clientes activos ahora, salen todos los clientes y deben salir solo los activos. Va rápido pero no salen los datos correctos (In active customers now, all customers appear and only active ones should. It's fast but the data is incorrect.)**
+    *   **Status**: COMPLETED. User confirmed the performance fix but reported a new data correctness bug.
+10. **La pantalla de clientes, si después pulsas clientes activos tarda mucho en cargar el listado de clientes activos. Tiene que cargar de golpe y rápido. (The customers screen, if you then click on active customers, it takes a long time to load the list of active customers. It has to load at once and quickly.)**
+    *   **Status**: COMPLETED. User reported the performance issue that was subsequently fixed.
 
 **Project Health Check:**
--   **Broken**:
-    -   The rental pack optimization logic in  does not work as requested (sticky packs).
-    -   The breakdown of the Devoluciones (Returns) metric on the dashboard is likely incorrect.
--   **Mocked**: None.
+*   **Broken**: The  page is visually and functionally incomplete due to the ongoing refactor.
+*   **Mocked**: None.
 
 **3rd Party Integrations**
-- No external 3rd party integrations are being used.
+None explicitly mentioned beyond the core tech stack (React, Flask, MongoDB).
 
 **Testing status**
--   **Testing agent used after significant changes**: YES (Used for the multi-tenancy implementation).
--   **Troubleshoot agent used after agent stuck in loop**: NO
--   **Test files created**: None.
--   **Known regressions**: The attempt to fix the sticky packs logic caused the New Rental page to crash. The crash is fixed, but the original feature remains broken.
+*   **Testing agent used after significant changes**: NO
+*   **Troubleshoot agent used after agent stuck in loop**: NO
+*   **Test files created**: 
+*   **Known regressions**: None from the completed work.
 
 **Credentials to test flow:**
--   **Store EL ENEBRO (store_id: 1)**:
-    -   User: 
-    -   Password: 
--   **Test Stores**:
-    -   User: , Password: 
-    -   User: , Password: 
+The agent had persistent issues with credentials ( / ). The next agent may need to ask the user for valid credentials or rely on user verification for testing.
 
 **What agent forgot to execute**
-- The agent did not fully resolve the dashboard Devoluciones metric discrepancy (Issue 2). While the total count was corrected, the agent noticed the breakdown was wrong but moved on without fixing it.
-- The agent did not re-verify the sticky packs logic with the user's specific test case after fixing the crash it caused. The user's primary bug report (Issue 1) is still outstanding.</analysis>
+The agent has not yet executed the user's requested validation tests for the New Rental page refactor (Scroll Test and Tabulation Test). This is because the visual layout is still being finalized. This should be the immediate next step after the user approves the layout.</analysis>
