@@ -2194,7 +2194,11 @@ export default function NewRental() {
   const hasDiscount = total < subtotal;
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50 overflow-hidden" data-testid="new-rental-page">
+    <div 
+      ref={mainContainerRef}
+      className="h-screen flex flex-col bg-slate-50 overflow-hidden" 
+      data-testid="new-rental-page"
+    >
       {/* Header con Tabs de Tickets */}
       <div className="bg-white border-b border-slate-200 flex-shrink-0">
         {/* Título */}
