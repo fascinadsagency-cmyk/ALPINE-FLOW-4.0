@@ -2792,8 +2792,8 @@ export default function NewRental() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {/* LISTA DE ARTÍCULOS */}
-              <div className="max-h-[400px] overflow-y-auto">
+              {/* LISTA DE ARTÍCULOS - Grid navegable por teclado */}
+              <div ref={cartGridRef} className="max-h-[400px] overflow-y-auto keyboard-nav-grid">
                 {items.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-48 text-slate-400">
                     <Package className="h-12 w-12 mb-2" />
