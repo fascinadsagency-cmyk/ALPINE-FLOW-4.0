@@ -605,7 +605,7 @@ export default function Returns() {
         item_type: item.item_type
       })),
       newItems: itemsSwapped.map(item => ({
-        name: `${item.swapNewItem.internal_code || item.swapNewItem.barcode} - ${item.swapNewItem.item_type}`,
+        name: `${item.swapNewItem.internal_code || item.swapNewItem.item_type} - ${item.swapNewItem.item_type}`,
         item_type: item.swapNewItem.item_type
       })),
       // Ajuste de fechas
