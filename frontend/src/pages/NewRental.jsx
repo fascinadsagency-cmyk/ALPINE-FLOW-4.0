@@ -16,6 +16,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { useScannerListener } from "@/hooks/useScannerListener";
 import { useMultiTicketPersistence } from "@/hooks/useMultiTicketPersistence";
 import { useDebounce, useDebouncedCallback } from "@/hooks/useDebounce";
+import { useKeyboardNavigation, useGridNavigation } from "@/hooks/useKeyboardNavigation";
 import { FocusTrap } from "@/components/FocusTrap";
 import { 
   Search, 
