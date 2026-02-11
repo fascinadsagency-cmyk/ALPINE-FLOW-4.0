@@ -2161,7 +2161,7 @@ export default function NewRental() {
       </div>
 
       {/* Main Content - Todo el ancho */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4 pb-24 space-y-4">
         
         {/* FILA 1: Cliente + Fechas en 2 columnas */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
