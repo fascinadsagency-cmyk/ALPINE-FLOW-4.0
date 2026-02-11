@@ -457,6 +457,12 @@ export default function Settings() {
                     <SelectItem value="en" className={darkMode ? 'text-white hover:bg-slate-700' : ''}>
                       🇬🇧 {t('settings.language.en')}
                     </SelectItem>
+                    <SelectItem value="ca" className={darkMode ? 'text-white hover:bg-slate-700' : ''}>
+                      🏴󠁥󠁳󠁣󠁴󠁿 {t('settings.language.ca')}
+                    </SelectItem>
+                    <SelectItem value="fr" className={darkMode ? 'text-white hover:bg-slate-700' : ''}>
+                      🇫🇷 {t('settings.language.fr')}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
