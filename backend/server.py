@@ -3578,6 +3578,7 @@ async def create_rental(rental: RentalCreate, current_user: CurrentUser = Depend
             items_data.append({
                 "item_id": item["id"],
                 "barcode": item["barcode"],
+                "internal_code": item.get("internal_code", ""),  # Include internal code
                 "item_type": item["item_type"],
                 "brand": item.get("brand", ""),
                 "model": item.get("model", ""),
