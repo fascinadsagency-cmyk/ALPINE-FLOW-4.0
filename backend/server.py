@@ -3748,6 +3748,29 @@ async def get_rentals(
         query["customer_id"] = customer_id
     
     rentals = await db.rentals.find(query, {"_id": 0}).sort("created_at", -1).to_list(200)
+    
+    # Enrich items with internal_code from items collection
+    all_barcodes = []
+    for rental in rentals:
+        for item in rental.get("items", []):
+            if item.get("barcode"):
+                all_barcodes.append(item.get("barcode"))
+    
+    items_map = {}
+    if all_barcodes:
+        items_cursor = await db.items.find(
+            {**current_user.get_store_filter(), "barcode": {"$in": all_barcodes}},
+            {"_id": 0, "barcode": 1, "internal_code": 1}
+        ).to_list(10000)
+        for item in items_cursor:
+            items_map[item["barcode"]] = item.get("internal_code", "")
+    
+    # Update items with internal_code
+    for rental in rentals:
+        for item in rental.get("items", []):
+            if item.get("barcode") and item.get("barcode") in items_map:
+                item["internal_code"] = items_map[item["barcode"]]
+    
     return [RentalResponse(**r) for r in rentals]
 
 @api_router.get("/rentals/{rental_id}", response_model=RentalResponse)
