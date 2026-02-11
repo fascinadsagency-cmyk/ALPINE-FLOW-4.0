@@ -3660,122 +3660,120 @@ export default function NewRental() {
 
       {/* Payment Dialog - NEW */}
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+            <DialogTitle className="text-lg font-bold flex items-center gap-2">
               💳 Finalizar Pago
             </DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-6 py-4">
+          <div className="space-y-4 py-2">
             {/* Total to Pay - Highlighted (INCLUYE DEPÓSITO) */}
-            <div className="p-6 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-300 shadow-lg">
-              <p className="text-sm font-medium text-emerald-700 uppercase tracking-wide">Total a Pagar</p>
-              <p className="text-5xl font-black text-emerald-900 mt-2">
+            <div className="p-4 rounded-lg bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-300">
+              <p className="text-xs font-medium text-emerald-700 uppercase tracking-wide">Total a Pagar</p>
+              <p className="text-3xl font-black text-emerald-900 mt-1">
                 €{calculateTotalToPay().toFixed(2)}
               </p>
             </div>
 
-            {/* Payment Method Selection - REFACTORIZADO: Solo 4 opciones con lógica reactiva */}
-            <div className="space-y-3">
-              <Label className="text-base font-semibold">Método de Pago</Label>
-              <div className="grid grid-cols-2 gap-3">
+            {/* Payment Method Selection - COMPACTO */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Método de Pago</Label>
+              <div className="grid grid-cols-4 gap-2">
                 <Button
                   type="button"
                   variant={paymentMethodSelected === "card" ? "default" : "outline"}
-                  className={`h-20 text-lg font-bold ${
+                  className={`h-12 text-xs font-bold flex flex-col items-center justify-center ${
                     paymentMethodSelected === "card" 
                       ? "bg-blue-600 hover:bg-blue-700" 
                       : "hover:border-blue-500"
                   }`}
                   onClick={() => {
                     setPaymentMethodSelected("card");
-                    setPaidAmount(calculateTotalToPay().toFixed(2)); // Incluye depósito
+                    setPaidAmount(calculateTotalToPay().toFixed(2));
                   }}
                 >
-                  💳 TARJETA
+                  <span className="text-lg">💳</span>
+                  <span>Tarjeta</span>
                 </Button>
                 <Button
                   type="button"
                   variant={paymentMethodSelected === "cash" ? "default" : "outline"}
-                  className={`h-20 text-lg font-bold ${
+                  className={`h-12 text-xs font-bold flex flex-col items-center justify-center ${
                     paymentMethodSelected === "cash" 
                       ? "bg-emerald-600 hover:bg-emerald-700" 
                       : "hover:border-emerald-500"
                   }`}
                   onClick={() => {
                     setPaymentMethodSelected("cash");
-                    setPaidAmount(calculateTotalToPay().toFixed(2)); // Incluye depósito
+                    setPaidAmount(calculateTotalToPay().toFixed(2));
                     setCashGiven("");
                   }}
                 >
-                  💵 EFECTIVO
+                  <span className="text-lg">💵</span>
+                  <span>Efectivo</span>
                 </Button>
                 <Button
                   type="button"
                   variant={paymentMethodSelected === "pending" ? "default" : "outline"}
-                  className={`h-20 text-lg font-bold ${
+                  className={`h-12 text-xs font-bold flex flex-col items-center justify-center ${
                     paymentMethodSelected === "pending" 
                       ? "bg-amber-600 hover:bg-amber-700" 
                       : "hover:border-amber-500"
                   }`}
                   onClick={() => {
                     setPaymentMethodSelected("pending");
-                    // No cambiar el paidAmount - dejar que el usuario lo edite
                     setCashGiven("");
                   }}
                 >
-                  ⏳ PENDIENTE
+                  <span className="text-lg">⏳</span>
+                  <span>Pendiente</span>
                 </Button>
                 <Button
                   type="button"
                   variant={paymentMethodSelected === "pago_online" ? "default" : "outline"}
-                  className={`h-20 text-lg font-bold ${
+                  className={`h-12 text-xs font-bold flex flex-col items-center justify-center ${
                     paymentMethodSelected === "pago_online" 
                       ? "bg-purple-600 hover:bg-purple-700" 
                       : "hover:border-purple-500"
                   }`}
                   onClick={() => {
                     setPaymentMethodSelected("pago_online");
-                    setPaidAmount(calculateTotalToPay().toFixed(2)); // Incluye depósito
+                    setPaidAmount(calculateTotalToPay().toFixed(2));
                   }}
                 >
-                  🌐 ONLINE
+                  <span className="text-lg">🌐</span>
+                  <span>Online</span>
                 </Button>
               </div>
             </div>
 
-            {/* IMPORTE A PAGAR - EDITABLE (excepto Pago Online) */}
-            <div className="space-y-2">
-              <Label className="text-base font-semibold">Importe a Pagar (€)</Label>
+            {/* IMPORTE A PAGAR - EDITABLE */}
+            <div className="space-y-1">
+              <Label className="text-sm font-semibold">Importe a Pagar (€)</Label>
               <Input
                 type="number"
                 value={paidAmount}
                 onChange={(e) => setPaidAmount(e.target.value)}
                 placeholder="0.00"
-                className="h-14 text-2xl font-bold text-center"
+                className="h-10 text-lg font-bold text-center"
                 min="0"
                 step="0.01"
                 disabled={paymentMethodSelected === "pago_online"}
               />
-              <p className="text-xs text-slate-500 text-center">
-                {paymentMethodSelected === "pending" && "Pago parcial - El resto quedará pendiente"}
-                {paymentMethodSelected === "pago_online" && "Pago online = Total completo"}
-                {(paymentMethodSelected === "cash" || paymentMethodSelected === "card") && "Puedes cambiar el importe para pagos parciales"}
-              </p>
             </div>
 
             {/* Cash Input and Change Calculation */}
             {paymentMethodSelected === "cash" && (
-              <div className="space-y-4 p-4 rounded-lg bg-slate-50 border-2 border-slate-200">
+              <div className="space-y-2 p-3 rounded-lg bg-slate-50 border border-slate-200">
                 <div>
-                  <Label className="text-base font-semibold">Efectivo Entregado (€)</Label>
+                  <Label className="text-sm font-semibold">Efectivo Entregado (€)</Label>
                   <Input
                     type="number"
                     value={cashGiven}
                     onChange={(e) => setCashGiven(e.target.value)}
                     placeholder="0.00"
-                    className="h-14 text-2xl font-bold text-center mt-2"
+                    className="h-10 text-lg font-bold text-center mt-1"
                     min="0"
                     step="0.01"
                     autoFocus
@@ -3784,75 +3782,50 @@ export default function NewRental() {
 
                 {/* Change Display */}
                 {cashGiven && parseFloat(cashGiven) >= (parseFloat(paidAmount) || 0) && (
-                  <div className="p-4 rounded-lg bg-blue-50 border-2 border-blue-300 animate-fade-in">
-                    <p className="text-sm font-medium text-blue-700">Cambio a Devolver</p>
-                    <p className="text-4xl font-black text-blue-900 mt-1">
+                  <div className="p-3 rounded-lg bg-blue-50 border border-blue-300">
+                    <p className="text-xs font-medium text-blue-700">Cambio a Devolver</p>
+                    <p className="text-2xl font-black text-blue-900">
                       €{(parseFloat(cashGiven) - (parseFloat(paidAmount) || 0)).toFixed(2)}
                     </p>
                   </div>
                 )}
-
-                {/* Warning if insufficient (solo advertencia, NO bloquea) */}
-                {cashGiven && parseFloat(cashGiven) < (parseFloat(paidAmount) || 0) && (
-                  <div className="p-3 rounded-lg bg-amber-50 border border-amber-300 flex items-start gap-2">
-                    <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-amber-700">
-                      El efectivo entregado es menor que el importe a pagar. Se registrará como pago parcial.
-                    </p>
-                  </div>
-                )}
               </div>
             )}
 
-            {/* Card Payment Info */}
+            {/* Info boxes - compact */}
             {paymentMethodSelected === "card" && (
-              <div className="p-4 rounded-lg bg-blue-50 border-2 border-blue-200">
-                <p className="text-sm text-blue-800">
-                  ✅ Procesa el pago con el datáfono antes de continuar.
-                </p>
+              <div className="p-2 rounded-lg bg-blue-50 border border-blue-200">
+                <p className="text-xs text-blue-800">✅ Procesa el pago con el datáfono antes de continuar.</p>
               </div>
             )}
-
-            {/* Pending Payment Info */}
             {paymentMethodSelected === "pending" && (
-              <div className="p-4 rounded-lg bg-amber-50 border-2 border-amber-200">
-                <p className="text-sm text-amber-800">
-                  ⏳ Se guardará con 0€ pagados. El cliente debe pagar más adelante.
-                </p>
+              <div className="p-2 rounded-lg bg-amber-50 border border-amber-200">
+                <p className="text-xs text-amber-800">⏳ Se guardará con 0€ pagados.</p>
               </div>
             )}
-
-            {/* Online Payment Info */}
             {paymentMethodSelected === "pago_online" && (
-              <div className="p-4 rounded-lg bg-purple-50 border-2 border-purple-200">
-                <p className="text-sm text-purple-800">
-                  🌐 Marcado como "Origen Web". No afecta la caja física.
-                </p>
+              <div className="p-2 rounded-lg bg-purple-50 border border-purple-200">
+                <p className="text-xs text-purple-800">🌐 Marcado como "Origen Web".</p>
               </div>
             )}
 
-            {/* VISUALIZACIÓN DE DEUDA EN TIEMPO REAL */}
+            {/* Estado del pago - compact */}
             {(() => {
               const total = calculateTotal();
               const paid = parseFloat(paidAmount) || 0;
               const remaining = Math.max(0, total - paid);
               
               return (
-                <div className={`p-4 rounded-lg border-2 ${
-                  remaining > 0 
-                    ? 'bg-red-50 border-red-300' 
-                    : 'bg-emerald-50 border-emerald-300'
+                <div className={`p-3 rounded-lg border ${
+                  remaining > 0 ? 'bg-red-50 border-red-300' : 'bg-emerald-50 border-emerald-300'
                 }`}>
-                  <p className="text-sm font-medium uppercase tracking-wide mb-1">
-                    {remaining > 0 ? '⚠️ Estado del Pago' : '✅ Estado del Pago'}
-                  </p>
                   {remaining > 0 ? (
-                    <p className="text-3xl font-black text-red-700">
-                      Restante por pagar: €{remaining.toFixed(2)}
+                    <p className="text-lg font-bold text-red-700">
+                      ⚠️ Restante: €{remaining.toFixed(2)}
                     </p>
                   ) : (
-                    <p className="text-3xl font-black text-emerald-700">
-                      Pagado completo ✓
+                    <p className="text-lg font-bold text-emerald-700">
+                      ✅ Pagado completo
                     </p>
                   )}
                 </div>
@@ -3868,24 +3841,25 @@ export default function NewRental() {
                 setCashGiven("");
               }}
               disabled={processingPayment}
+              size="sm"
             >
               Cancelar
             </Button>
             <Button 
               onClick={processPaymentAndCompleteRental}
               disabled={processingPayment}
-              className="bg-emerald-600 hover:bg-emerald-700 min-w-[200px]"
-              size="lg"
+              className="bg-emerald-600 hover:bg-emerald-700"
+              size="sm"
             >
               {processingPayment ? (
                 <>
-                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Procesando...
                 </>
               ) : (
                 <>
-                  <Check className="h-5 w-5 mr-2" />
-                  {paymentMethodSelected === "pending" ? "Guardar Pendiente" : "Cobrar y Guardar"}
+                  <Check className="h-4 w-4 mr-2" />
+                  {paymentMethodSelected === "pending" ? "Guardar" : "Cobrar"}
                 </>
               )}
             </Button>
