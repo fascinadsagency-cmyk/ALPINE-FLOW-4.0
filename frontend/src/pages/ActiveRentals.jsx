@@ -3714,7 +3714,7 @@ export default function ActiveRentals() {
                     const { total } = calculateAddItemsTotalWithPacks();
                     return (
                       <div className="flex justify-between items-center mb-3">
-                        <span className="font-semibold text-slate-700">Total adicional a cobrar:</span>
+                        <span className="font-semibold text-slate-700">Total adicional:</span>
                         <span className="text-2xl font-bold text-emerald-700" data-testid="add-items-total">
                           €{total.toFixed(2)}
                         </span>
@@ -3722,74 +3722,58 @@ export default function ActiveRentals() {
                     );
                   })()}
                   
-                  {/* Opción de cobrar ahora */}
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="charge-now"
-                      checked={addItemsChargeNow}
-                      onChange={(e) => setAddItemsChargeNow(e.target.checked)}
-                      className="h-4 w-4 rounded border-slate-300"
-                      data-testid="add-items-charge-now-checkbox"
-                    />
-                    <Label htmlFor="charge-now" className="cursor-pointer text-sm">
-                      Cobrar ahora (registrar en caja)
-                    </Label>
-                  </div>
-                  
-                  {addItemsChargeNow && (
-                    <div className="mt-3 pt-3 border-t">
-                      <Label className="text-xs text-slate-600">Método de pago</Label>
-                      <div className="flex gap-2 mt-1">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant={addItemsPaymentMethod === "cash" ? "default" : "outline"}
-                          onClick={() => setAddItemsPaymentMethod("cash")}
-                          className={addItemsPaymentMethod === "cash" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
-                          data-testid="add-items-payment-cash"
-                        >
-                          <Banknote className="h-4 w-4 mr-1" /> Efectivo
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant={addItemsPaymentMethod === "card" ? "default" : "outline"}
-                          onClick={() => setAddItemsPaymentMethod("card")}
-                          className={addItemsPaymentMethod === "card" ? "bg-blue-600 hover:bg-blue-700" : ""}
-                          data-testid="add-items-payment-card"
-                        >
-                          <CreditCard className="h-4 w-4 mr-1" /> Tarjeta
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant={addItemsPaymentMethod === "pending" ? "default" : "outline"}
-                          onClick={() => {
-                            setAddItemsPaymentMethod("pending");
-                            setAddItemsChargeNow(false); // Pendiente significa no cobrar ahora
-                          }}
-                          className={addItemsPaymentMethod === "pending" ? "bg-amber-600 hover:bg-amber-700" : ""}
-                          data-testid="add-items-payment-pending"
-                        >
-                          <Clock className="h-4 w-4 mr-1" /> Pendiente
-                        </Button>
-                      </div>
-                      {addItemsPaymentMethod === "pending" && (
-                        <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
-                          <AlertCircle className="h-3 w-3" />
-                          El importe quedará pendiente de cobro hasta la devolución
-                        </p>
-                      )}
+                  {/* Selector de método de pago */}
+                  <div className="mt-2">
+                    <Label className="text-xs text-slate-600 mb-2 block">¿Cómo desea pagar?</Label>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={addItemsPaymentMethod === "cash" && addItemsChargeNow ? "default" : "outline"}
+                        onClick={() => {
+                          setAddItemsPaymentMethod("cash");
+                          setAddItemsChargeNow(true);
+                        }}
+                        className={addItemsPaymentMethod === "cash" && addItemsChargeNow ? "bg-emerald-600 hover:bg-emerald-700 flex-1" : "flex-1"}
+                        data-testid="add-items-payment-cash"
+                      >
+                        <Banknote className="h-4 w-4 mr-1" /> Efectivo
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={addItemsPaymentMethod === "card" && addItemsChargeNow ? "default" : "outline"}
+                        onClick={() => {
+                          setAddItemsPaymentMethod("card");
+                          setAddItemsChargeNow(true);
+                        }}
+                        className={addItemsPaymentMethod === "card" && addItemsChargeNow ? "bg-blue-600 hover:bg-blue-700 flex-1" : "flex-1"}
+                        data-testid="add-items-payment-card"
+                      >
+                        <CreditCard className="h-4 w-4 mr-1" /> Tarjeta
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={!addItemsChargeNow ? "default" : "outline"}
+                        onClick={() => {
+                          setAddItemsPaymentMethod("pending");
+                          setAddItemsChargeNow(false);
+                        }}
+                        className={!addItemsChargeNow ? "bg-amber-600 hover:bg-amber-700 flex-1" : "flex-1"}
+                        data-testid="add-items-payment-pending"
+                      >
+                        <Clock className="h-4 w-4 mr-1" /> Pendiente
+                      </Button>
                     </div>
-                  )}
-                  
-                  {!addItemsChargeNow && (
-                    <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      El importe se sumará al saldo pendiente del alquiler
-                    </p>
-                  )}
+                    
+                    {!addItemsChargeNow && (
+                      <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        El importe se sumará al saldo pendiente y se cobrará en la devolución
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -3802,13 +3786,13 @@ export default function ActiveRentals() {
             <Button
               onClick={confirmAddItems}
               disabled={addItemsSelected.length === 0 || addItemsProcessing}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className={addItemsChargeNow ? "bg-emerald-600 hover:bg-emerald-700" : "bg-amber-600 hover:bg-amber-700"}
               data-testid="add-items-confirm-btn"
             >
               {addItemsProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {addItemsChargeNow 
                 ? `Cobrar €${calculateAddItemsTotalWithPacks().total.toFixed(2)} y Añadir`
-                : 'Añadir Artículos'
+                : `Añadir (€${calculateAddItemsTotalWithPacks().total.toFixed(2)} pendiente)`
               }
             </Button>
           </DialogFooter>
