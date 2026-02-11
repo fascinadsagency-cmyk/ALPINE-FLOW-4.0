@@ -102,15 +102,18 @@ const getMasterCSS = (paperWidth = '80mm') => `
     padding: 8px;
     width: ${paperWidth};
     max-width: ${paperWidth};
-    margin: 0 auto;
+    margin: 0;
     background: #ffffff;
     color: #000000;
   }
   
   .ticket-container {
-    width: 100%;
+    width: ${paperWidth};
     max-width: ${paperWidth};
+    min-width: ${paperWidth};
     background: #ffffff;
+    margin: 0;
+    padding: 0;
   }
   
   /* HEADER - Logo o Nombre de Empresa */
