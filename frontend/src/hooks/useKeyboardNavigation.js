@@ -190,11 +190,17 @@ export function useKeyboardNavigation({
     const activeElement = document.activeElement;
     if (!activeElement) return;
     
-    // ========== DETECTAR DROPDOWNS/LISTBOXES ABIERTOS ==========
+    // ========== DETECTAR CONTEXTOS ESPECIALES ==========
+    // No interferir si hay un modal/dialog abierto
+    const openDialog = document.querySelector('[role="dialog"], [data-state="open"], .focus-trap-container');
+    if (openDialog && openDialog.contains(activeElement)) {
+      // El foco está dentro de un dialog - dejar que el dialog maneje la navegación
+      return;
+    }
+    
     // No interferir si hay un menú desplegable abierto
-    const openListbox = document.querySelector('[role="listbox"], [role="menu"], [data-radix-menu-content], [data-state="open"]');
+    const openListbox = document.querySelector('[role="listbox"], [role="menu"], [data-radix-menu-content]');
     if (openListbox) {
-      // Permitir navegación nativa dentro del dropdown
       return;
     }
     
