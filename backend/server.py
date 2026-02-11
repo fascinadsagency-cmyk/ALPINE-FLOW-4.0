@@ -1724,6 +1724,34 @@ async def get_items(
     items = await db.items.find(query, {"_id": 0}).to_list(max_results)
     return [ItemResponse(**i) for i in items]
 
+@api_router.get("/items/by-barcodes")
+async def get_items_by_barcodes(
+    barcodes: str = Query(..., description="Comma-separated list of barcodes"),
+    current_user: CurrentUser = Depends(get_current_user)
+):
+    """
+    Get items by their barcodes - used to enrich rental items with internal_code
+    """
+    barcode_list = [b.strip() for b in barcodes.split(',') if b.strip()]
+    if not barcode_list:
+        return []
+    
+    query = {
+        **current_user.get_store_filter(),
+        "barcode": {"$in": barcode_list}
+    }
+    
+    items = await db.items.find(query, {
+        "_id": 0,
+        "barcode": 1,
+        "internal_code": 1,
+        "item_type": 1,
+        "brand": 1,
+        "model": 1
+    }).to_list(None)
+    
+    return items
+
 @api_router.get("/items/paginated/list")
 async def get_items_paginated(
     page: int = Query(1, ge=1),
