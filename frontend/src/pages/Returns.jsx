@@ -2294,7 +2294,7 @@ export default function Returns() {
                           <p className="font-medium text-slate-900">{item.brand} {item.model}</p>
                           <p className="text-xs text-slate-500">
                             {item.item_type} • Talla {item.size}
-                            <span className="font-mono ml-2">#{item.internal_code || item.item_type}</span>
+                            <span className="font-mono ml-2">#{item.internal_code || item.barcode}</span>
                           </p>
                         </div>
                         <Badge variant="outline" className="text-amber-600 border-amber-300">
