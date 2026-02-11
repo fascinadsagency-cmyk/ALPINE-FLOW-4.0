@@ -3761,7 +3761,23 @@ export default function ActiveRentals() {
                         >
                           <CreditCard className="h-4 w-4 mr-1" /> Tarjeta
                         </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={addItemsPaymentMethod === "pending" ? "default" : "outline"}
+                          onClick={() => setAddItemsPaymentMethod("pending")}
+                          className={addItemsPaymentMethod === "pending" ? "bg-amber-600 hover:bg-amber-700" : ""}
+                          data-testid="add-items-payment-pending"
+                        >
+                          <Clock className="h-4 w-4 mr-1" /> Pendiente
+                        </Button>
                       </div>
+                      {addItemsPaymentMethod === "pending" && (
+                        <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          El importe quedará pendiente de cobro hasta la devolución
+                        </p>
+                      )}
                     </div>
                   )}
                   
