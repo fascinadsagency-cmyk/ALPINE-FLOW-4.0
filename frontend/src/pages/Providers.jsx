@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,10 @@ import {
   TrendingUp,
   AlertCircle,
   DollarSign,
-  Trophy
+  Trophy,
+  Printer,
+  Calendar,
+  Filter
 } from "lucide-react";
 import { toast } from "sonner";
 
