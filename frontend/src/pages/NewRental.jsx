@@ -3233,46 +3233,123 @@ export default function NewRental() {
           </Card>
       </div>
 
-      {/* FOOTER - Resumen y Botón - SIEMPRE FIJO EN PANTALLA */}
+      {/* FOOTER - Resumen, Pagos y Botón - SIEMPRE FIJO EN PANTALLA */}
       <div className="fixed bottom-0 right-0 bg-white border-t-2 border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.15)] z-50 left-64">
-        <div className="px-6 py-3">
-          <div className="flex items-center justify-between gap-4">
-            {/* Resumen Compacto - Izquierda */}
-            <div className="flex items-center gap-4">
-              {(() => {
-                const rentalAmount = total;
-                const depositAmount = Number(parseFloat(deposit) || 0);
-                const totalToPay = rentalAmount + depositAmount;
-                
-                return (
-                  <>
-                    {/* Total del Alquiler */}
-                    <div>
-                      <p className="text-xs text-slate-500 uppercase font-medium">Total</p>
-                      <p className="text-xl font-bold text-slate-900">€{total.toFixed(2)}</p>
-                    </div>
-                    
-                    {/* Depósito si existe */}
-                    {depositAmount > 0 && (
-                      <>
-                        <div className="h-6 w-px bg-slate-300"></div>
-                        <div>
-                          <p className="text-xs text-amber-600 uppercase font-medium">Depósito</p>
-                          <p className="text-lg font-bold text-amber-600">€{depositAmount.toFixed(2)}</p>
-                        </div>
-                      </>
-                    )}
-                    
-                    {/* Items count */}
-                    <Badge variant="secondary" className="text-sm ml-2">
-                      {items.length} artículo{items.length !== 1 ? 's' : ''}
-                    </Badge>
-                  </>
-                );
-              })()}
+        <div className="px-4 py-2">
+          <div className="flex items-center gap-3">
+            {/* Total */}
+            <div className="flex-shrink-0">
+              <p className="text-[10px] text-slate-500 uppercase font-medium">Total</p>
+              <p className="text-lg font-bold text-slate-900">€{total.toFixed(2)}</p>
             </div>
             
-            {/* Botón de Acción - Derecha */}
+            <div className="h-8 w-px bg-slate-200 flex-shrink-0"></div>
+            
+            {/* Método de Pago */}
+            <div className="flex-shrink-0 w-28">
+              <p className="text-[10px] text-slate-500 uppercase font-medium mb-0.5">Pago</p>
+              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                <SelectTrigger className="h-8 text-xs" data-testid="payment-method-select">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAYMENT_METHODS.map(method => (
+                    <SelectItem key={method.value} value={method.value}>
+                      {method.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Importe Pagado */}
+            <div className="flex-shrink-0 w-24">
+              <p className="text-[10px] text-slate-500 uppercase font-medium mb-0.5">Importe</p>
+              <Input
+                type="number"
+                placeholder={total.toFixed(2)}
+                value={paidAmount}
+                onChange={(e) => setPaidAmount(e.target.value)}
+                className="h-8 text-xs"
+                data-testid="paid-amount-input"
+              />
+            </div>
+            
+            {/* Depósito */}
+            <div className="flex-shrink-0 w-20">
+              <p className="text-[10px] text-slate-500 uppercase font-medium mb-0.5">Depósito</p>
+              <Input
+                type="number"
+                placeholder="0"
+                value={deposit}
+                onChange={(e) => setDeposit(e.target.value)}
+                className="h-8 text-xs"
+                data-testid="deposit-input"
+              />
+            </div>
+            
+            {/* Descuento */}
+            <div className="flex-shrink-0">
+              <p className="text-[10px] text-slate-500 uppercase font-medium mb-0.5">Dto.</p>
+              <div className="flex gap-1">
+                <Select value={discountType} onValueChange={setDiscountType}>
+                  <SelectTrigger className="w-14 h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">-</SelectItem>
+                    <SelectItem value="percent">%</SelectItem>
+                    <SelectItem value="fixed">€</SelectItem>
+                  </SelectContent>
+                </Select>
+                {discountType !== 'none' && (
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={discountValue}
+                    onChange={(e) => setDiscountValue(e.target.value)}
+                    className="h-8 w-16 text-xs"
+                  />
+                )}
+              </div>
+            </div>
+            
+            {/* Resumen dinámico */}
+            {(() => {
+              const depositAmount = Number(parseFloat(deposit) || 0);
+              const discountAmount = discountType === 'percent' 
+                ? total * (parseFloat(discountValue) / 100) 
+                : discountType === 'fixed' 
+                  ? parseFloat(discountValue) || 0 
+                  : 0;
+              const finalTotal = total - discountAmount + depositAmount;
+              
+              return (
+                <div className="flex items-center gap-2 ml-auto">
+                  {depositAmount > 0 && (
+                    <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">
+                      +€{depositAmount.toFixed(0)} dep.
+                    </Badge>
+                  )}
+                  {discountAmount > 0 && (
+                    <Badge variant="outline" className="text-xs text-green-600 border-green-300">
+                      -{discountType === 'percent' ? `${discountValue}%` : `€${discountAmount.toFixed(0)}`}
+                    </Badge>
+                  )}
+                  <Badge variant="secondary" className="text-xs">
+                    {items.length} art.
+                  </Badge>
+                  {(depositAmount > 0 || discountAmount > 0) && (
+                    <div className="text-right">
+                      <p className="text-[10px] text-slate-500 uppercase">A Cobrar</p>
+                      <p className="text-base font-bold text-primary">€{finalTotal.toFixed(2)}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+            
+            {/* Botón de Acción */}
             <Button
               ref={submitRef}
               size="lg"
@@ -3290,15 +3367,15 @@ export default function NewRental() {
                   return;
                 }
               }}
-              className="h-12 px-8 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+              className="h-10 px-6 text-sm font-semibold shadow-lg hover:shadow-xl transition-all flex-shrink-0"
               data-testid="complete-rental-btn"
             >
               {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : (
-                <Check className="h-5 w-5 mr-2" />
+                <Check className="h-4 w-4 mr-2" />
               )}
-              Completar Alquiler
+              Completar
             </Button>
           </div>
         </div>
