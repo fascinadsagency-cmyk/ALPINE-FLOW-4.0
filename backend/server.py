@@ -7972,26 +7972,43 @@ class FAQCreate(BaseModel):
 
 @api_router.get("/settings")
 async def get_settings(current_user: CurrentUser = Depends(get_current_user)):
-    """Get business settings from database"""
+    """Get business settings from database, including store-level hardware settings"""
     settings = await db.settings.find_one({"type": "business"}, {"_id": 0})
     
-    if not settings:
-        # Return defaults
-        return {
-            "company_logo": None,
-            "ticket_header": "",
-            "ticket_footer": "",
-            "ticket_terms": "",
-            "show_dni_on_ticket": True,
-            "show_vat_on_ticket": False,
-            "default_vat": 21.0,
-            "vat_included_in_prices": True,
-            "language": "es",
-            "dark_mode": False,
-            "auto_print": False
-        }
+    # Base defaults
+    result = {
+        "company_logo": None,
+        "ticket_header": "",
+        "ticket_footer": "",
+        "ticket_terms": "",
+        "show_dni_on_ticket": True,
+        "show_vat_on_ticket": False,
+        "default_vat": 21.0,
+        "vat_included_in_prices": True,
+        "language": "es",
+        "dark_mode": False,
+        "auto_print": False,
+        "auto_print_ticket": False,  # Hardware default
+        "quick_scan_mode": False      # Hardware default
+    }
     
-    return settings
+    # Override with saved settings if exist
+    if settings:
+        result.update({k: v for k, v in settings.items() if k != "type"})
+    
+    # Get store-level hardware settings (auto_print_ticket, quick_scan_mode)
+    store_id = current_user.get("store_id")
+    if store_id:
+        store = await db.stores.find_one({"store_id": store_id}, {"settings": 1})
+        if store and store.get("settings"):
+            store_settings = store["settings"]
+            # Only override if the value exists in store settings
+            if "auto_print_ticket" in store_settings:
+                result["auto_print_ticket"] = store_settings["auto_print_ticket"]
+            if "quick_scan_mode" in store_settings:
+                result["quick_scan_mode"] = store_settings["quick_scan_mode"]
+    
+    return result
 
 @api_router.post("/settings")
 async def save_settings(settings: BusinessSettings, current_user: CurrentUser = Depends(get_current_user)):
