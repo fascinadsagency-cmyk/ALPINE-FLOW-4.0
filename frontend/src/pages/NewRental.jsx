@@ -2152,14 +2152,21 @@ export default function NewRental() {
   const hasDiscount = total < subtotal;
 
   return (
-    <div className="p-6 lg:p-8" data-testid="new-rental-page">
-      <h1 className="text-3xl font-bold text-slate-900 mb-6" style={{ fontFamily: 'Plus Jakarta Sans' }}>
-        Nuevo Alquiler
-      </h1>
+    <div className="min-h-screen bg-slate-50 pb-40" data-testid="new-rental-page">
+      {/* Header */}
+      <div className="bg-white border-b border-slate-200 px-6 py-4">
+        <div className="max-w-[1000px] mx-auto">
+          <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+            Nuevo Alquiler
+          </h1>
+        </div>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Panel - Customer & Dates */}
-        <div className="lg:col-span-4 space-y-4">
+      {/* Main Content - Vertical Stack */}
+      <div className="max-w-[1000px] mx-auto px-6 py-6 space-y-6">
+        
+        {/* FILA 1: Selección de Cliente */}
+        <section>
           {/* Customer Card */}
           <Card className="border-slate-200">
             <CardHeader className="pb-3">
