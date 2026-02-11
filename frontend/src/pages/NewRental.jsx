@@ -2484,9 +2484,8 @@ export default function NewRental() {
           </Card>
 
           {/* FILA 2: Duración del Alquiler */}
-          <Card className="border-slate-200 border-primary/50 flex-shrink-0">
           {/* Smart Dates Card */}
-          <Card className="border-slate-200 border-primary/50">
+          <Card className="border-slate-200 border-primary/50 flex-shrink-0">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-primary" tabIndex={-1} aria-hidden="true" />
