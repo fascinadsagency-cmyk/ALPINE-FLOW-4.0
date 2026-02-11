@@ -2673,7 +2673,21 @@ export default function NewRental() {
                   ? '📡 Escáner HID detectado - Escanea para añadir artículos automáticamente' 
                   : 'Tab: siguiente campo | Escanea el código o pulsa F3 para buscar'}
               </p>
+            </CardContent>
+          </Card>
+        </section>
 
+        {/* FILA 4: Lista de Artículos (Carrito) */}
+        <section>
+          <Card className="border-slate-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Package className="h-5 w-5 text-slate-500" />
+                Artículos Seleccionados
+                {items.length > 0 && <Badge className="ml-2">{items.length}</Badge>}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
               {/* LISTA DE ARTÍCULOS - Altura expandida para mostrar más items */}
               <div className="min-h-[200px] max-h-[580px] overflow-y-auto">
                 {items.length === 0 ? (
