@@ -3817,6 +3817,20 @@ async def get_rental_by_barcode(barcode: str, current_user: CurrentUser = Depend
     )
     if not rental:
         raise HTTPException(status_code=404, detail="No active rental found for this item")
+    
+    # Enrich items with internal_code from items collection
+    barcodes = [item.get("barcode") for item in rental.get("items", []) if item.get("barcode")]
+    if barcodes:
+        items_cursor = await db.items.find(
+            {**current_user.get_store_filter(), "barcode": {"$in": barcodes}},
+            {"_id": 0, "barcode": 1, "internal_code": 1}
+        ).to_list(1000)
+        items_map = {item["barcode"]: item.get("internal_code", "") for item in items_cursor}
+        
+        for item in rental.get("items", []):
+            if item.get("barcode") and item["barcode"] in items_map:
+                item["internal_code"] = items_map[item["barcode"]]
+    
     return RentalResponse(**rental)
 
 @api_router.get("/rentals/pending/returns")
