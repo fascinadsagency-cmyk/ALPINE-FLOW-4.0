@@ -2203,7 +2203,7 @@ export default function NewRental() {
                       }}
                       onFocus={() => searchTerm.length >= 2 && setShowSuggestions(true)}
                       tabIndex={2}
-                      className="h-11 pr-10"
+                      className="h-9 pr-10 text-sm"
                       data-testid="customer-search-input"
                       autoFocus
                       disabled={!!customer}
@@ -2227,7 +2227,7 @@ export default function NewRental() {
                     <Button 
                       onClick={searchCustomer} 
                       disabled={searchLoading}
-                      className="h-11 px-4"
+                      className="h-9 px-3"
                       data-testid="customer-search-btn"
                       tabIndex={-1}
                     >
