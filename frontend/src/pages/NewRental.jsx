@@ -2161,11 +2161,98 @@ export default function NewRental() {
 
   return (
     <div className="h-screen flex flex-col bg-slate-50 overflow-hidden" data-testid="new-rental-page">
-      {/* Header - Compacto */}
-      <div className="bg-white border-b border-slate-200 px-6 py-3 flex-shrink-0">
-        <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans' }}>
-          Nuevo Alquiler
-        </h1>
+      {/* Header con Tabs de Tickets */}
+      <div className="bg-white border-b border-slate-200 flex-shrink-0">
+        {/* Título */}
+        <div className="px-6 py-2 border-b border-slate-100">
+          <h1 className="text-xl font-bold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+            Nuevo Alquiler
+          </h1>
+        </div>
+        
+        {/* Barra de Pestañas de Tickets */}
+        <div className="px-4 py-2 flex items-center gap-1 overflow-x-auto" data-testid="ticket-tabs">
+          {tickets.map((ticket, index) => {
+            const isActive = ticket.id === activeTicketId;
+            const displayName = getTicketDisplayName(ticket, index);
+            const hasItems = ticket.data.items.length > 0;
+            const hasCustomer = ticket.data.customer !== null;
+            
+            return (
+              <div
+                key={ticket.id}
+                className={`
+                  group flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer
+                  transition-all duration-150 min-w-0 max-w-[180px]
+                  ${isActive 
+                    ? 'bg-primary text-white shadow-md' 
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }
+                `}
+                onClick={() => switchToTicket(ticket.id)}
+                data-testid={`ticket-tab-${index}`}
+              >
+                {/* Indicador de contenido */}
+                {(hasItems || hasCustomer) && !isActive && (
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
+                )}
+                
+                {/* Nombre del ticket */}
+                <span className={`text-sm font-medium truncate ${isActive ? '' : ''}`}>
+                  {displayName}
+                </span>
+                
+                {/* Badge de artículos */}
+                {hasItems && (
+                  <Badge 
+                    variant={isActive ? "secondary" : "outline"} 
+                    className={`text-xs px-1.5 py-0 h-5 flex-shrink-0 ${isActive ? 'bg-white/20 text-white border-0' : ''}`}
+                  >
+                    {ticket.data.items.length}
+                  </Badge>
+                )}
+                
+                {/* Botón cerrar (solo si hay más de 1 ticket) */}
+                {tickets.length > 1 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      closeTicket(ticket.id);
+                    }}
+                    className={`
+                      ml-1 p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity
+                      ${isActive 
+                        ? 'hover:bg-white/20 text-white' 
+                        : 'hover:bg-slate-300 text-slate-500'
+                      }
+                    `}
+                    data-testid={`close-ticket-${index}`}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            );
+          })}
+          
+          {/* Botón añadir nuevo ticket */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={createTicket}
+            className="h-8 w-8 p-0 rounded-lg hover:bg-slate-200 flex-shrink-0"
+            data-testid="add-ticket-btn"
+          >
+            <Plus className="h-4 w-4 text-slate-600" />
+          </Button>
+          
+          {/* Indicador de tickets abiertos */}
+          {tickets.length > 1 && (
+            <span className="text-xs text-slate-400 ml-2 flex-shrink-0">
+              {tickets.length} tickets abiertos
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Main Content - Todo el ancho */}
