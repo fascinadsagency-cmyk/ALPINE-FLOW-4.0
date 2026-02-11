@@ -3083,13 +3083,10 @@ export default function NewRental() {
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Payment Card */}
-          <Card className="border-slate-200">
-            <CardContent className="pt-6">
-              {/* QUICK ADD: Dynamic buttons from DB */}
+              {/* Payment Inputs Section - DENTRO del carrito */}
+              <div className="mt-6 pt-6 border-t-2 border-slate-200">
+                {/* QUICK ADD: Dynamic buttons from DB */}
               {quickAddItems.length > 0 && (
                 <div className="mb-4 pb-4 border-b border-slate-200">
                   <div className="flex items-center gap-2 mb-2">
