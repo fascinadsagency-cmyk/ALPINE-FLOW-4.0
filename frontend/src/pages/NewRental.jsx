@@ -2581,10 +2581,10 @@ export default function NewRental() {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </section>
 
-        {/* Right Panel - Items */}
-        <div className="lg:col-span-8 space-y-4">
+        {/* FILA 3: Selección de Artículos (Buscador + Categorías) */}
+        <section>
           <Card className="border-slate-200">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
