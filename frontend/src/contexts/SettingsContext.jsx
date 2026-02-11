@@ -179,6 +179,8 @@ const translations = {
     "settings.language.desc": "Select the interface language",
     "settings.language.es": "Español",
     "settings.language.en": "English",
+    "settings.language.ca": "Català",
+    "settings.language.fr": "Français",
     
     // Ticket Design section
     "settings.ticketDesign": "Ticket Design",
