@@ -724,25 +724,34 @@ export default function ActiveRentals() {
   };
 
   // Calculate time delta when days change in change modal
-  const handleChangeDateAdjustment = (newEndDateStr) => {
+  const handleChangeDateAdjustment = (newEndDateStr, discountDays = changeDiscountDays) => {
     if (!changeRental || !newEndDateStr) return;
     
     setChangeNewEndDate(newEndDateStr);
     
-    // Calculate new total days from original start date to new end date
+    // Calculate new total days from original start date to new end date (Días Físicos)
     const startDate = new Date(changeRental.start_date);
     startDate.setHours(0, 0, 0, 0);
     const newEnd = new Date(newEndDateStr);
     newEnd.setHours(0, 0, 0, 0);
     const msPerDay = 24 * 60 * 60 * 1000;
     
-    const calculatedNewDays = Math.ceil((newEnd - startDate) / msPerDay) + 1;
-    const daysDiff = calculatedNewDays - changeOriginalDays;
+    const physicalDays = Math.ceil((newEnd - startDate) / msPerDay) + 1;
+    
+    // Días a Cobrar = Días Físicos - Días a descontar
+    const chargableDays = Math.max(1, physicalDays - discountDays);
+    
+    // Calculate price difference based on chargable days vs original days
+    const daysDiff = chargableDays - changeOriginalDays;
     const pricePerDay = changeRental.total_amount / changeOriginalDays;
     const newDateDelta = daysDiff * pricePerDay;
     
-    setChangeNewTotalDays(calculatedNewDays);
+    // Calculate refund amount from discount days (if already paid)
+    const refundFromDiscount = discountDays * pricePerDay;
+    
+    setChangeNewTotalDays(physicalDays);
     setChangeDateDelta(newDateDelta);
+    setChangeRefundAmount(refundFromDiscount);
     
     // Update days remaining
     const today = new Date();
@@ -752,6 +761,17 @@ export default function ActiveRentals() {
     
     // Recalculate total delta
     recalculateChangeTotalDelta(newDateDelta, changeMaterialDelta);
+  };
+
+  // Handle change of discount days
+  const handleChangeDiscountDays = (days) => {
+    const validDays = Math.max(0, Math.min(days, changeNewTotalDays - 1));
+    setChangeDiscountDays(validDays);
+    
+    // Recalculate with new discount days
+    if (changeNewEndDate) {
+      handleChangeDateAdjustment(changeNewEndDate, validDays);
+    }
   };
 
   // Recalculate total delta
