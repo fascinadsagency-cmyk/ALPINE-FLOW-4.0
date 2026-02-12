@@ -56,14 +56,14 @@ export default function Layout() {
     navItems.push({ 
       to: "/equipo", 
       icon: Users, 
-      label: "Gestión de Equipo", 
+      labelKey: "nav.teamManagement",
       adminOnly: true 
     });
   }
 
   // Add store management for SUPER_ADMIN only
   if (user?.role === "super_admin") {
-    navItems.push({ to: "/tiendas", icon: Building2, label: "🏪 Gestión de Tiendas", superAdmin: true });
+    navItems.push({ to: "/tiendas", icon: Building2, labelKey: "nav.storeManagement", superAdmin: true });
   }
 
   // Filter nav items based on role
@@ -85,13 +85,13 @@ export default function Layout() {
 
   // Account items - for all authenticated users
   const accountItems = [
-    { to: "/mi-cuenta", icon: UserCircle, label: "Mi Cuenta", isAccount: true }
+    { to: "/mi-cuenta", icon: UserCircle, labelKey: "nav.myAccount", isAccount: true }
   ];
 
   // Support items - always at the end
   const supportItems = [
-    { to: "/ayuda", icon: HelpCircle, label: "Ayuda", isSupport: true },
-    { to: "/soporte", icon: Headphones, label: "Soporte", isSupport: true },
+    { to: "/ayuda", icon: HelpCircle, labelKey: "nav.help", isSupport: true },
+    { to: "/soporte", icon: Headphones, labelKey: "nav.support", isSupport: true },
   ];
 
   return (
