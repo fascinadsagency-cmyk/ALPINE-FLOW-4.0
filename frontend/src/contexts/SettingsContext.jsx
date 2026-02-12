@@ -544,6 +544,11 @@ const translations = {
     "settings.printer.autoPrint.desc": "Ouvre automatiquement la boîte de dialogue d'impression lors de la confirmation d'un paiement",
     "settings.printer.doubleCopy": "Imprimer Double Copie",
     "settings.printer.doubleCopy.desc": "Imprime deux tickets à la suite (Magasin et Client)",
+    "settings.printer.setupInstructions.title": "Configuration de l'Imprimante",
+    "settings.printer.setupInstructions.step1": "Assurez-vous que votre imprimante thermique est installée et définie comme Par défaut sur votre ordinateur.",
+    "settings.printer.setupInstructions.step2": "Configurez la taille du papier sur votre imprimante (58mm ou 80mm) selon votre rouleau.",
+    "settings.printer.setupInstructions.step3": "Pour l'impression silencieuse, configurez votre navigateur en 'Mode Kiosque' ou activez 'Imprimer silencieusement'.",
+    "settings.printer.setupInstructions.note": "Le système utilise les pilotes de votre système d'exploitation - aucune configuration IP ni logiciel supplémentaire requis.",
     
     // Common
     "common.cancel": "Annuler",
