@@ -3359,18 +3359,69 @@ export default function ActiveRentals() {
                         </div>
                       </div>
                       
-                      {changeDateDelta !== 0 && (
+                      {/* Días a descontar (no facturables) */}
+                      <div className="mt-4 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-amber-800">Días a descontar (No facturables)</p>
+                            <p className="text-xs text-amber-600">Por cierre de estación, enfermedad, etc.</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={() => handleChangeDiscountDays(changeDiscountDays - 1)}
+                              disabled={changeDiscountDays <= 0}
+                            >
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                            <Input
+                              type="number"
+                              min="0"
+                              max={changeNewTotalDays - 1}
+                              value={changeDiscountDays}
+                              onChange={(e) => handleChangeDiscountDays(parseInt(e.target.value) || 0)}
+                              className="w-16 h-8 text-center font-bold text-lg"
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={() => handleChangeDiscountDays(changeDiscountDays + 1)}
+                              disabled={changeDiscountDays >= changeNewTotalDays - 1}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        {changeDiscountDays > 0 && (
+                          <div className="mt-2 text-xs text-amber-700 flex justify-between">
+                            <span>Días a cobrar: {changeNewTotalDays - changeDiscountDays}</span>
+                            <span className="font-medium">Descuento: €{changeRefundAmount.toFixed(2)}</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {(changeDateDelta !== 0 || changeDiscountDays > 0) && (
                         <div className={`mt-3 p-2 rounded text-center ${
                           changeDateDelta > 0 ? 'bg-orange-100' : 'bg-emerald-100'
                         }`}>
                           <p className="text-xs text-slate-600">
-                            {changeDateDelta > 0 ? 'Suplemento por extensión' : 'Abono por devolución anticipada'}
+                            {changeDateDelta > 0 ? 'Suplemento por extensión' : 
+                             changeDiscountDays > 0 ? 'Descuento por días no disfrutados' :
+                             'Abono por devolución anticipada'}
                           </p>
                           <p className={`text-lg font-bold ${
                             changeDateDelta > 0 ? 'text-orange-700' : 'text-emerald-700'
                           }`}>
                             {changeDateDelta > 0 ? '+' : ''}€{changeDateDelta.toFixed(2)}
                           </p>
+                          {changeDiscountDays > 0 && changeDateDelta < 0 && (
+                            <p className="text-xs text-emerald-600 mt-1">
+                              ⬇ A devolver al cliente
+                            </p>
+                          )}
                         </div>
                       )}
                     </div>
