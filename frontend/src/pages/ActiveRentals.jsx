@@ -4022,6 +4022,124 @@ export default function ActiveRentals() {
         </DialogContent>
       </Dialog>
 
+      {/* ============ QUICK PAYMENT MODAL ============ */}
+      <Dialog open={quickPaymentModalOpen} onOpenChange={closeQuickPaymentModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <CreditCard className="h-6 w-6 text-amber-500" />
+              Cobro Rápido
+            </DialogTitle>
+            {quickPaymentRental && (
+              <DialogDescription className="text-base">
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <Badge className="bg-slate-100 text-slate-800 px-3 py-1">
+                    <User className="h-4 w-4 mr-1" />
+                    {quickPaymentRental.customer_name}
+                  </Badge>
+                  <Badge variant="outline">{quickPaymentRental.customer_dni}</Badge>
+                </div>
+              </DialogDescription>
+            )}
+          </DialogHeader>
+
+          {quickPaymentRental && (
+            <div className="space-y-4 py-4">
+              {/* Resumen del alquiler */}
+              <div className="bg-slate-50 rounded-lg p-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">Total alquiler:</span>
+                  <span className="font-medium">€{quickPaymentRental.total_amount?.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">Ya pagado:</span>
+                  <span className="font-medium text-emerald-600">€{quickPaymentRental.paid_amount?.toFixed(2)}</span>
+                </div>
+                <div className="border-t pt-2 flex justify-between">
+                  <span className="font-semibold text-red-600">Pendiente:</span>
+                  <span className="font-bold text-red-600 text-lg">€{quickPaymentRental.pending_amount?.toFixed(2)}</span>
+                </div>
+              </div>
+
+              {/* Importe a cobrar */}
+              <div className="space-y-2">
+                <Label htmlFor="payment-amount">Importe a cobrar</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">€</span>
+                  <Input
+                    id="payment-amount"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max={quickPaymentRental.pending_amount}
+                    value={quickPaymentAmount}
+                    onChange={(e) => setQuickPaymentAmount(parseFloat(e.target.value) || 0)}
+                    className="pl-8 text-lg font-semibold text-center"
+                    data-testid="quick-payment-amount"
+                  />
+                </div>
+                {quickPaymentAmount < quickPaymentRental.pending_amount && quickPaymentAmount > 0 && (
+                  <p className="text-xs text-amber-600">
+                    Quedará pendiente: €{(quickPaymentRental.pending_amount - quickPaymentAmount).toFixed(2)}
+                  </p>
+                )}
+              </div>
+
+              {/* Método de pago */}
+              <div className="space-y-2">
+                <Label>Método de pago</Label>
+                <div className="flex gap-2">
+                  <Button
+                    variant={quickPaymentMethod === "cash" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setQuickPaymentMethod("cash")}
+                    className={`flex-1 gap-2 ${quickPaymentMethod === "cash" ? "bg-emerald-600 hover:bg-emerald-700" : ""}`}
+                    data-testid="quick-payment-cash"
+                  >
+                    <Banknote className="h-4 w-4" />
+                    Efectivo
+                  </Button>
+                  <Button
+                    variant={quickPaymentMethod === "card" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setQuickPaymentMethod("card")}
+                    className={`flex-1 gap-2 ${quickPaymentMethod === "card" ? "bg-blue-600 hover:bg-blue-700" : ""}`}
+                    data-testid="quick-payment-card"
+                  >
+                    <CreditCard className="h-4 w-4" />
+                    Tarjeta
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={closeQuickPaymentModal}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={processQuickPayment}
+              disabled={quickPaymentProcessing || quickPaymentAmount <= 0}
+              className="bg-amber-500 hover:bg-amber-600 min-w-[140px]"
+              data-testid="quick-payment-confirm"
+            >
+              {quickPaymentProcessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Procesando...
+                </>
+              ) : (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  Cobrar €{quickPaymentAmount.toFixed(2)}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
