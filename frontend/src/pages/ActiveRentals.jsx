@@ -636,6 +636,78 @@ export default function ActiveRentals() {
     }
   };
 
+  // ============ QUICK PAYMENT FUNCTIONS ============
+  
+  const openQuickPaymentModal = (rental) => {
+    setQuickPaymentRental(rental);
+    setQuickPaymentAmount(rental.pending_amount || 0);
+    setQuickPaymentMethod("cash");
+    setQuickPaymentModalOpen(true);
+  };
+
+  const closeQuickPaymentModal = () => {
+    setQuickPaymentModalOpen(false);
+    setQuickPaymentRental(null);
+    setQuickPaymentAmount(0);
+  };
+
+  const processQuickPayment = async () => {
+    if (!quickPaymentRental || quickPaymentAmount <= 0) {
+      toast.error("Importe inválido");
+      return;
+    }
+
+    setQuickPaymentProcessing(true);
+    try {
+      // Call the API to register the payment
+      const response = await axios.post(
+        `${API}/rentals/${quickPaymentRental.id}/quick-payment`,
+        {
+          amount: quickPaymentAmount,
+          payment_method: quickPaymentMethod
+        },
+        {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        }
+      );
+
+      // Update local state to reflect the payment instantly
+      const updatedRentals = rentals.map(r => {
+        if (r.id === quickPaymentRental.id) {
+          return {
+            ...r,
+            paid_amount: (r.paid_amount || 0) + quickPaymentAmount,
+            pending_amount: Math.max(0, (r.pending_amount || 0) - quickPaymentAmount),
+            payment_method: quickPaymentMethod // Update to actual payment method used
+          };
+        }
+        return r;
+      });
+      
+      setRentals(updatedRentals);
+      setFilteredRentals(updatedRentals.filter(r => {
+        if (!searchQuery.trim()) return true;
+        const query = searchQuery.toLowerCase();
+        return r.customer_name?.toLowerCase().includes(query) ||
+               r.customer_dni?.toLowerCase().includes(query) ||
+               r.items?.some(i => 
+                 i.internal_code?.toLowerCase().includes(query) ||
+                 i.barcode?.toLowerCase().includes(query)
+               );
+      }));
+
+      toast.success(`✅ Pago de €${quickPaymentAmount.toFixed(2)} registrado correctamente`);
+      closeQuickPaymentModal();
+      
+    } catch (error) {
+      console.error("[QuickPayment] Error:", error);
+      const errorMsg = error.response?.data?.detail || "Error al procesar el pago";
+      toast.error(errorMsg);
+    } finally {
+      setQuickPaymentProcessing(false);
+    }
+  };
+
   // ============ GESTIÓN DE CAMBIOS FUNCTIONS (Idéntico a Devoluciones) ============
   
   // Función para obtener el código interno de un item por su barcode
