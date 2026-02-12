@@ -918,8 +918,9 @@ export default function ActiveRentals() {
 
     const itemsToSwap = changeItems.filter(i => i.isSwapping && i.swapNewItem);
     const hasDateChange = changeAdjustDate && changeDateDelta !== 0;
+    const hasDiscountDays = changeDiscountDays > 0;
 
-    if (itemsToSwap.length === 0 && !hasDateChange) {
+    if (itemsToSwap.length === 0 && !hasDateChange && !hasDiscountDays) {
       toast.error("No hay cambios que procesar");
       return;
     }
@@ -939,14 +940,21 @@ export default function ActiveRentals() {
         });
       }
 
-      // Process date adjustment if active and has delta
-      if (hasDateChange) {
+      // Process date adjustment if active and has delta OR has discount days
+      if (hasDateChange || hasDiscountDays) {
+        const chargableDays = changeNewTotalDays - changeDiscountDays;
+        const newTotal = (changeRental.total_amount / changeOriginalDays) * chargableDays;
+        const differenceAmount = newTotal - changeRental.total_amount;
+        
         await axios.patch(`${API}/rentals/${changeRental.id}/modify-duration`, {
           new_days: changeNewTotalDays,
           new_end_date: changeNewEndDate,
-          new_total: changeRental.total_amount + changeDateDelta,
+          new_total: newTotal,
           payment_method: changePaymentMethod,
-          difference_amount: changeDateDelta
+          difference_amount: differenceAmount,
+          discount_days: changeDiscountDays,
+          refund_amount: changeRefundAmount,
+          chargable_days: chargableDays
         }, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
@@ -955,8 +963,13 @@ export default function ActiveRentals() {
       // Success
       setChangeComplete(true);
       
-      if (changeTotalDelta !== 0) {
-        toast.success(`✅ Cambios completados. ${changeTotalDelta > 0 ? 'Total cobrado' : 'Total abonado'}: €${Math.abs(changeTotalDelta).toFixed(2)}`);
+      const totalDeltaWithDiscount = changeTotalDelta - changeRefundAmount;
+      if (totalDeltaWithDiscount !== 0 || changeRefundAmount > 0) {
+        if (changeRefundAmount > 0) {
+          toast.success(`✅ Cambios completados. A devolver al cliente: €${changeRefundAmount.toFixed(2)}`);
+        } else if (totalDeltaWithDiscount !== 0) {
+          toast.success(`✅ Cambios completados. ${totalDeltaWithDiscount > 0 ? 'Total cobrado' : 'Total abonado'}: €${Math.abs(totalDeltaWithDiscount).toFixed(2)}`);
+        }
       } else {
         toast.success("✅ Cambios completados sin diferencia económica");
       }
