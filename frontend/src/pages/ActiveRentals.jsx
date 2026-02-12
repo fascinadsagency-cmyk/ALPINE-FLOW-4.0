@@ -1968,9 +1968,15 @@ export default function ActiveRentals() {
                   darkMode 
                     ? 'bg-[#1a1a1a] border-[#333] text-white focus:border-cyan-500 focus:bg-[#1e1e1e] placeholder:text-slate-500' 
                     : 'bg-slate-50 border-slate-200 focus:border-blue-400 focus:bg-white'
-                }`}
+                } ${globalScannerActive ? 'ring-2 ring-green-400' : ''}`}
                 data-testid="smart-search-input"
               />
+              {globalScannerActive && (
+                <div className="absolute -top-1 right-2 flex items-center gap-1.5 bg-green-500 text-white px-2 py-0.5 rounded-full text-xs font-medium">
+                  <Scan className="h-3 w-3 animate-pulse" />
+                  Escáner Activo
+                </div>
+              )}
               {searchQuery && (
                 <Button
                   variant="ghost"
