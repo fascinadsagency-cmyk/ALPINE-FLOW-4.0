@@ -2966,7 +2966,7 @@ async def complete_item_maintenance(item_id: str, current_user: CurrentUser = De
         "days_used": 0,  # CRITICAL: Reset usage counter to 0
         "status": "available",  # Set status to available
         "last_maintenance_date": datetime.now(timezone.utc).isoformat(),
-        "last_maintenance_by": current_user.get("username", "system")
+        "last_maintenance_by": current_user.username
     }
     
     result = await db.items.update_one({**current_user.get_store_filter(), "id": item_id}, {"$set": update_doc})
@@ -4918,8 +4918,8 @@ async def update_rental_payment_method(
             "concept": f"Corrección método de pago (Alquiler #{rental_id[:8]}) - De {PAYMENT_METHOD_LABELS.get(old_method, old_method)} a {PAYMENT_METHOD_LABELS.get(new_method, new_method)}",
             "reference_id": rental_id,  # Use reference_id instead of rental_id
             "notes": f"Cambio de método de pago: {old_method} → {new_method}",  # Required field
-            "created_by": current_user.get("username", "system"),  # Required field
-            "user": current_user.get("username", "system"),
+            "created_by": current_user.username,  # Required field
+            "user": current_user.username,
             "created_at": datetime.now(timezone.utc).isoformat()
         })
         
@@ -4936,8 +4936,8 @@ async def update_rental_payment_method(
             "concept": f"Corrección método de pago (Alquiler #{rental_id[:8]}) - De {PAYMENT_METHOD_LABELS.get(old_method, old_method)} a {PAYMENT_METHOD_LABELS.get(new_method, new_method)}",
             "reference_id": rental_id,  # Use reference_id instead of rental_id
             "notes": f"Cambio de método de pago: {old_method} → {new_method}",  # Required field
-            "created_by": current_user.get("username", "system"),  # Required field
-            "user": current_user.get("username", "system"),
+            "created_by": current_user.username,  # Required field
+            "user": current_user.username,
             "created_at": datetime.now(timezone.utc).isoformat()
         })
     
@@ -4958,8 +4958,8 @@ async def update_rental_payment_method(
             "concept": f"Corrección: Alquiler #{rental_id[:8]} marcado como {PAYMENT_METHOD_LABELS.get(new_method, new_method)} - {customer_name}",
             "reference_id": rental_id,  # Use reference_id instead of rental_id
             "notes": f"Cambio de método de pago: {old_method} → {new_method}",  # Required field
-            "created_by": current_user.get("username", "system"),  # Required field
-            "user": current_user.get("username", "system"),
+            "created_by": current_user.username,  # Required field
+            "user": current_user.username,
             "created_at": datetime.now(timezone.utc).isoformat()
         })
         
@@ -4986,8 +4986,8 @@ async def update_rental_payment_method(
             "concept": f"Cobro de {PAYMENT_METHOD_LABELS.get(old_method, old_method)} - Alquiler #{rental_id[:8]} - {customer_name}",
             "reference_id": rental_id,  # Use reference_id instead of rental_id
             "notes": f"Cambio de método de pago: {old_method} → {new_method}",  # Required field
-            "created_by": current_user.get("username", "system"),  # Required field
-            "user": current_user.get("username", "system"),
+            "created_by": current_user.username,  # Required field
+            "user": current_user.username,
             "created_at": datetime.now(timezone.utc).isoformat()
         })
         
@@ -8063,7 +8063,7 @@ async def save_settings(settings: BusinessSettings, current_user: CurrentUser = 
     settings_dict = settings.dict()
     settings_dict["type"] = "business"
     settings_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
-    settings_dict["updated_by"] = current_user.get("username", "system")
+    settings_dict["updated_by"] = current_user.username
     
     # Log logo size for debugging
     if settings.company_logo:
