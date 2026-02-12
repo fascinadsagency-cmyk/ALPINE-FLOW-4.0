@@ -2000,6 +2000,14 @@ export default function ActiveRentals() {
                           <span className={`font-medium ${rental.pending_amount > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
                             €{rental.pending_amount.toFixed(2)}
                           </span>
+                          {/* Mostrar crédito pendiente si existe */}
+                          {rental.pending_refund > 0 && (
+                            <div className="mt-1">
+                              <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-xs">
+                                💳 -€{rental.pending_refund.toFixed(2)}
+                              </Badge>
+                            </div>
+                          )}
                         </TableCell>
                         
                         {/* PAYMENT METHOD with Edit Button */}
