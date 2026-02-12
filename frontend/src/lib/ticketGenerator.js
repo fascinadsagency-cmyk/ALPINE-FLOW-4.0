@@ -1118,36 +1118,164 @@ export function generateTicketHTML(options) {
 }
 
 // ============================================================================
-// FUNCIÓN PARA IMPRIMIR TICKET
+// FUNCIÓN PARA IMPRIMIR TICKET - SISTEMA AGNÓSTICO
 // ============================================================================
+// Usa los drivers del sistema operativo a través del navegador.
+// NO requiere configuración de IP ni WebUSB.
+// Funciona con cualquier impresora marcada como "Predeterminada" en el sistema.
+// ============================================================================
+
 export function printTicket(options) {
   const html = generateTicketHTML(options);
-  const printWindow = window.open('', '_blank', 'width=400,height=700');
+  const settings = options.settings || getStoredSettings();
+  
+  // Método 1: IFRAME OCULTO (Preferido - Sin ventanas popup)
+  // Crea un iframe invisible, carga el contenido, imprime y se limpia
+  return printViaIframe(html, settings);
+}
+
+/**
+ * Imprime usando un iframe oculto (método más limpio)
+ * - No abre ventanas popup
+ * - Auto-imprime al cargar
+ * - Se limpia automáticamente después
+ */
+function printViaIframe(html, settings) {
+  return new Promise((resolve) => {
+    // Crear iframe oculto
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;width:0;height:0;border:none;left:-9999px;top:-9999px;';
+    iframe.id = 'print-frame-' + Date.now();
+    
+    // Función de limpieza
+    const cleanup = () => {
+      setTimeout(() => {
+        if (iframe && iframe.parentNode) {
+          iframe.parentNode.removeChild(iframe);
+        }
+      }, 1000); // Pequeño delay para asegurar que la impresión terminó
+    };
+    
+    // Cuando el iframe carga el contenido
+    iframe.onload = () => {
+      try {
+        const iframeWindow = iframe.contentWindow;
+        
+        // Esperar a que el contenido esté completamente renderizado
+        setTimeout(() => {
+          try {
+            // Llamar a window.print() del iframe
+            iframeWindow.print();
+            
+            // Si hay doble copia, imprimir de nuevo después de un delay
+            if (settings.printDoubleCopy) {
+              setTimeout(() => {
+                try {
+                  iframeWindow.print();
+                } catch (e) {
+                  console.warn('[Print] Error en segunda copia:', e);
+                }
+                cleanup();
+                resolve(true);
+              }, 2000);
+            } else {
+              cleanup();
+              resolve(true);
+            }
+          } catch (printError) {
+            console.error('[Print] Error al imprimir:', printError);
+            // Fallback: Abrir en nueva ventana
+            printViaPopup(html, settings);
+            cleanup();
+            resolve(true);
+          }
+        }, 100); // 100ms para renderizar
+        
+      } catch (e) {
+        console.error('[Print] Error en iframe:', e);
+        cleanup();
+        resolve(false);
+      }
+    };
+    
+    // Añadir iframe al DOM
+    document.body.appendChild(iframe);
+    
+    // Escribir contenido en el iframe (sin botón de imprimir)
+    const printHTML = html.replace(
+      /<button class="print-btn"[^>]*>.*?<\/button>/g, 
+      '' // Eliminar botón de imprimir (no necesario en modo automático)
+    );
+    
+    try {
+      iframe.contentDocument.open();
+      iframe.contentDocument.write(printHTML);
+      iframe.contentDocument.close();
+    } catch (e) {
+      console.error('[Print] Error escribiendo en iframe:', e);
+      // Fallback a método popup
+      printViaPopup(html, settings);
+      cleanup();
+      resolve(true);
+    }
+  });
+}
+
+/**
+ * Imprime usando ventana popup (fallback)
+ * - Se usa si el iframe falla
+ * - El usuario ve la ventana brevemente
+ */
+function printViaPopup(html, settings) {
+  const printWindow = window.open('', '_blank', 'width=400,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no');
   
   if (!printWindow) {
-    console.error('No se pudo abrir la ventana de impresión. Por favor, permite los popups.');
+    console.error('[Print] No se pudo abrir ventana. Permite popups para esta página.');
+    alert('No se pudo abrir la ventana de impresión. Por favor, permite los popups para esta página.');
     return false;
   }
   
-  printWindow.document.write(html);
+  // HTML modificado para auto-imprimir y auto-cerrar
+  const autoHTML = html.replace(
+    '</head>',
+    `<script>
+      window.onload = function() {
+        setTimeout(function() {
+          window.print();
+          setTimeout(function() { window.close(); }, 500);
+        }, 100);
+      };
+    </script></head>`
+  ).replace(
+    /<button class="print-btn"[^>]*>.*?<\/button>/g,
+    '' // Eliminar botón manual
+  );
+  
+  printWindow.document.write(autoHTML);
   printWindow.document.close();
   printWindow.focus();
   
-  // Verificar si debemos imprimir doble copia
-  const settings = options.settings || getStoredSettings();
+  // Doble copia si está configurada
   if (settings.printDoubleCopy) {
-    // Esperar un momento y abrir segunda copia
     setTimeout(() => {
       const secondWindow = window.open('', '_blank', 'width=400,height=700');
       if (secondWindow) {
-        secondWindow.document.write(html);
+        secondWindow.document.write(autoHTML);
         secondWindow.document.close();
         secondWindow.focus();
       }
-    }, 1000);
+    }, 2500);
   }
   
   return true;
+}
+
+/**
+ * Imprime directamente sin preguntar (para modo kiosco)
+ * Requiere que el usuario haya configurado su navegador en modo kiosco
+ */
+export function printTicketSilent(options) {
+  return printTicket(options);
 }
 
 // ============================================================================
