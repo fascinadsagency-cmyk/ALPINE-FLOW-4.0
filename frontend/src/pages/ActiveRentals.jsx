@@ -3449,7 +3449,9 @@ export default function ActiveRentals() {
 
               {/* TOTAL DELTA SUMMARY */}
               <div className={`p-5 rounded-xl border-2 ${
-                changeTotalDelta > 0 
+                changeDiscountDays > 0
+                  ? 'bg-amber-50 border-amber-300'
+                  : changeTotalDelta > 0 
                   ? 'bg-orange-50 border-orange-300' 
                   : changeTotalDelta < 0 
                   ? 'bg-emerald-50 border-emerald-300'
@@ -3458,29 +3460,43 @@ export default function ActiveRentals() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-slate-600">
-                      {changeTotalDelta > 0 ? '⬆️ TOTAL A COBRAR' : 
+                      {changeDiscountDays > 0 ? '💳 CRÉDITO PENDIENTE' :
+                       changeTotalDelta > 0 ? '⬆️ TOTAL A COBRAR' : 
                        changeTotalDelta < 0 ? '⬇️ TOTAL A ABONAR' : 
                        '↔️ SIN DIFERENCIA'}
                     </p>
                     <p className="text-xs text-slate-500 mt-1">
-                      {changeItems.filter(i => i.isSwapping).length > 0 && 
-                        `${changeItems.filter(i => i.isSwapping).length} cambio(s) de material`}
-                      {changeItems.filter(i => i.isSwapping).length > 0 && changeAdjustDate && changeDateDelta !== 0 && ' + '}
-                      {changeAdjustDate && changeDateDelta !== 0 && 
-                        (changeDateDelta > 0 ? 'extensión de fecha' : 'devolución anticipada')}
+                      {changeDiscountDays > 0 
+                        ? 'Se abonará en la devolución final'
+                        : (<>
+                            {changeItems.filter(i => i.isSwapping).length > 0 && 
+                              `${changeItems.filter(i => i.isSwapping).length} cambio(s) de material`}
+                            {changeItems.filter(i => i.isSwapping).length > 0 && changeAdjustDate && changeDateDelta !== 0 && ' + '}
+                            {changeAdjustDate && changeDateDelta !== 0 && 
+                              (changeDateDelta > 0 ? 'extensión de fecha' : 'devolución anticipada')}
+                          </>)
+                      }
                     </p>
                   </div>
                   <p className={`text-3xl font-bold ${
+                    changeDiscountDays > 0 ? 'text-amber-600' :
                     changeTotalDelta > 0 ? 'text-orange-600' : 
                     changeTotalDelta < 0 ? 'text-emerald-600' : 'text-slate-500'
                   }`}>
-                    {changeTotalDelta > 0 ? '+' : changeTotalDelta < 0 ? '-' : ''}€{Math.abs(changeTotalDelta).toFixed(2)}
+                    {changeDiscountDays > 0 ? `-€${changeRefundAmount.toFixed(2)}` :
+                     (changeTotalDelta > 0 ? '+' : changeTotalDelta < 0 ? '-' : '') + '€' + Math.abs(changeTotalDelta).toFixed(2)}
                   </p>
                 </div>
+                {changeDiscountDays > 0 && (
+                  <p className="text-xs text-amber-700 mt-2 bg-amber-100 p-2 rounded">
+                    ℹ️ El cliente tiene €{changeRefundAmount.toFixed(2)} a su favor por {changeDiscountDays} día(s) no disfrutado(s). 
+                    Este crédito se descontará automáticamente en la devolución.
+                  </p>
+                )}
               </div>
 
-              {/* Payment Method */}
-              {changeTotalDelta !== 0 && (
+              {/* Payment Method - Solo mostrar si NO hay días a descontar */}
+              {changeTotalDelta !== 0 && changeDiscountDays === 0 && (
                 <div className="space-y-2">
                   <Label className="shrink-0">Método de {changeTotalDelta > 0 ? 'cobro' : 'abono'}:</Label>
                   
