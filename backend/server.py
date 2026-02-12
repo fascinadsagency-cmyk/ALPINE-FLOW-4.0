@@ -4591,8 +4591,15 @@ class ModifyDurationRequest(BaseModel):
 @api_router.patch("/rentals/{rental_id}/modify-duration")
 async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, current_user: CurrentUser = Depends(get_current_user)):
     """
-    Modify rental duration with mandatory cash register entry.
-    Creates a cash movement for any price difference (income for extensions, refund for reductions).
+    Modify rental duration with support for deferred refunds (days to discount).
+    
+    When discount_days > 0 and defer_refund=True:
+    - The refund is NOT processed immediately
+    - It's stored as pending_refund (credit for the customer)
+    - The credit will be applied during the final return
+    
+    This allows staff to register discounts (e.g., bad weather, illness) without
+    having to process the refund immediately.
     """
     rental = await db.rentals.find_one({**current_user.get_store_filter(), **{"id": rental_id}})
     if not rental:
@@ -4617,18 +4624,42 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
         new_status = rental["status"]
     
     # Calculate financial adjustment
-    # If reducing days: difference is negative (refund to customer)
-    # If extending days: difference is positive (charge customer)
     is_refund = data.difference_amount < 0
+    
+    # ========== DEFERRED REFUND LOGIC (Días a descontar) ==========
+    # If discount_days > 0 and defer_refund is True, store the refund as pending credit
+    # instead of creating an immediate cash movement
+    deferred_refund_amount = 0
+    create_cash_movement = True
+    
+    if data.discount_days and data.discount_days > 0 and data.defer_refund:
+        # Calculate the refund amount from discount days
+        deferred_refund_amount = data.refund_amount or 0
+        
+        # For deferred refunds, we DON'T create a cash movement now
+        # The credit will be applied during final return
+        if deferred_refund_amount > 0:
+            create_cash_movement = False  # Don't create cash movement for deferred refunds
     
     # Update rental fields
     new_pending = data.new_total - rental["paid_amount"]
+    
     update_fields = {
         "days": data.new_days,
         "end_date": new_end_date.isoformat(),
         "total_amount": data.new_total,
         "pending_amount": max(0, new_pending)
     }
+    
+    # Store deferred refund info on the rental for later settlement
+    if deferred_refund_amount > 0:
+        update_fields["pending_refund"] = deferred_refund_amount
+        update_fields["discount_days"] = data.discount_days
+        update_fields["discount_reason"] = f"Ajuste de {data.discount_days} día(s) a descontar"
+        update_fields["discount_date"] = datetime.now(timezone.utc).isoformat()
+        # Store chargeable days for reference
+        if data.chargable_days is not None:
+            update_fields["chargable_days"] = data.chargable_days
     
     # If 0 days (same day return), mark all items as returned and update inventory
     if data.new_days == 0:
@@ -4642,7 +4673,7 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
             item["return_date"] = datetime.now(timezone.utc).isoformat()
             returned_items.append(item)
             
-            # Update item status in inventory - handle both 'id' and 'item_id' fields
+            # Update item status in inventory
             item_id = item.get("id") or item.get("item_id")
             if item_id:
                 await db.items.update_one(
@@ -4656,9 +4687,13 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
         {"$set": update_fields}
     )
     
-    # Create cash movement (MANDATORY for any price change)
+    # Create cash movement ONLY if:
+    # 1. There's a price change AND
+    # 2. We're NOT deferring the refund (or it's an extension/charge)
     cash_movement_id = None
-    if data.difference_amount != 0:
+    operation_number = None
+    
+    if data.difference_amount != 0 and create_cash_movement:
         # Validate active cash session FIRST
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         active_session = await db.cash_sessions.find_one({**current_user.get_store_filter(), **{"date": date, "status": "open"}})
@@ -4671,7 +4706,7 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
         
         customer_name = rental.get("customer_name", "Cliente")
         
-        # Determine movement type: 'income' for charges, 'refund' for returns
+        # Determine movement type
         movement_type = "refund" if is_refund else "income"
         
         # Create appropriate concept
@@ -4684,6 +4719,7 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
         operation_number = await get_next_operation_number()
         cash_doc = {
             "id": cash_movement_id,
+            "store_id": current_user.store_id,
             "operation_number": operation_number,
             "session_id": active_session["id"],
             "movement_type": movement_type,
@@ -4701,15 +4737,20 @@ async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, cu
         await db.cash_movements.insert_one(cash_doc)
     
     updated = await db.rentals.find_one({**current_user.get_store_filter(), **{"id": rental_id}}, {"_id": 0})
+    
     return {
         "rental": RentalResponse(**updated),
-        "operation_number": operation_number if cash_movement_id else None,
+        "operation_number": operation_number,
         "old_days": old_days,
         "new_days": data.new_days,
         "old_total": old_total,
         "new_total": data.new_total,
         "difference": data.difference_amount,
-        "is_refund": is_refund
+        "is_refund": is_refund,
+        # Deferred refund info
+        "deferred_refund": deferred_refund_amount > 0,
+        "pending_refund_amount": deferred_refund_amount,
+        "discount_days": data.discount_days or 0
     }
 
 @api_router.patch("/rentals/{rental_id}/days")
