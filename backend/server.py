@@ -4581,6 +4581,12 @@ class ModifyDurationRequest(BaseModel):
     new_total: float
     payment_method: str
     difference_amount: float
+    # Días a descontar (no facturables) - para descuentos por cierre o enfermedad
+    discount_days: Optional[int] = 0
+    refund_amount: Optional[float] = 0  # Importe a devolver por días descontados
+    chargable_days: Optional[int] = None  # Días a cobrar (días físicos - descuento)
+    # Control de cobro diferido (no cobrar ahora, liquidar en devolución)
+    defer_refund: Optional[bool] = True  # Por defecto, el reembolso se difiere a la devolución
 
 @api_router.patch("/rentals/{rental_id}/modify-duration")
 async def modify_rental_duration(rental_id: str, data: ModifyDurationRequest, current_user: CurrentUser = Depends(get_current_user)):
