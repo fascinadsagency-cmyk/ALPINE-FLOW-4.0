@@ -19,6 +19,11 @@ const translations = {
     "nav.cashRegister": "Caja",
     "nav.integrations": "Integraciones",
     "nav.settings": "Configuración",
+    "nav.teamManagement": "Gestión de Equipo",
+    "nav.storeManagement": "Gestión de Tiendas",
+    "nav.myAccount": "Mi Cuenta",
+    "nav.help": "Ayuda",
+    "nav.support": "Soporte",
     
     // Settings page
     "settings.title": "Configuración",
