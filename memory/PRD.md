@@ -87,4 +87,31 @@ Sistema completo de gestión de alquileres para tiendas de equipos de esquí con
 - Refactorizar NewRental.jsx (archivo muy grande, +3000 líneas)
 - Dividir en componentes más pequeños
 - Bug: Editar email/contraseña del admin desde Gestión de Equipo
-- Verificar: Opción "Pendiente" en alquileres activos
+
+## Funcionalidades Implementadas - Sesión 12/02/2026
+
+### Cobro Rápido en Alquileres Activos (12/02/2026) ✅
+- **Botón COBRAR condicional**: Solo aparece si `pending_amount > 0`
+- **Modal de Cobro Rápido**: 
+  - Pre-carga importe exacto pendiente
+  - Muestra resumen: Total, Ya pagado, Pendiente
+  - Selector método de pago (Efectivo/Tarjeta)
+  - Validación: no permite cobrar más del pendiente
+- **Actualización instantánea**: 
+  - Fila se actualiza sin recargar página
+  - Badge cambia de "Pendiente" (rojo) a método de pago (verde)
+  - Botón COBRAR desaparece cuando pending_amount = 0
+- **data-testid implementados**: quick-pay-btn-{id}, quick-payment-amount, quick-payment-cash, quick-payment-card, quick-payment-confirm
+- **Testing**: 7/7 tests pasados (backend + frontend)
+
+### Días a Descontar con Crédito Diferido (12/02/2026) - BACKEND LISTO
+- **Backend actualizado**: 
+  - `ModifyDurationRequest` acepta `discount_days`, `refund_amount`, `chargable_days`, `defer_refund`
+  - Endpoint `PUT /api/rentals/{id}/modify-duration` actualizado
+  - Lógica de crédito diferido: registra `pending_refund` sin crear movimiento de caja inmediato
+- **Frontend actualizado**:
+  - UI del modal muestra "Crédito pendiente" en amarillo
+  - Mensaje "Se aplicará en la devolución final"
+  - Botón cambia a "Registrar Crédito €X.XX"
+- **Pendiente**: Testing completo del flujo
+
