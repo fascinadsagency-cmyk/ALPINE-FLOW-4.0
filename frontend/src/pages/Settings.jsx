@@ -836,6 +836,37 @@ export default function Settings() {
                       data-testid="print-double-copy-switch"
                     />
                   </div>
+
+                  {/* Instrucciones de Configuración */}
+                  <div className={`p-4 rounded-lg border-2 border-dashed ${darkMode ? 'bg-slate-700/30 border-slate-600' : 'bg-blue-50 border-blue-200'}`}>
+                    <div className="flex items-start gap-3">
+                      <div className={`p-1.5 rounded-full ${darkMode ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
+                        <AlertCircle className={`h-4 w-4 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                      </div>
+                      <div>
+                        <p className={`font-medium text-sm ${darkMode ? 'text-blue-300' : 'text-blue-800'}`}>
+                          {t('settings.printer.setupInstructions.title')}
+                        </p>
+                        <ul className={`mt-2 space-y-1.5 text-xs ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                          <li className="flex items-start gap-2">
+                            <span className="text-green-500 font-bold">1.</span>
+                            <span>{t('settings.printer.setupInstructions.step1')}</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-green-500 font-bold">2.</span>
+                            <span>{t('settings.printer.setupInstructions.step2')}</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-green-500 font-bold">3.</span>
+                            <span>{t('settings.printer.setupInstructions.step3')}</span>
+                          </li>
+                        </ul>
+                        <p className={`mt-3 text-xs italic ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                          {t('settings.printer.setupInstructions.note')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>
