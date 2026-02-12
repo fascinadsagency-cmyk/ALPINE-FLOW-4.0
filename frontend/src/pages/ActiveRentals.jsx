@@ -60,6 +60,7 @@ import {
   Lock,
   Check,
   Plus,
+  Minus,
   Clock
 } from "lucide-react";
 
