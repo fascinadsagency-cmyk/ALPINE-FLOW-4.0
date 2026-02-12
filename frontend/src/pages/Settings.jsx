@@ -33,7 +33,8 @@ import {
   MonitorSmartphone,
   Copy,
   CreditCard,
-  ChevronRight
+  ChevronRight,
+  AlertCircle
 } from "lucide-react";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
