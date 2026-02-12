@@ -394,6 +394,11 @@ const translations = {
     "settings.printer.autoPrint.desc": "Obre el diàleg d'impressió automàticament en confirmar un pagament",
     "settings.printer.doubleCopy": "Imprimir Doble Còpia",
     "settings.printer.doubleCopy.desc": "Imprimeix dos tiquets seguits (Botiga i Client)",
+    "settings.printer.setupInstructions.title": "Configuració d'Impressora",
+    "settings.printer.setupInstructions.step1": "Assegura't que la teva impressora tèrmica està instal·lada i marcada com a Predeterminada al teu ordinador.",
+    "settings.printer.setupInstructions.step2": "Configura la mida del paper a la teva impressora (58mm o 80mm) segons el rotllo que facis servir.",
+    "settings.printer.setupInstructions.step3": "Per impressió sense diàlegs, configura el teu navegador en 'Mode Quiosc' o marca 'Imprimir en silenci'.",
+    "settings.printer.setupInstructions.note": "El sistema utilitza els controladors del teu sistema operatiu - no requereix configuració d'IP ni programari addicional.",
     
     // Common
     "common.cancel": "Cancel·lar",
