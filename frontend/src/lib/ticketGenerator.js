@@ -24,49 +24,55 @@ const getMasterCSS = (paperWidth = '80mm') => `
   /* ========== RESET GLOBAL ========== */
   * { margin: 0; padding: 0; box-sizing: border-box; }
   
-  /* ========== THERMAL PRINTER - REGLA DE ORO ========== */
-  /* Forzar márgenes 0 para que el navegador no añada cabeceras/pies */
+  /* ========== THERMAL PRINTER - SISTEMA AGNÓSTICO ========== */
+  /* Funciona con cualquier impresora térmica (58mm, 80mm, etc.) */
+  /* Sin configuración de IP ni drivers especiales */
+  
   @page { 
     size: auto;
-    margin: 0mm;
+    margin: 0mm !important;
+    padding: 0mm !important;
   }
   
   @media print {
     /* ========== CONFIGURACIÓN CRÍTICA PARA TÉRMICA ========== */
     @page {
       size: auto;
-      margin: 0mm;
+      margin: 0mm !important;
     }
     
     html {
-      width: ${paperWidth} !important;
+      width: 100% !important;
       margin: 0 !important;
       padding: 0 !important;
     }
     
     body {
-      width: ${paperWidth} !important;
-      max-width: ${paperWidth} !important;
-      margin: 0px !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
       padding: 2mm !important;
       background: #ffffff !important;
       color: #000000 !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
       color-adjust: exact !important;
+      overflow: hidden !important;
     }
     
-    /* Ocultar cabeceras y pies de página del navegador */
-    header, footer, .no-print, .print-btn { 
+    /* Ocultar TODO lo que no sea ticket */
+    header, footer, nav, .no-print, .print-btn, 
+    button, [role="button"], .sidebar, .navbar { 
       display: none !important; 
     }
     
-    /* Forzar ancho del contenedor del ticket */
+    /* Forzar ancho del contenedor del ticket - adaptativo */
     .ticket-container {
-      width: ${paperWidth} !important;
-      max-width: ${paperWidth} !important;
+      width: 100% !important;
+      max-width: 100% !important;
       margin: 0 !important;
       padding: 0 !important;
+      overflow: hidden !important;
     }
     
     /* Forzar texto negro en impresión */
@@ -76,11 +82,24 @@ const getMasterCSS = (paperWidth = '80mm') => `
       color: #000000 !important;
     }
     
-    /* Prevenir cortes de página */
+    /* Prevenir cortes de página - TODO en una sola página */
+    html, body {
+      height: auto !important;
+      overflow: hidden !important;
+    }
+    
     .ticket-container, .section, .item-row, .info-row, .block,
     .total-section, .total-row, tr, td, th, table, tbody {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
+    }
+    
+    /* Prevenir página en blanco adicional */
+    body::after {
+      content: "";
+      display: block;
+      height: 0;
+      clear: both;
     }
     
     /* Eliminar fondos de color para térmica monocromo */
@@ -108,12 +127,12 @@ const getMasterCSS = (paperWidth = '80mm') => `
   }
   
   .ticket-container {
-    width: ${paperWidth};
+    width: 100%;
     max-width: ${paperWidth};
-    min-width: ${paperWidth};
     background: #ffffff;
     margin: 0;
     padding: 0;
+    overflow: hidden;
   }
   
   /* HEADER - Logo o Nombre de Empresa */
