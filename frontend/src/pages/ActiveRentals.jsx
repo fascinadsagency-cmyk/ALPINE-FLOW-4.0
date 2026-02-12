@@ -645,7 +645,7 @@ export default function ActiveRentals() {
     onScan: handleGlobalScan,
     inputRef: searchInputRef,
     // Disable scanner when modals are open
-    enabled: !changeModalOpen && !addItemsModalOpen && !quickPaymentModalOpen && !customerModalOpen,
+    enabled: !changeModalOpen && !addItemsModalOpen && !quickPaymentModalOpen && !showCustomerModal,
     minLength: 3,
     maxTimeBetweenKeys: 50,
     scannerDetectionThreshold: 4,
