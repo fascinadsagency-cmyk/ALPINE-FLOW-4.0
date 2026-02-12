@@ -123,6 +123,9 @@ export default function ActiveRentals() {
   const [changeDateDelta, setChangeDateDelta] = useState(0);
   const [changeTotalDelta, setChangeTotalDelta] = useState(0);
   const [changeMaterialDelta, setChangeMaterialDelta] = useState(0);
+  // Días a descontar (no facturables) para descuentos por cierre de estación o enfermedad
+  const [changeDiscountDays, setChangeDiscountDays] = useState(0);
+  const [changeRefundAmount, setChangeRefundAmount] = useState(0); // Importe a devolver por días descontados
 
 
   // ============ ADD ITEMS MODAL STATE ============
