@@ -594,6 +594,64 @@ export default function ActiveRentals() {
   const [newPaymentMethod, setNewPaymentMethod] = useState("");
   const [savingPaymentMethod, setSavingPaymentMethod] = useState(false);
 
+  // ============ GLOBAL BARCODE SCANNER ============
+  // Ref para almacenar la función openChangeModal (evita dependencias circulares)
+  const openChangeModalRef = useRef(null);
+  
+  // Handle global barcode scan - searches for rental by customer DNI or item barcode
+  const handleGlobalScan = useCallback(async (scannedCode) => {
+    console.log('[SCANNER] Global scan detected in ActiveRentals:', scannedCode);
+    
+    // Update search query for visual feedback
+    setSearchQuery(scannedCode);
+    
+    // Search in current rentals by DNI or item barcode
+    const code = scannedCode.toUpperCase().trim();
+    
+    // Filter rentals that match the scanned code
+    const matched = rentals.filter(rental => {
+      // Match by customer DNI
+      if (rental.customer_dni?.toUpperCase().includes(code)) return true;
+      
+      // Match by item barcode or internal code
+      if (rental.items?.some(item => 
+        item.barcode?.toUpperCase().includes(code) ||
+        item.internal_code?.toUpperCase().includes(code)
+      )) return true;
+      
+      return false;
+    });
+    
+    if (matched.length === 1) {
+      // Single match - open the change modal directly
+      toast.success(`Alquiler encontrado: ${matched[0].customer_name}`);
+      if (openChangeModalRef.current) {
+        openChangeModalRef.current(matched[0]);
+      }
+    } else if (matched.length > 1) {
+      // Multiple matches - filter the list
+      setFilteredRentals(matched);
+      toast.info(`${matched.length} alquileres encontrados`);
+    } else {
+      // No matches found
+      toast.error(`No se encontró ningún alquiler con: ${scannedCode}`);
+      // Keep showing all rentals
+      setFilteredRentals(rentals);
+    }
+  }, [rentals]);
+
+  // Configure global scanner listener
+  const { isScanning: globalScannerActive } = useScannerListener({
+    onScan: handleGlobalScan,
+    inputRef: searchInputRef,
+    // Disable scanner when modals are open
+    enabled: !changeModalOpen && !addItemsModalOpen && !quickPaymentModalOpen && !customerModalOpen,
+    minLength: 3,
+    maxTimeBetweenKeys: 50,
+    scannerDetectionThreshold: 4,
+    autoFocus: true,
+  });
+
   useEffect(() => {
     loadActiveRentals();
   }, []);
