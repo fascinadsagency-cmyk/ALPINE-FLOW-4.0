@@ -164,6 +164,11 @@ const translations = {
     "nav.cashRegister": "Cash Register",
     "nav.integrations": "Integrations",
     "nav.settings": "Settings",
+    "nav.teamManagement": "Team Management",
+    "nav.storeManagement": "Store Management",
+    "nav.myAccount": "My Account",
+    "nav.help": "Help",
+    "nav.support": "Support",
     
     // Settings page
     "settings.title": "Settings",
