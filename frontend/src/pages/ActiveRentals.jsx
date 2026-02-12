@@ -3557,16 +3557,26 @@ export default function ActiveRentals() {
           {/* Success State */}
           {changeComplete && (
             <div className="py-8 text-center">
-              <CheckCircle className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
+              <CheckCircle className={`h-16 w-16 mx-auto mb-4 ${changeDiscountDays > 0 ? 'text-amber-500' : 'text-emerald-500'}`} />
               <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                ¡Cambios Procesados!
+                {changeDiscountDays > 0 ? '¡Crédito Registrado!' : '¡Cambios Procesados!'}
               </h3>
-              <p className="text-slate-600 mb-6">
+              <p className="text-slate-600 mb-4">
                 {changeItems.filter(i => i.isSwapping).length > 0 && 
                   `${changeItems.filter(i => i.isSwapping).length} artículo(s) sustituido(s)`}
                 {changeItems.filter(i => i.isSwapping).length > 0 && changeAdjustDate && changeDateDelta !== 0 && ' + '}
                 {changeAdjustDate && changeDateDelta !== 0 && 'ajuste de fecha aplicado'}
               </p>
+              {changeDiscountDays > 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4 max-w-md mx-auto">
+                  <p className="text-amber-800 font-medium">
+                    💳 Crédito pendiente: €{changeRefundAmount.toFixed(2)}
+                  </p>
+                  <p className="text-amber-700 text-sm mt-1">
+                    Se abonará automáticamente en la devolución final del equipo.
+                  </p>
+                </div>
+              )}
               <div className="flex gap-3 justify-center">
                 <Button
                   variant="outline"
@@ -3591,8 +3601,9 @@ export default function ActiveRentals() {
                 </Button>
                 <Button 
                   onClick={executeAllChanges}
-                  disabled={changeLoading || (changeItems.filter(i => i.isSwapping).length === 0 && (!changeAdjustDate || changeDateDelta === 0))}
+                  disabled={changeLoading || (changeItems.filter(i => i.isSwapping).length === 0 && !changeAdjustDate && changeDiscountDays === 0)}
                   className={`min-w-[180px] ${
+                    changeDiscountDays > 0 ? 'bg-amber-600 hover:bg-amber-700' :
                     changeTotalDelta > 0 ? 'bg-orange-600 hover:bg-orange-700' :
                     changeTotalDelta < 0 ? 'bg-emerald-600 hover:bg-emerald-700' :
                     'bg-blue-600 hover:bg-blue-700'
@@ -3603,7 +3614,8 @@ export default function ActiveRentals() {
                   ) : (
                     <Zap className="h-4 w-4 mr-2" />
                   )}
-                  {changeTotalDelta > 0 ? `Cobrar €${changeTotalDelta.toFixed(2)}` :
+                  {changeDiscountDays > 0 ? `Registrar Crédito €${changeRefundAmount.toFixed(2)}` :
+                   changeTotalDelta > 0 ? `Cobrar €${changeTotalDelta.toFixed(2)}` :
                    changeTotalDelta < 0 ? `Abonar €${Math.abs(changeTotalDelta).toFixed(2)}` :
                    'Confirmar Cambio'}
                 </Button>
