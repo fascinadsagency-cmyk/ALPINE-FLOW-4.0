@@ -852,6 +852,9 @@ export default function ActiveRentals() {
     setChangeModalOpen(true);
   };
 
+  // Store ref for global scanner callback
+  openChangeModalRef.current = openChangeModal;
+
   const closeChangeModal = () => {
     setChangeModalOpen(false);
     setChangeRental(null);
