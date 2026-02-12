@@ -3416,28 +3416,28 @@ export default function ActiveRentals() {
                         {changeDiscountDays > 0 && (
                           <div className="mt-2 text-xs text-amber-700 flex justify-between">
                             <span>Días a cobrar: {changeNewTotalDays - changeDiscountDays}</span>
-                            <span className="font-medium">Descuento: €{changeRefundAmount.toFixed(2)}</span>
+                            <span className="font-medium">Crédito: €{changeRefundAmount.toFixed(2)}</span>
                           </div>
                         )}
                       </div>
                       
                       {(changeDateDelta !== 0 || changeDiscountDays > 0) && (
                         <div className={`mt-3 p-2 rounded text-center ${
-                          changeDateDelta > 0 ? 'bg-orange-100' : 'bg-emerald-100'
+                          changeDateDelta > 0 ? 'bg-orange-100' : 'bg-amber-100'
                         }`}>
                           <p className="text-xs text-slate-600">
                             {changeDateDelta > 0 ? 'Suplemento por extensión' : 
-                             changeDiscountDays > 0 ? 'Descuento por días no disfrutados' :
+                             changeDiscountDays > 0 ? 'Crédito por días no disfrutados' :
                              'Abono por devolución anticipada'}
                           </p>
                           <p className={`text-lg font-bold ${
-                            changeDateDelta > 0 ? 'text-orange-700' : 'text-emerald-700'
+                            changeDateDelta > 0 ? 'text-orange-700' : 'text-amber-700'
                           }`}>
-                            {changeDateDelta > 0 ? '+' : ''}€{changeDateDelta.toFixed(2)}
+                            {changeDateDelta > 0 ? '+' : ''}€{Math.abs(changeDateDelta).toFixed(2)}
                           </p>
-                          {changeDiscountDays > 0 && changeDateDelta < 0 && (
-                            <p className="text-xs text-emerald-600 mt-1">
-                              ⬇ A devolver al cliente
+                          {changeDiscountDays > 0 && (
+                            <p className="text-xs text-amber-600 mt-1 font-medium">
+                              💳 Se aplicará en la devolución final
                             </p>
                           )}
                         </div>
