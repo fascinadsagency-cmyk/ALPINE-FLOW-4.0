@@ -309,6 +309,11 @@ const translations = {
     "nav.cashRegister": "Caixa",
     "nav.integrations": "Integracions",
     "nav.settings": "Configuració",
+    "nav.teamManagement": "Gestió d'Equip",
+    "nav.storeManagement": "Gestió de Botigues",
+    "nav.myAccount": "El Meu Compte",
+    "nav.help": "Ajuda",
+    "nav.support": "Suport",
     
     // Settings page
     "settings.title": "Configuració",
