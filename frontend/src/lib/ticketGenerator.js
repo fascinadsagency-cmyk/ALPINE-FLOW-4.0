@@ -1303,5 +1303,6 @@ export function printTicketSilent(options) {
 export default {
   generateTicketHTML,
   printTicket,
+  printTicketSilent,
   getStoredSettings
 };
