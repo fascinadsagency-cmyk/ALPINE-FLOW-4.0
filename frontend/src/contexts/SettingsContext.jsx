@@ -244,6 +244,11 @@ const translations = {
     "settings.printer.autoPrint.desc": "Automatically opens print dialog when confirming a payment",
     "settings.printer.doubleCopy": "Print Double Copy",
     "settings.printer.doubleCopy.desc": "Prints two tickets in a row (Store and Customer)",
+    "settings.printer.setupInstructions.title": "Printer Setup",
+    "settings.printer.setupInstructions.step1": "Make sure your thermal printer is installed and set as Default on your computer.",
+    "settings.printer.setupInstructions.step2": "Configure the paper size on your printer (58mm or 80mm) according to your roll.",
+    "settings.printer.setupInstructions.step3": "For silent printing, set your browser to 'Kiosk Mode' or enable 'Print silently' in browser settings.",
+    "settings.printer.setupInstructions.note": "The system uses your OS drivers - no IP configuration or additional software required.",
     
     // Common
     "common.cancel": "Cancel",
