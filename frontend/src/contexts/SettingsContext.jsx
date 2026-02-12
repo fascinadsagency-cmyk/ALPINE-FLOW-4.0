@@ -94,6 +94,11 @@ const translations = {
     "settings.printer.autoPrint.desc": "Abre el diálogo de impresión automáticamente al confirmar un pago",
     "settings.printer.doubleCopy": "Imprimir Doble Copia",
     "settings.printer.doubleCopy.desc": "Imprime dos tickets seguidos (Tienda y Cliente)",
+    "settings.printer.setupInstructions.title": "Configuración de Impresora",
+    "settings.printer.setupInstructions.step1": "Asegúrate de que tu impresora térmica está instalada y marcada como Predeterminada en tu ordenador.",
+    "settings.printer.setupInstructions.step2": "Configura el tamaño de papel en tu impresora (58mm o 80mm) según el rollo que uses.",
+    "settings.printer.setupInstructions.step3": "Para impresión sin diálogos, configura tu navegador en 'Modo Kiosco' o marca 'Imprimir en silencio' en la configuración del navegador.",
+    "settings.printer.setupInstructions.note": "El sistema usa los drivers de tu sistema operativo - no requiere configuración de IP ni software adicional.",
     
     // Common
     "common.cancel": "Cancelar",
