@@ -1,91 +1,83 @@
 <analysis>**original_problem_statement:**
-The user initially reported a critical financial integrity bug where applying a Pack discount to an active rental would charge the customer the correct discounted price but record the original, non-discounted price in the cash movements table.
+The user initiated a series of feature requests and bug fixes:
+1.  **Default Store Settings:** Configure new stores to have Auto Print Ticket () and Quick Scan Mode () enabled by default. This should not affect existing stores.
+2.  **Thermal Printer CSS Fix:** Correct the print CSS to ensure tickets print correctly on 80mm thermal printers without extra margins, so the user doesn't have to manually adjust print dialog settings.
+3.  **Keyboard Navigation:** Implement comprehensive keyboard navigation across the app, especially on the New Rental page. This includes using arrow keys for grid-like movement, Enter as Tab, and providing a clear visual focus indicator ( ring).
+4.  **Language Expansion:** Add Catalan (CA) and French (FR) to the application's language selector and provide complete translation files for the new languages.
+5.  **Missing Translations:** Fix hardcoded text in the main layout, ensuring that menu items like Team Management, My Account, Help, and Support are properly translated when the language is changed.
+6.  **Rental Date Adjustment with Discount:** In the Active Rentals date change modal, add a feature to apply a discount for non-billable days. This should recalculate the price based on fewer days while keeping the physical return date the same, and register a negative balance (amount to be refunded) on the rental.
 
-Subsequently, the user requested fixes for several other issues and a major feature change:
-1.  **UI Cleanup**: Do not show Discount as a separate line item when a Pack is applied automatically.
-2.  **Cash Register Flicker**: The cash register page flickers every few seconds due to an auto-refresh. This needs to be stopped.
-3.  **Slow Customer Loading**: The Active Customers list takes a very long time to load. It needs to be optimized to load instantly.
-4.  **Customer Data Mismatch**: After optimizing the customer list, it showed all customers instead of just active ones. This was followed by a bug where the count of active customers (badge) mismatched the number of customers shown in the list.
-5.  **New Rental Page Redesign (Current Task)**: A complete layout restructure of the Nuevo Alquiler (New Rental) page.
-    *   **PRODUCT REQUIREMENTS**:
-        *   Abandon the two-column layout for a linear, top-to-bottom flow.
-        *   The main container should have a controlled max-width (e.g., ) and be centered.
-        *   **Strict Order**:
-            1.  Customer Selection
-            2.  Rental Duration (Dates/Time)
-            3.  Item Selection (Search + Grid)
-            4.  Item Cart (List of added items)
-        *   A **sticky footer/action bar** must be implemented to keep the Totals Summary and the COBRAR / GUARDAR button visible at all times, regardless of scroll position.
-        *   The layout was later updated by the user to be: Customer and Dates side-by-side in two columns at the top, with everything else (Item Search, Cart) in a single, full-width column below.
-        *   The final request was to reduce the vertical height of the top two sections (Customer and Dates).
-
-**User's preferred language**: The user communicates in **Spanish**. The next agent MUST respond in Spanish.
+**User's preferred language**: Spanish
 
 **what currently exists?**
-The project is a rental management application with a React frontend and a Python (Flask) backend using a MongoDB database. Several critical bugs related to financial integrity, pack detection, UI flickering, and database performance have just been fixed. The application is now in the middle of a major UI refactoring for the New Rental page.
+The application is a rental management system. New stores are now created with Auto Print and Quick Scan Mode enabled by default. The CSS for printing has been adjusted for 80mm thermal printers. Full keyboard navigation has been implemented, including a global  hook and a visible focus ring. The application now supports Catalan and French, with all UI elements, including previously hardcoded sidebar menus, being translated correctly. Work has begun on the discount days feature in the active rental date adjustment modal.
 
 **Last working item**:
-*   **Last item agent was working**: The agent was refining the layout of the  page. The user requested that the two top sections, Selección de Cliente (Customer Selection) and Duración del Alquiler (Rental Duration), which are arranged in a two-column layout, be made shorter to take up less vertical space.
-*   **Status**: IN PROGRESS
-*   **Agent Testing Done**: N (Agent attempted a screenshot but it showed the login page, so the new layout was not visually confirmed by the agent).
-*   **Which testing method agent to use?**: Use the screenshot tool after logging in to visually verify the layout of the  page.
-*   **User Testing Done**: N
+- **Last item agent was working:** Implementing the Días a descontar (Days to discount) feature in the Ajuste de Fecha (Date Adjustment) modal located in . The agent has added the new UI input field, state variables (, ), and placeholder logic in the frontend. The backend has not yet been modified to handle this new logic.
+- **Status:** IN PROGRESS
+- **Agent Testing Done:** N
+- **Which testing method agent to use?** both
+- **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-*   **Issue 1**: The layout of the  page is not yet finalized.
-    *   **Description**: The user wants the Customer and Rental Duration sections to have less vertical height to maximize screen real estate and reduce scrolling. This is a refinement of the new layout being implemented.
-    *   **Priority**: P0
-*   **Issue 2**: The new layout for the New Rental page has not been fully validated.
-    *   **Description**: The user's original request included specific validation criteria (Scroll Test and Tabulation Test) that have not been performed yet because the layout is still in flux.
-    *   **Priority**: P1
+-   **Issue 1:** Complete Días a descontar (discount days) feature (P0)
+-   **Issue 2:** Cannot edit admin user's own email and password (P1)
 
-**Issues Detail**:
-*   **Issue 1: Reduce Height of Top Sections**
-    *   **Attempted fixes**: The agent has iterated through three different layouts for this page based on user feedback: a single vertical column, a full-width two-column grid, and the current hybrid layout (2 columns on top, 1 below). The current structure is correct, but requires visual refinement.
-    *   **Next debug checklist**:
-        1.  Open .
-        2.  Locate the parent containers for the Customer section (around line 2168) and the Rental Duration section (around line 2484).
-        3.  Reduce their vertical height by adjusting Tailwind CSS classes. For example, change padding ( to ), remove  properties, or adjust margins.
-    *   **Why fix this issue and what will be achieved with the fix?**: To finalize the UI/UX of the critical New Rental page according to the user's explicit request for a more compact and visible layout.
-    *   **Status**: IN PROGRESS
-    *   **Is recurring issue?**: Y (This is the 4th iteration on this page's layout design).
-    *   **Should Test frontend/backend/both after fix?**: Frontend.
-    *   **Blocked on other issue**: None.
+**Issues Detail:**
+-   **Issue 1: Complete Días a descontar (discount days) feature**
+    -   **Attempted fixes:** The agent has added the frontend UI elements and state management within . This includes a new numeric input for Días a descontar, state variables  and , and updated the  and modal opening functions to handle the new state.
+    -   **Next debug checklist:**
+        1.  Modify the backend endpoint for changing rental dates ( in ).
+        2.  The endpoint must accept a new  parameter.
+        3.  Update the price calculation logic to use  ( - ).
+        4.  Ensure the rental document in the database is updated with a negative balance ( or a new field) if a refund is due.
+        5.  Connect the frontend  function to send the  value to the modified backend endpoint.
+        6.  Perform end-to-end testing: change a date, apply a discount, and verify the price difference and negative balance are calculated and displayed correctly.
+    -   **Why fix this issue and what will be achieved with the fix?** To provide operational flexibility, allowing staff to issue partial refunds for rentals cut short (e.g., due to illness or weather) without complex manual calculations. It registers a credit for the customer to be settled upon final return.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** both
+    -   **Blocked on other issue:** None
 
-*   **Issue 2: Functional Validation of New Layout**
-    *   **Attempted fixes**: None, as this depends on the layout being finalized.
-    *   **Next debug checklist**:
-        1.  Once the layout is visually approved, perform the Scroll Test: Add 10+ items to the rental cart and confirm the sticky footer containing the Cobrar button remains visible without needing to scroll to the bottom of the page.
-        2.  Perform the Tabulation Test: Ensure the keyboard Tab key navigates through the form fields in a logical order (Customer -> Dates -> Item Search).
-    *   **Why fix this issue and what will be achieved with the fix?**: To ensure the new layout is not only visually correct but also functional and accessible, meeting the user's core requirements for the redesign.
-    *   **Status**: NOT STARTED
-    *   **Is recurring issue?**: N
-    *   **Should Test frontend/backend/both after fix?**: Frontend.
-    *   **Blocked on other issue**: Issue 1: Reduce Height of Top Sections.
+-   **Issue 2: Cannot edit admin user's own email and password**
+    -   **Attempted fixes:** (From previous fork, not addressed in this session) Initial investigation located the frontend code ( in ) and noted the password field is missing from the API call. No fix was attempted.
+    -   **Next debug checklist:**
+        1.  Examine  to enable the password field for the current admin user.
+        2.  Update  to include the new password in the payload to .
+        3.  Inspect the backend endpoint in  to ensure it can handle password updates for any user, including hashing the new password.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a basic administrative function required for security and account management.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** Both
+    -   **Blocked on other issue:** None
 
 **In progress Task List**:
-*   **Task 1: Complete the refactoring of the New Rental page layout**
-    *   **Where to resume**: . Resume by modifying the Tailwind CSS classes for the Customer and Date selection sections to reduce their height.
-    *   **What will be achieved with this?**: A user-approved layout for creating new rentals, which is a core workflow of the application.
-    *   **Status**: IN PROGRESS
-    *   **Priority**: P0
-    *   **Should Test frontend/backend/both after fix?**: Frontend.
-    *   **Blocked on something**: Awaiting implementation of the height reduction.
+*   **Task 1:** Add Pendiente (Pending) payment option to active rentals.
+    *   **Where to resume:** Frontend and backend logic are in place. This is pending end-to-end user verification, which was previously blocked by a lack of test data (available items to add to a rental).
+    *   **What will be achieved with this?** Allows staff to add items to an ongoing rental and defer payment collection until the final return.
+    - **Status:** USER VERIFICATION PENDING
+    - **Should Test frontend/backend/both after fix?** Both
+    *   **Blocked on something:** Awaiting user testing/confirmation.
 
 **Upcoming and Future Tasks**
-*   **Upcoming Tasks**:
-    *   **P0**: Validate the functionality of the new  page layout (Scroll Test and Tabulation Test) after the visual design is approved by the user.
+There are no other explicit upcoming or future tasks mentioned by the user.
 
 **Completed work in this session**
-- **Financial Integrity Bug (FIXED)**: Corrected backend logic in  () to use the  from the frontend. This ensures rental extensions with Packs record the correct discounted amount in the  table.
-- **Pack Detection Bug (FIXED)**: Made the  comparison case-insensitive in the pack detection logic within , ensuring packs are correctly identified.
-- **UI Cleanup for Pack Savings (DONE)**: Removed the Ahorro por pack (savings from pack) display from the UI in  as requested.
-- **Cash Register Flicker (FIXED)**: Eliminated the UI flicker on  by implementing a silent data refresh () and increasing the refresh interval to 30 seconds.
-- **Slow Active Customer Loading (OPTIMIZED)**: Replaced the inefficient, multi-query customer filtering logic in  () with a highly efficient MongoDB aggregation pipeline, reducing load times from ~10 seconds to <0.5 seconds.
-- **Active Customer Count Mismatch (FIXED)**: Corrected a double-counting bug in the  () endpoint. The endpoint now uses the same aggregation logic as the customer list, ensuring the summary badge count always matches the list count.
+-   **Default Store Settings:** Modified  () to set  and  to  for all newly created stores. Verified that existing stores are unaffected.
+-   **Thermal Printer CSS Fix:** Updated print-specific CSS in  and  to use  to ensure correct printing on thermal receipt printers.
+-   **Keyboard Navigation System:**
+    -   Created a new global hook  to handle arrow key (Up/Down/Left/Right) and Enter key navigation.
+    -   Implemented a highly visible focus ring using  in .
+    -   Integrated the hook into  and resolved a critical bug where a custom  component conflicted with Radix UI's default modal focus behavior, preventing keyboard input in modals. The fix involved removing the redundant .
+-   **Language Expansion (Catalan & French):**
+    -   Added translation files  and  in .
+    -   Updated the language selector UI in  to include the new languages.
+-   **Fixed Missing Translations:**
+    -   Refactored  to use translation keys () instead of hardcoded labels for sidebar menu items.
+    -   Added the corresponding translation keys for Team Management, My Account, Help, Support, etc., to all language files in .
 
 **Earlier issues found/mentioned but not fixed**
-None. All issues raised by the user during the session were addressed sequentially.
+-   **Issue 1:** In Team Management, the admin user cannot edit their own email and password. This was carried over from the previous fork and was not addressed in the current session.
 
 **Known issue recurrence from previous fork**
 None.
@@ -94,93 +86,79 @@ None.
 
 
 **Key Technical Concepts**
-*   **Frontend**: React, Tailwind CSS
-*   **Backend**: Python (Flask)
-*   **Database**: MongoDB
-*   **Architecture**: Monolithic repository with separate frontend and backend folders.
+*   **Frontend:** React, TailwindCSS,  (via ), Custom Hooks
+*   **Backend:** Python (FastAPI), MongoDB ()
+*   **State Management:** React , , .
+*   **Global Event Handling:**  hook attaches a  listener to the window to control focus across the application.
+*   **UI/UX:** Managing focus state () for accessibility and keyboard navigation. Debugging focus trap conflicts between libraries (custom implementation vs. Radix UI).
 
 **key DB schema**
-*   : {, , , , ...}
-*   : {, , , , , , , ...}
-*   : {, , , , , ...}
-*   : {, , , , , ...}
-*   : {, , , , , ...}
+*   **settings:**  (Note:  and  are new fields).
+*   **rentals:**  (Note:  will be used to store negative balances for refunds).
+*   **team_members:** 
 
 **changes in tech stack**
 None.
 
 **All files of reference**
-*   : Modified for multiple bug fixes and performance optimizations.
-*   : Target of a major, ongoing layout refactoring.
-*   : Modified to fix pack detection and UI text.
-*   : Modified to fix UI flickering.
-*   : Modified to add debug logs for a data mismatch issue.
-*   : Script created to ensure optimal DB performance.
-*   : Documentation for a completed fix.
-*   : Documentation for a completed fix.
-*   : Documentation for a completed optimization.
-*   : Documentation for a completed fix.
-*   : Documentation for the ongoing refactor.
+*   : Modified to set default settings for new stores and to correctly retrieve settings per store.
+*   : Heavily modified to add Catalan and French translations and new translation keys.
+*   : New file created for the global keyboard navigation feature.
+*   : Modified to integrate  hook and to remove a conflicting  component from the New Customer modal.
+*   : Refactored to use translation keys for sidebar menu items instead of hardcoded text.
+*   : Modified to add a prominent global style for .
+*   : Modified to include improved  CSS rules for thermal printers.
+*   : Currently being modified to add the discount days feature.
 
-**Areas that need refactoring**
-*    is an extremely large file (over 3,000 lines). It desperately needs to be broken down into smaller, more manageable components to improve maintainability. The agent has noted this complexity.
+**Areas that need refactoring**:
+*   : Remains a large, monolithic file that would benefit from being split into modules (e.g., by route/resource).
+*   : Still a very large and complex component that should be broken down into smaller, more manageable child components.
+*   : This context has grown to include all i18n translations. These could be moved to dedicated JSON files per language in a  folder to improve organization.
 
 **key api endpoints**
-*   : Used to add items to an existing rental. (Bug Fixed)
-*   : Fetches a paginated list of customers, with filters. (Optimized)
-*   : Fetches summary statistics about customers. (Bug Fixed)
+*   : Modified to initialize  and  to .
+*   : Modified to correctly filter settings by the logged-in user's .
+*   : **(Next to be modified)** This endpoint needs to be updated to accept  and recalculate the rental price.
 
 **Critical Info for New Agent**
-*   **Primary focus is the  layout**. The user is very specific about the visual structure. Follow the latest instructions to reduce the height of the top two sections.
-*   Once the layout is visually approved by the user, you **must** perform the validation tests (Scroll Test, Tabulation Test) that were part of the original request.
-*   The agent has struggled with credentials for automated testing. User verification has been the primary method of confirmation. Be prepared to ask the user to test changes.
-*   The  file is very complex. Be careful when making edits to avoid breaking existing logic.
+*   **Focus Trap Conflicts:** Be extremely cautious when adding custom focus management (like the old  component). UI libraries like Radix UI (used by shadcn) have their own robust, built-in focus trapping for modals (). Adding a second one will break keyboard input. The solution was to remove the redundant custom trap and rely on the library's native behavior.
+*   **Global Keyboard Hook:** The  hook controls focus across the app. It is designed to be disabled under specific conditions (e.g., when a suggestion list is open) to allow local components to handle their own keyboard events. When debugging keyboard issues, check if the hook needs a new  condition.
+*   **i18n Implementation:** All translations are managed within . To add or fix translations, this is the primary file to edit. New UI text should use the  function from the  hook.
 
 **documents and test reports created in this job**
-*   
-*   
-*   
-*   
-*   
-*   
+*    was updated.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **Vamos avanzando, esta bien pero quiero que la sección de duración de alquiler tenga menos altura aún junto con la de cliente. (We're making progress, it's good, but I want the rental duration section to have even less height, along with the customer section.)**
-    *   **Status**: PENDING. This is the current active task.
-2.  **Quiero todo en una única clumna por favor a no ser que las dos secciones actuales de la izquierda están en dos columnas pero debajo añadir articulos y lo siguiente en una única columna. Todo esto aprovechando el 100% de la pantalla y el espacio, con el fin de aprovechas el máximo espacio y máxima visibilidad. (I want everything in a single column please, unless the two current sections on the left are in two columns and then add items and the rest below in a single column. All this taking advantage of 100% of the screen and space, in order to take advantage of maximum space and maximum visibility.)**
-    *   **Status**: COMPLETED. The agent implemented this hybrid layout.
-3.  **Necesito que ocupe todo el ancho, esto evitará menos scroll. Sería posible que ocupara toda la pantalla sin scroll? (I need it to take up the full width, this will avoid less scrolling. Would it be possible for it to take up the whole screen without scrolling?)**
-    *   **Status**: SUPERSEDED. The user provided more detailed layout instructions later.
-4.  **Si, adelante. (Yes, go ahead.)**
-    *   **Status**: COMPLETED. User gave permission to proceed with the refactor.
-5.  **Necesito reestructurar completamente el layout de la página Nuevo Alquiler... (I need to completely restructure the layout of the 'New Rental' page...)**
-    *   **Status**: IN PROGRESS. This initiated the major refactoring task.
-6.  **Ahora muestra dos clientes activos en la pestaña, pero 1 en la línea. No tiene sentido (Now it shows two active clients in the tab, but 1 in the line. It doesn't make sense.)**
-    *   **Status**: COMPLETED. Agent found and fixed the double-counting bug in the stats endpoint.
-7.  **En clientes , en la pestaña activos hoy debe de mostrar el numero de clientes activos únicamente. (In customers, the active today tab should show only the number of active customers.)**
-    *   **Status**: COMPLETED. This was part of debugging the data mismatch.
-8.  **La página muestra todos los clientes de la base de datos, en vez los activos. Debe aparecer los clientes activos... (The page shows all customers from the database, instead of the active ones. The active customers should appear...)**
-    *   **Status**: COMPLETED. This was the first report of the data mismatch after the performance optimization.
-9.  **En clientes activos ahora, salen todos los clientes y deben salir solo los activos. Va rápido pero no salen los datos correctos (In active customers now, all customers appear and only active ones should. It's fast but the data is incorrect.)**
-    *   **Status**: COMPLETED. User confirmed the performance fix but reported a new data correctness bug.
-10. **La pantalla de clientes, si después pulsas clientes activos tarda mucho en cargar el listado de clientes activos. Tiene que cargar de golpe y rápido. (The customers screen, if you then click on active customers, it takes a long time to load the list of active customers. It has to load at once and quickly.)**
-    *   **Status**: COMPLETED. User reported the performance issue that was subsequently fixed.
+1.  **User:** Requests the discount days feature for the date adjustment modal with detailed UI/backend requirements. *(IN PROGRESS)*
+2.  **User:** Reports that some sidebar menu tabs (team management, support, etc.) are not being translated. *(RESOLVED)*
+3.  **User:** Requests the addition of Catalan and French languages. *(RESOLVED)*
+4.  **User:** Reports that keyboard navigation (tab and arrows) is not working in many places, especially the New Customer modal. *(RESOLVED)*
+5.  **User:** Clarifies that the keyboard navigation issue is critical and needs to be fixed. *(RESOLVED)*
+6.  **User:** Requests full keyboard navigation for the app to behave like a desktop application. *(RESOLVED)*
+7.  **User:** Reports that printed tickets are coming out blank on thermal printers and provides specific CSS rules to fix it. *(RESOLVED)*
+8.  **User:** Asks agent to finish the task. *(HANDLED)*
+9.  **User:** Confirms that the fix for default store settings is working as expected. *(RESOLVED)*
+10. **User:** Requests that new stores are created with Auto Print and Quick Scan enabled by default. *(RESOLVED)*
 
 **Project Health Check:**
-*   **Broken**: The  page is visually and functionally incomplete due to the ongoing refactor.
-*   **Mocked**: None.
+*   **Broken:**
+    *   The functionality to edit an admin's own email and password.
+    *   The date adjustment/discount feature is incomplete.
+*   **Mocked:**
+    *   None.
 
 **3rd Party Integrations**
-None explicitly mentioned beyond the core tech stack (React, Flask, MongoDB).
+*   None.
 
 **Testing status**
-*   **Testing agent used after significant changes**: NO
-*   **Troubleshoot agent used after agent stuck in loop**: NO
-*   **Test files created**: 
-*   **Known regressions**: None from the completed work.
+*   **Testing agent used after significant changes:** NO
+*   **Troubleshoot agent used after agent stuck in loop:** NO
+*   **Test files created:** None
+*   **Known regressions:** None
 
 **Credentials to test flow:**
-The agent had persistent issues with credentials ( / ). The next agent may need to ask the user for valid credentials or rely on user verification for testing.
+*   **Username:** 
+*   **Password:** 
 
 **What agent forgot to execute**
-The agent has not yet executed the user's requested validation tests for the New Rental page refactor (Scroll Test and Tabulation Test). This is because the visual layout is still being finalized. This should be the immediate next step after the user approves the layout.</analysis>
+- The pending issue from the previous fork—allowing an admin to edit their own credentials—was not addressed during this session and remains outstanding.</analysis>

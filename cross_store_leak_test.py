@@ -10,7 +10,7 @@ from datetime import datetime
 import sys
 
 # Configuration
-BACKEND_URL = "https://user-edit-bug.preview.emergentagent.com/api"
+BACKEND_URL = "https://infallible-rhodes-1.preview.emergentagent.com/api"
 
 class CrossStoreLeakTester:
     def __init__(self):
