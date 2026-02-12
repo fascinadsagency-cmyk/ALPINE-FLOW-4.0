@@ -128,6 +128,13 @@ export default function ActiveRentals() {
   const [changeDiscountDays, setChangeDiscountDays] = useState(0);
   const [changeRefundAmount, setChangeRefundAmount] = useState(0); // Importe a devolver por días descontados
 
+  // ============ QUICK PAYMENT MODAL STATE ============
+  const [quickPaymentModalOpen, setQuickPaymentModalOpen] = useState(false);
+  const [quickPaymentRental, setQuickPaymentRental] = useState(null);
+  const [quickPaymentAmount, setQuickPaymentAmount] = useState(0);
+  const [quickPaymentMethod, setQuickPaymentMethod] = useState("cash");
+  const [quickPaymentProcessing, setQuickPaymentProcessing] = useState(false);
+
 
   // ============ ADD ITEMS MODAL STATE ============
   const [addItemsModalOpen, setAddItemsModalOpen] = useState(false);
