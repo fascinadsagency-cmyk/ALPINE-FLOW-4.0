@@ -697,6 +697,8 @@ export default function ActiveRentals() {
     // Reset financial tracking
     setChangeMaterialDelta(0);
     setChangeTotalDelta(0);
+    setChangeDiscountDays(0);  // Reset días a descontar
+    setChangeRefundAmount(0);  // Reset importe a devolver
     
     // Set days remaining correctly
     setChangeDaysRemaining(daysRemaining);
@@ -719,6 +721,8 @@ export default function ActiveRentals() {
     setActiveSwapIndex(null);
     setChangeMaterialDelta(0);
     setChangeTotalDelta(0);
+    setChangeDiscountDays(0);  // Reset días a descontar
+    setChangeRefundAmount(0);  // Reset importe a devolver
     setChangeComplete(false);
     // Auto-focus search input after closing modal
     setTimeout(() => searchInputRef.current?.focus(), 100);
