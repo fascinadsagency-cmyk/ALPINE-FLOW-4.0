@@ -659,9 +659,9 @@ export default function ActiveRentals() {
 
     setQuickPaymentProcessing(true);
     try {
-      // Call the API to register the payment
+      // Call the existing payment endpoint
       const response = await axios.post(
-        `${API}/rentals/${quickPaymentRental.id}/quick-payment`,
+        `${API}/rentals/${quickPaymentRental.id}/payment`,
         {
           amount: quickPaymentAmount,
           payment_method: quickPaymentMethod
@@ -676,9 +676,9 @@ export default function ActiveRentals() {
         if (r.id === quickPaymentRental.id) {
           return {
             ...r,
-            paid_amount: (r.paid_amount || 0) + quickPaymentAmount,
-            pending_amount: Math.max(0, (r.pending_amount || 0) - quickPaymentAmount),
-            payment_method: quickPaymentMethod // Update to actual payment method used
+            paid_amount: response.data.paid_amount,
+            pending_amount: response.data.pending_amount,
+            payment_method: response.data.pending_amount === 0 ? quickPaymentMethod : r.payment_method
           };
         }
         return r;
