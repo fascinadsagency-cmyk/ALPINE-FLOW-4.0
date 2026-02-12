@@ -259,7 +259,7 @@ export default function Layout() {
                 }
               >
                 <item.icon className="h-5 w-5" aria-hidden="true" tabIndex={-1} />
-                {item.label}
+                {item.labelKey ? t(item.labelKey) : item.label}
               </NavLink>
             ))}
 
@@ -284,7 +284,7 @@ export default function Layout() {
                     }
                   >
                     <item.icon className="h-5 w-5" aria-hidden="true" tabIndex={-1} />
-                    {item.label}
+                    {item.labelKey ? t(item.labelKey) : item.label}
                   </NavLink>
                 ))}
               </div>
@@ -310,7 +310,7 @@ export default function Layout() {
                   }
                 >
                   <item.icon className="h-5 w-5" aria-hidden="true" tabIndex={-1} />
-                  {item.label}
+                  {item.labelKey ? t(item.labelKey) : item.label}
                 </NavLink>
               ))}
             </div>
