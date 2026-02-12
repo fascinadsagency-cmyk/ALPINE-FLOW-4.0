@@ -954,7 +954,8 @@ export default function ActiveRentals() {
           difference_amount: differenceAmount,
           discount_days: changeDiscountDays,
           refund_amount: changeRefundAmount,
-          chargable_days: chargableDays
+          chargable_days: chargableDays,
+          defer_refund: changeDiscountDays > 0  // Si hay días a descontar, diferir el reembolso
         }, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
@@ -963,15 +964,16 @@ export default function ActiveRentals() {
       // Success
       setChangeComplete(true);
       
-      const totalDeltaWithDiscount = changeTotalDelta - changeRefundAmount;
-      if (totalDeltaWithDiscount !== 0 || changeRefundAmount > 0) {
-        if (changeRefundAmount > 0) {
-          toast.success(`✅ Cambios completados. A devolver al cliente: €${changeRefundAmount.toFixed(2)}`);
-        } else if (totalDeltaWithDiscount !== 0) {
-          toast.success(`✅ Cambios completados. ${totalDeltaWithDiscount > 0 ? 'Total cobrado' : 'Total abonado'}: €${Math.abs(totalDeltaWithDiscount).toFixed(2)}`);
-        }
+      // Mensaje diferente si hay crédito diferido
+      if (changeDiscountDays > 0) {
+        toast.success(`✅ Cambios registrados. Crédito de €${changeRefundAmount.toFixed(2)} pendiente de abonar en devolución.`);
       } else {
-        toast.success("✅ Cambios completados sin diferencia económica");
+        const totalDeltaWithDiscount = changeTotalDelta - changeRefundAmount;
+        if (totalDeltaWithDiscount !== 0) {
+          toast.success(`✅ Cambios completados. ${totalDeltaWithDiscount > 0 ? 'Total cobrado' : 'Total abonado'}: €${Math.abs(totalDeltaWithDiscount).toFixed(2)}`);
+        } else {
+          toast.success("✅ Cambios completados sin diferencia económica");
+        }
       }
 
       // Reload rentals
