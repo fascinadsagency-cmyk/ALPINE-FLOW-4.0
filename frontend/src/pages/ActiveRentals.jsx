@@ -137,6 +137,8 @@ export default function ActiveRentals() {
   const [quickPaymentProcessing, setQuickPaymentProcessing] = useState(false);
 
   // ============ GLOBAL BARCODE SCANNER ============
+  // Ref para almacenar la función openChangeModal (evita dependencias circulares)
+  const openChangeModalRef = useRef(null);
   
   // Handle global barcode scan - searches for rental by customer DNI or item barcode
   const handleGlobalScan = useCallback(async (scannedCode) => {
@@ -165,7 +167,9 @@ export default function ActiveRentals() {
     if (matched.length === 1) {
       // Single match - open the change modal directly
       toast.success(`Alquiler encontrado: ${matched[0].customer_name}`);
-      openChangeModal(matched[0]);
+      if (openChangeModalRef.current) {
+        openChangeModalRef.current(matched[0]);
+      }
     } else if (matched.length > 1) {
       // Multiple matches - filter the list
       setFilteredRentals(matched);
