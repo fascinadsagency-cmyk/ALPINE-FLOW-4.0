@@ -168,7 +168,7 @@ export default function StoreManagement() {
       setShowCreateDialog(false);
       setNewStore({
         name: "",
-        plan: "basic",
+        plan: "trial",  // Reset to trial
         max_users: 10,
         max_items: 10000,
         max_customers: 10000,
