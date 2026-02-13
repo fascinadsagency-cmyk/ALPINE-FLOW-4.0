@@ -2973,7 +2973,7 @@ export default function NewRental() {
                                       {/* Código del componente */}
                                       <div className="col-span-3">
                                         <p className="text-[10px] text-slate-500 uppercase">Código</p>
-                                        <p className="font-mono font-bold text-slate-800 text-sm">
+                                        <p className="font-mono font-bold text-slate-900 text-base sm:text-lg">
                                           {componentItem.internal_code || componentItem.barcode}
                                         </p>
                                       </div>
@@ -3045,7 +3045,7 @@ export default function NewRental() {
                                 <p className="font-bold text-emerald-700 truncate text-sm">{item.name}</p>
                               ) : (
                                 <>
-                                  <p className="font-mono font-bold text-slate-900 text-sm">{item.internal_code || item.barcode}</p>
+                                  <p className="font-mono font-bold text-slate-900 text-base sm:text-lg">{item.internal_code || item.barcode}</p>
                                   <p className="text-[10px] text-slate-500 leading-tight">{item.brand} {item.model} {item.size && `(${item.size})`}</p>
                                 </>
                               )}
