@@ -8,6 +8,8 @@ import { OfflineProvider, useOffline } from "@/contexts/OfflineContext";
 import { setupAxiosInterceptors, registerLimitExceededHandler } from "@/lib/axiosInterceptor";
 import UpgradePlanModal from "@/components/UpgradePlanModal";
 import Login from "@/pages/Login";
+import LandingPage from "@/pages/LandingPage";
+import Register from "@/pages/Register";
 import Dashboard from "@/pages/Dashboard";
 import NewRental from "@/pages/NewRental";
 import Returns from "@/pages/Returns";
@@ -154,7 +156,12 @@ function AppRoutes() {
   return (
     <DataInitializer>
       <Routes>
+        {/* Public Routes */}
+        <Route path="/landing" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        
+        {/* Protected Routes */}
         <Route
           path="/"
           element={
@@ -188,7 +195,9 @@ function AppRoutes() {
           <Route path="facturacion" element={<Billing />} />
           <Route path="mi-cuenta" element={<MyAccount />} />
         </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
+        
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/landing" replace />} />
       </Routes>
     </DataInitializer>
   );
