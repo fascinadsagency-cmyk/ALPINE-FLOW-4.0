@@ -37,17 +37,19 @@ class CurrentUser:
         """
         Returns MongoDB filter for STRICT store isolation.
         SECURITY: This filter MUST be used in ALL database queries.
-        SUPER_ADMIN: No filter (sees all stores)
-        Others: Filter by their store_id
-        """
-        if self.is_super_admin:
-            return {}  # No filter - access all stores
         
-        # SECURITY: Double-check store_id is valid
+        CRITICAL CHANGE: SUPER_ADMIN also has their own store_id and MUST see only their own data.
+        Being super_admin gives management privileges (create stores, manage users, etc.)
+        but does NOT mean they see all data mixed together.
+        
+        To access another store's data, super_admin must explicitly impersonate that store.
+        """
+        # SECURITY: ALL users (including super_admin) must have a store_id
         if self.store_id is None:
             logger.error(f"🚨 SECURITY: get_store_filter called with None store_id for user {self.username}")
             raise HTTPException(status_code=403, detail="Invalid store_id")
         
+        # Return filter by store_id for ALL users (including super_admin)
         return {"store_id": self.store_id}
     
     def ensure_store_access(self, store_id: int):
