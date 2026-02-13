@@ -227,74 +227,231 @@ export default function LandingPage() {
           </p>
         </div>
 
-        {/* Pricing Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse bg-white rounded-2xl shadow-xl overflow-hidden">
-            <thead>
-              <tr className="bg-gradient-to-r from-slate-50 to-slate-100">
-                <th className="p-6 text-left font-bold text-slate-700">Característica</th>
-                <th className="p-6 text-center">
-                  <div>
-                    <div className="font-bold text-lg bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Trial</div>
-                    <div className="text-sm text-slate-600 mt-1">0 € / 15 días</div>
+        {/* Pricing Cards */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+          {/* Trial Plan */}
+          <div className="relative group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl opacity-0 group-hover:opacity-100 blur transition duration-500"></div>
+            <div className="relative bg-white rounded-2xl border-2 border-slate-200 p-8 hover:border-transparent transition-all duration-300">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
+                  <Package className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                    Trial
+                  </h3>
+                  <p className="text-xs text-slate-500">Prueba gratuita</p>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-black text-slate-900">0 €</span>
+                </div>
+                <p className="text-sm text-slate-600 mt-1">15 días gratis</p>
+              </div>
+
+              <Button 
+                onClick={() => navigate("/register")} 
+                variant="outline" 
+                className="w-full mb-6 font-semibold border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+              >
+                Probar Gratis
+              </Button>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="h-5 w-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <Check className="h-3 w-3 text-emerald-600" />
                   </div>
-                </th>
-                <th className="p-6 text-center">
-                  <div>
-                    <div className="font-bold text-lg bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">Basic</div>
-                    <div className="text-sm text-slate-600 mt-1">950 € / año</div>
+                  <span className="text-slate-700">50 productos</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="h-5 w-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <Check className="h-3 w-3 text-emerald-600" />
                   </div>
-                </th>
-                <th className="p-6 text-center bg-gradient-to-r from-blue-50 to-purple-50">
-                  <div>
-                    <div className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Pro</div>
-                    <div className="text-sm text-slate-600 mt-1">1.450 € / año</div>
-                    <Badge className="mt-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold px-3 py-1">Popular</Badge>
+                  <span className="text-slate-700">100 clientes</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="h-5 w-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <Check className="h-3 w-3 text-emerald-600" />
                   </div>
-                </th>
-                <th className="p-6 text-center">
-                  <div>
-                    <div className="font-bold text-lg bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Enterprise</div>
-                    <div className="text-sm text-slate-600 mt-1">1.950 € / año</div>
+                  <span className="text-slate-700">1 tienda</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Basic Plan */}
+          <div className="relative group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-sky-600 to-blue-600 rounded-2xl opacity-0 group-hover:opacity-100 blur transition duration-500"></div>
+            <div className="relative bg-white rounded-2xl border-2 border-slate-200 p-8 hover:border-transparent transition-all duration-300">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center shadow-lg">
+                  <Zap className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">
+                    Basic
+                  </h3>
+                  <p className="text-xs text-slate-500">Para empezar</p>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-black text-slate-900">950 €</span>
+                  <span className="text-slate-500">/año</span>
+                </div>
+                <p className="text-sm text-slate-600 mt-1">79 €/mes facturado anualmente</p>
+              </div>
+
+              <Button 
+                onClick={() => navigate("/register")} 
+                variant="outline" 
+                className="w-full mb-6 font-semibold border-2 border-blue-600 text-blue-600 hover:bg-blue-50"
+              >
+                Contratar
+              </Button>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <Check className="h-3 w-3 text-blue-600" />
                   </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {pricingFeatures.map((feature, index) => (
-                <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
-                  <td className="p-5 font-semibold text-slate-700">{feature.name}</td>
-                  <td className="p-5 text-center text-slate-600">{feature.trial}</td>
-                  <td className="p-5 text-center text-slate-600">{feature.basic}</td>
-                  <td className="p-5 text-center text-slate-900 font-semibold bg-gradient-to-r from-blue-50 to-purple-50">{feature.pro}</td>
-                  <td className="p-5 text-center text-slate-600">{feature.enterprise}</td>
-                </tr>
-              ))}
-              <tr className="border-t-2 border-slate-200">
-                <td className="p-5"></td>
-                <td className="p-5 text-center">
-                  <Button onClick={() => navigate("/register")} variant="outline" className="w-full font-semibold border-2 hover:border-purple-600">
-                    Probar Gratis
-                  </Button>
-                </td>
-                <td className="p-5 text-center">
-                  <Button onClick={() => navigate("/register")} variant="outline" className="w-full font-semibold border-2 hover:border-purple-600">
-                    Contratar
-                  </Button>
-                </td>
-                <td className="p-5 text-center bg-gradient-to-r from-blue-50 to-purple-50">
-                  <Button onClick={() => navigate("/register")} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 font-bold hover:shadow-xl">
-                    Contratar
-                  </Button>
-                </td>
-                <td className="p-5 text-center">
-                  <Button onClick={() => navigate("/register")} variant="outline" className="w-full font-semibold border-2 hover:border-purple-600">
-                    Contactar
-                  </Button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  <span className="text-slate-700">200 productos</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <Check className="h-3 w-3 text-blue-600" />
+                  </div>
+                  <span className="text-slate-700">500 clientes</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <Check className="h-3 w-3 text-blue-600" />
+                  </div>
+                  <span className="text-slate-700">1 tienda</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Pro Plan - Popular */}
+          <div className="relative group lg:scale-105 lg:-mt-4">
+            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl opacity-75 group-hover:opacity-100 blur transition duration-500"></div>
+            <div className="relative bg-white rounded-2xl border-2 border-transparent p-8 shadow-2xl">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold px-4 py-1.5 shadow-lg">
+                  ⭐ Popular
+                </Badge>
+              </div>
+              
+              <div className="flex items-center gap-3 mb-4 mt-2">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-xl">
+                  <Sparkles className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Pro
+                  </h3>
+                  <p className="text-xs text-slate-500">Más vendido</p>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">1.450 €</span>
+                  <span className="text-slate-500">/año</span>
+                </div>
+                <p className="text-sm text-slate-600 mt-1">121 €/mes facturado anualmente</p>
+              </div>
+
+              <Button 
+                onClick={() => navigate("/register")} 
+                className="w-full mb-6 bg-gradient-to-r from-blue-600 to-purple-600 font-bold hover:shadow-2xl hover:scale-105 transition-all"
+              >
+                Contratar Ahora
+              </Button>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="h-5 w-5 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center flex-shrink-0">
+                    <Check className="h-3 w-3 text-white" />
+                  </div>
+                  <span className="text-slate-700 font-semibold">500 productos</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="h-5 w-5 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center flex-shrink-0">
+                    <Check className="h-3 w-3 text-white" />
+                  </div>
+                  <span className="text-slate-700 font-semibold">2.000 clientes</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="h-5 w-5 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center flex-shrink-0">
+                    <Check className="h-3 w-3 text-white" />
+                  </div>
+                  <span className="text-slate-700 font-semibold">3 tiendas</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Enterprise Plan */}
+          <div className="relative group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl opacity-0 group-hover:opacity-100 blur transition duration-500"></div>
+            <div className="relative bg-white rounded-2xl border-2 border-slate-200 p-8 hover:border-transparent transition-all duration-300">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
+                  <Crown className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    Enterprise
+                  </h3>
+                  <p className="text-xs text-slate-500">Sin límites</p>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-black text-slate-900">1.950 €</span>
+                  <span className="text-slate-500">/año</span>
+                </div>
+                <p className="text-sm text-slate-600 mt-1">163 €/mes facturado anualmente</p>
+              </div>
+
+              <Button 
+                onClick={() => navigate("/register")} 
+                variant="outline" 
+                className="w-full mb-6 font-semibold border-2 border-purple-600 text-purple-600 hover:bg-purple-50"
+              >
+                Contactar
+              </Button>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="h-5 w-5 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                    <Check className="h-3 w-3 text-purple-600" />
+                  </div>
+                  <span className="text-slate-700">Productos ilimitados</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="h-5 w-5 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                    <Check className="h-3 w-3 text-purple-600" />
+                  </div>
+                  <span className="text-slate-700">Clientes ilimitados</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="h-5 w-5 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                    <Check className="h-3 w-3 text-purple-600" />
+                  </div>
+                  <span className="text-slate-700">Tiendas ilimitadas</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
