@@ -2050,12 +2050,13 @@ async def get_items_with_profitability(
         if end_date:
             date_conditions["$lte"] = end_date
         if date_conditions:
-            rental_query["return_date"] = date_conditions
+            # Use end_date field for filtering returned rentals
+            rental_query["end_date"] = date_conditions
     
     # Get all closed rentals to calculate revenue per item
     closed_rentals = await db.rentals.find(
         rental_query,
-        {"items": 1, "total_amount": 1, "days": 1, "return_date": 1, "_id": 0}
+        {"items": 1, "total_amount": 1, "days": 1, "end_date": 1, "_id": 0}
     ).to_list(10000)
     
     # Calculate revenue per item (by barcode or id)
