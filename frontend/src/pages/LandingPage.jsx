@@ -250,46 +250,46 @@ export default function LandingPage() {
                   <div>
                     <div className="font-bold text-lg bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Pro</div>
                     <div className="text-sm text-slate-600 mt-1">1.450 € / año</div>
-                    <Badge className="mt-1 bg-primary text-white">Popular</Badge>
+                    <Badge className="mt-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold px-3 py-1">Popular</Badge>
                   </div>
                 </th>
-                <th className="p-4 text-center">
+                <th className="p-6 text-center">
                   <div>
                     <div className="font-bold text-lg">Enterprise</div>
-                    <div className="text-sm text-slate-600">1.950 € / año</div>
+                    <div className="text-sm text-slate-600 mt-1">1.950 € / año</div>
                   </div>
                 </th>
               </tr>
             </thead>
             <tbody>
               {pricingFeatures.map((feature, index) => (
-                <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                  <td className="p-4 font-medium text-slate-700">{feature.name}</td>
-                  <td className="p-4 text-center text-slate-600">{feature.trial}</td>
-                  <td className="p-4 text-center text-slate-600">{feature.basic}</td>
-                  <td className="p-4 text-center text-slate-900 font-semibold bg-primary/5">{feature.pro}</td>
-                  <td className="p-4 text-center text-slate-600">{feature.enterprise}</td>
+                <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
+                  <td className="p-5 font-semibold text-slate-700">{feature.name}</td>
+                  <td className="p-5 text-center text-slate-600">{feature.trial}</td>
+                  <td className="p-5 text-center text-slate-600">{feature.basic}</td>
+                  <td className="p-5 text-center text-slate-900 font-semibold bg-gradient-to-r from-blue-50 to-purple-50">{feature.pro}</td>
+                  <td className="p-5 text-center text-slate-600">{feature.enterprise}</td>
                 </tr>
               ))}
-              <tr>
-                <td className="p-4"></td>
-                <td className="p-4 text-center">
-                  <Button onClick={() => navigate("/register")} variant="outline" className="w-full">
+              <tr className="border-t-2 border-slate-200">
+                <td className="p-5"></td>
+                <td className="p-5 text-center">
+                  <Button onClick={() => navigate("/register")} variant="outline" className="w-full font-semibold border-2 hover:border-purple-600">
                     Probar Gratis
                   </Button>
                 </td>
-                <td className="p-4 text-center">
-                  <Button onClick={() => navigate("/register")} variant="outline" className="w-full">
+                <td className="p-5 text-center">
+                  <Button onClick={() => navigate("/register")} variant="outline" className="w-full font-semibold border-2 hover:border-purple-600">
                     Contratar
                   </Button>
                 </td>
-                <td className="p-4 text-center bg-primary/5">
-                  <Button onClick={() => navigate("/register")} className="w-full bg-primary">
+                <td className="p-5 text-center bg-gradient-to-r from-blue-50 to-purple-50">
+                  <Button onClick={() => navigate("/register")} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 font-bold hover:shadow-xl">
                     Contratar
                   </Button>
                 </td>
-                <td className="p-4 text-center">
-                  <Button onClick={() => navigate("/register")} variant="outline" className="w-full">
+                <td className="p-5 text-center">
+                  <Button onClick={() => navigate("/register")} variant="outline" className="w-full font-semibold border-2 hover:border-purple-600">
                     Contactar
                   </Button>
                 </td>
@@ -301,11 +301,11 @@ export default function LandingPage() {
 
       {/* FAQ Section */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center mb-12">
-          <Badge className="mb-4 bg-purple-50 text-purple-700 border-purple-200">
+        <div className="text-center mb-16">
+          <Badge className="mb-6 px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border-purple-200 font-semibold text-sm">
             FAQ
           </Badge>
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+          <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-4" style={{ fontFamily: 'Plus Jakarta Sans', letterSpacing: '-0.02em' }}>
             Preguntas Frecuentes
           </h2>
         </div>
@@ -314,11 +314,11 @@ export default function LandingPage() {
           {faqs.map((faq, index) => (
             <Card 
               key={index} 
-              className="cursor-pointer hover:shadow-md transition-shadow"
+              className="card-modern cursor-pointer"
               onClick={() => setOpenFaq(openFaq === index ? null : index)}
             >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-lg font-semibold pr-8">
+                <CardTitle className="text-lg font-bold pr-8">
                   {faq.question}
                 </CardTitle>
                 <ChevronDown 
@@ -328,7 +328,7 @@ export default function LandingPage() {
                 />
               </CardHeader>
               {openFaq === index && (
-                <CardContent className="text-slate-600 leading-relaxed">
+                <CardContent className="text-slate-600 leading-relaxed text-base">
                   {faq.answer}
                 </CardContent>
               )}
@@ -338,12 +338,12 @@ export default function LandingPage() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="bg-primary text-white py-20">
+      <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-6" style={{ fontFamily: 'Plus Jakarta Sans' }}>
             ¿Listo para eliminar las colas de una vez por todas?
           </h2>
-          <p className="text-xl text-white/90 mb-8">
+          <p className="text-xl text-white/95 mb-10 leading-relaxed">
             Únete a los profesionales que ya han recuperado el "Flow" de su negocio con SkiFlow Rental
           </p>
           <Button 
