@@ -201,20 +201,30 @@ export default function Dashboard() {
   };
 
   return (
-    <div className={`p-6 lg:p-8 space-y-6 min-h-screen transition-colors duration-300 ${darkMode ? 'bg-[#121212]' : 'bg-slate-50'}`} data-testid="dashboard">
+    <div className={`p-6 lg:p-8 space-y-8 min-h-screen transition-colors duration-300 ${darkMode ? 'bg-[#121212]' : 'bg-gradient-to-br from-slate-50 via-white to-purple-50'}`} data-testid="dashboard">
+      {/* Decorative gradient blobs */}
+      {!darkMode && (
+        <>
+          <div className="fixed top-20 right-0 w-96 h-96 bg-gradient-to-br from-blue-500 to-purple-600 blob-shape pointer-events-none" />
+          <div className="fixed bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-purple-500 to-pink-600 blob-shape-alt pointer-events-none" />
+        </>
+      )}
+      
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative z-10">
         <div>
-          <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`} style={{ fontFamily: 'Plus Jakarta Sans' }}>
+          <h1 className={`text-4xl md:text-5xl font-bold mb-2 ${darkMode ? 'text-white' : 'gradient-text'}`} style={{ fontFamily: 'Plus Jakarta Sans', letterSpacing: '-0.02em' }}>
             Dashboard
           </h1>
-          <p className="text-lg text-slate-600 font-medium mt-2">Gestiona tu tienda de alquiler con información en tiempo real</p>
+          <p className={`text-base md:text-lg font-medium ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+            Gestiona tu tienda de alquiler con información en tiempo real
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {/* BOTÓN GRANDE - NUEVO ALQUILER */}
           <Button 
             size="lg"
-            className="!bg-blue-600 hover:!bg-blue-700 text-white font-bold px-8 py-6 text-base cursor-pointer shadow-lg hover:shadow-xl transition-all"
+            className="btn-gradient font-bold px-8 py-6 text-base cursor-pointer shadow-xl hover:shadow-2xl transition-all rounded-xl"
             onClick={() => navigate("/nuevo-alquiler")}
           >
             <ShoppingCart className="h-5 w-5 mr-2" />
@@ -224,54 +234,56 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Cards Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
         {/* Card 1: Alquileres Activos */}
         <Card 
-          className="cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-blue-500"
+          className="card-modern cursor-pointer stat-card group"
           onClick={() => navigate('/alquileres-activos')}
         >
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-500">Alquileres Activos</p>
-                <p className="text-3xl font-bold text-slate-900 mt-1">{stats.active_rentals || 0}</p>
-                <p className="text-xs text-slate-500 mt-1">En curso ahora mismo</p>
+            <div className="flex items-start justify-between mb-4">
+              <div className="icon-gradient">
+                <ShoppingCart className="h-6 w-6 text-white" />
               </div>
-              <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                <ShoppingCart className="h-6 w-6 text-blue-600" />
-              </div>
+              <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-blue-600 transition-colors" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Alquileres Activos</p>
+              <p className="text-4xl font-bold text-slate-900 mt-2">{stats.active_rentals || 0}</p>
+              <p className="text-xs text-slate-500 mt-1">En curso ahora mismo</p>
             </div>
           </CardContent>
         </Card>
 
         {/* Card 2: Devoluciones Pendientes (Hoy + Atrasadas) */}
         <Card 
-          className="cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-amber-500"
+          className="card-modern cursor-pointer stat-card group"
           onClick={() => navigate('/devoluciones')}
         >
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-slate-500">Devoluciones Pendientes</p>
-                <p className="text-3xl font-bold text-slate-900 mt-1">{stats.pending_returns || 0}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  {stats.overdue_returns > 0 && (
-                    <Badge variant="destructive" className="text-xs">
-                      <AlertTriangle className="h-3 w-3 mr-1" />
-                      {stats.overdue_returns} atrasada{stats.overdue_returns !== 1 ? 's' : ''}
-                    </Badge>
-                  )}
-                  <p className="text-xs text-slate-500">
-                    {stats.overdue_returns === 0 && stats.pending_returns > 0 
-                      ? "Todas para hoy" 
-                      : stats.pending_returns === 0 
-                      ? "Sin pendientes" 
-                      : "Hoy + atrasadas"}
-                  </p>
-                </div>
+            <div className="flex items-start justify-between mb-4">
+              <div className="icon-gradient">
+                <RotateCcw className="h-6 w-6 text-white" />
               </div>
-              <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
-                <RotateCcw className="h-6 w-6 text-amber-600" />
+              <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-blue-600 transition-colors" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Devoluciones Pendientes</p>
+              <p className="text-4xl font-bold text-slate-900 mt-2">{stats.pending_returns || 0}</p>
+              <div className="flex items-center gap-2 mt-2">
+                {stats.overdue_returns > 0 && (
+                  <Badge variant="destructive" className="text-xs font-semibold">
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    {stats.overdue_returns} atrasada{stats.overdue_returns !== 1 ? 's' : ''}
+                  </Badge>
+                )}
+                <p className="text-xs text-slate-500">
+                  {stats.overdue_returns === 0 && stats.pending_returns > 0 
+                    ? "Todas para hoy" 
+                    : stats.pending_returns === 0 
+                    ? "Sin pendientes" 
+                    : "Hoy + atrasadas"}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -279,19 +291,20 @@ export default function Dashboard() {
 
         {/* Card 3: Ocupación Stock */}
         <Card 
-          className="cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-emerald-500"
+          className="card-modern cursor-pointer stat-card group"
           onClick={() => navigate('/inventario')}
         >
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-500">Ocupación Stock</p>
-                <p className="text-3xl font-bold text-slate-900 mt-1">{inventory.occupancy_percent || 0}%</p>
-                <p className="text-xs text-slate-500 mt-1">Material alquilado</p>
+            <div className="flex items-start justify-between mb-4">
+              <div className="icon-gradient">
+                <Package className="h-6 w-6 text-white" />
               </div>
-              <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center">
-                <Package className="h-6 w-6 text-emerald-600" />
-              </div>
+              <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-blue-600 transition-colors" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Ocupación Stock</p>
+              <p className="text-4xl font-bold text-slate-900 mt-2">{inventory.occupancy_percent || 0}%</p>
+              <p className="text-xs text-slate-500 mt-1">Material alquilado</p>
             </div>
           </CardContent>
         </Card>
