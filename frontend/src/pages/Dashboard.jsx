@@ -235,17 +235,17 @@ export default function Dashboard() {
           {/* Gradient accent bar */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-purple-600"></div>
           
-          <CardContent className="p-4 relative">
-            <div className="flex items-start justify-between mb-3">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                <ShoppingCart className="h-5 w-5 text-white" />
+          <CardContent className="p-3 relative">
+            <div className="flex items-start justify-between mb-2">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                <ShoppingCart className="h-4 w-4 text-white" />
               </div>
-              <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+              <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Alquileres Activos</p>
-              <p className="text-3xl font-black text-slate-900 mb-1">{stats.active_rentals || 0}</p>
-              <p className="text-xs text-slate-600">En curso ahora mismo</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Alquileres Activos</p>
+              <p className="text-2xl font-black text-slate-900 mb-0.5">{stats.active_rentals || 0}</p>
+              <p className="text-[10px] text-slate-600">En curso ahora mismo</p>
             </div>
           </CardContent>
         </Card>
@@ -258,24 +258,24 @@ export default function Dashboard() {
           {/* Gradient accent bar */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-pink-600"></div>
           
-          <CardContent className="p-4 relative">
-            <div className="flex items-start justify-between mb-3">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                <RotateCcw className="h-5 w-5 text-white" />
+          <CardContent className="p-3 relative">
+            <div className="flex items-start justify-between mb-2">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                <RotateCcw className="h-4 w-4 text-white" />
               </div>
-              <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
+              <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
             </div>
             <div className="flex-1">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Devoluciones Pendientes</p>
-              <p className="text-3xl font-black text-slate-900 mb-1">{stats.pending_returns || 0}</p>
-              <div className="flex items-center gap-2 mt-1">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Devoluciones Pendientes</p>
+              <p className="text-2xl font-black text-slate-900 mb-0.5">{stats.pending_returns || 0}</p>
+              <div className="flex items-center gap-2 mt-0.5">
                 {stats.overdue_returns > 0 && (
-                  <Badge variant="destructive" className="text-xs font-semibold px-1.5 py-0.5">
-                    <AlertTriangle className="h-2.5 w-2.5 mr-1" />
+                  <Badge variant="destructive" className="text-[10px] font-semibold px-1 py-0">
+                    <AlertTriangle className="h-2 w-2 mr-0.5" />
                     {stats.overdue_returns}
                   </Badge>
                 )}
-                <p className="text-xs text-slate-600">
+                <p className="text-[10px] text-slate-600">
                   {stats.overdue_returns === 0 && stats.pending_returns > 0 
                     ? "Todas para hoy" 
                     : stats.pending_returns === 0 
@@ -295,17 +295,17 @@ export default function Dashboard() {
           {/* Gradient accent bar */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-600 to-blue-600"></div>
           
-          <CardContent className="p-4 relative">
-            <div className="flex items-start justify-between mb-3">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-cyan-600 to-blue-600 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                <Package className="h-5 w-5 text-white" />
+          <CardContent className="p-3 relative">
+            <div className="flex items-start justify-between mb-2">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan-600 to-blue-600 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                <Package className="h-4 w-4 text-white" />
               </div>
-              <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-cyan-600 group-hover:translate-x-1 transition-all" />
+              <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-cyan-600 group-hover:translate-x-1 transition-all" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Ocupación Stock</p>
-              <p className="text-3xl font-black text-slate-900 mb-1">{inventory.occupancy_percent || 0}%</p>
-              <p className="text-xs text-slate-600">Material alquilado</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Ocupación Stock</p>
+              <p className="text-2xl font-black text-slate-900 mb-0.5">{inventory.occupancy_percent || 0}%</p>
+              <p className="text-[10px] text-slate-600">Material alquilado</p>
             </div>
           </CardContent>
         </Card>
@@ -318,17 +318,17 @@ export default function Dashboard() {
           {/* Gradient accent bar */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-600 to-purple-600"></div>
           
-          <CardContent className="p-4 relative">
-            <div className="flex items-start justify-between mb-3">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                <Users className="h-5 w-5 text-white" />
+          <CardContent className="p-3 relative">
+            <div className="flex items-start justify-between mb-2">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                <Users className="h-4 w-4 text-white" />
               </div>
-              <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+              <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Clientes del Día</p>
-              <p className="text-3xl font-black text-slate-900 mb-1">{stats.customers_today ?? 0}</p>
-              <p className="text-xs text-slate-600">Clientes únicos atendidos</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Clientes del Día</p>
+              <p className="text-2xl font-black text-slate-900 mb-0.5">{stats.customers_today ?? 0}</p>
+              <p className="text-[10px] text-slate-600">Clientes únicos atendidos</p>
             </div>
           </CardContent>
         </Card>
