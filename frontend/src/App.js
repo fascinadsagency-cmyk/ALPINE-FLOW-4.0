@@ -22,6 +22,7 @@ import ActiveRentals from "@/pages/ActiveRentals";
 import Providers from "@/pages/Providers";
 import Settings from "@/pages/Settings";
 import StoreManagement from "@/pages/StoreManagement";
+import PlansManagement from "@/pages/PlansManagement";
 import StoreSettings from "@/pages/StoreSettings";
 import Help from "@/pages/Help";
 import Support from "@/pages/Support";
@@ -176,6 +177,7 @@ function AppRoutes() {
           <Route path="integraciones" element={<Integrations />} />
           <Route path="configuracion" element={<Settings />} />
           <Route path="tiendas" element={<StoreManagement />} />
+          <Route path="planes" element={<PlansManagement />} />
           <Route path="tiendas/:storeId/ajustes" element={<StoreSettings />} />
           <Route path="ayuda" element={<Help />} />
           <Route path="ayuda/admin" element={<HelpAdmin />} />
