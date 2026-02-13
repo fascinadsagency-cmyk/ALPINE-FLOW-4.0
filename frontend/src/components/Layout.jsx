@@ -223,8 +223,8 @@ export default function Layout() {
           : 'border-slate-200 bg-white'
       }`}>
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
-            <Mountain className="h-4 w-4" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white overflow-hidden">
+            <img src="/logo.png" alt="Logo" className="h-full w-full object-contain p-0.5" />
           </div>
           <span className={`font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>SkiFlow Rental</span>
         </div>
