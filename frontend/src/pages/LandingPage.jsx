@@ -62,8 +62,8 @@ export default function LandingPage() {
     },
     {
       icon: Shield,
-      title: "Control Multi-tienda Centralizado",
-      description: "Gestiona varios puntos de alquiler con datos aislados y estadísticas independientes desde una sola cuenta. Ideal para cadenas que necesitan visión global y operativa local."
+      title: "Acceso Multiusuario por Tienda",
+      description: "Gestiona tu local desde varios ordenadores simultáneamente. Crea perfiles de empleado independientes para que cada miembro del equipo tenga su propio acceso bajo una misma licencia."
     }
   ];
 
