@@ -219,79 +219,137 @@ export default function LandingPage() {
             Precios
           </Badge>
           <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-            Planes que se adaptan a tu negocio
+            Planes que escalan con tu inventario
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Empieza gratis y escala cuando tu negocio crezca. Sin sorpresas.
+            Sin letras pequeñas. Todos los planes incluyen TODAS las funciones.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {plans.map((plan, index) => (
+        {/* Pricing Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse bg-white rounded-lg shadow-lg overflow-hidden">
+            <thead>
+              <tr className="bg-slate-50">
+                <th className="p-4 text-left font-semibold text-slate-700">Característica</th>
+                <th className="p-4 text-center">
+                  <div>
+                    <div className="font-bold text-lg">Trial</div>
+                    <div className="text-sm text-slate-600">0 € / 15 días</div>
+                  </div>
+                </th>
+                <th className="p-4 text-center">
+                  <div>
+                    <div className="font-bold text-lg">Basic</div>
+                    <div className="text-sm text-slate-600">950 € / año</div>
+                  </div>
+                </th>
+                <th className="p-4 text-center bg-primary/5">
+                  <div>
+                    <div className="font-bold text-lg text-primary">Pro</div>
+                    <div className="text-sm text-slate-600">1.450 € / año</div>
+                    <Badge className="mt-1 bg-primary text-white">Popular</Badge>
+                  </div>
+                </th>
+                <th className="p-4 text-center">
+                  <div>
+                    <div className="font-bold text-lg">Enterprise</div>
+                    <div className="text-sm text-slate-600">1.950 € / año</div>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {pricingFeatures.map((feature, index) => (
+                <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                  <td className="p-4 font-medium text-slate-700">{feature.name}</td>
+                  <td className="p-4 text-center text-slate-600">{feature.trial}</td>
+                  <td className="p-4 text-center text-slate-600">{feature.basic}</td>
+                  <td className="p-4 text-center text-slate-900 font-semibold bg-primary/5">{feature.pro}</td>
+                  <td className="p-4 text-center text-slate-600">{feature.enterprise}</td>
+                </tr>
+              ))}
+              <tr>
+                <td className="p-4"></td>
+                <td className="p-4 text-center">
+                  <Button onClick={() => navigate("/register")} variant="outline" className="w-full">
+                    Probar Gratis
+                  </Button>
+                </td>
+                <td className="p-4 text-center">
+                  <Button onClick={() => navigate("/register")} variant="outline" className="w-full">
+                    Contratar
+                  </Button>
+                </td>
+                <td className="p-4 text-center bg-primary/5">
+                  <Button onClick={() => navigate("/register")} className="w-full bg-primary">
+                    Contratar
+                  </Button>
+                </td>
+                <td className="p-4 text-center">
+                  <Button onClick={() => navigate("/register")} variant="outline" className="w-full">
+                    Contactar
+                  </Button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="text-center mb-12">
+          <Badge className="mb-4 bg-purple-50 text-purple-700 border-purple-200">
+            FAQ
+          </Badge>
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+            Preguntas Frecuentes
+          </h2>
+        </div>
+
+        <div className="space-y-4">
+          {faqs.map((faq, index) => (
             <Card 
               key={index} 
-              className={`relative ${
-                plan.highlighted 
-                  ? 'border-2 border-primary shadow-xl scale-105' 
-                  : 'border-2'
-              }`}
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => setOpenFaq(openFaq === index ? null : index)}
             >
-              {plan.highlighted && (
-                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary">
-                  Más Popular
-                </Badge>
-              )}
-              <CardHeader>
-                <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold text-slate-900">{plan.price}</span>
-                  {plan.duration && (
-                    <span className="text-slate-600 ml-2">/ {plan.duration}</span>
-                  )}
-                </div>
-                <CardDescription className="mt-2">{plan.description}</CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-lg font-semibold pr-8">
+                  {faq.question}
+                </CardTitle>
+                <ChevronDown 
+                  className={`h-5 w-5 text-slate-400 transition-transform flex-shrink-0 ${
+                    openFaq === index ? 'rotate-180' : ''
+                  }`} 
+                />
               </CardHeader>
-              <CardContent>
-                <Button 
-                  className={`w-full mb-6 ${
-                    plan.highlighted 
-                      ? 'bg-primary hover:bg-primary/90' 
-                      : ''
-                  }`}
-                  variant={plan.highlighted ? "default" : "outline"}
-                  onClick={() => navigate("/register")}
-                >
-                  {plan.cta}
-                </Button>
-                <ul className="space-y-3">
-                  {plan.features.map((feature, fIndex) => (
-                    <li key={fIndex} className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                      <span className="text-sm text-slate-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
+              {openFaq === index && (
+                <CardContent className="text-slate-600 leading-relaxed">
+                  {faq.answer}
+                </CardContent>
+              )}
             </Card>
           ))}
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Final CTA Section */}
       <section className="bg-primary text-white py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold mb-6">
-            ¿Listo para transformar tu negocio?
+            ¿Listo para eliminar las colas de una vez por todas?
           </h2>
           <p className="text-xl text-white/90 mb-8">
-            Únete a cientos de negocios que ya confían en AlpineFlow
+            Únete a los profesionales que ya han recuperado el "Flow" de su negocio con SkiFlow Rental
           </p>
           <Button 
             size="lg"
-            className="bg-white text-primary hover:bg-slate-100 text-lg px-8 py-6"
+            className="bg-white text-primary hover:bg-slate-100 text-lg px-8 py-6 font-bold"
             onClick={() => navigate("/register")}
           >
-            Empezar Gratis Ahora
+            EMPEZAR PRUEBA ILIMITADA GRATIS
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         </div>
@@ -305,11 +363,11 @@ export default function LandingPage() {
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
                 <Package className="h-8 w-8 text-primary" />
-                <span className="text-2xl font-bold">AlpineFlow</span>
+                <span className="text-2xl font-bold">SkiFlow Rental</span>
               </div>
               <p className="text-slate-400 max-w-md">
-                Software profesional de gestión de alquileres. 
-                Simplifica tu negocio y aumenta tu productividad.
+                El software de alquiler que elimina las colas y recupera el control de tu stock en tiempo real. 
+                Diseñado para la temporada alta.
               </p>
             </div>
 
@@ -337,7 +395,7 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t border-slate-800 mt-8 pt-8 text-center text-slate-400">
-            <p>&copy; 2026 AlpineFlow. Todos los derechos reservados.</p>
+            <p>&copy; 2026 SkiFlow Rental. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>
