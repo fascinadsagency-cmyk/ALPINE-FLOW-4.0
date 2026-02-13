@@ -153,20 +153,18 @@ export default function Login() {
               </Button>
             </form>
             <div className="mt-6 text-center">
-              <button
-                type="button"
-                onClick={() => setIsRegister(!isRegister)}
+              <Link
+                to="/register"
                 className="text-sm text-primary hover:underline"
                 data-testid="toggle-auth-mode"
               >
-                {isRegister 
-                  ? "¿Ya tienes cuenta? Inicia sesión" 
-                  : "¿No tienes cuenta? Regístrate"}
-              </button>
+                ¿No tienes cuenta? Regístrate gratis
+              </Link>
             </div>
           </CardContent>
         </Card>
       </div>
+    </div>
     </div>
   );
 }
