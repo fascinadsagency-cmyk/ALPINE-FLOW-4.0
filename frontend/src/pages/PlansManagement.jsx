@@ -180,9 +180,16 @@ export default function PlansManagement() {
                       </CardDescription>
                     </div>
                   </div>
-                  <Badge className="uppercase">
-                    {planType}
-                  </Badge>
+                  <div className="flex flex-col items-end gap-2">
+                    <Badge className="uppercase">
+                      {planType}
+                    </Badge>
+                    {customizedPlans.includes(planType) && (
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+                        Personalizado
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
