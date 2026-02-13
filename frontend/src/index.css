@@ -181,17 +181,17 @@
     --tw-ring-offset-color: #121212;
 }
 
-/* Status colors */
+/* Status colors - Harmonized with blue/purple theme */
 .status-available {
-    @apply bg-emerald-100 text-emerald-700 border-emerald-200;
+    @apply bg-cyan-100 text-cyan-700 border-cyan-200;
 }
 
 .status-rented {
-    @apply bg-red-100 text-red-700 border-red-200;
+    @apply bg-pink-100 text-pink-700 border-pink-200;
 }
 
 .status-maintenance {
-    @apply bg-amber-100 text-amber-700 border-amber-200;
+    @apply bg-orange-100 text-orange-700 border-orange-200;
 }
 
 .status-retired {
@@ -200,15 +200,15 @@
 
 /* Dark mode status colors - Higher contrast */
 .dark .status-available {
-    @apply bg-emerald-900/50 text-emerald-300 border-emerald-700;
+    @apply bg-cyan-900/50 text-cyan-300 border-cyan-700;
 }
 
 .dark .status-rented {
-    @apply bg-red-900/50 text-red-300 border-red-700;
+    @apply bg-pink-900/50 text-pink-300 border-pink-700;
 }
 
 .dark .status-maintenance {
-    @apply bg-amber-900/50 text-amber-300 border-amber-700;
+    @apply bg-orange-900/50 text-orange-300 border-orange-700;
 }
 
 .dark .status-retired {
