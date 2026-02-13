@@ -106,7 +106,7 @@ export default function Layout() {
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className={`flex h-20 items-center justify-center px-6 ${darkMode ? 'border-b border-slate-700' : 'border-b border-white/20'}`}>
-            <img src="/logo.png" alt="SkiFlow Rental" className="h-12 w-auto object-contain" />
+            <img src="/logo-white.png" alt="SkiFlow Rental" className="h-8 w-auto object-contain" />
           </div>
 
           {/* Navigation - tabindex=-1 to prevent Tab jumping to sidebar during form editing */}
