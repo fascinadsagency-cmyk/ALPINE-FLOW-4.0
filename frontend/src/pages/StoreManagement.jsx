@@ -25,6 +25,7 @@ export default function StoreManagement() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedStore, setSelectedStore] = useState(null);
   const [storeStats, setStoreStats] = useState({});
+  const [planLimits, setPlanLimits] = useState({});
 
   // New store form
   const [newStore, setNewStore] = useState({
@@ -47,8 +48,20 @@ export default function StoreManagement() {
     }
     if (user) {
       loadStores();
+      loadPlanLimits();
     }
   }, [user, navigate]);
+
+  const loadPlanLimits = async () => {
+    try {
+      const response = await axios.get(`${API}/api/plans`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      setPlanLimits(response.data.plans);
+    } catch (error) {
+      console.error("Error loading plan limits:", error);
+    }
+  };
 
   const loadStores = async () => {
     setLoading(true);
