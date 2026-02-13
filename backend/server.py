@@ -9543,6 +9543,126 @@ async def get_store_stats(store_id: int, current_user: CurrentUser = Depends(req
     }
 
 
+
+# ==================== PLANS MANAGEMENT ENDPOINTS ====================
+
+class PlanUpdate(BaseModel):
+    name: Optional[str] = None
+    max_items: Optional[int] = None
+    max_customers: Optional[int] = None
+    max_users: Optional[int] = None
+    price: Optional[float] = None
+    duration_days: Optional[int] = None
+    stripe_price_id: Optional[str] = None
+    description: Optional[str] = None
+    features: Optional[List[str]] = None
+
+@api_router.get("/plans")
+async def get_all_plans(current_user: CurrentUser = Depends(get_current_user)):
+    """
+    Get all available plans with their limits and pricing.
+    Returns custom plans from DB if they exist, otherwise returns default PLAN_LIMITS.
+    """
+    # Try to get custom plans from database
+    custom_plans = await db.plans.find({}, {"_id": 0}).to_list(10)
+    
+    if custom_plans:
+        # Return custom plans from DB
+        plans_dict = {plan["plan_type"]: plan for plan in custom_plans}
+    else:
+        # Return default PLAN_LIMITS
+        plans_dict = {}
+        for plan_type, limits in PLAN_LIMITS.items():
+            plans_dict[plan_type] = {
+                "plan_type": plan_type,
+                **limits
+            }
+    
+    return {
+        "plans": plans_dict,
+        "source": "custom" if custom_plans else "default"
+    }
+
+@api_router.put("/plans/{plan_type}")
+async def update_plan(
+    plan_type: str,
+    updates: PlanUpdate,
+    current_user: CurrentUser = Depends(require_super_admin)
+):
+    """
+    Update a plan's configuration - SUPER_ADMIN ONLY
+    Creates or updates a plan in the database.
+    """
+    # Validate plan_type
+    if plan_type not in PLAN_LIMITS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Plan inválido. Planes disponibles: {', '.join(PLAN_LIMITS.keys())}"
+        )
+    
+    # Get current plan (from DB or defaults)
+    existing_plan = await db.plans.find_one({"plan_type": plan_type})
+    
+    if existing_plan:
+        # Update existing custom plan
+        update_dict = {k: v for k, v in updates.model_dump().items() if v is not None}
+        
+        if update_dict:
+            await db.plans.update_one(
+                {"plan_type": plan_type},
+                {"$set": update_dict}
+            )
+    else:
+        # Create new custom plan based on defaults
+        default_plan = PLAN_LIMITS[plan_type].copy()
+        update_dict = {k: v for k, v in updates.model_dump().items() if v is not None}
+        
+        new_plan = {
+            "plan_type": plan_type,
+            **default_plan,
+            **update_dict,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.plans.insert_one(new_plan)
+    
+    # Return updated plan
+    updated_plan = await db.plans.find_one({"plan_type": plan_type}, {"_id": 0})
+    if not updated_plan:
+        # If still not in DB, return the default with updates applied
+        updated_plan = {
+            "plan_type": plan_type,
+            **PLAN_LIMITS[plan_type],
+            **{k: v for k, v in updates.model_dump().items() if v is not None}
+        }
+    
+    return updated_plan
+
+@api_router.post("/plans/{plan_type}/reset")
+async def reset_plan_to_default(
+    plan_type: str,
+    current_user: CurrentUser = Depends(require_super_admin)
+):
+    """
+    Reset a plan to its default configuration - SUPER_ADMIN ONLY
+    Deletes the custom plan from DB, reverting to PLAN_LIMITS.
+    """
+    if plan_type not in PLAN_LIMITS:
+        raise HTTPException(status_code=400, detail="Plan inválido")
+    
+    result = await db.plans.delete_one({"plan_type": plan_type})
+    
+    return {
+        "message": f"Plan '{plan_type}' restaurado a valores por defecto",
+        "deleted": result.deleted_count > 0,
+        "default_plan": {
+            "plan_type": plan_type,
+            **PLAN_LIMITS[plan_type]
+        }
+    }
+
+
 # ==================== TEAM MANAGEMENT ENDPOINTS ====================
 
 @api_router.get("/team/members")
