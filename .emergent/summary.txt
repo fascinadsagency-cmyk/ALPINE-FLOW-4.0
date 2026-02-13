@@ -1,83 +1,85 @@
 <analysis>**original_problem_statement:**
 The user initiated a series of feature requests and bug fixes:
-1.  **Default Store Settings:** Configure new stores to have Auto Print Ticket () and Quick Scan Mode () enabled by default. This should not affect existing stores.
-2.  **Thermal Printer CSS Fix:** Correct the print CSS to ensure tickets print correctly on 80mm thermal printers without extra margins, so the user doesn't have to manually adjust print dialog settings.
-3.  **Keyboard Navigation:** Implement comprehensive keyboard navigation across the app, especially on the New Rental page. This includes using arrow keys for grid-like movement, Enter as Tab, and providing a clear visual focus indicator ( ring).
-4.  **Language Expansion:** Add Catalan (CA) and French (FR) to the application's language selector and provide complete translation files for the new languages.
-5.  **Missing Translations:** Fix hardcoded text in the main layout, ensuring that menu items like Team Management, My Account, Help, and Support are properly translated when the language is changed.
-6.  **Rental Date Adjustment with Discount:** In the Active Rentals date change modal, add a feature to apply a discount for non-billable days. This should recalculate the price based on fewer days while keeping the physical return date the same, and register a negative balance (amount to be refunded) on the rental.
+1.  **Default Store Settings:** Configure new stores to have Auto Print Ticket () and Quick Scan Mode () enabled by default. (Completed in previous session).
+2.  **Thermal Printer CSS Fix:** Correct the print CSS to ensure tickets print correctly on 80mm thermal printers. (Completed in previous session, further improved in this session).
+3.  **Keyboard Navigation:** Implement comprehensive keyboard navigation across the app. (Completed in previous session).
+4.  **Language Expansion:** Add Catalan (CA) and French (FR) to the application. (Completed in previous session).
+5.  **Missing Translations:** Fix hardcoded text in the main layout. (Completed in previous session).
+6.  **Rental Date Adjustment with Discount:** In the Active Rentals date change modal, add a feature to apply a discount for non-billable days. This should register a negative balance (credit) on the rental, to be settled on final return, not immediately.
+7.  **Quick Pay Button:** On the Active Rentals page, add a COBRAR (PAY) button for rentals with a pending balance, allowing for quick payment processing without navigating away.
+8.  **Payment Method Edit Bug:** Fix a bug that prevents changing a rental's payment method from Pending to a paid state (e.g., Cash).
+9.  **Global Barcode Listener:** Implement a global scanner listener that captures barcode scans from anywhere in the application without requiring the user to click on a specific input field first.
+10. **Driver-Agnostic Printing:** Simplify the printing system to generate a clean HTML ticket and use the operating system's default print dialog (), making it hardware-agnostic.
+11. **Inventory Performance Report:** Add the internal code column to the inventory performance report view.
 
 **User's preferred language**: Spanish
 
 **what currently exists?**
-The application is a rental management system. New stores are now created with Auto Print and Quick Scan Mode enabled by default. The CSS for printing has been adjusted for 80mm thermal printers. Full keyboard navigation has been implemented, including a global  hook and a visible focus ring. The application now supports Catalan and French, with all UI elements, including previously hardcoded sidebar menus, being translated correctly. Work has begun on the discount days feature in the active rental date adjustment modal.
+The application is a rental management system. Previous work established a multilingual UI (including Spanish, Catalan, French), keyboard navigation, and default settings for new stores.
+
+In this session, several key features were added and bugs fixed:
+*   A Quick Pay button was implemented on the  page to settle outstanding balances instantly.
+*   A critical backend bug was fixed, which was preventing payment methods from being updated correctly and affecting at least 10 other endpoints.
+*   A global barcode scanner listener was integrated into the  page, allowing staff to scan items from anywhere in the UI to look up rentals.
+*   The printing system was overhauled to be driver-agnostic, using a hidden iframe and the OS's native print functionality for better reliability.
+*   The discount days feature was partially implemented, with the backend logic to handle deferred refunds (credits) now in place.
 
 **Last working item**:
-- **Last item agent was working:** Implementing the Días a descontar (Days to discount) feature in the Ajuste de Fecha (Date Adjustment) modal located in . The agent has added the new UI input field, state variables (, ), and placeholder logic in the frontend. The backend has not yet been modified to handle this new logic.
-- **Status:** IN PROGRESS
+- **Last item agent was working:** The user requested a new feature: add an internal code column to the inventory performance report page.
+- **Status:** NOT STARTED
 - **Agent Testing Done:** N
 - **Which testing method agent to use?** both
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1:** Complete Días a descontar (discount days) feature (P0)
+-   **Issue 1:** Add internal code column to inventory performance report (P0)
 -   **Issue 2:** Cannot edit admin user's own email and password (P1)
 
 **Issues Detail:**
--   **Issue 1: Complete Días a descontar (discount days) feature**
-    -   **Attempted fixes:** The agent has added the frontend UI elements and state management within . This includes a new numeric input for Días a descontar, state variables  and , and updated the  and modal opening functions to handle the new state.
+-   **Issue 1: Add internal code column to inventory performance report**
+    -   **Attempted fixes:** None. This is a new request.
     -   **Next debug checklist:**
-        1.  Modify the backend endpoint for changing rental dates ( in ).
-        2.  The endpoint must accept a new  parameter.
-        3.  Update the price calculation logic to use  ( - ).
-        4.  Ensure the rental document in the database is updated with a negative balance ( or a new field) if a refund is due.
-        5.  Connect the frontend  function to send the  value to the modified backend endpoint.
-        6.  Perform end-to-end testing: change a date, apply a discount, and verify the price difference and negative balance are calculated and displayed correctly.
-    -   **Why fix this issue and what will be achieved with the fix?** To provide operational flexibility, allowing staff to issue partial refunds for rentals cut short (e.g., due to illness or weather) without complex manual calculations. It registers a credit for the customer to be settled upon final return.
-    -   **Status:** IN PROGRESS
+        1.  Locate the frontend component responsible for rendering the inventory performance report.
+        2.  Identify the backend endpoint that supplies data for this report.
+        3.  Modify the backend endpoint and query to include the item's .
+        4.  Update the frontend component to add a new column to the table and display the .
+    -   **Why fix this issue and what will be achieved with the fix?** To provide more detailed information in the inventory report, allowing users to identify items by their internal code in addition to their name.
+    -   **Status:** NOT STARTED
     -   **Is recurring issue?** N
     -   **Should Test frontend/backend/both after fix?** both
     -   **Blocked on other issue:** None
 
 -   **Issue 2: Cannot edit admin user's own email and password**
-    -   **Attempted fixes:** (From previous fork, not addressed in this session) Initial investigation located the frontend code ( in ) and noted the password field is missing from the API call. No fix was attempted.
+    -   **Attempted fixes:** None in this session. This is a carry-over from a previous fork.
     -   **Next debug checklist:**
-        1.  Examine  to enable the password field for the current admin user.
-        2.  Update  to include the new password in the payload to .
-        3.  Inspect the backend endpoint in  to ensure it can handle password updates for any user, including hashing the new password.
-    -   **Why fix this issue and what will be achieved with the fix?** This is a basic administrative function required for security and account management.
+        1.  Examine  to enable the email and password fields for the currently logged-in admin user.
+        2.  Update the  function to include the new password in the payload to .
+        3.  Inspect the backend endpoint in  to ensure it correctly handles password updates (including hashing) for any user, including the admin themselves.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a basic security and account management feature allowing administrators to update their own credentials.
     -   **Status:** NOT STARTED
     -   **Is recurring issue?** N
     -   **Should Test frontend/backend/both after fix?** Both
     -   **Blocked on other issue:** None
 
 **In progress Task List**:
-*   **Task 1:** Add Pendiente (Pending) payment option to active rentals.
-    *   **Where to resume:** Frontend and backend logic are in place. This is pending end-to-end user verification, which was previously blocked by a lack of test data (available items to add to a rental).
-    *   **What will be achieved with this?** Allows staff to add items to an ongoing rental and defer payment collection until the final return.
-    - **Status:** USER VERIFICATION PENDING
-    - **Should Test frontend/backend/both after fix?** Both
-    *   **Blocked on something:** Awaiting user testing/confirmation.
+-   **Task 1:** Complete Días a descontar (discount days) feature
+    -   **Where to resume:** The frontend and backend logic for creating a deferred credit has been implemented. The final step is to perform an end-to-end test: create a rental, modify its date to apply a discount, verify the credit is registered, and then complete the final return process to ensure the credit is applied correctly.
+    -   **What will be achieved with this?** Allows staff to issue partial refunds for rentals without complex manual calculations, registering a credit for the customer to be settled upon final return.
+    -   **Status:** USER VERIFICATION PENDING
+    -   **Should Test frontend/backend/both after fix?** Both
+    -   **Blocked on something:** None.
 
 **Upcoming and Future Tasks**
 There are no other explicit upcoming or future tasks mentioned by the user.
 
 **Completed work in this session**
--   **Default Store Settings:** Modified  () to set  and  to  for all newly created stores. Verified that existing stores are unaffected.
--   **Thermal Printer CSS Fix:** Updated print-specific CSS in  and  to use  to ensure correct printing on thermal receipt printers.
--   **Keyboard Navigation System:**
-    -   Created a new global hook  to handle arrow key (Up/Down/Left/Right) and Enter key navigation.
-    -   Implemented a highly visible focus ring using  in .
-    -   Integrated the hook into  and resolved a critical bug where a custom  component conflicted with Radix UI's default modal focus behavior, preventing keyboard input in modals. The fix involved removing the redundant .
--   **Language Expansion (Catalan & French):**
-    -   Added translation files  and  in .
-    -   Updated the language selector UI in  to include the new languages.
--   **Fixed Missing Translations:**
-    -   Refactored  to use translation keys () instead of hardcoded labels for sidebar menu items.
-    -   Added the corresponding translation keys for Team Management, My Account, Help, Support, etc., to all language files in .
+-   **Quick Pay for Pending Rentals:** Implemented a conditional COBRAR button in  that appears for rentals with a balance due. Clicking it opens a payment modal, and on success, the UI updates instantly without a page reload. This was fully tested by the agent and verified by the testing agent.
+-   **Payment Method Edit Bug Fix:** Corrected a critical bug in  across 10 endpoints where  was incorrectly used on a Pydantic object instead of . This fixed the inability to change payment methods and other related issues. Verified with .
+-   **Global Barcode Listener:** Integrated the existing  hook into  to enable global barcode scanning for customer/rental lookup. A UI tip was also added to inform users of this capability.
+-   **Driver-Agnostic Printing System:** Refactored  to use a hidden iframe, triggering  for a more reliable, hardware-independent printing experience. Also added user instructions to the  page.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1:** In Team Management, the admin user cannot edit their own email and password. This was carried over from the previous fork and was not addressed in the current session.
+-   **Issue 1:** In Team Management, the admin user cannot edit their own email and password. This was carried over from the previous fork and remains outstanding.
 
 **Known issue recurrence from previous fork**
 None.
@@ -86,64 +88,63 @@ None.
 
 
 **Key Technical Concepts**
-*   **Frontend:** React, TailwindCSS,  (via ), Custom Hooks
+*   **Frontend:** React, TailwindCSS, , Custom Hooks
 *   **Backend:** Python (FastAPI), MongoDB ()
-*   **State Management:** React , , .
-*   **Global Event Handling:**  hook attaches a  listener to the window to control focus across the application.
-*   **UI/UX:** Managing focus state () for accessibility and keyboard navigation. Debugging focus trap conflicts between libraries (custom implementation vs. Radix UI).
+*   **Deferred Logic:** Backend implementation () to register a pending credit (negative ) on a rental instead of processing an immediate cash transaction.
+*   **Optimistic UI Updates:** Instantly updating the React state in  after a successful API call (e.g., after a Quick Pay action) to reflect changes without a page refresh.
+*   **Global Event Listeners:** Using a React hook () attached to the  to capture keyboard events globally for barcode scanning, independent of the focused element.
+*   **Silent Printing:** Employing a hidden  to load ticket HTML and trigger  programmatically, ensuring a smoother printing workflow that relies on OS-level printer drivers.
 
 **key DB schema**
-*   **settings:**  (Note:  and  are new fields).
-*   **rentals:**  (Note:  will be used to store negative balances for refunds).
+*   **rentals:** . The  field is now used for both debt () and credit ().
 *   **team_members:** 
+*   **cashbox_movements:** A new movement is created when a payment method is changed from  to a paid status.
 
 **changes in tech stack**
 None.
 
 **All files of reference**
-*   : Modified to set default settings for new stores and to correctly retrieve settings per store.
-*   : Heavily modified to add Catalan and French translations and new translation keys.
-*   : New file created for the global keyboard navigation feature.
-*   : Modified to integrate  hook and to remove a conflicting  component from the New Customer modal.
-*   : Refactored to use translation keys for sidebar menu items instead of hardcoded text.
-*   : Modified to add a prominent global style for .
-*   : Modified to include improved  CSS rules for thermal printers.
-*   : Currently being modified to add the discount days feature.
+*   : Modified  for deferred refunds and fixed a critical  attribute access bug in 10 locations.
+*   : Major updates to add the Quick Pay modal and button, integrate the global barcode scanner, and enhance the date change modal for deferred credits.
+*   : Re-written to use a hidden iframe for printing.
+*   : Added a new informational section with instructions for setting up silent printing.
+*   : Added new translation keys for the printer instructions.
 
 **Areas that need refactoring**:
-*   : Remains a large, monolithic file that would benefit from being split into modules (e.g., by route/resource).
-*   : Still a very large and complex component that should be broken down into smaller, more manageable child components.
-*   : This context has grown to include all i18n translations. These could be moved to dedicated JSON files per language in a  folder to improve organization.
+*   : Remains a large, monolithic file that would benefit from being split into modules by route/resource.
+*   : Still a very large and complex component that should be broken down.
+*   : The context is overloaded with all i18n translations, which could be moved to dedicated JSON files in a  directory.
 
 **key api endpoints**
-*   : Modified to initialize  and  to .
-*   : Modified to correctly filter settings by the logged-in user's .
-*   : **(Next to be modified)** This endpoint needs to be updated to accept  and recalculate the rental price.
+*   : Modified to accept  and  to process credits.
+*   : The existing endpoint was successfully used for the new Quick Pay feature.
+*   : A critical bug preventing this endpoint from working was fixed.
 
 **Critical Info for New Agent**
-*   **Focus Trap Conflicts:** Be extremely cautious when adding custom focus management (like the old  component). UI libraries like Radix UI (used by shadcn) have their own robust, built-in focus trapping for modals (). Adding a second one will break keyboard input. The solution was to remove the redundant custom trap and rely on the library's native behavior.
-*   **Global Keyboard Hook:** The  hook controls focus across the app. It is designed to be disabled under specific conditions (e.g., when a suggestion list is open) to allow local components to handle their own keyboard events. When debugging keyboard issues, check if the hook needs a new  condition.
-*   **i18n Implementation:** All translations are managed within . To add or fix translations, this is the primary file to edit. New UI text should use the  function from the  hook.
+*   **Critical Bug Fix Pattern:** A recurring bug was fixed where  was used on a Pydantic object. The correct pattern is . Be mindful of this when working with the  object in .
+*   **Global Scanner:** The  hook provides app-wide barcode scanning. If adding new pages that require scanning, this hook should be integrated. It is already present on  and .
+*   **Deferred Refunds:** The discount days feature works by creating a negative . This amount should be settled upon the final return of the rental. This logic is not fully tested end-to-end.
 
 **documents and test reports created in this job**
-*    was updated.
+*   
+*    (updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Requests the discount days feature for the date adjustment modal with detailed UI/backend requirements. *(IN PROGRESS)*
-2.  **User:** Reports that some sidebar menu tabs (team management, support, etc.) are not being translated. *(RESOLVED)*
-3.  **User:** Requests the addition of Catalan and French languages. *(RESOLVED)*
-4.  **User:** Reports that keyboard navigation (tab and arrows) is not working in many places, especially the New Customer modal. *(RESOLVED)*
-5.  **User:** Clarifies that the keyboard navigation issue is critical and needs to be fixed. *(RESOLVED)*
-6.  **User:** Requests full keyboard navigation for the app to behave like a desktop application. *(RESOLVED)*
-7.  **User:** Reports that printed tickets are coming out blank on thermal printers and provides specific CSS rules to fix it. *(RESOLVED)*
-8.  **User:** Asks agent to finish the task. *(HANDLED)*
-9.  **User:** Confirms that the fix for default store settings is working as expected. *(RESOLVED)*
-10. **User:** Requests that new stores are created with Auto Print and Quick Scan enabled by default. *(RESOLVED)*
+1.  **User:** Reports an error when changing payment method from 'pending' to 'cash' in active rentals. *(RESOLVED)*
+2.  **User:** Requests a Global Barcode Listener so scanning works without clicking in an input box. *(RESOLVED)*
+3.  **User:** Asks to refactor the printing system to be driver-agnostic and use  for reliability. *(RESOLVED)*
+4.  **Agent:** Summarizes the completed printing implementation. *(Handled)*
+5.  **User:** Requests adding the internal code column to the inventory performance report. *(PENDING - This is the current highest priority task)*
+6.  **User:** Asks to start with the discount days feature, ensuring the refund is not paid immediately but registered as a credit. *(IN PROGRESS - User Verification Pending)*
+7.  **User:** Requests a Quick Pay button on the Active Rentals page to streamline paying off pending balances. *(RESOLVED)*
+8.  **System:** Pod restarted due to memory limit. *(Handled)*
+9.  **User:** Reports that editing the payment method from pending to cash fails and asks if tests were run. *(Handled, led to bug discovery)*
+10. **Agent:** Confirms the Quick Pay functionality works perfectly after testing. *(Handled)*
 
 **Project Health Check:**
 *   **Broken:**
-    *   The functionality to edit an admin's own email and password.
-    *   The date adjustment/discount feature is incomplete.
+    *   The feature to allow an admin user to edit their own email and password is not implemented.
+    *   The inventory performance report is missing the user-requested internal code column.
 *   **Mocked:**
     *   None.
 
@@ -151,14 +152,15 @@ None.
 *   None.
 
 **Testing status**
-*   **Testing agent used after significant changes:** NO
-*   **Troubleshoot agent used after agent stuck in loop:** NO
-*   **Test files created:** None
-*   **Known regressions:** None
+-   **Testing agent used after significant changes:** YES (for the Quick Pay feature).
+-   **Troubleshoot agent used after agent stuck in loop:** NO
+-   **Test files created:** None, but a test report was generated: .
+-   **Known regressions:** None.
 
 **Credentials to test flow:**
 *   **Username:** 
 *   **Password:** 
 
 **What agent forgot to execute**
-- The pending issue from the previous fork—allowing an admin to edit their own credentials—was not addressed during this session and remains outstanding.</analysis>
+-   The pending issue from the previous fork—allowing an admin to edit their own credentials—was not addressed during this session and remains outstanding.
+-   The discount days feature, while partially implemented, did not undergo a full end-to-end test to verify that the registered credit is correctly applied during the final return process.</analysis>
