@@ -445,16 +445,16 @@ html.dark .sticky {
 /* Organic blob shapes */
 .blob-shape {
     border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-    filter: blur(80px);
-    opacity: 0.06;
+    filter: blur(100px);
+    opacity: 0.03;
     z-index: 0;
     pointer-events: none;
 }
 
 .blob-shape-alt {
     border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-    filter: blur(90px);
-    opacity: 0.05;
+    filter: blur(100px);
+    opacity: 0.03;
     z-index: 0;
     pointer-events: none;
 }
