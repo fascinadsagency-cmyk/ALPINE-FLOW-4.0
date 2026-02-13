@@ -2685,8 +2685,8 @@ async def sync_item_types(current_user: CurrentUser = Depends(get_current_user))
 @api_router.post("/item-types", response_model=ItemTypeResponse)
 async def create_item_type(item_type: ItemTypeCreate, current_user: CurrentUser = Depends(get_current_user)):
     """Create a new custom item type"""
-    # Normalize value (lowercase, no spaces)
-    normalized_value = item_type.value.lower().replace(" ", "_")
+    # Preserve original value (only trim whitespace)
+    normalized_value = item_type.value.strip()
     
     # Multi-tenant: Check existing within same store
     existing = await db.item_types.find_one({**current_user.get_store_filter(), "value": normalized_value})
