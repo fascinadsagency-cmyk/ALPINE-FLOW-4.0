@@ -1463,6 +1463,7 @@ async def import_customers(request: CustomerImportRequest, current_user: Current
             customer_id = str(uuid.uuid4())
             doc = {
                 "id": customer_id,
+                "store_id": current_user.store_id,  # CRITICAL: Add store_id for multi-tenant isolation
                 "dni": dni_upper,
                 "name": customer.name.strip(),
                 "phone": customer.phone.strip() if customer.phone else "",
