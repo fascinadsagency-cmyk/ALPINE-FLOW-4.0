@@ -3528,10 +3528,23 @@ async def get_packs(current_user: CurrentUser = Depends(get_current_user)):
 
 @api_router.put("/packs/{pack_id}", response_model=PackResponse)
 async def update_pack(pack_id: str, pack: PackCreate, current_user: CurrentUser = Depends(get_current_user)):
+    """
+    Update pack - verifies items still exist in the store
+    """
+    store_filter = current_user.get_store_filter()
+    
     # Multi-tenant: Check pack exists in same store
-    existing = await db.packs.find_one({**current_user.get_store_filter(), "id": pack_id})
+    existing = await db.packs.find_one({**store_filter, "id": pack_id})
     if not existing:
         raise HTTPException(status_code=404, detail="Pack not found")
+    
+    # VALIDATION: Check if store still has items
+    items_count = await db.items.count_documents(store_filter)
+    if items_count == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede actualizar el pack: la tienda no tiene artículos. El pack debería eliminarse."
+        )
     
     update_doc = {
         "name": pack.name,
@@ -3551,9 +3564,9 @@ async def update_pack(pack_id: str, pack: PackCreate, current_user: CurrentUser 
         "day_11_plus": pack.day_11_plus
     }
     # Multi-tenant: Update only in own store
-    await db.packs.update_one({**current_user.get_store_filter(), "id": pack_id}, {"$set": update_doc})
+    await db.packs.update_one({**store_filter, "id": pack_id}, {"$set": update_doc})
     
-    updated = await db.packs.find_one({**current_user.get_store_filter(), "id": pack_id}, {"_id": 0})
+    updated = await db.packs.find_one({**store_filter, "id": pack_id}, {"_id": 0})
     return PackResponse(**updated)
 
 @api_router.delete("/packs/{pack_id}")
