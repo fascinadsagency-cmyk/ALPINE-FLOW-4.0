@@ -58,6 +58,16 @@ export default function StoreManagement() {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       setPlanLimits(response.data.plans);
+      
+      // Update newStore with trial plan limits
+      if (response.data.plans.trial) {
+        setNewStore(prev => ({
+          ...prev,
+          max_items: response.data.plans.trial.max_items,
+          max_customers: response.data.plans.trial.max_customers,
+          max_users: response.data.plans.trial.max_users
+        }));
+      }
     } catch (error) {
       console.error("Error loading plan limits:", error);
     }
