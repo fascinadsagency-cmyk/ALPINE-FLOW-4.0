@@ -348,7 +348,7 @@ export default function LandingPage() {
           </p>
           <Button 
             size="lg"
-            className="bg-white text-primary hover:bg-slate-100 text-lg px-8 py-6 font-bold"
+            className="bg-white text-blue-600 hover:bg-slate-100 text-lg px-10 py-7 font-bold rounded-xl shadow-2xl hover:shadow-white/20 transition-all"
             onClick={() => navigate("/register")}
           >
             EMPEZAR PRUEBA ILIMITADA GRATIS
@@ -358,16 +358,18 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-white py-12">
+      <footer className="bg-slate-900 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
             {/* Logo & Description */}
             <div className="col-span-1 md:col-span-2">
-              <div className="flex items-center gap-2 mb-4">
-                <Package className="h-8 w-8 text-primary" />
-                <span className="text-2xl font-bold">SkiFlow Rental</span>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+                  <Package className="h-6 w-6 text-white" />
+                </div>
+                <span className="text-2xl font-bold" style={{ fontFamily: 'Plus Jakarta Sans' }}>SkiFlow Rental</span>
               </div>
-              <p className="text-slate-400 max-w-md">
+              <p className="text-slate-400 max-w-md leading-relaxed">
                 El software de alquiler que elimina las colas y recupera el control de tu stock en tiempo real. 
                 Diseñado para la temporada alta.
               </p>
@@ -375,9 +377,9 @@ export default function LandingPage() {
 
             {/* Product Links */}
             <div>
-              <h3 className="font-semibold mb-4">Producto</h3>
-              <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-white">Funcionalidades</a></li>
+              <h3 className="font-bold mb-4 text-white">Producto</h3>
+              <ul className="space-y-3 text-slate-400">
+                <li><a href="#" className="hover:text-white transition-colors">Funcionalidades</a></li>
                 <li><a href="#" className="hover:text-white">Precios</a></li>
                 <li><a href="#" className="hover:text-white">Casos de Uso</a></li>
                 <li><a href="#" className="hover:text-white">Demo</a></li>
