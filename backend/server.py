@@ -5193,6 +5193,43 @@ async def quick_return(rental_id: str, current_user: CurrentUser = Depends(get_c
     
     return {"message": "Quick return successful", "items_returned": len(rental["items"])}
 
+# ==================== ADMIN CLEANUP ROUTES ====================
+
+@api_router.delete("/admin/cleanup-store-data")
+async def cleanup_store_data(current_user: CurrentUser = Depends(get_current_user)):
+    """
+    CRITICAL: Delete ALL items and customers for current store.
+    Multi-tenant safe - only deletes data for current user's store_id.
+    """
+    store_filter = current_user.get_store_filter()
+    
+    # Count before deletion
+    items_count = await db.items.count_documents(store_filter)
+    customers_count = await db.customers.count_documents(store_filter)
+    
+    logger.warning(f"🗑️  CLEANUP: Store {current_user.store_id} - Deleting {items_count} items and {customers_count} customers")
+    
+    # Delete all items for this store
+    items_result = await db.items.delete_many(store_filter)
+    
+    # Delete all customers for this store
+    customers_result = await db.customers.delete_many(store_filter)
+    
+    logger.info(f"✅ CLEANUP COMPLETE: Store {current_user.store_id} - Deleted {items_result.deleted_count} items, {customers_result.deleted_count} customers")
+    
+    return {
+        "message": "Store data cleaned successfully",
+        "store_id": current_user.store_id,
+        "deleted": {
+            "items": items_result.deleted_count,
+            "customers": customers_result.deleted_count
+        },
+        "before_count": {
+            "items": items_count,
+            "customers": customers_count
+        }
+    }
+
 # ==================== MAINTENANCE ROUTES ====================
 
 @api_router.post("/maintenance", response_model=MaintenanceResponse)
