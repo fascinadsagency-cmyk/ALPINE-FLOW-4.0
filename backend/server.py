@@ -2008,6 +2008,8 @@ async def get_items_with_profitability(
     category: Optional[str] = None,
     search: Optional[str] = None,
     sort_by: Optional[str] = None,  # "profit", "revenue", "amortization"
+    start_date: Optional[str] = None,  # Filter rentals by date range
+    end_date: Optional[str] = None,
     current_user: CurrentUser = Depends(get_current_user)
 ):
     """Get all items with profitability metrics calculated from closed rentals"""
@@ -2039,10 +2041,21 @@ async def get_items_with_profitability(
     
     items = await db.items.find(query, {"_id": 0}).to_list(10000)
     
+    # Build rental query with date filter if provided
+    rental_query = {"status": "returned"}
+    if start_date or end_date:
+        date_conditions = {}
+        if start_date:
+            date_conditions["$gte"] = start_date
+        if end_date:
+            date_conditions["$lte"] = end_date
+        if date_conditions:
+            rental_query["return_date"] = date_conditions
+    
     # Get all closed rentals to calculate revenue per item
     closed_rentals = await db.rentals.find(
-        {"status": "returned"},
-        {"items": 1, "total_amount": 1, "days": 1, "_id": 0}
+        rental_query,
+        {"items": 1, "total_amount": 1, "days": 1, "return_date": 1, "_id": 0}
     ).to_list(10000)
     
     # Calculate revenue per item (by barcode or id)
