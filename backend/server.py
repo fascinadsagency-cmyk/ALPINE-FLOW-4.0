@@ -9353,8 +9353,39 @@ async def download_invoice(
 
 @api_router.get("/stores", response_model=List[StoreResponse])
 async def get_all_stores(current_user: CurrentUser = Depends(require_super_admin)):
-    """Get all stores - SUPER_ADMIN only"""
+    """
+    Get all stores with updated plan limits - SUPER_ADMIN only
+    Returns stores with current plan limits from DB (not historical settings)
+    """
     stores = await db.stores.find({}, {"_id": 0}).to_list(1000)
+    
+    # Get current plan limits (merge defaults + customs)
+    plans_dict = {}
+    for plan_type, limits in PLAN_LIMITS.items():
+        plans_dict[plan_type] = {
+            "plan_type": plan_type,
+            **limits
+        }
+    
+    # Override with custom plans from DB
+    custom_plans = await db.plans.find({}, {"_id": 0}).to_list(10)
+    for custom_plan in custom_plans:
+        plan_type = custom_plan.get("plan_type")
+        if plan_type in plans_dict:
+            plans_dict[plan_type].update(custom_plan)
+    
+    # Update each store with current plan limits
+    for store in stores:
+        plan_type = store.get("plan", "basic")
+        if plan_type in plans_dict:
+            current_limits = plans_dict[plan_type]
+            # Update settings with current plan limits
+            if "settings" not in store:
+                store["settings"] = {}
+            store["settings"]["max_items"] = current_limits["max_items"]
+            store["settings"]["max_customers"] = current_limits["max_customers"]
+            store["settings"]["max_users"] = current_limits["max_users"]
+    
     return stores
 
 @api_router.post("/stores", response_model=StoreResponse)
