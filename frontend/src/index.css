@@ -528,7 +528,7 @@ html.dark .sticky {
     border-radius: 1rem;
     display: inline-flex;
     align-items: center;
-    justify-center;
+    justify-content: center;
     box-shadow: 0 4px 12px -2px hsla(260, 100%, 60%, 0.3);
 }
 
