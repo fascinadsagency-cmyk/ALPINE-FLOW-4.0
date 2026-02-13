@@ -252,7 +252,7 @@ export default function TeamManagement() {
                   </div>
                   <div className="flex gap-2">
                     {/* Permitir a todos editar su propio perfil o a staff */}
-                    {(member.id === user?.userId || member.role === 'staff') && (
+                    {(member.id === user?.id || member.role === 'staff') && (
                       <Button
                         variant="outline"
                         size="sm"
