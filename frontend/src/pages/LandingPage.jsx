@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,12 +15,17 @@ import {
   DollarSign,
   Check,
   ArrowRight,
-  Menu
+  Menu,
+  ChevronDown,
+  Wifi,
+  Database,
+  X
 } from "lucide-react";
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [openFaq, setOpenFaq] = useState(null);
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -31,99 +36,70 @@ export default function LandingPage() {
 
   const features = [
     {
-      icon: Package,
-      title: "Gestión de Inventario",
-      description: "Control total de tus artículos con códigos internos, estados y disponibilidad en tiempo real."
+      icon: Database,
+      title: "Gestión de Inventario en Tiempo Real",
+      description: "Controla cada par de esquís y cada bota con códigos internos. Visualiza estados de disponibilidad al instante para que nunca prometas material que no tienes en el taller."
     },
     {
       icon: Users,
-      title: "Gestión de Clientes",
-      description: "Base de datos completa de clientes, historial de alquileres y créditos pendientes."
+      title: "Base de Datos de Clientes 360°",
+      description: "Acceso total al historial de alquileres y créditos pendientes. Recupera los datos de años anteriores en milisegundos para agilizar la ficha técnica y el ajuste de fijaciones."
     },
     {
-      icon: TrendingUp,
-      title: "Packs Inteligentes",
-      description: "Crea packs personalizados y el sistema los detectará automáticamente para agilizar el proceso."
-    },
-    {
-      icon: BarChart3,
-      title: "Informes y Reportes",
-      description: "Análisis de rentabilidad, items más alquilados y estadísticas completas de tu negocio."
+      icon: Zap,
+      title: "Packs Inteligentes de Alta Velocidad",
+      description: "Configura packs de 'Material + Casco + Botas'. El sistema los detecta automáticamente al escanear, aplicando la tarifa correcta sin que tu staff tenga que calcular nada a mano."
     },
     {
       icon: Clock,
-      title: "Proceso Rápido",
-      description: "Crea alquileres en segundos con códigos de barras, packs automáticos y precios dinámicos."
+      title: "Proceso de Salida 'Turbo'",
+      description: "Crea alquileres en segundos combinando el uso de códigos de barras, packs automáticos y precios dinámicos según la temporada. Cierra el ticket y pasa al siguiente cliente antes de que se forme cola."
+    },
+    {
+      icon: BarChart3,
+      title: "Informes y Análisis de Rentabilidad",
+      description: "Identifica qué ítems son los más alquilados y cuáles se quedan en el estante. Estadísticas completas para tomar decisiones basadas en datos reales, no en intuiciones."
     },
     {
       icon: Shield,
-      title: "Multi-tienda",
-      description: "Gestiona múltiples tiendas con datos aislados y estadísticas independientes."
+      title: "Control Multi-tienda Centralizado",
+      description: "Gestiona varios puntos de alquiler con datos aislados y estadísticas independientes desde una sola cuenta. Ideal para cadenas que necesitan visión global y operativa local."
     }
   ];
 
-  const plans = [
+  const pricingFeatures = [
+    { name: "Artículos", trial: "Ilimitados", basic: "Hasta 1.000", pro: "Hasta 3.000", enterprise: "Ilimitados" },
+    { name: "Clientes", trial: "Ilimitados", basic: "Hasta 5.000", pro: "Hasta 40.000", enterprise: "Ilimitados" },
+    { name: "Usuarios", trial: "Ilimitados", basic: "Hasta 5", pro: "Hasta 10", enterprise: "Hasta 15" },
+    { name: "Todas las funciones", trial: "✓", basic: "✓", pro: "✓", enterprise: "✓" },
+    { name: "Soporte Incluido", trial: "✓", basic: "✓", pro: "✓", enterprise: "✓" },
+    { name: "Modo Offline", trial: "✓", basic: "✓", pro: "✓", enterprise: "✓" }
+  ];
+
+  const faqs = [
     {
-      name: "Trial",
-      price: "Gratis",
-      duration: "15 días",
-      description: "Prueba todas las funciones sin compromiso",
-      features: [
-        "Hasta 10,000 artículos",
-        "Hasta 10,000 clientes",
-        "Hasta 10 usuarios",
-        "Todas las funciones incluidas",
-        "Soporte por email"
-      ],
-      cta: "Empezar prueba gratis",
-      highlighted: false
+      question: "¿Por qué el periodo de prueba es ilimitado?",
+      answer: "Queremos que pongas a prueba a SkiFlow Rental al máximo nivel. Durante los 15 días de Trial, no tendrás límites de artículos, clientes ni usuarios. Al finalizar, te asesoraremos para elegir el plan que mejor se adapte al volumen real de datos que has gestionado."
     },
     {
-      name: "Basic",
-      price: "950€",
-      duration: "al año",
-      description: "Perfecto para negocios pequeños",
-      features: [
-        "Hasta 1,000 artículos",
-        "Hasta 5,000 clientes",
-        "Hasta 5 usuarios",
-        "Informes básicos",
-        "Soporte por email"
-      ],
-      cta: "Contratar ahora",
-      highlighted: false
+      question: "¿Qué ocurre si necesito subir de plan a mitad de temporada?",
+      answer: "Puedes hacer un upgrade de forma instantánea. Solo se te cobrará la diferencia proporcional entre tu plan actual y el nuevo, para que tu inversión sea siempre justa y eficiente."
     },
     {
-      name: "Pro",
-      price: "1,450€",
-      duration: "al año",
-      description: "Para negocios en crecimiento",
-      features: [
-        "Hasta 3,000 artículos",
-        "Hasta 40,000 clientes",
-        "Hasta 10 usuarios",
-        "Informes avanzados",
-        "Soporte prioritario",
-        "Integraciones premium"
-      ],
-      cta: "Contratar ahora",
-      highlighted: true
+      question: "¿Qué pasa si me quedo sin internet en la tienda?",
+      answer: "SkiFlow Rental incluye un Modo Offline en todos sus planes. Puedes seguir emitiendo tickets y gestionando alquileres sin interrupciones; en cuanto el sistema detecte conexión, los datos se sincronizarán automáticamente."
     },
     {
-      name: "Enterprise",
-      price: "1,950€",
-      duration: "al año",
-      description: "Sin límites para tu negocio",
-      features: [
-        "Artículos ilimitados",
-        "Clientes ilimitados",
-        "Hasta 15 usuarios",
-        "API personalizada",
-        "Soporte 24/7",
-        "Asesor dedicado"
-      ],
-      cta: "Contactar ventas",
-      highlighted: false
+      question: "¿Realmente funciona con mi hardware actual?",
+      answer: "Sí. Nuestro sistema es 'Plug & Play'. Conecta tus lectores de códigos e impresoras térmicas USB y empieza a trabajar sin necesidad de instalar drivers complejos."
+    },
+    {
+      question: "¿El soporte técnico tiene coste extra?",
+      answer: "No. En SkiFlow Rental el soporte está incluido en todos los planes anuales. Tu tranquilidad y el correcto funcionamiento de tu tienda son nuestra prioridad."
+    },
+    {
+      question: "¿Mis datos están seguros?",
+      answer: "Totalmente. Realizamos copias de seguridad diarias en la nube y utilizamos bases de datos optimizadas para ofrecerte una respuesta en milisegundos, sin importar cuántos miles de clientes tengas."
     }
   ];
 
@@ -136,7 +112,7 @@ export default function LandingPage() {
             {/* Logo */}
             <div className="flex items-center gap-2">
               <Package className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold text-slate-900">AlpineFlow</span>
+              <span className="text-2xl font-bold text-slate-900">SkiFlow Rental</span>
             </div>
 
             {/* Desktop Navigation */}
@@ -171,16 +147,13 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
         <div className="text-center max-w-4xl mx-auto">
-          <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
-            Software de Gestión de Alquileres
-          </Badge>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
-            Gestiona tu negocio de alquiler
-            <span className="text-primary"> como nunca antes</span>
+            Despacha a tus clientes
+            <span className="text-primary"> en segundos, no en minutos</span>
           </h1>
-          <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
-            Sistema completo para gestionar inventario, clientes, alquileres y finanzas. 
-            Todo en una plataforma intuitiva y potente.
+          <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto">
+            El software de alquiler que elimina las colas y recupera el control de tu stock en tiempo real. 
+            Rápido, intuitivo y diseñado para la temporada alta.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
@@ -197,10 +170,10 @@ export default function LandingPage() {
               className="text-lg px-8 py-6"
               onClick={() => navigate("/login")}
             >
-              Ver Demo
+              Ver Demo en Vivo
             </Button>
           </div>
-          <p className="text-sm text-slate-500 mt-4">
+          <p className="text-sm text-slate-500 mt-6">
             ✓ Sin tarjeta de crédito · ✓ 15 días gratis · ✓ Cancela cuando quieras
           </p>
         </div>
@@ -210,14 +183,13 @@ export default function LandingPage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-white">
         <div className="text-center mb-16">
           <Badge className="mb-4 bg-blue-50 text-blue-700 border-blue-200">
-            Funcionalidades
+            El motor de tu rentabilidad
           </Badge>
           <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-            Todo lo que necesitas para tu negocio
+            Menos clics, más alquileres
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Desde la gestión de inventario hasta reportes avanzados, 
-            tenemos todas las herramientas que necesitas.
+            Diseñado para el ritmo real de la montaña
           </p>
         </div>
 
@@ -231,7 +203,7 @@ export default function LandingPage() {
                 <CardTitle className="text-xl">{feature.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-base">
+                <CardDescription className="text-base leading-relaxed">
                   {feature.description}
                 </CardDescription>
               </CardContent>
