@@ -109,6 +109,20 @@ export default function Layout() {
             <img src="/logo-white.png" alt="SkiFlow Rental" className="h-8 w-auto object-contain" />
           </div>
 
+          {/* Store Logo */}
+          <div className={`flex items-center justify-center gap-2 px-6 py-3 ${darkMode ? 'border-b border-slate-700' : 'border-b border-white/20 bg-white/5'}`}>
+            <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-white/10 overflow-hidden">
+              {user?.store_logo ? (
+                <img src={user.store_logo} alt="Logo Tienda" className="h-full w-full object-cover" />
+              ) : (
+                <Building2 className="h-5 w-5 text-white/50" />
+              )}
+            </div>
+            <span className={`text-xs font-medium ${darkMode ? 'text-slate-300' : 'text-white/80'}`}>
+              {user?.store_name || 'Mi Tienda'}
+            </span>
+          </div>
+
           {/* Navigation - tabindex=-1 to prevent Tab jumping to sidebar during form editing */}
           <nav className="flex-1 space-y-1 p-4 overflow-y-auto" role="navigation" aria-label="Main navigation">
             {filteredNavItems.map((item) => (
@@ -192,17 +206,45 @@ export default function Layout() {
 
           {/* User */}
           <div className={`border-t p-4 ${darkMode ? 'border-slate-700' : 'border-white/20'}`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-white'}`}>{user?.username}</p>
-                <p className={`text-xs capitalize ${darkMode ? 'text-slate-400' : 'text-white/60'}`}>{user?.role}</p>
+            <div className="flex items-center gap-3">
+              {/* Avatar clickeable */}
+              <button 
+                onClick={() => navigate("/mi-cuenta")}
+                className="flex-shrink-0 group"
+              >
+                <div className="relative">
+                  <div className="h-10 w-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center ring-2 ring-white/20 group-hover:ring-white/40 transition-all">
+                    {user?.photo_url ? (
+                      <img src={user.photo_url} alt={user?.username} className="h-full w-full object-cover" />
+                    ) : (
+                      <UserCircle className="h-6 w-6 text-white/70" />
+                    )}
+                  </div>
+                  <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-emerald-500 border-2 border-white rounded-full"></div>
+                </div>
+              </button>
+              
+              <div className="flex-1 min-w-0">
+                <button 
+                  onClick={() => navigate("/mi-cuenta")}
+                  className="text-left w-full group"
+                >
+                  <p className={`text-sm font-semibold truncate ${darkMode ? 'text-white' : 'text-white'} group-hover:text-white/80 transition-colors`}>
+                    {user?.username}
+                  </p>
+                  <p className={`text-xs capitalize truncate ${darkMode ? 'text-slate-400' : 'text-white/60'}`}>
+                    {user?.role === 'super_admin' ? 'Super Admin' : user?.role === 'admin' ? 'Admin' : user?.role === 'staff' ? 'Staff' : user?.role}
+                  </p>
+                </button>
               </div>
+              
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={logout}
                 className={darkMode ? 'text-slate-400 hover:text-white hover:bg-slate-700' : 'text-white/75 hover:text-white hover:bg-white/10'}
                 data-testid="logout-btn"
+                title="Cerrar sesión"
               >
                 <LogOut className="h-4 w-4" />
               </Button>
