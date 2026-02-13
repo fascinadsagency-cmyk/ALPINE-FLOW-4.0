@@ -312,6 +312,21 @@ export default function TeamManagement() {
                 </div>
               )}
 
+              {!editingMember?.id?.includes('new-') && (
+                <div>
+                  <Label htmlFor="password">Nueva Contraseña (opcional)</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={editingMember?.password || ''}
+                    onChange={(e) => setEditingMember({...editingMember, password: e.target.value})}
+                    placeholder="Dejar vacío para mantener la actual"
+                    minLength={6}
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Solo completar si deseas cambiar la contraseña</p>
+                </div>
+              )}
+
               <div>
                 <Label htmlFor="email">Email (opcional)</Label>
                 <Input
