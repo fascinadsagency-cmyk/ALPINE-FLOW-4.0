@@ -64,6 +64,7 @@ export default function Layout() {
   // Add store management for SUPER_ADMIN only
   if (user?.role === "super_admin") {
     navItems.push({ to: "/tiendas", icon: Building2, labelKey: "nav.storeManagement", superAdmin: true });
+    navItems.push({ to: "/planes", icon: DollarSign, label: "Planes", superAdmin: true });
   }
 
   // Filter nav items based on role
