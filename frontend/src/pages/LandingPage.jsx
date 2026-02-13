@@ -364,8 +364,8 @@ export default function LandingPage() {
             {/* Logo & Description */}
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-3 mb-6">
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-                  <Package className="h-6 w-6 text-white" />
+                <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center overflow-hidden">
+                  <img src="/logo.png" alt="Logo" className="h-full w-full object-contain p-1" />
                 </div>
                 <span className="text-2xl font-bold" style={{ fontFamily: 'Plus Jakarta Sans' }}>SkiFlow Rental</span>
               </div>
