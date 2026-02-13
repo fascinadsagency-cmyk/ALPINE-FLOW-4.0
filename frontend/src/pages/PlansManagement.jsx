@@ -39,6 +39,7 @@ export default function PlansManagement() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState({});
   const [source, setSource] = useState("default");
+  const [customizedPlans, setCustomizedPlans] = useState([]);
 
   // Verificar permisos de super_admin
   useEffect(() => {
@@ -60,6 +61,7 @@ export default function PlansManagement() {
       });
       setPlans(response.data.plans);
       setSource(response.data.source);
+      setCustomizedPlans(response.data.customized_plans || []);
     } catch (error) {
       toast.error("Error al cargar planes");
       console.error(error);
