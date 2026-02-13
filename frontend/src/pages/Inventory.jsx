@@ -422,7 +422,9 @@ export default function Inventory() {
             status: filterStatus !== "all" ? filterStatus : undefined,
             item_type: filterType !== "all" ? filterType : undefined,
             search: debouncedSearch || undefined,
-            sort_by: sortBy || undefined
+            sort_by: sortBy || undefined,
+            start_date: profitabilityDateRange.start || undefined,
+            end_date: profitabilityDateRange.end || undefined
           },
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
@@ -466,7 +468,7 @@ export default function Inventory() {
     setPage(1);
     setHasMore(true);
     loadItems(true);
-  }, [filterStatus, filterType, debouncedSearch, showProfitability, sortBy]);
+  }, [filterStatus, filterType, debouncedSearch, showProfitability, sortBy, profitabilityDateRange]);
 
   // ========== INFINITE SCROLL OBSERVER ==========
   useEffect(() => {
