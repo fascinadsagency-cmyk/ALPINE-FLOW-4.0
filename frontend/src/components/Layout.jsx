@@ -98,14 +98,14 @@ export default function Layout() {
   return (
     <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
       {/* Sidebar - Desktop */}
-      <aside className={`fixed left-0 top-0 z-40 hidden h-screen w-64 border-r-0 transition-colors duration-300 lg:block ${
+      <aside className={`fixed left-0 top-0 z-40 hidden h-screen w-64 border-r transition-colors duration-300 lg:block ${
         darkMode 
           ? 'border-slate-700 bg-slate-800' 
-          : 'sidebar-modern shadow-xl'
+          : 'border-slate-200 bg-gradient-to-b from-blue-600 to-purple-600 shadow-xl'
       }`}>
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className={`flex h-20 items-center gap-3 px-6 ${darkMode ? 'border-b border-slate-700' : ''}`}>
+          <div className={`flex h-20 items-center gap-3 px-6 ${darkMode ? 'border-b border-slate-700' : 'border-b border-white/20'}`}>
             <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${darkMode ? 'bg-primary' : 'bg-white/20 backdrop-blur-sm'} text-white shadow-lg`}>
               <Mountain className="h-6 w-6" />
             </div>
