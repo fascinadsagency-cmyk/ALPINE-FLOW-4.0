@@ -236,26 +236,26 @@ export default function LandingPage() {
                 <th className="p-6 text-left font-bold text-slate-700">Característica</th>
                 <th className="p-6 text-center">
                   <div>
-                    <div className="font-bold text-lg">Trial</div>
+                    <div className="font-bold text-lg bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Trial</div>
                     <div className="text-sm text-slate-600 mt-1">0 € / 15 días</div>
                   </div>
                 </th>
                 <th className="p-6 text-center">
                   <div>
-                    <div className="font-bold text-lg">Basic</div>
+                    <div className="font-bold text-lg bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">Basic</div>
                     <div className="text-sm text-slate-600 mt-1">950 € / año</div>
                   </div>
                 </th>
                 <th className="p-6 text-center bg-gradient-to-r from-blue-50 to-purple-50">
                   <div>
-                    <div className="font-bold text-lg bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Pro</div>
+                    <div className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Pro</div>
                     <div className="text-sm text-slate-600 mt-1">1.450 € / año</div>
                     <Badge className="mt-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold px-3 py-1">Popular</Badge>
                   </div>
                 </th>
                 <th className="p-6 text-center">
                   <div>
-                    <div className="font-bold text-lg">Enterprise</div>
+                    <div className="font-bold text-lg bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Enterprise</div>
                     <div className="text-sm text-slate-600 mt-1">1.950 € / año</div>
                   </div>
                 </th>
