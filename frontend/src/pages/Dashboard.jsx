@@ -202,11 +202,11 @@ export default function Dashboard() {
 
   return (
     <div className={`p-6 lg:p-8 space-y-8 min-h-screen transition-colors duration-300 ${darkMode ? 'bg-[#121212]' : 'bg-gradient-to-br from-slate-50 via-white to-purple-50'}`} data-testid="dashboard">
-      {/* Decorative gradient blobs */}
+      {/* Decorative gradient blobs - very subtle */}
       {!darkMode && (
         <>
-          <div className="fixed top-20 right-0 w-96 h-96 bg-gradient-to-br from-blue-500 to-purple-600 blob-shape pointer-events-none" />
-          <div className="fixed bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-purple-500 to-pink-600 blob-shape-alt pointer-events-none" />
+          <div className="fixed top-10 right-0 w-[500px] h-[500px] bg-gradient-to-br from-blue-400 to-purple-500 blob-shape pointer-events-none" style={{ zIndex: 0 }} />
+          <div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-purple-400 to-pink-500 blob-shape-alt pointer-events-none" style={{ zIndex: 0 }} />
         </>
       )}
       

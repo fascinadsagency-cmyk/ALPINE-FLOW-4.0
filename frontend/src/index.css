@@ -445,16 +445,18 @@ html.dark .sticky {
 /* Organic blob shapes */
 .blob-shape {
     border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-    filter: blur(60px);
-    opacity: 0.15;
+    filter: blur(80px);
+    opacity: 0.06;
     z-index: 0;
+    pointer-events: none;
 }
 
 .blob-shape-alt {
     border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-    filter: blur(70px);
-    opacity: 0.12;
+    filter: blur(90px);
+    opacity: 0.05;
     z-index: 0;
+    pointer-events: none;
 }
 
 /* Modern card with subtle shadow */
