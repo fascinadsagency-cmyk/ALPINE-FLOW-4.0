@@ -2422,20 +2422,18 @@ async def delete_item(item_id: str, force: bool = Query(False), current_user: Cu
 # ============== HELPER FUNCTIONS FOR DYNAMIC TYPE MANAGEMENT ==============
 
 def normalize_type_name(type_name: str) -> str:
-    """Normalize type name for consistent storage and comparison"""
+    """
+    Preserve original type name exactly as provided.
+    Only trim whitespace from start/end and collapse multiple spaces.
+    NO lowercase conversion, NO accent removal, NO underscore conversion.
+    """
     if not type_name:
         return ""
-    # Lowercase, strip whitespace, replace spaces with underscores
-    normalized = type_name.lower().strip()
-    # Remove accents
-    accents = {'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u', 'ñ': 'n', 'ü': 'u'}
-    for acc, repl in accents.items():
-        normalized = normalized.replace(acc, repl)
-    # Replace multiple spaces/underscores with single underscore
+    # Only trim and normalize internal spaces
     import re
-    normalized = re.sub(r'[\s_]+', '_', normalized)
-    # Remove trailing underscores
-    normalized = normalized.strip('_')
+    normalized = type_name.strip()
+    # Replace multiple consecutive spaces with single space
+    normalized = re.sub(r'\s+', ' ', normalized)
     return normalized
 
 
