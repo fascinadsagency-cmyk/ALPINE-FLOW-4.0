@@ -2845,7 +2845,7 @@ export default function NewRental() {
                                       ))}
                                     </SelectContent>
                                   </Select>
-                                  <span className="text-xs text-amber-600 whitespace-nowrap">({group.childCodes})</span>
+                                  <span className="font-mono font-bold text-slate-900 text-sm sm:text-base whitespace-nowrap">({group.childCodes})</span>
                                 </div>
                               </div>
                               
