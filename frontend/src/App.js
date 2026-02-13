@@ -167,12 +167,12 @@ function AppRoutes() {
   return (
     <DataInitializer>
       <Routes>
-        {/* Public Routes */}
-        <Route path="/landing" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        {/* Public Routes - Redirect to dashboard if authenticated */}
+        <Route path="/landing" element={<PublicRoute><LandingPage /></PublicRoute>} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
         
-        {/* Protected Routes */}
+        {/* Protected Routes - Redirect to landing if not authenticated */}
         <Route
           path="/"
           element={
