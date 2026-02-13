@@ -110,11 +110,8 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-lg overflow-hidden">
-                <img src="/logo.png" alt="Logo" className="h-full w-full object-contain p-1" />
-              </div>
-              <span className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans' }}>SkiFlow Rental</span>
+            <div className="flex items-center">
+              <img src="/logo.png" alt="SkiFlow Rental" className="h-10 w-auto object-contain" />
             </div>
 
             {/* Desktop Navigation */}
@@ -363,11 +360,8 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
             {/* Logo & Description */}
             <div className="col-span-1 md:col-span-2">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center overflow-hidden">
-                  <img src="/logo.png" alt="Logo" className="h-full w-full object-contain p-1" />
-                </div>
-                <span className="text-2xl font-bold" style={{ fontFamily: 'Plus Jakarta Sans' }}>SkiFlow Rental</span>
+              <div className="flex items-center mb-6">
+                <img src="/logo.png" alt="SkiFlow Rental" className="h-10 w-auto object-contain" />
               </div>
               <p className="text-slate-400 max-w-md leading-relaxed">
                 El software de alquiler que elimina las colas y recupera el control de tu stock en tiempo real. 

@@ -85,9 +85,7 @@ export default function Login() {
         <Card className="w-full max-w-md border-0 shadow-none lg:border lg:shadow-sm">
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center mb-4 lg:hidden">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-md overflow-hidden">
-                <img src="/logo.png" alt="Logo" className="h-full w-full object-contain p-1" />
-              </div>
+              <img src="/logo.png" alt="SkiFlow Rental" className="h-12 w-auto object-contain" />
             </div>
             <CardTitle className="text-2xl font-bold" style={{ fontFamily: 'Plus Jakarta Sans' }}>
               {isRegister ? "Crear cuenta" : "Iniciar sesión"}

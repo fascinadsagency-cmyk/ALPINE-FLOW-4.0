@@ -105,13 +105,8 @@ export default function Layout() {
       }`}>
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className={`flex h-20 items-center gap-3 px-6 ${darkMode ? 'border-b border-slate-700' : 'border-b border-white/20'}`}>
-            <div className={`flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden ${darkMode ? 'bg-white' : 'bg-white'} shadow-lg`}>
-              <img src="/logo.png" alt="Logo" className="h-full w-full object-contain p-1" />
-            </div>
-            <span className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans' }}>
-              SkiFlow Rental
-            </span>
+          <div className={`flex h-20 items-center justify-center px-6 ${darkMode ? 'border-b border-slate-700' : 'border-b border-white/20'}`}>
+            <img src="/logo.png" alt="SkiFlow Rental" className="h-12 w-auto object-contain" />
           </div>
 
           {/* Navigation - tabindex=-1 to prevent Tab jumping to sidebar during form editing */}
@@ -222,11 +217,8 @@ export default function Layout() {
           ? 'border-slate-700 bg-slate-800' 
           : 'border-slate-200 bg-white'
       }`}>
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white overflow-hidden">
-            <img src="/logo.png" alt="Logo" className="h-full w-full object-contain p-0.5" />
-          </div>
-          <span className={`font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>SkiFlow Rental</span>
+        <div className="flex items-center">
+          <img src="/logo.png" alt="SkiFlow Rental" className="h-7 w-auto object-contain" />
         </div>
         <div className="flex items-center gap-2">
           <OfflineIndicator />
