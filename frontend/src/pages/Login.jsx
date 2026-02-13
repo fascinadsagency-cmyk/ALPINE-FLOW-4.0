@@ -48,8 +48,21 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left - Image */}
+    <div className="min-h-screen flex flex-col">
+      {/* Back button */}
+      <div className="p-4 absolute top-0 left-0 z-10">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate("/landing")}
+          className="gap-2 text-white lg:text-slate-700"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Volver al inicio
+        </Button>
+      </div>
+      
+      <div className="flex-1 flex">
+        {/* Left - Image */}
       <div 
         className="hidden lg:flex lg:w-1/2 bg-cover bg-center relative"
         style={{ 
