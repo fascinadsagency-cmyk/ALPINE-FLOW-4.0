@@ -266,7 +266,23 @@ export default function StoreManagement() {
                 </div>
                 <div className="space-y-2">
                   <Label>Plan</Label>
-                  <Select value={newStore.plan} onValueChange={(val) => setNewStore({ ...newStore, plan: val })}>
+                  <Select 
+                    value={newStore.plan} 
+                    onValueChange={(val) => {
+                      // Update limits based on selected plan
+                      if (planLimits[val]) {
+                        setNewStore(prev => ({
+                          ...prev,
+                          plan: val,
+                          max_items: planLimits[val].max_items,
+                          max_customers: planLimits[val].max_customers,
+                          max_users: planLimits[val].max_users
+                        }));
+                      } else {
+                        setNewStore({ ...newStore, plan: val });
+                      }
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
