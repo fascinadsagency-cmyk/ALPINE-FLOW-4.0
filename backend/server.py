@@ -9611,7 +9611,10 @@ async def update_team_member(
     updates: dict,
     current_user: CurrentUser = Depends(require_admin)
 ):
-    """Update team member - ADMIN ONLY"""
+    """
+    Update team member - ADMIN ONLY
+    Can update username, email, is_active, and optionally password
+    """
     
     store_filter = current_user.get_store_filter()
     
@@ -9620,9 +9623,11 @@ async def update_team_member(
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     
-    # SECURITY: Cannot modify super_admin or change role to admin
-    if user.get("role") == "super_admin":
-        raise HTTPException(status_code=403, detail="No puedes modificar al super admin")
+    # SECURITY: Cannot modify super_admin unless you are super_admin
+    if user.get("role") == "super_admin" and current_user.role != "super_admin":
+        # Allow super_admin to edit their own profile
+        if user_id != current_user.user_id:
+            raise HTTPException(status_code=403, detail="No puedes modificar al super admin")
     
     if "role" in updates and updates["role"] not in ["staff", "employee"]:
         if current_user.role != "super_admin":
@@ -9632,13 +9637,20 @@ async def update_team_member(
     allowed_fields = ["username", "email", "is_active"]
     update_data = {k: v for k, v in updates.items() if k in allowed_fields}
     
+    # Handle password update if provided
+    if "password" in updates and updates["password"]:
+        password = updates["password"].strip()
+        if len(password) < 6:
+            raise HTTPException(status_code=400, detail="La contraseña debe tener al menos 6 caracteres")
+        update_data["password"] = hash_password(password)
+    
     if update_data:
         await db.users.update_one(
             {**store_filter, "id": user_id},
             {"$set": update_data}
         )
     
-    updated_user = await db.users.find_one({**store_filter, "id": user_id}, {"_id": 0, "hashed_password": 0})
+    updated_user = await db.users.find_one({**store_filter, "id": user_id}, {"_id": 0, "hashed_password": 0, "password": 0})
     return updated_user
 
 class ResetPasswordRequest(BaseModel):
