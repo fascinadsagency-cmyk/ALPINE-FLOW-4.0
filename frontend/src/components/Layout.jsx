@@ -106,8 +106,8 @@ export default function Layout() {
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className={`flex h-20 items-center gap-3 px-6 ${darkMode ? 'border-b border-slate-700' : 'border-b border-white/20'}`}>
-            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${darkMode ? 'bg-primary' : 'bg-white/20 backdrop-blur-sm'} text-white shadow-lg`}>
-              <Mountain className="h-6 w-6" />
+            <div className={`flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden ${darkMode ? 'bg-white' : 'bg-white'} shadow-lg`}>
+              <img src="/logo.png" alt="Logo" className="h-full w-full object-contain p-1" />
             </div>
             <span className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans' }}>
               SkiFlow Rental
