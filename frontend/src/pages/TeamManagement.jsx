@@ -243,8 +243,9 @@ export default function TeamManagement() {
                       </div>
                     </div>
                   </div>
-                  {member.role !== 'admin' && member.role !== 'super_admin' && (
-                    <div className="flex gap-2">
+                  <div className="flex gap-2">
+                    {/* Permitir a todos editar su propio perfil o a staff */}
+                    {(member.id === user?.userId || member.role === 'staff') && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -252,6 +253,9 @@ export default function TeamManagement() {
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
+                    )}
+                    {/* Solo permitir eliminar usuarios staff (no admin/super_admin) */}
+                    {member.role !== 'admin' && member.role !== 'super_admin' && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -260,8 +264,8 @@ export default function TeamManagement() {
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               ))
             )}
