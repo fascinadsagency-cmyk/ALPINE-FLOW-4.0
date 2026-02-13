@@ -189,12 +189,15 @@ export default function StoreManagement() {
       });
       toast.success("Tienda creada exitosamente");
       setShowCreateDialog(false);
+      
+      // Reset form with trial plan limits
+      const trialLimits = planLimits.trial || {};
       setNewStore({
         name: "",
-        plan: "trial",  // Reset to trial
-        max_users: 10,
-        max_items: 10000,
-        max_customers: 10000,
+        plan: "trial",
+        max_users: trialLimits.max_users || 10,
+        max_items: trialLimits.max_items || 10000,
+        max_customers: trialLimits.max_customers || 10000,
         contact_email: "",
         contact_phone: "",
         address: ""
