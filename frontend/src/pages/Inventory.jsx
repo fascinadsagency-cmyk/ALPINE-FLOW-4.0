@@ -1773,6 +1773,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-slate-50">
+                        <TableHead className="font-bold">Código Interno</TableHead>
                         <TableHead className="font-bold">Artículo</TableHead>
                         <TableHead className="text-right font-bold">Coste Adquisición</TableHead>
                         <TableHead className="text-right font-bold">Total Generado</TableHead>
@@ -1792,14 +1793,21 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                         
                         return (
                           <TableRow key={item.id} className="hover:bg-slate-50">
+                            {/* CÓDIGO INTERNO */}
+                            <TableCell>
+                              <span className="font-mono text-sm font-semibold text-primary">
+                                {item.internal_code || '-'}
+                              </span>
+                            </TableCell>
+                            
                             {/* ARTÍCULO */}
                             <TableCell>
                               <div className="flex flex-col">
                                 <span className="font-semibold text-slate-900">
                                   {item.is_generic ? item.name : `${item.brand} ${item.model}`}
                                 </span>
-                                <span className="text-xs text-slate-500 font-mono">
-                                  {item.internal_code || item.barcode || item.id.substring(0, 8)}
+                                <span className="text-xs text-slate-500">
+                                  {item.size && `Talla: ${item.size}`}
                                 </span>
                               </div>
                             </TableCell>
