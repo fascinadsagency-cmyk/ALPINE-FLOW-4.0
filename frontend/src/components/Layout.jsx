@@ -338,19 +338,19 @@ export default function Layout() {
       {/* Main Content */}
       <main className="lg:pl-64">
         {/* Desktop Top Bar with Offline Indicator */}
-        <div className={`hidden lg:flex h-14 items-center justify-end px-6 border-b transition-colors duration-300 ${
-          darkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-white'
+        <div className={`hidden lg:flex h-16 items-center justify-end px-6 border-b transition-colors duration-300 ${
+          darkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-white shadow-sm'
         }`}>
           <div className="flex items-center gap-4">
             <OfflineIndicator />
-            <span className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <span className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
               {user?.username}
             </span>
             <Button
               variant="ghost"
               size="sm"
               onClick={logout}
-              className={`gap-2 ${darkMode ? 'text-slate-400 hover:text-slate-200' : ''}`}
+              className={`gap-2 font-medium ${darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-900'}`}
             >
               <LogOut className="h-4 w-4" />
               Salir
