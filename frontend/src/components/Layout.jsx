@@ -98,18 +98,18 @@ export default function Layout() {
   return (
     <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
       {/* Sidebar - Desktop */}
-      <aside className={`fixed left-0 top-0 z-40 hidden h-screen w-64 border-r transition-colors duration-300 lg:block ${
+      <aside className={`fixed left-0 top-0 z-40 hidden h-screen w-64 border-r-0 transition-colors duration-300 lg:block ${
         darkMode 
           ? 'border-slate-700 bg-slate-800' 
-          : 'border-slate-200 bg-white'
+          : 'sidebar-modern shadow-xl'
       }`}>
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className={`flex h-16 items-center gap-3 border-b px-6 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white">
-              <Mountain className="h-5 w-5" />
+          <div className={`flex h-20 items-center gap-3 px-6 ${darkMode ? 'border-b border-slate-700' : ''}`}>
+            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${darkMode ? 'bg-primary' : 'bg-white/20 backdrop-blur-sm'} text-white shadow-lg`}>
+              <Mountain className="h-6 w-6" />
             </div>
-            <span className={`font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`} style={{ fontFamily: 'Plus Jakarta Sans' }}>
+            <span className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans' }}>
               SkiFlow Rental
             </span>
           </div>
@@ -124,12 +124,14 @@ export default function Layout() {
                 tabIndex={-1}
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                    "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition-all duration-200",
                     isActive
-                      ? "bg-primary/10 text-primary"
+                      ? darkMode 
+                        ? "bg-primary/10 text-primary"
+                        : "bg-white/25 text-white backdrop-blur-sm shadow-lg"
                       : darkMode 
                         ? "text-slate-300 hover:bg-slate-700 hover:text-white"
-                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                        : "text-white/75 hover:bg-white/10 hover:text-white"
                   )
                 }
               >
@@ -140,7 +142,7 @@ export default function Layout() {
 
             {/* Account Section */}
             {accountItems.length > 0 && (
-              <div className={`pt-4 mt-4 border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+              <div className={`pt-4 mt-4 border-t ${darkMode ? 'border-slate-700' : 'border-white/20'}`}>
                 {accountItems.map((item) => (
                   <NavLink
                     key={item.to}
@@ -148,12 +150,14 @@ export default function Layout() {
                     tabIndex={-1}
                     className={({ isActive }) =>
                       cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                        "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition-all duration-200",
                         isActive
-                          ? "bg-purple-600/10 text-purple-600"
+                          ? darkMode 
+                            ? "bg-purple-600/10 text-purple-600"
+                            : "bg-white/25 text-white backdrop-blur-sm shadow-lg"
                           : darkMode 
                             ? "text-slate-300 hover:bg-slate-700 hover:text-white"
-                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                            : "text-white/75 hover:bg-white/10 hover:text-white"
                       )
                     }
                   >
@@ -165,7 +169,7 @@ export default function Layout() {
             )}
 
             {/* Support Section */}
-            <div className={`pt-4 mt-4 border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+            <div className={`pt-4 mt-4 border-t ${darkMode ? 'border-slate-700' : 'border-white/20'}`}>
               {supportItems.map((item) => (
                 <NavLink
                   key={item.to}
@@ -173,12 +177,14 @@ export default function Layout() {
                   tabIndex={-1}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                      "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition-all duration-200",
                       isActive
-                        ? "bg-blue-600/10 text-blue-600"
+                        ? darkMode 
+                          ? "bg-blue-600/10 text-blue-600"
+                          : "bg-white/25 text-white backdrop-blur-sm shadow-lg"
                         : darkMode 
                           ? "text-slate-300 hover:bg-slate-700 hover:text-white"
-                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                          : "text-white/75 hover:bg-white/10 hover:text-white"
                     )
                   }
                 >
@@ -190,17 +196,17 @@ export default function Layout() {
           </nav>
 
           {/* User */}
-          <div className={`border-t p-4 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+          <div className={`border-t p-4 ${darkMode ? 'border-slate-700' : 'border-white/20'}`}>
             <div className="flex items-center justify-between">
               <div>
-                <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-slate-900'}`}>{user?.username}</p>
-                <p className={`text-xs capitalize ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{user?.role}</p>
+                <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-white'}`}>{user?.username}</p>
+                <p className={`text-xs capitalize ${darkMode ? 'text-slate-400' : 'text-white/60'}`}>{user?.role}</p>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={logout}
-                className={darkMode ? 'text-slate-400 hover:text-white hover:bg-slate-700' : 'text-slate-500 hover:text-slate-900'}
+                className={darkMode ? 'text-slate-400 hover:text-white hover:bg-slate-700' : 'text-white/75 hover:text-white hover:bg-white/10'}
                 data-testid="logout-btn"
               >
                 <LogOut className="h-4 w-4" />
