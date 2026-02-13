@@ -3475,6 +3475,27 @@ class PackResponse(BaseModel):
 
 @api_router.post("/packs", response_model=PackResponse)
 async def create_pack(pack: PackCreate, current_user: CurrentUser = Depends(get_current_user)):
+    """
+    Create a new pack - requires at least one item type to exist in the store
+    """
+    store_filter = current_user.get_store_filter()
+    
+    # VALIDATION: Check if store has any items
+    items_count = await db.items.count_documents(store_filter)
+    if items_count == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="No se pueden crear packs sin artículos. Por favor, añade artículos primero."
+        )
+    
+    # VALIDATION: Check if store has any item types
+    item_types = await db.items.distinct("item_type", store_filter)
+    if not item_types or len(item_types) == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="No se pueden crear packs sin tipos de artículos. Por favor, añade artículos primero."
+        )
+    
     pack_id = str(uuid.uuid4())
     doc = {
         "id": pack_id,
