@@ -19,7 +19,9 @@ import {
   ChevronDown,
   Wifi,
   Database,
-  X
+  X,
+  Sparkles,
+  Crown
 } from "lucide-react";
 
 export default function LandingPage() {
