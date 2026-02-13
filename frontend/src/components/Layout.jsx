@@ -110,7 +110,7 @@ export default function Layout() {
               <Mountain className="h-5 w-5" />
             </div>
             <span className={`font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`} style={{ fontFamily: 'Plus Jakarta Sans' }}>
-              AlpineFlow
+              SkiFlow Rental
             </span>
           </div>
 
@@ -220,7 +220,7 @@ export default function Layout() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
             <Mountain className="h-4 w-4" />
           </div>
-          <span className={`font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>AlpineFlow</span>
+          <span className={`font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>SkiFlow Rental</span>
         </div>
         <div className="flex items-center gap-2">
           <OfflineIndicator />

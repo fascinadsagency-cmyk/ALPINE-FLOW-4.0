@@ -1,5 +1,5 @@
 /**
- * AlpineFlow Offline Database (Dexie.js)
+ * SkiFlow Rental Offline Database (Dexie.js)
  * 
  * Base de datos local IndexedDB para funcionalidad offline-first.
  * Replica las tablas esenciales del servidor y mantiene una cola de sincronización.
@@ -7,7 +7,7 @@
 import Dexie from 'dexie';
 
 // Crear instancia de la base de datos
-export const db = new Dexie('AlpineFlowDB');
+export const db = new Dexie('SkiFlowRentalDB');
 
 // Definir esquema de la base de datos
 db.version(1).stores({

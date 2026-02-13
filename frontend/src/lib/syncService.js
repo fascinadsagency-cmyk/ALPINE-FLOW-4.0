@@ -1,5 +1,5 @@
 /**
- * AlpineFlow Sync Service
+ * SkiFlow Rental Sync Service
  * 
  * Servicio de sincronización bidireccional entre la base de datos local (IndexedDB)
  * y el servidor remoto. Maneja:

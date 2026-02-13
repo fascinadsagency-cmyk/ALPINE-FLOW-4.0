@@ -70,7 +70,7 @@ export default function PaywallOverlay({ children }) {
 
             {/* Description */}
             <p className="text-slate-600 mb-6">
-              Han pasado 15 días desde que empezaste a usar AlpineFlow. 
+              Han pasado 15 días desde que empezaste a usar SkiFlow Rental. 
               Para continuar gestionando tu tienda de alquiler, selecciona un plan de pago.
             </p>
 

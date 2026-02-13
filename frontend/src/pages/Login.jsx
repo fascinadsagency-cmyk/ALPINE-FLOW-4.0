@@ -36,7 +36,7 @@ export default function Login() {
         toast.success("¡Cuenta creada! Bienvenido a tu período de prueba de 15 días.");
       } else {
         await login(username, password);
-        toast.success("Bienvenido a AlpineFlow");
+        toast.success("Bienvenido a SkiFlow Rental");
       }
       navigate("/");
     } catch (error) {
@@ -72,7 +72,7 @@ export default function Login() {
         <div className="absolute inset-0 bg-slate-900/40" />
         <div className="relative z-10 flex flex-col justify-end p-12 text-white">
           <h1 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Plus Jakarta Sans' }}>
-            AlpineFlow
+            SkiFlow Rental
           </h1>
           <p className="text-lg text-white/80">
             Sistema de gestión de alquiler de equipos de esquí

@@ -368,7 +368,7 @@ export default function Providers() {
         
         <div class="footer">
           Generado: ${new Date().toLocaleString('es-ES')}<br/>
-          AlpineFlow - Sistema de Gestión
+          SkiFlow Rental - Sistema de Gestión
         </div>
       </body>
       </html>

@@ -1,5 +1,5 @@
 /**
- * AlpineFlow Offline Context
+ * SkiFlow Rental Offline Context
  * 
  * Contexto de React para gestionar el estado offline de la aplicación.
  * Proporciona:
