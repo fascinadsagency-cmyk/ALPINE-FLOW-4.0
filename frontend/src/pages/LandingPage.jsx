@@ -104,15 +104,17 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen bg-white">
       {/* Sticky Navbar */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-20">
             {/* Logo */}
-            <div className="flex items-center gap-2">
-              <Package className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold text-slate-900">SkiFlow Rental</span>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
+                <Package className="h-6 w-6 text-white" />
+              </div>
+              <span className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans' }}>SkiFlow Rental</span>
             </div>
 
             {/* Desktop Navigation */}
@@ -120,13 +122,13 @@ export default function LandingPage() {
               <Button 
                 variant="ghost" 
                 onClick={() => navigate("/login")}
-                className="text-slate-700 hover:text-slate-900"
+                className="text-slate-700 hover:text-slate-900 font-semibold"
               >
                 Iniciar Sesión
               </Button>
               <Button 
                 onClick={() => navigate("/register")}
-                className="bg-primary hover:bg-primary/90"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-xl transition-all font-bold text-white px-6"
               >
                 Crear Cuenta Gratis
               </Button>
@@ -147,18 +149,18 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
         <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-slate-900 mb-6 leading-tight" style={{ fontFamily: 'Plus Jakarta Sans', letterSpacing: '-0.02em' }}>
             Despacha a tus clientes
-            <span className="text-primary"> en segundos, no en minutos</span>
+            <span className="block mt-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> en segundos, no en minutos</span>
           </h1>
-          <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto">
+          <p className="text-xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed">
             El software de alquiler que elimina las colas y recupera el control de tu stock en tiempo real. 
             Rápido, intuitivo y diseñado para la temporada alta.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               size="lg"
-              className="text-lg px-8 py-6 bg-primary hover:bg-primary/90"
+              className="text-lg px-10 py-7 bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-2xl transition-all font-bold rounded-xl"
               onClick={() => navigate("/register")}
             >
               Empezar Prueba Gratis
@@ -167,25 +169,25 @@ export default function LandingPage() {
             <Button 
               size="lg"
               variant="outline"
-              className="text-lg px-8 py-6"
+              className="text-lg px-10 py-7 border-2 border-slate-300 hover:border-purple-600 hover:text-purple-600 font-semibold rounded-xl"
               onClick={() => navigate("/login")}
             >
               Ver Demo en Vivo
             </Button>
           </div>
-          <p className="text-sm text-slate-500 mt-6">
+          <p className="text-sm text-slate-500 mt-8 font-medium">
             ✓ Sin tarjeta de crédito · ✓ 15 días gratis · ✓ Cancela cuando quieras
           </p>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-white">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-gradient-to-b from-slate-50 to-white">
         <div className="text-center mb-16">
-          <Badge className="mb-4 bg-blue-50 text-blue-700 border-blue-200">
+          <Badge className="mb-6 px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 border-blue-200 font-semibold text-sm">
             El motor de tu rentabilidad
           </Badge>
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+          <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-6" style={{ fontFamily: 'Plus Jakarta Sans', letterSpacing: '-0.02em' }}>
             Menos clics, más alquileres
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
@@ -195,15 +197,15 @@ export default function LandingPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <Card key={index} className="border-2 hover:border-primary/50 transition-all hover:shadow-lg">
+            <Card key={index} className="card-modern group cursor-pointer">
               <CardHeader>
-                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <feature.icon className="h-6 w-6 text-primary" />
+                <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center mb-4 shadow-lg group-hover:shadow-xl transition-all">
+                  <feature.icon className="h-7 w-7 text-white" />
                 </div>
-                <CardTitle className="text-xl">{feature.title}</CardTitle>
+                <CardTitle className="text-xl font-bold">{feature.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-base leading-relaxed">
+                <CardDescription className="text-base leading-relaxed text-slate-600">
                   {feature.description}
                 </CardDescription>
               </CardContent>
@@ -215,10 +217,10 @@ export default function LandingPage() {
       {/* Pricing Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
-          <Badge className="mb-4 bg-green-50 text-green-700 border-green-200">
+          <Badge className="mb-6 px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200 font-semibold text-sm">
             Precios
           </Badge>
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+          <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-6" style={{ fontFamily: 'Plus Jakarta Sans', letterSpacing: '-0.02em' }}>
             Planes que escalan con tu inventario
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
@@ -228,26 +230,26 @@ export default function LandingPage() {
 
         {/* Pricing Table */}
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse bg-white rounded-lg shadow-lg overflow-hidden">
+          <table className="w-full border-collapse bg-white rounded-2xl shadow-xl overflow-hidden">
             <thead>
-              <tr className="bg-slate-50">
-                <th className="p-4 text-left font-semibold text-slate-700">Característica</th>
-                <th className="p-4 text-center">
+              <tr className="bg-gradient-to-r from-slate-50 to-slate-100">
+                <th className="p-6 text-left font-bold text-slate-700">Característica</th>
+                <th className="p-6 text-center">
                   <div>
                     <div className="font-bold text-lg">Trial</div>
-                    <div className="text-sm text-slate-600">0 € / 15 días</div>
+                    <div className="text-sm text-slate-600 mt-1">0 € / 15 días</div>
                   </div>
                 </th>
-                <th className="p-4 text-center">
+                <th className="p-6 text-center">
                   <div>
                     <div className="font-bold text-lg">Basic</div>
-                    <div className="text-sm text-slate-600">950 € / año</div>
+                    <div className="text-sm text-slate-600 mt-1">950 € / año</div>
                   </div>
                 </th>
-                <th className="p-4 text-center bg-primary/5">
+                <th className="p-6 text-center bg-gradient-to-r from-blue-50 to-purple-50">
                   <div>
-                    <div className="font-bold text-lg text-primary">Pro</div>
-                    <div className="text-sm text-slate-600">1.450 € / año</div>
+                    <div className="font-bold text-lg bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Pro</div>
+                    <div className="text-sm text-slate-600 mt-1">1.450 € / año</div>
                     <Badge className="mt-1 bg-primary text-white">Popular</Badge>
                   </div>
                 </th>
