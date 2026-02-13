@@ -9561,26 +9561,33 @@ class PlanUpdate(BaseModel):
 async def get_all_plans(current_user: CurrentUser = Depends(get_current_user)):
     """
     Get all available plans with their limits and pricing.
-    Returns custom plans from DB if they exist, otherwise returns default PLAN_LIMITS.
+    Always returns all 4 plans (trial, basic, pro, enterprise).
+    Merges default PLAN_LIMITS with custom plans from DB if they exist.
     """
-    # Try to get custom plans from database
+    # Start with default plans
+    plans_dict = {}
+    for plan_type, limits in PLAN_LIMITS.items():
+        plans_dict[plan_type] = {
+            "plan_type": plan_type,
+            **limits
+        }
+    
+    # Get custom plans from database and merge/override defaults
     custom_plans = await db.plans.find({}, {"_id": 0}).to_list(10)
     
+    has_custom = False
     if custom_plans:
-        # Return custom plans from DB
-        plans_dict = {plan["plan_type"]: plan for plan in custom_plans}
-    else:
-        # Return default PLAN_LIMITS
-        plans_dict = {}
-        for plan_type, limits in PLAN_LIMITS.items():
-            plans_dict[plan_type] = {
-                "plan_type": plan_type,
-                **limits
-            }
+        has_custom = True
+        for custom_plan in custom_plans:
+            plan_type = custom_plan.get("plan_type")
+            if plan_type in plans_dict:
+                # Merge custom plan with default (custom overrides default)
+                plans_dict[plan_type].update(custom_plan)
     
     return {
         "plans": plans_dict,
-        "source": "custom" if custom_plans else "default"
+        "source": "mixed" if has_custom else "default",
+        "customized_plans": [p.get("plan_type") for p in custom_plans] if custom_plans else []
     }
 
 @api_router.put("/plans/{plan_type}")
