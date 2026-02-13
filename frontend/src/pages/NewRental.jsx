@@ -97,7 +97,7 @@ const VirtualizedSearchResults = ({ items, onItemClick }) => {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge variant="outline" className="text-xs truncate max-w-[120px]">{item.item_type}</Badge>
-                      <span className="font-mono text-xs text-slate-400">{item.internal_code || item.barcode}</span>
+                      <span className="font-mono font-bold text-slate-900 text-sm sm:text-base">{item.internal_code || item.barcode}</span>
                     </div>
                     <p className="font-medium text-slate-900 truncate">
                       {item.brand} {item.model} - {item.size}
