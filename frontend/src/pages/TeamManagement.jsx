@@ -74,11 +74,18 @@ export default function TeamManagement() {
     try {
       if (editingMember.id && !editingMember.id.includes('new-')) {
         // Update existing
-        await axios.put(`${API}/team/members/${editingMember.id}`, {
+        const payload = {
           username: editingMember.username,
           email: editingMember.email,
           is_active: editingMember.is_active !== false
-        }, {
+        };
+        
+        // Include password only if provided
+        if (editingMember.password && editingMember.password.trim()) {
+          payload.password = editingMember.password;
+        }
+        
+        await axios.put(`${API}/team/members/${editingMember.id}`, payload, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         toast.success("Miembro actualizado correctamente");
