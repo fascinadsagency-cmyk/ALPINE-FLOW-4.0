@@ -119,6 +119,17 @@ const registerServiceWorker = async () => {
   }
 };
 
+// Public Route - Redirect to dashboard if already authenticated
+const PublicRoute = ({ children }) => {
+  const { user } = useAuth();
+  
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
+  
+  return children;
+};
+
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   
@@ -131,7 +142,7 @@ const ProtectedRoute = ({ children }) => {
   }
   
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/landing" replace />;
   }
   
   return children;
