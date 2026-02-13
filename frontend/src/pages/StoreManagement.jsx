@@ -29,7 +29,7 @@ export default function StoreManagement() {
   // New store form
   const [newStore, setNewStore] = useState({
     name: "",
-    plan: "basic",
+    plan: "trial",  // Default to trial for new stores
     max_users: 10,
     max_items: 10000,
     max_customers: 10000,
