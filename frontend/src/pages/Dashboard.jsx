@@ -311,19 +311,20 @@ export default function Dashboard() {
 
         {/* Card 4: Clientes del Día */}
         <Card 
-          className="cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-violet-500"
+          className="card-modern cursor-pointer stat-card group"
           onClick={() => navigate('/clientes')}
         >
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-500">Clientes del Día</p>
-                <p className="text-3xl font-bold text-slate-900 mt-1">{stats.customers_today ?? 0}</p>
-                <p className="text-xs text-slate-500 mt-1">Clientes únicos atendidos</p>
+            <div className="flex items-start justify-between mb-4">
+              <div className="icon-gradient">
+                <Users className="h-6 w-6 text-white" />
               </div>
-              <div className="h-12 w-12 rounded-full bg-violet-100 flex items-center justify-center">
-                <Users className="h-6 w-6 text-violet-600" />
-              </div>
+              <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-blue-600 transition-colors" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Clientes del Día</p>
+              <p className="text-4xl font-bold text-slate-900 mt-2">{stats.customers_today ?? 0}</p>
+              <p className="text-xs text-slate-500 mt-1">Clientes únicos atendidos</p>
             </div>
           </CardContent>
         </Card>
@@ -331,21 +332,21 @@ export default function Dashboard() {
 
       {/* ============ CONTROL DE DEVOLUCIONES - TORRE DE CONTROL ============ */}
       {returnsControl && returnsControl.total_pending > 0 && (
-        <Card className="border-2 border-amber-300 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 shadow-lg" data-testid="returns-control-panel">
+        <Card className="card-modern border-2 border-amber-300 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 shadow-xl relative z-10" data-testid="returns-control-panel">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-amber-500 flex items-center justify-center">
-                  <RotateCcw className="h-5 w-5 text-white" />
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
+                  <RotateCcw className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <span className="text-amber-900">Control de Devoluciones</span>
+                  <span className="text-amber-900 font-bold">Control de Devoluciones</span>
                   <p className="text-xs font-normal text-amber-700 mt-0.5">Material pendiente por recoger HOY</p>
                 </div>
               </CardTitle>
               <div className="flex items-center gap-3">
                 {returnsControl.is_past_closing && returnsControl.total_pending > 0 && (
-                  <Badge className="bg-red-500 text-white animate-pulse px-3 py-1">
+                  <Badge className="bg-red-500 text-white animate-pulse px-3 py-1.5 font-bold">
                     <AlertTriangle className="h-3 w-3 mr-1" />
                     ¡RETRASO!
                   </Badge>
