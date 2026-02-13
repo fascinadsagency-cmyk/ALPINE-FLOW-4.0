@@ -4322,9 +4322,17 @@ async def process_payment(rental_id: str, payment: PaymentRequest, current_user:
     new_paid = rental["paid_amount"] + payment.amount
     new_pending = rental["total_amount"] - new_paid
     
+    # Determine payment status
+    payment_status = "paid" if new_pending <= 0 else "partial"
+    
     await db.rentals.update_one(
         {"id": rental_id},
-        {"$set": {"paid_amount": new_paid, "pending_amount": max(0, new_pending)}}
+        {"$set": {
+            "paid_amount": new_paid, 
+            "pending_amount": max(0, new_pending),
+            "payment_method": payment.payment_method,  # Update payment method
+            "payment_status": payment_status
+        }}
     )
     
     # CREATE CASH MOVEMENT - This is MANDATORY for accounting integrity
