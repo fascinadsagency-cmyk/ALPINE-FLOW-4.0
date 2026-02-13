@@ -2043,7 +2043,10 @@ async def get_items_with_profitability(
     items = await db.items.find(query, {"_id": 0}).to_list(10000)
     
     # Build rental query with date filter if provided
-    rental_query = {"status": "returned"}
+    rental_query = {
+        **current_user.get_store_filter(),  # CRITICAL: Multi-tenant filter
+        "status": "returned"
+    }
     if start_date or end_date:
         date_conditions = {}
         if start_date:
@@ -2054,7 +2057,7 @@ async def get_items_with_profitability(
             # Use end_date field for filtering returned rentals
             rental_query["end_date"] = date_conditions
     
-    # Get all closed rentals to calculate revenue per item
+    # Get all closed rentals to calculate revenue per item (FILTERED by date and store)
     closed_rentals = await db.rentals.find(
         rental_query,
         {"items": 1, "total_amount": 1, "days": 1, "end_date": 1, "_id": 0}
