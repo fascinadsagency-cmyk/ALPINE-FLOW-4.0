@@ -8299,13 +8299,31 @@ async def get_plan_status(current_user: CurrentUser = Depends(get_current_user))
 
 @api_router.get("/plan/available")
 async def get_available_plans():
-    """Get all available plans with their limits and prices - Dynamically from PLAN_LIMITS."""
+    """
+    Get all available plans with their limits and prices.
+    Returns customized plans from DB if they exist, otherwise uses PLAN_LIMITS.
+    """
     
-    # Build plans list dynamically from PLAN_LIMITS
+    # Get plans from /api/plans endpoint logic (merges custom + defaults)
+    plans_dict = {}
+    for plan_type, limits in PLAN_LIMITS.items():
+        plans_dict[plan_type] = {
+            "plan_type": plan_type,
+            **limits
+        }
+    
+    # Override with custom plans from DB
+    custom_plans = await db.plans.find({}, {"_id": 0}).to_list(10)
+    for custom_plan in custom_plans:
+        plan_type = custom_plan.get("plan_type")
+        if plan_type in plans_dict:
+            plans_dict[plan_type].update(custom_plan)
+    
+    # Build response for frontend
     plans = []
     
     # Basic Plan
-    basic = PLAN_LIMITS["basic"]
+    basic = plans_dict["basic"]
     plans.append({
         "id": "basic",
         "name": basic["name"],
@@ -8323,7 +8341,7 @@ async def get_available_plans():
     })
     
     # PRO Plan
-    pro = PLAN_LIMITS["pro"]
+    pro = plans_dict["pro"]
     plans.append({
         "id": "pro",
         "name": pro["name"],
@@ -8343,18 +8361,18 @@ async def get_available_plans():
     })
     
     # Enterprise Plan
-    enterprise = PLAN_LIMITS["enterprise"]
+    enterprise = plans_dict["enterprise"]
     plans.append({
         "id": "enterprise",
         "name": enterprise["name"],
-        "max_items": -1,  # Unlimited
-        "max_customers": -1,  # Unlimited
+        "max_items": -1 if enterprise["max_items"] >= 999999 else enterprise["max_items"],  # Show unlimited if very high
+        "max_customers": -1 if enterprise["max_customers"] >= 999999 else enterprise["max_customers"],
         "max_users": enterprise["max_users"],
         "price": enterprise["price"],
         "price_display": f"{enterprise['price']}€/año",
         "features": [
-            "Artículos ilimitados",
-            "Clientes ilimitados",
+            "Artículos ilimitados" if enterprise["max_items"] >= 999999 else f"{enterprise['max_items']:,} artículos",
+            "Clientes ilimitados" if enterprise["max_customers"] >= 999999 else f"{enterprise['max_customers']:,} clientes",
             f"{enterprise['max_users']} usuarios",
             "Soporte 24/7",
             "API personalizada",
