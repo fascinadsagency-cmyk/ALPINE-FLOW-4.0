@@ -18,35 +18,44 @@
         --card-foreground: 222 47% 11%;
         --popover: 0 0% 100%;
         --popover-foreground: 222 47% 11%;
-        --primary: 240 100% 50%;
+        
+        /* Primary: Blue → Purple gradient colors */
+        --primary: 240 100% 60%;
         --primary-foreground: 0 0% 100%;
-        --secondary: 270 100% 75%;
+        --secondary: 270 95% 70%;
         --secondary-foreground: 0 0% 100%;
-        --muted: 210 40% 96%;
-        --muted-foreground: 215 16% 47%;
-        --accent: 280 100% 70%;
+        --accent: 280 90% 65%;
         --accent-foreground: 0 0% 100%;
-        --destructive: 0 84% 60%;
+        
+        /* Complementary colors following blue/purple theme */
+        --success: 180 80% 45%;        /* Cyan/Teal - complement to purple */
+        --success-foreground: 0 0% 100%;
+        --warning: 35 95% 60%;          /* Warm orange - harmonizes with purple */
+        --warning-foreground: 0 0% 100%;
+        --destructive: 340 85% 58%;     /* Pink-red - purple family */
         --destructive-foreground: 0 0% 100%;
-        --border: 214 32% 91%;
-        --input: 214 32% 91%;
-        --ring: 240 100% 50%;
+        --info: 220 90% 60%;            /* Blue - part of main palette */
+        --info-foreground: 0 0% 100%;
+        
+        /* Neutral colors with slight blue tint */
+        --muted: 240 20% 96%;
+        --muted-foreground: 240 10% 45%;
+        --border: 240 20% 92%;
+        --input: 240 20% 92%;
+        --ring: 240 100% 60%;
         --radius: 0.75rem;
-        --success: 142 76% 36%;
-        --warning: 48 96% 53%;
-        --info: 217 91% 60%;
         
         /* Custom app colors - Modern vibrant theme */
-        --app-bg: 250 100% 99%;
+        --app-bg: 245 60% 98%;
         --app-sidebar: 0 0% 100%;
         --app-card: 0 0% 100%;
         --app-text: 222 47% 11%;
-        --app-text-muted: 215 16% 47%;
-        --app-border: 240 20% 94%;
+        --app-text-muted: 240 10% 45%;
+        --app-border: 240 20% 92%;
         
         /* Gradient colors */
-        --gradient-start: 240 100% 50%;
-        --gradient-end: 300 100% 50%;
+        --gradient-start: 240 100% 60%;
+        --gradient-end: 280 100% 65%;
     }
 
     /* ========== DARK MODE THEME ========== */
