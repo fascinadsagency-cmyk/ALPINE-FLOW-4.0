@@ -863,8 +863,8 @@ export default function NewRental() {
       if (item.customPrice !== null && item.customPrice !== undefined) {
         itemPrice = item.customPrice;
       } 
-      // Items genéricos con rental_price
-      else if (item.is_generic && item.rental_price) {
+      // Items con rental_price definido (genéricos o individuales)
+      else if (item.rental_price !== null && item.rental_price !== undefined) {
         itemPrice = item.rental_price;
       }
       // Buscar en tarifas
