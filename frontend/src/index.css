@@ -18,31 +18,35 @@
         --card-foreground: 222 47% 11%;
         --popover: 0 0% 100%;
         --popover-foreground: 222 47% 11%;
-        --primary: 221 83% 53%;
+        --primary: 240 100% 50%;
         --primary-foreground: 0 0% 100%;
-        --secondary: 210 40% 96%;
-        --secondary-foreground: 222 47% 11%;
+        --secondary: 270 100% 75%;
+        --secondary-foreground: 0 0% 100%;
         --muted: 210 40% 96%;
         --muted-foreground: 215 16% 47%;
-        --accent: 210 40% 96%;
-        --accent-foreground: 222 47% 11%;
+        --accent: 280 100% 70%;
+        --accent-foreground: 0 0% 100%;
         --destructive: 0 84% 60%;
         --destructive-foreground: 0 0% 100%;
         --border: 214 32% 91%;
         --input: 214 32% 91%;
-        --ring: 221 83% 53%;
+        --ring: 240 100% 50%;
         --radius: 0.75rem;
         --success: 142 76% 36%;
         --warning: 48 96% 53%;
         --info: 217 91% 60%;
         
-        /* Custom app colors */
-        --app-bg: 210 40% 98%;
+        /* Custom app colors - Modern vibrant theme */
+        --app-bg: 250 100% 99%;
         --app-sidebar: 0 0% 100%;
         --app-card: 0 0% 100%;
         --app-text: 222 47% 11%;
         --app-text-muted: 215 16% 47%;
-        --app-border: 214 32% 91%;
+        --app-border: 240 20% 94%;
+        
+        /* Gradient colors */
+        --gradient-start: 240 100% 50%;
+        --gradient-end: 300 100% 50%;
     }
 
     /* ========== DARK MODE THEME ========== */
@@ -98,7 +102,20 @@
     
     h1, h2, h3, h4, h5, h6 {
         font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
+        letter-spacing: -0.02em;
     }
+    
+    h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+    }
+    
+    h2 {
+        font-size: 1.875rem;
+        font-weight: 700;
+    }
+    
     code, .mono {
         font-family: 'JetBrains Mono', monospace;
     }
@@ -392,6 +409,148 @@ html.dark .sticky {
 
 /* Button active states */
 .btn-active {
+
+/* ========== MODERN DESIGN SYSTEM ========== */
+
+/* Gradient utilities */
+.gradient-primary {
+    background: linear-gradient(135deg, hsl(240, 100%, 50%) 0%, hsl(300, 100%, 50%) 100%);
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, hsl(240, 100%, 50%) 0%, hsl(300, 100%, 50%) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.gradient-border {
+    position: relative;
+    background: white;
+}
+
+.gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(135deg, hsl(240, 100%, 50%), hsl(300, 100%, 50%));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+}
+
+/* Organic blob shapes */
+.blob-shape {
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    filter: blur(40px);
+    opacity: 0.3;
+}
+
+.blob-shape-alt {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    filter: blur(50px);
+    opacity: 0.25;
+}
+
+/* Modern card with subtle shadow */
+.card-modern {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    border: 1px solid hsl(var(--border));
+    transition: all 0.3s ease;
+}
+
+.card-modern:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Gradient button */
+.btn-gradient {
+    background: linear-gradient(135deg, hsl(240, 100%, 50%) 0%, hsl(300, 100%, 50%) 100%);
+    color: white;
+    font-weight: 600;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-gradient:hover {
+    box-shadow: 0 10px 25px -5px hsla(270, 100%, 50%, 0.5);
+    transform: translateY(-1px);
+}
+
+/* Modern sidebar */
+.sidebar-modern {
+    background: linear-gradient(180deg, hsl(240, 100%, 50%) 0%, hsl(270, 100%, 45%) 100%);
+}
+
+/* Accent colors */
+.accent-blue {
+    color: hsl(220, 90%, 56%);
+}
+
+.accent-purple {
+    color: hsl(280, 100%, 70%);
+}
+
+/* Stats card with gradient accent */
+.stat-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, hsl(240, 100%, 50%), hsl(300, 100%, 50%));
+}
+
+/* Icon gradient background */
+.icon-gradient {
+    background: linear-gradient(135deg, hsl(240, 100%, 50%) 0%, hsl(300, 100%, 50%) 100%);
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Modern badge */
+.badge-modern {
+    background: linear-gradient(135deg, hsla(240, 100%, 50%, 0.1) 0%, hsla(300, 100%, 50%, 0.1) 100%);
+    color: hsl(260, 100%, 40%);
+    border: 1px solid hsla(260, 100%, 50%, 0.2);
+    font-weight: 600;
+}
+
+/* Large spacing utilities */
+.section-spacing {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+}
+
+/* Modern text styles */
+.text-display {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+}
+
+.text-heading {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
     @apply active:scale-[0.98] transition-transform;
 }
 
