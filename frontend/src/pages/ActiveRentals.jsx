@@ -737,7 +737,8 @@ export default function ActiveRentals() {
             ...r,
             paid_amount: response.data.paid_amount,
             pending_amount: response.data.pending_amount,
-            payment_method: response.data.pending_amount === 0 ? quickPaymentMethod : r.payment_method
+            payment_method: quickPaymentMethod, // Always update to the selected payment method
+            payment_status: response.data.pending_amount === 0 ? 'paid' : 'partial'
           };
         }
         return r;
