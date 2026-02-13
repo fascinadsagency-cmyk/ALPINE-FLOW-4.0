@@ -1682,58 +1682,60 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
               Artículos ({items.length} de {totalItems})
             </CardTitle>
             
-            {/* Column Configuration Button */}
-            <Popover open={showColumnConfig} onOpenChange={setShowColumnConfig}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2" data-testid="column-config-btn">
-                  <Settings2 className="h-4 w-4" />
-                  Columnas
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-72" align="end">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-semibold text-sm">Configurar Columnas</h4>
-                    <Button variant="ghost" size="sm" onClick={resetColumnConfig} className="h-8 text-xs">
-                      <RotateCcw className="h-3 w-3 mr-1" />
-                      Restaurar
-                    </Button>
+            {/* Column Configuration Button - Only show in normal mode */}
+            {!showProfitability && (
+              <Popover open={showColumnConfig} onOpenChange={setShowColumnConfig}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2" data-testid="column-config-btn">
+                    <Settings2 className="h-4 w-4" />
+                    Columnas
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-72" align="end">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-sm">Configurar Columnas</h4>
+                      <Button variant="ghost" size="sm" onClick={resetColumnConfig} className="h-8 text-xs">
+                        <RotateCcw className="h-3 w-3 mr-1" />
+                        Restaurar
+                      </Button>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      Arrastra las cabeceras para reordenar. Marca/desmarca para mostrar/ocultar.
+                    </p>
+                    <div className="space-y-1 max-h-64 overflow-y-auto">
+                      {ALL_COLUMNS.map((col) => (
+                        <label
+                          key={col.id}
+                          className={`flex items-center gap-2 p-2 rounded hover:bg-slate-50 cursor-pointer ${
+                            col.required ? 'opacity-70' : ''
+                          }`}
+                        >
+                          <Checkbox
+                            checked={visibleColumns.includes(col.id)}
+                            onCheckedChange={() => toggleColumnVisibility(col.id)}
+                            disabled={col.required}
+                            data-testid={`col-toggle-${col.id}`}
+                          />
+                          <span className="text-sm flex-1">{col.label}</span>
+                          {col.required && (
+                            <span className="text-xs text-slate-400">(fija)</span>
+                          )}
+                          {visibleColumns.includes(col.id) ? (
+                            <Eye className="h-3 w-3 text-emerald-500" />
+                          ) : (
+                            <EyeOff className="h-3 w-3 text-slate-300" />
+                          )}
+                        </label>
+                      ))}
+                    </div>
+                    <div className="pt-2 border-t text-xs text-slate-500">
+                      {visibleColumns.length} de {ALL_COLUMNS.length} columnas visibles
+                    </div>
                   </div>
-                  <p className="text-xs text-slate-500">
-                    Arrastra las cabeceras para reordenar. Marca/desmarca para mostrar/ocultar.
-                  </p>
-                  <div className="space-y-1 max-h-64 overflow-y-auto">
-                    {ALL_COLUMNS.map((col) => (
-                      <label
-                        key={col.id}
-                        className={`flex items-center gap-2 p-2 rounded hover:bg-slate-50 cursor-pointer ${
-                          col.required ? 'opacity-70' : ''
-                        }`}
-                      >
-                        <Checkbox
-                          checked={visibleColumns.includes(col.id)}
-                          onCheckedChange={() => toggleColumnVisibility(col.id)}
-                          disabled={col.required}
-                          data-testid={`col-toggle-${col.id}`}
-                        />
-                        <span className="text-sm flex-1">{col.label}</span>
-                        {col.required && (
-                          <span className="text-xs text-slate-400">(fija)</span>
-                        )}
-                        {visibleColumns.includes(col.id) ? (
-                          <Eye className="h-3 w-3 text-emerald-500" />
-                        ) : (
-                          <EyeOff className="h-3 w-3 text-slate-300" />
-                        )}
-                      </label>
-                    ))}
-                  </div>
-                  <div className="pt-2 border-t text-xs text-slate-500">
-                    {visibleColumns.length} de {ALL_COLUMNS.length} columnas visibles
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
+                </PopoverContent>
+              </Popover>
+            )}
           </div>
         </CardHeader>
         <CardContent>
