@@ -32,7 +32,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Sticky Navbar - Con Degradado */}
-      <nav className="sticky top-0 z-50 border-b border-purple-500/20" style={{ background: 'linear-gradient(135deg, #4169E1 0%, #9370DB 100%)' }}>
+      <nav className="sticky top-0 z-50 border-b border-purple-500/20" style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #ec4899 100%)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
@@ -41,63 +41,49 @@ export default function LandingPage() {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-3">
-              <Button 
-                variant="ghost" 
+            <div className="hidden md:flex items-center gap-8">
+              <button 
                 onClick={() => navigate("/login")}
-                className="text-white hover:text-white/90 hover:bg-white/10 font-semibold text-base"
+                className="text-white/90 hover:text-white font-semibold text-sm uppercase tracking-wide transition-colors"
               >
                 Iniciar Sesión
-              </Button>
+              </button>
               <Button 
                 onClick={() => navigate("/register")}
-                className="bg-white hover:bg-white/90 text-purple-600 font-bold px-8 rounded-full shadow-lg hover:shadow-xl transition-all"
+                className="bg-black hover:bg-black/80 text-white font-bold px-8 py-2 rounded-full transition-all uppercase tracking-wide text-sm"
               >
-                Empezar Gratis
+                Contacto
               </Button>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section - BOLD & MINIMAL con Degradado */}
-      <section className="pt-32 pb-24" style={{ background: 'linear-gradient(135deg, #4169E1 0%, #9370DB 100%)' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-5xl">
-            <h1 className="text-7xl sm:text-8xl lg:text-9xl font-black text-white mb-8 leading-[0.9] tracking-tighter uppercase" style={{ fontFamily: 'Plus Jakarta Sans' }}>
-              Despacha en<br/>
-              <span className="italic font-black">segundos</span><br/>
-              no minutos
-            </h1>
-            
-            <p className="text-xl sm:text-2xl text-white/90 mb-12 max-w-2xl font-medium leading-relaxed">
-              El software que elimina las colas y recupera el control de tu stock en tiempo real.
+      {/* Hero Section - Estilo April Ford */}
+      <section className="min-h-[90vh] flex items-center relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #ec4899 100%)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="max-w-6xl">
+            {/* Subtítulo */}
+            <p className="text-white/80 text-sm sm:text-base uppercase tracking-[0.3em] mb-8 font-semibold">
+              EL SOFTWARE #1 PARA ALQUILER DE ESQUÍS
             </p>
             
+            {/* Título Principal - Estilo April Ford */}
+            <h1 className="text-6xl sm:text-7xl lg:text-8xl xl:text-9xl font-black text-white mb-12 leading-[0.95] tracking-tight uppercase" style={{ fontFamily: 'Plus Jakarta Sans', letterSpacing: '-0.02em' }}>
+              DEJA DE BUSCAR.<br/>
+              EMPIEZA A<br/>
+              <span className="inline-block">CRECER.</span>
+            </h1>
+            
+            {/* Botón CTA */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Button 
                 size="lg"
-                className="text-lg px-12 py-8 bg-white text-purple-600 hover:bg-white/90 font-bold rounded-full shadow-2xl hover:shadow-white/30 transition-all"
+                className="text-base px-10 py-7 bg-white text-black hover:bg-white/90 font-bold rounded-full shadow-2xl hover:shadow-white/30 transition-all uppercase tracking-wide"
                 onClick={() => navigate("/register")}
               >
                 EMPEZAR AHORA
-                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-            </div>
-            
-            <div className="flex items-center gap-6 mt-12 text-sm text-white/80">
-              <span className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-white" />
-                Sin tarjeta
-              </span>
-              <span className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-white" />
-                15 días gratis
-              </span>
-              <span className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-white" />
-                Cancela cuando quieras
-              </span>
             </div>
           </div>
         </div>
