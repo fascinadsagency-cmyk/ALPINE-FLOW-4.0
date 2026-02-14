@@ -13,7 +13,7 @@ import sys
 import uuid
 
 # Configuration
-BACKEND_URL = "https://modern-rental-ui-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://minimalist-landing.preview.emergentagent.com/api"
 TEST_USER = "testcaja"
 TEST_PASSWORD = "test1234"
 

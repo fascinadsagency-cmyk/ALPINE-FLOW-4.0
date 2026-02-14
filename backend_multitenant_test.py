@@ -14,7 +14,7 @@ from datetime import datetime
 import sys
 
 # Configuration
-BACKEND_URL = "https://modern-rental-ui-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://minimalist-landing.preview.emergentagent.com/api"
 
 class MultiTenantTester:
     def __init__(self):
