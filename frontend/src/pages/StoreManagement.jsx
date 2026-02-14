@@ -214,10 +214,10 @@ export default function StoreManagement() {
     const planType = plan || 'basic';
     
     const colors = {
-      basic: "bg-gray-100 text-gray-800",
-      pro: "bg-blue-500/20 text-blue-800",
-      enterprise: "bg-purple-500/20 text-purple-800",
-      trial: "bg-yellow-500/20 text-yellow-800"
+      basic: "bg-slate-500 text-white",
+      pro: "bg-blue-600 text-white",
+      enterprise: "bg-purple-600 text-white",
+      trial: "bg-amber-500 text-white"
     };
     return (
       <Badge className={colors[planType] || colors.basic}>
@@ -228,9 +228,9 @@ export default function StoreManagement() {
 
   const getStatusBadge = (status) => {
     return status === "active" ? (
-      <Badge className="bg-emerald-500/20 text-green-800">Activa</Badge>
+      <Badge className="bg-emerald-500 text-white">Activa</Badge>
     ) : (
-      <Badge className="bg-red-100 text-red-800">Inactiva</Badge>
+      <Badge className="bg-red-500 text-white">Inactiva</Badge>
     );
   };
 
