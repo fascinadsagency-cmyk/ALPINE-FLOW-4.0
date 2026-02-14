@@ -339,11 +339,11 @@ export default function Settings() {
                       </Badge>
                     ) : (
                       <>
-                        <Badge className={storeInfo.status === "active" ? "bg-emerald-500/20 text-emerald-700 border border-emerald-500/30" : "bg-red-500/20 text-red-700 border border-red-500/30"}>
+                        <Badge className="bg-emerald-600 text-white border-0">
                           {storeInfo.status === "active" ? "✓ Activa" : "✗ Inactiva"}
                         </Badge>
                         {storeInfo.plan && (
-                          <Badge className="bg-purple-500/20 text-purple-700 border border-purple-500/30">
+                          <Badge className="bg-purple-600 text-white border-0">
                             Plan: {storeInfo.plan.toUpperCase()}
                           </Badge>
                         )}
