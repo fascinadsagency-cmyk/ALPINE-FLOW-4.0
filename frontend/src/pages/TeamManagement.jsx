@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import axios from "axios";
+import PlanLimitModal from "@/components/PlanLimitModal";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
