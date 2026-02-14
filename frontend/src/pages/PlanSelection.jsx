@@ -403,8 +403,8 @@ export default function PlanSelection() {
         {/* Footer */}
         <div className="mt-16 text-center">
           <p className="text-white/80 text-lg">¿Tienes dudas? Contacta con nuestro equipo de soporte</p>
-          <a href="mailto:soporte@alpineflow.es" className="text-white hover:underline font-semibold mt-2 inline-block">
-            soporte@alpineflow.es
+          <a href="mailto:hola@skiflowrental.com" className="text-white hover:underline font-semibold mt-2 inline-block">
+            hola@skiflowrental.com
           </a>
         </div>
       </div>
