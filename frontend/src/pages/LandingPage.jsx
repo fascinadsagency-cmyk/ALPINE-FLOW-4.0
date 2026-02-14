@@ -60,43 +60,45 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero Section - BOLD & MINIMAL */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24">
-        <div className="max-w-5xl">
-          <h1 className="text-7xl sm:text-8xl lg:text-9xl font-black text-slate-900 mb-8 leading-[0.9] tracking-tighter uppercase" style={{ fontFamily: 'Plus Jakarta Sans' }}>
-            Despacha en<br/>
-            <span className="italic font-black">segundos</span><br/>
-            no minutos
-          </h1>
-          
-          <p className="text-xl sm:text-2xl text-slate-600 mb-12 max-w-2xl font-medium leading-relaxed">
-            El software que elimina las colas y recupera el control de tu stock en tiempo real.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button 
-              size="lg"
-              className="text-lg px-12 py-8 bg-slate-900 hover:bg-slate-800 font-bold rounded-full shadow-2xl hover:shadow-slate-900/50 transition-all"
-              onClick={() => navigate("/register")}
-            >
-              EMPEZAR AHORA
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </div>
-          
-          <div className="flex items-center gap-6 mt-12 text-sm text-slate-500">
-            <span className="flex items-center gap-2">
-              <Check className="h-4 w-4 text-slate-900" />
-              Sin tarjeta
-            </span>
-            <span className="flex items-center gap-2">
-              <Check className="h-4 w-4 text-slate-900" />
-              15 días gratis
-            </span>
-            <span className="flex items-center gap-2">
-              <Check className="h-4 w-4 text-slate-900" />
-              Cancela cuando quieras
-            </span>
+      {/* Hero Section - BOLD & MINIMAL con Degradado */}
+      <section className="pt-32 pb-24" style={{ background: 'linear-gradient(135deg, #4169E1 0%, #9370DB 100%)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl">
+            <h1 className="text-7xl sm:text-8xl lg:text-9xl font-black text-white mb-8 leading-[0.9] tracking-tighter uppercase" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+              Despacha en<br/>
+              <span className="italic font-black">segundos</span><br/>
+              no minutos
+            </h1>
+            
+            <p className="text-xl sm:text-2xl text-white/90 mb-12 max-w-2xl font-medium leading-relaxed">
+              El software que elimina las colas y recupera el control de tu stock en tiempo real.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button 
+                size="lg"
+                className="text-lg px-12 py-8 bg-white text-purple-600 hover:bg-white/90 font-bold rounded-full shadow-2xl hover:shadow-white/30 transition-all"
+                onClick={() => navigate("/register")}
+              >
+                EMPEZAR AHORA
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+            
+            <div className="flex items-center gap-6 mt-12 text-sm text-white/80">
+              <span className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-white" />
+                Sin tarjeta
+              </span>
+              <span className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-white" />
+                15 días gratis
+              </span>
+              <span className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-white" />
+                Cancela cuando quieras
+              </span>
+            </div>
           </div>
         </div>
       </section>
