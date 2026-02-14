@@ -45,7 +45,7 @@ import axios from "axios";
 const API = process.env.REACT_APP_BACKEND_URL;
 
 export default function Settings() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   const { 
     darkMode, setDarkMode,
@@ -65,7 +65,8 @@ export default function Settings() {
     quickScanMode, setQuickScanMode,
     paperWidth, setPaperWidth,
     autoPrintOnPayment, setAutoPrintOnPayment,
-    printDoubleCopy, setPrintDoubleCopy
+    printDoubleCopy, setPrintDoubleCopy,
+    saveSettingsToBackend
   } = useSettings();
   
   const [saving, setSaving] = useState(false);
