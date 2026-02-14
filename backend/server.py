@@ -8194,10 +8194,17 @@ async def save_settings(settings: BusinessSettings, current_user: CurrentUser = 
     
     # Upsert the settings document
     await db.settings.update_one(
-        {"type": "business"},
-        {"$set": settings_dict},
+        {"type": "business", "store_id": current_user.store_id},
+        {"$set": {**settings_dict, "store_id": current_user.store_id}},
         upsert=True
     )
+    
+    # Also sync company_logo to stores collection so sidebar picks it up
+    if current_user.store_id:
+        await db.stores.update_one(
+            {"store_id": current_user.store_id},
+            {"$set": {"company_logo": settings.company_logo or ""}}
+        )
     
     return {"success": True, "message": "Configuración guardada"}
 
