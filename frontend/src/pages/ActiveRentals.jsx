@@ -2167,11 +2167,11 @@ export default function ActiveRentals() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-6 w-6"
+                              className="h-6 w-6 group"
                               onClick={() => openPaymentMethodDialog(rental)}
                               title="Editar método de pago"
                             >
-                              <Edit2 className="h-3 w-3 text-slate-400 hover:text-slate-600" />
+                              <Edit2 className="h-3 w-3 text-slate-400 group-hover:text-blue-600" />
                             </Button>
                           </div>
                         </TableCell>
@@ -2196,7 +2196,7 @@ export default function ActiveRentals() {
                               variant="outline"
                               size="sm"
                               onClick={() => openChangeModal(rental)}
-                              className="gap-1 text-blue-600 border-blue-200 hover:bg-blue-500/10 hover:border-blue-400 h-8"
+                              className="gap-1 text-blue-600 border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 h-8"
                               data-testid={`change-btn-${rental.id}`}
                               title="Gestionar cambios del contrato"
                             >
@@ -2207,7 +2207,7 @@ export default function ActiveRentals() {
                               variant="outline"
                               size="sm"
                               onClick={() => openAddItemsModal(rental)}
-                              className="gap-1 text-emerald-600 border-emerald-200 hover:bg-emerald-500/10 hover:border-emerald-400 h-8"
+                              className="gap-1 text-emerald-600 border-emerald-200 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 h-8"
                               title="Añadir artículos al alquiler"
                             >
                               <Plus className="h-3.5 w-3.5" />
