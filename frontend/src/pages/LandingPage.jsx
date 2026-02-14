@@ -473,24 +473,21 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA Section - BOLD */}
+      {/* CTA Section */}
       <section className="bg-black py-32">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-6xl sm:text-7xl font-black text-white mb-8 leading-tight uppercase tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans' }}>
-            Recupera el<br/>
-            control de tu<br/>
-            <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">temporada alta</span>
+          <h2 className="text-5xl sm:text-6xl font-black text-white mb-6 leading-tight tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+            ¿Listo para eliminar las colas de una vez por todas?
           </h2>
           <p className="text-xl text-slate-400 mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
-            Únete a los profesionales que ya eliminaron las colas de sus tiendas.
+            Únete a los profesionales que ya han recuperado el "Flow" de su negocio con SkiFlow Rental.
           </p>
           <Button 
             size="lg"
-            className="bg-white text-black hover:bg-slate-100 text-lg px-12 py-8 font-black rounded-full shadow-2xl hover:shadow-white/20 transition-all uppercase"
+            className="bg-white text-black hover:bg-slate-100 text-base px-12 py-7 font-bold rounded-full shadow-2xl hover:shadow-white/20 transition-all"
             onClick={() => navigate("/register")}
           >
-            Empezar Ahora
-            <ArrowRight className="ml-2 h-5 w-5" />
+            EMPEZAR PRUEBA ILIMITADA GRATIS
           </Button>
         </div>
       </section>
