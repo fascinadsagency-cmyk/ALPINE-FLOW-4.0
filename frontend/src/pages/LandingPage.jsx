@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,7 +15,8 @@ import {
   BarChart3,
   Shield,
   Database,
-  TrendingUp
+  TrendingUp,
+  ChevronDown
 } from "lucide-react";
 
 export default function LandingPage() {
