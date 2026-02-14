@@ -3323,22 +3323,16 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                 }`}>
                   <div className="flex items-center justify-center gap-2 mb-2">
                     {itemProfitData.net_profit >= 0 ? (
-                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <CheckCircle className="h-5 w-5 text-white" />
                     ) : (
-                      <AlertCircle className="h-5 w-5 text-orange-600" />
+                      <AlertCircle className="h-5 w-5 text-white" />
                     )}
-                    <p className={`text-xs font-bold uppercase tracking-wide ${
-                      itemProfitData.net_profit >= 0 ? 'text-green-600' : 'text-orange-600'
-                    }`}>Beneficio</p>
+                    <p className={`text-xs font-bold uppercase tracking-wide text-white/90`}>Beneficio</p>
                   </div>
-                  <p className={`text-3xl font-black ${
-                    itemProfitData.net_profit >= 0 ? 'text-green-700' : 'text-orange-700'
-                  }`}>
+                  <p className={`text-3xl font-black text-white`}>
                     {itemProfitData.net_profit >= 0 ? '+' : ''}€{Math.abs(itemProfitData.net_profit || 0).toLocaleString()}
                   </p>
-                  <p className={`text-xs mt-1 ${
-                    itemProfitData.net_profit >= 0 ? 'text-green-500' : 'text-orange-500'
-                  }`}>{itemProfitData.net_profit >= 0 ? 'beneficio neto' : 'pendiente'}</p>
+                  <p className={`text-xs mt-1 text-white/80`}>{itemProfitData.net_profit >= 0 ? 'beneficio neto' : 'pendiente'}</p>
                 </div>
               </div>
               
