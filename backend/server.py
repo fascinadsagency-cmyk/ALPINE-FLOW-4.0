@@ -3118,6 +3118,7 @@ async def create_items_bulk(data: BulkItemCreate, current_user: CurrentUser = De
 @api_router.post("/items/import-csv")
 async def import_items_csv(file: UploadFile = File(...), current_user: CurrentUser = Depends(get_current_user)):
     """Import items from CSV file with automatic type AND tariff creation"""
+    await check_plan_limit(current_user, 'items')
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="File must be CSV")
     
