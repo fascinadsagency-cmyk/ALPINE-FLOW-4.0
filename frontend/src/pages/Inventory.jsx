@@ -3280,46 +3280,46 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
               {/* ========== 4 KPI CARDS ========== */}
               <div className="grid grid-cols-4 gap-4">
                 {/* ROI Actual */}
-                <div className="p-5 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 text-center">
+                <div className="p-5 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 border-0 text-center shadow-lg">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <Target className="h-5 w-5 text-purple-600" />
-                    <p className="text-xs text-purple-600 font-bold uppercase tracking-wide">ROI Actual</p>
+                    <Target className="h-5 w-5 text-white" />
+                    <p className="text-xs text-white/90 font-bold uppercase tracking-wide">ROI Actual</p>
                   </div>
-                  <p className="text-3xl font-black text-purple-700">
+                  <p className="text-3xl font-black text-white">
                     {Math.min(itemProfitData.amortization_percent || 0, 999).toFixed(0)}%
                   </p>
-                  <p className="text-xs text-purple-500 mt-1">recuperado</p>
+                  <p className="text-xs text-white/80 mt-1">recuperado</p>
                 </div>
                 
                 {/* Coste de Inversión */}
-                <div className="p-5 rounded-xl bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-200 text-center">
+                <div className="p-5 rounded-xl bg-gradient-to-br from-red-500 to-red-600 border-0 text-center shadow-lg">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <DollarSign className="h-5 w-5 text-red-600" />
-                    <p className="text-xs text-red-600 font-bold uppercase tracking-wide">Inversión</p>
+                    <DollarSign className="h-5 w-5 text-white" />
+                    <p className="text-xs text-white/90 font-bold uppercase tracking-wide">Inversión</p>
                   </div>
-                  <p className="text-3xl font-black text-red-700">
+                  <p className="text-3xl font-black text-white">
                     €{(itemProfitData.purchase_price || 0).toLocaleString()}
                   </p>
-                  <p className="text-xs text-red-500 mt-1">coste inicial</p>
+                  <p className="text-xs text-white/80 mt-1">coste inicial</p>
                 </div>
                 
                 {/* Ingresos Totales */}
-                <div className="p-5 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-200 text-center">
+                <div className="p-5 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 border-0 text-center shadow-lg">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <TrendingUp className="h-5 w-5 text-emerald-600" />
-                    <p className="text-xs text-emerald-600 font-bold uppercase tracking-wide">Ingresos</p>
+                    <TrendingUp className="h-5 w-5 text-white" />
+                    <p className="text-xs text-white/90 font-bold uppercase tracking-wide">Ingresos</p>
                   </div>
-                  <p className="text-3xl font-black text-emerald-700">
+                  <p className="text-3xl font-black text-white">
                     €{(itemProfitData.total_revenue || 0).toLocaleString()}
                   </p>
-                  <p className="text-xs text-emerald-500 mt-1">acumulados</p>
+                  <p className="text-xs text-white/80 mt-1">acumulados</p>
                 </div>
                 
                 {/* Beneficio Neto */}
-                <div className={`p-5 rounded-xl border-2 text-center ${
+                <div className={`p-5 rounded-xl border-0 text-center shadow-lg ${
                   itemProfitData.net_profit >= 0 
-                    ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-200' 
-                    : 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200'
+                    ? 'bg-gradient-to-br from-green-500 to-green-600' 
+                    : 'bg-gradient-to-br from-orange-500 to-orange-600'
                 }`}>
                   <div className="flex items-center justify-center gap-2 mb-2">
                     {itemProfitData.net_profit >= 0 ? (
