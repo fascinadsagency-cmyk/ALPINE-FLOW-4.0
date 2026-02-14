@@ -31,13 +31,13 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Sticky Navbar - Minimalista */}
-      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
+      {/* Sticky Navbar - Con Degradado */}
+      <nav className="sticky top-0 z-50 backdrop-blur-md border-b border-purple-500/20 gradient-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
             <div className="flex items-center">
-              <img src="/logo.png" alt="SkiFlow Rental" className="h-10 w-auto object-contain" />
+              <img src="/logo-white.png" alt="SkiFlow Rental" className="h-10 w-auto object-contain" />
             </div>
 
             {/* Desktop Navigation */}
@@ -45,13 +45,13 @@ export default function LandingPage() {
               <Button 
                 variant="ghost" 
                 onClick={() => navigate("/login")}
-                className="text-slate-700 hover:text-slate-900 font-semibold text-base"
+                className="text-white hover:text-white/90 hover:bg-white/10 font-semibold text-base"
               >
                 Iniciar Sesión
               </Button>
               <Button 
                 onClick={() => navigate("/register")}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 rounded-full"
+                className="bg-white hover:bg-white/90 text-purple-600 font-bold px-8 rounded-full shadow-lg hover:shadow-xl transition-all"
               >
                 Empezar Gratis
               </Button>
