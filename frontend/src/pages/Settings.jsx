@@ -240,13 +240,23 @@ export default function Settings() {
     setHasChanges(true);
   };
 
-  const saveAllSettings = () => {
+  const saveAllSettings = async () => {
     setSaving(true);
-    setTimeout(() => {
-      toast.success(t('settings.saved'));
+    try {
+      const saved = await saveSettingsToBackend();
+      if (saved) {
+        // Update sidebar logo immediately
+        updateUser({ store_logo: companyLogo || "" });
+        toast.success(t('settings.saved'));
+        setHasChanges(false);
+      } else {
+        toast.error("Error al guardar la configuración");
+      }
+    } catch (error) {
+      toast.error("Error al guardar la configuración");
+    } finally {
       setSaving(false);
-      setHasChanges(false);
-    }, 500);
+    }
   };
 
   return (
