@@ -1052,7 +1052,7 @@ export default function Customers() {
                               {customer.name}
                             </button>
                             {customer.has_active_rental && (
-                              <Badge className="bg-emerald-500/20 text-emerald-700 border-emerald-200 text-xs">
+                              <Badge className="bg-emerald-600 text-white border-0 text-xs">
                                 <Package className="h-3 w-3 mr-1" />
                                 Activo
                               </Badge>
@@ -1086,7 +1086,7 @@ export default function Customers() {
                                 {customer.source}
                               </Badge>
                               {discount > 0 && (
-                                <Badge className="bg-emerald-500/20 text-emerald-700">
+                                <Badge className="bg-emerald-600 text-white border-0">
                                   -{discount}%
                                 </Badge>
                               )}
