@@ -102,6 +102,7 @@ class UserResponse(BaseModel):
     email: Optional[str] = ""
     photo_url: Optional[str] = ""
     store_name: Optional[str] = ""
+    store_logo: Optional[str] = ""
 
 class TokenResponse(BaseModel):
     access_token: str
