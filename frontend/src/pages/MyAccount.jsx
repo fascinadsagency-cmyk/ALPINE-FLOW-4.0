@@ -227,6 +227,7 @@ export default function MyAccount() {
       });
       
       setProfileData(prev => ({ ...prev, photo_url: response.data.photo_url }));
+      updateUser({ photo_url: response.data.photo_url });
       toast.success("Foto actualizada correctamente");
     } catch (error) {
       console.error("Error uploading photo:", error);
