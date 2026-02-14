@@ -603,8 +603,19 @@ export default function Inventory() {
       resetNewItem();
       loadItems(true);
     } catch (error) {
-      // Handle Pydantic validation errors (array of objects) or string errors
+      // Handle plan limit exceeded
       const detail = error.response?.data?.detail;
+      if (error.response?.status === 403 && typeof detail === 'object' && detail?.error === 'PLAN_LIMIT_EXCEEDED') {
+        setPlanLimitModal({
+          open: true,
+          limitType: detail.limit_type,
+          currentCount: detail.current_count,
+          maxCount: detail.max_allowed,
+          planType: detail.plan_name
+        });
+        return;
+      }
+      // Handle Pydantic validation errors (array of objects) or string errors
       let errorMsg = "Error al crear artículo";
       if (typeof detail === 'string') {
         errorMsg = detail;
