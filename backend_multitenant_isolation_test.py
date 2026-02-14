@@ -16,7 +16,7 @@ from datetime import datetime
 import sys
 
 # Configuration
-BACKEND_URL = "https://hover-contrast-audit.preview.emergentagent.com/api"
+BACKEND_URL = "https://skiflow-admin-fix.preview.emergentagent.com/api"
 
 class MultiTenantIsolationTester:
     def __init__(self):
