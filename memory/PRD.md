@@ -83,6 +83,12 @@ Sistema completo de gestión de alquileres para tiendas de equipos de esquí con
 - `.ticket-container` forzado a 80mm de ancho
 - Archivos: `/app/frontend/src/lib/ticketGenerator.js`, `/app/frontend/src/App.css`
 
+## Bug Fix: Persistencia de Foto de Perfil (14/02/2026) ✅
+- **Causa raíz**: `UserResponse` (Pydantic model) solo tenía `id`, `username`, `role` → FastAPI filtraba `photo_url` y `email` de las respuestas de `/auth/login` y `/auth/me`
+- **Fix backend**: Añadidos campos `email` y `photo_url` a `UserResponse`; login endpoint ahora devuelve `photo_url` desde la DB
+- **Fix frontend**: `MyAccount.jsx` ahora llama `updateUser()` del AuthContext tras subir foto → sidebar se actualiza inmediatamente
+- **Testing**: 11/11 tests pasados (6 backend + 5 frontend)
+
 ## Corrección Auditoría Contraste Hover (14/02/2026) ✅
 - **CashRegister.jsx**: Corregidos 8 botones toggle de visibilidad (iconos ojo) con hover:text-* para garantizar contraste
   - TARJETA: hover:text-purple-700 (era purple-400 sobre fondo purple-200)
