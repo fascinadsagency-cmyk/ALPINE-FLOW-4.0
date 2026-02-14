@@ -3608,6 +3608,15 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <PlanLimitModal
+        open={planLimitModal.open}
+        onClose={() => setPlanLimitModal(prev => ({ ...prev, open: false }))}
+        limitType={planLimitModal.limitType}
+        currentCount={planLimitModal.currentCount}
+        maxCount={planLimitModal.maxCount}
+        planType={planLimitModal.planType}
+      />
     </div>
   );
 }

@@ -2239,6 +2239,15 @@ export default function Customers() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <PlanLimitModal
+        open={planLimitModal.open}
+        onClose={() => setPlanLimitModal(prev => ({ ...prev, open: false }))}
+        limitType={planLimitModal.limitType}
+        currentCount={planLimitModal.currentCount}
+        maxCount={planLimitModal.maxCount}
+        planType={planLimitModal.planType}
+      />
     </div>
   );
 }
