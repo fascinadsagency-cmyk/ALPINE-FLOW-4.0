@@ -50,7 +50,7 @@ export default function LandingPage() {
               </button>
               <Button 
                 onClick={() => navigate("/register")}
-                className="bg-white hover:bg-white/90 text-black font-bold px-8 py-3 rounded-full transition-all shadow-lg"
+                className="bg-black hover:bg-black/90 text-white font-bold px-8 py-3 rounded-full transition-all shadow-lg"
               >
                 Crear Cuenta Gratis
               </Button>
@@ -310,7 +310,7 @@ export default function LandingPage() {
                 <div className="flex items-baseline gap-2">
                   <span className="text-5xl font-black text-black">950 €</span>
                 </div>
-                <p className="text-sm text-slate-600 mt-2 font-medium">79 €/mes · anual</p>
+                <p className="text-sm text-slate-600 mt-2 font-medium">Pago anual</p>
               </div>
 
               <Button 
@@ -374,7 +374,7 @@ export default function LandingPage() {
                 <div className="flex items-baseline gap-2">
                   <span className="text-5xl font-black text-white">1.450 €</span>
                 </div>
-                <p className="text-sm text-slate-400 mt-2 font-medium">121 €/mes · anual</p>
+                <p className="text-sm text-slate-400 mt-2 font-medium">Pago anual</p>
               </div>
 
               <Button 
@@ -431,7 +431,7 @@ export default function LandingPage() {
                 <div className="flex items-baseline gap-2">
                   <span className="text-5xl font-black text-black">1.950 €</span>
                 </div>
-                <p className="text-sm text-slate-600 mt-2 font-medium">163 €/mes · anual</p>
+                <p className="text-sm text-slate-600 mt-2 font-medium">Pago anual</p>
               </div>
 
               <Button 
