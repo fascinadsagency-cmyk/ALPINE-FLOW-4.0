@@ -112,6 +112,7 @@ export default function Inventory() {
   const [editingItem, setEditingItem] = useState(null);
   const [deletingItem, setDeletingItem] = useState(null);
   const [importLoading, setImportLoading] = useState(false);
+  const [planLimitModal, setPlanLimitModal] = useState({ open: false, limitType: '', currentCount: 0, maxCount: 0, planType: '' });
   const [importResult, setImportResult] = useState(null);
   const [generatedBarcodes, setGeneratedBarcodes] = useState([]);
   const [barcodePrefix, setBarcodePrefix] = useState("SKI");
