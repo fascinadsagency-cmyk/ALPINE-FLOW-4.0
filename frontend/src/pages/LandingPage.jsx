@@ -22,6 +22,7 @@ import {
 export default function LandingPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [openFaq, setOpenFaq] = useState(null);
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -29,6 +30,37 @@ export default function LandingPage() {
       navigate("/", { replace: true });
     }
   }, [user, navigate]);
+
+  const toggleFaq = (index) => {
+    setOpenFaq(openFaq === index ? null : index);
+  };
+
+  const faqs = [
+    {
+      question: "¿Por qué el periodo de prueba es ilimitado?",
+      answer: "Queremos que pongas a prueba a SkiFlow Rental al máximo nivel. Durante los 15 días de Trial, no tendrás límites de artículos, clientes ni usuarios. Al finalizar, te asesoraremos para elegir el plan que mejor se adapte al volumen real de datos que has gestionado."
+    },
+    {
+      question: "¿Qué ocurre si necesito subir de plan a mitad de temporada?",
+      answer: "Puedes hacer un upgrade de forma instantánea. Solo se te cobrará la diferencia proporcional entre tu plan actual y el nuevo, para que tu inversión sea siempre justa y eficiente."
+    },
+    {
+      question: "¿Qué pasa si me quedo sin internet en la tienda?",
+      answer: "SkiFlow Rental incluye un Modo Offline en todos sus planes. Puedes seguir emitiendo tickets y gestionando alquileres sin interrupciones; en cuanto el sistema detecte conexión, los datos se sincronizarán automáticamente."
+    },
+    {
+      question: "¿Realmente funciona con mi hardware actual?",
+      answer: "Sí. Nuestro sistema es \"Plug & Play\". Conecta tus lectores de códigos e impresoras térmicas USB y empieza a trabajar sin necesidad de instalar drivers complejos."
+    },
+    {
+      question: "¿El soporte técnico tiene coste extra?",
+      answer: "No. En SkiFlow Rental el soporte está incluido en todos los planes anuales. Tu tranquilidad y el correcto funcionamiento de tu tienda son nuestra prioridad."
+    },
+    {
+      question: "¿Mis datos están seguros?",
+      answer: "Totalmente. Realizamos copias de seguridad diarias en la nube y utilizamos bases de datos optimizadas para ofrecerte una respuesta en milisegundos, sin importar cuántos miles de clientes tengas."
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-white">
