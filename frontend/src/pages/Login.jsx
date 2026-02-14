@@ -62,56 +62,72 @@ export default function Login() {
       </div>
       
       <div className="flex-1 flex">
-        {/* Left - Gradient con Logo */}
-        <div 
-          className="hidden lg:flex lg:w-1/2 relative overflow-hidden"
-          style={{ 
-            background: 'linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #ec4899 100%)'
-          }}
-        >
-          <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full">
-            {/* Logo y título arriba */}
-            <div>
-              <img src="/logo-white.png" alt="SkiFlow Rental" className="h-16 w-auto object-contain mb-8" />
-              <h1 className="text-5xl font-black mb-4 leading-tight" style={{ fontFamily: 'Plus Jakarta Sans' }}>
-                Despacha en<br/>
-                <span className="italic">segundos</span>,<br/>
-                no en minutos.
-              </h1>
-              <p className="text-xl text-white/90 leading-relaxed max-w-md">
-                El software de alquiler que elimina las colas y recupera el control de tu stock en tiempo real.
-              </p>
-            </div>
-            
-            {/* Features abajo */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                  <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <span className="text-white/90">15 días de prueba gratis</span>
+        {/* Left - Diferente para Login vs Register */}
+        {isRegister ? (
+          // REGISTRO: Degradado con copy y features
+          <div 
+            className="hidden lg:flex lg:w-1/2 relative overflow-hidden"
+            style={{ 
+              background: 'linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #ec4899 100%)'
+            }}
+          >
+            <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full">
+              {/* Logo y título arriba */}
+              <div>
+                <img src="/logo-white.png" alt="SkiFlow Rental" className="h-16 w-auto object-contain mb-8" />
+                <h1 className="text-5xl font-black mb-4 leading-tight" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+                  Despacha en<br/>
+                  <span className="italic">segundos</span>,<br/>
+                  no en minutos.
+                </h1>
+                <p className="text-xl text-white/90 leading-relaxed max-w-md">
+                  El software de alquiler que elimina las colas y recupera el control de tu stock en tiempo real.
+                </p>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                  <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+              
+              {/* Features abajo */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                    <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-white/90">15 días de prueba gratis</span>
                 </div>
-                <span className="text-white/90">Sin tarjeta de crédito</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                  <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                    <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-white/90">Sin tarjeta de crédito</span>
                 </div>
-                <span className="text-white/90">Cancela cuando quieras</span>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                    <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-white/90">Cancela cuando quieras</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          // LOGIN: Solo logo + imagen potente de nieve
+          <div 
+            className="hidden lg:flex lg:w-1/2 bg-cover bg-center relative"
+            style={{ 
+              backgroundImage: "url('https://images.unsplash.com/photo-1769774506254-4be19bf63a23?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHw0fHxza2lpbmclMjBhY3Rpb24lMjBzbm93JTIwbW91bnRhaW4lMjBwb3dkZXJ8ZW58MHx8fHwxNzcxMDY3ODE4fDA&ixlib=rb-4.1.0&q=85')"
+            }}
+          >
+            <div className="absolute inset-0 bg-black/30" />
+            <div className="relative z-10 flex flex-col justify-center items-center w-full">
+              <img src="/logo-white.png" alt="SkiFlow Rental" className="h-20 w-auto object-contain" />
+            </div>
+          </div>
+        )}
 
       {/* Right - Form */}
       <div className="flex-1 flex items-center justify-center p-8 bg-white">
