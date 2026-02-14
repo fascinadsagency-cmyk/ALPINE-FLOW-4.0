@@ -1123,10 +1123,10 @@ export default function Inventory() {
 
   const getStatusBadge = (status) => {
     const styles = {
-      available: "bg-emerald-500/20 text-emerald-700",
-      rented: "bg-red-100 text-red-700",
-      maintenance: "bg-amber-500/20 text-amber-700",
-      retired: "bg-slate-100 text-slate-600"
+      available: "bg-emerald-600 text-white border-0",
+      rented: "bg-red-500 text-white border-0",
+      maintenance: "bg-amber-600 text-white border-0",
+      retired: "bg-slate-500 text-white border-0"
     };
     const labels = {
       available: "Disponible",
