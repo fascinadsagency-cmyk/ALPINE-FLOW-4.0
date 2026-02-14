@@ -371,6 +371,19 @@ export default function Layout() {
 
       {/* Main Content */}
       <main className="lg:pl-64">
+        {/* Impersonation Banner */}
+        {isImpersonating && (
+          <div className="bg-amber-500 text-white px-4 py-2 flex items-center justify-between text-sm font-medium" data-testid="impersonation-banner">
+            <span>Estás viendo la tienda: <strong>{user?.store_name || 'Tienda'}</strong></span>
+            <button 
+              onClick={returnToSuperAdmin}
+              className="bg-white text-amber-700 px-3 py-1 rounded-md text-xs font-bold hover:bg-amber-50 transition-colors"
+              data-testid="return-super-admin-btn"
+            >
+              Volver a Super Admin
+            </button>
+          </div>
+        )}
         {/* Desktop Top Bar with Offline Indicator */}
         <div className={`hidden lg:flex h-16 items-center justify-end px-6 border-b transition-colors duration-300 ${
           darkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-white shadow-sm'
