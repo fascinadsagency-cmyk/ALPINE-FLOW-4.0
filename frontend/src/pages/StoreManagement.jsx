@@ -101,16 +101,16 @@ export default function StoreManagement() {
         { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
       );
       
-      // Save new token and reload
+      // Save original super_admin token so user can return
+      localStorage.setItem('super_admin_token', localStorage.getItem('token'));
+      // Save new impersonation token
       localStorage.setItem('token', response.data.access_token);
       toast.success(`Accediendo a la tienda...`);
       
-      // Redirect to dashboard
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 1000);
+      // Full page reload to reinitialize with new token
+      window.location.href = '/';
     } catch (error) {
-      toast.error("Error al acceder a la tienda");
+      toast.error(error.response?.data?.detail || "Error al acceder a la tienda");
       console.error(error);
     }
   };
