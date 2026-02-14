@@ -41,18 +41,18 @@ export default function LandingPage() {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8">
+            <div className="hidden md:flex items-center gap-4">
               <button 
                 onClick={() => navigate("/login")}
-                className="text-white/90 hover:text-white font-semibold text-sm uppercase tracking-wide transition-colors"
+                className="text-white/90 hover:text-white font-semibold text-base transition-colors"
               >
                 Iniciar Sesión
               </button>
               <Button 
                 onClick={() => navigate("/register")}
-                className="bg-black hover:bg-black/80 text-white font-bold px-8 py-2 rounded-full transition-all uppercase tracking-wide text-sm"
+                className="bg-white hover:bg-white/90 text-black font-bold px-8 py-3 rounded-full transition-all shadow-lg"
               >
-                Contacto
+                Crear Cuenta Gratis
               </Button>
             </div>
           </div>
@@ -64,32 +64,37 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="max-w-6xl">
             {/* Título Principal */}
-            <h1 className="text-7xl sm:text-8xl lg:text-9xl font-black text-white mb-8 leading-[0.9] tracking-tighter uppercase" style={{ fontFamily: 'Plus Jakarta Sans' }}>
-              Despacha en<br/>
-              <span className="italic font-black">segundos</span><br/>
-              no minutos
+            <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black text-white mb-8 leading-[0.95] tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+              Despacha a tus clientes en <span className="italic">segundos</span>, no en minutos.
             </h1>
             
-            <p className="text-xl sm:text-2xl text-white/90 mb-12 max-w-2xl font-medium leading-relaxed">
-              El software que elimina las colas y recupera el control de tu stock en tiempo real.
+            <p className="text-xl sm:text-2xl text-white/90 mb-12 max-w-3xl font-medium leading-relaxed">
+              El software de alquiler que elimina las colas y recupera el control de tu stock en tiempo real. Rápido, intuitivo y diseñado para la temporada alta.
             </p>
             
-            {/* Botón CTA */}
-            <div className="flex flex-col sm:flex-row gap-4">
+            {/* Botones CTA */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <Button 
                 size="lg"
-                className="text-lg px-12 py-8 bg-white text-black hover:bg-white/90 font-bold rounded-full shadow-2xl hover:shadow-white/30 transition-all"
+                className="text-base px-10 py-7 bg-white text-black hover:bg-white/90 font-bold rounded-full shadow-2xl hover:shadow-white/30 transition-all"
                 onClick={() => navigate("/register")}
               >
-                EMPEZAR AHORA
-                <ArrowRight className="ml-2 h-5 w-5" />
+                Empezar Prueba Gratis
+              </Button>
+              <Button 
+                size="lg"
+                variant="outline"
+                className="text-base px-10 py-7 bg-transparent border-2 border-white text-white hover:bg-white/10 font-bold rounded-full transition-all"
+                onClick={() => navigate("/login")}
+              >
+                Ver Demo en Vivo
               </Button>
             </div>
             
-            <div className="flex items-center gap-6 mt-12 text-sm text-white/80">
+            <div className="flex flex-wrap items-center gap-6 text-sm text-white/80">
               <span className="flex items-center gap-2">
                 <Check className="h-4 w-4 text-white" />
-                Sin tarjeta
+                Sin tarjeta de crédito
               </span>
               <span className="flex items-center gap-2">
                 <Check className="h-4 w-4 text-white" />
