@@ -3076,6 +3076,7 @@ async def complete_item_maintenance(item_id: str, current_user: CurrentUser = De
 @api_router.post("/items/bulk")
 async def create_items_bulk(data: BulkItemCreate, current_user: CurrentUser = Depends(get_current_user)):
     """Create multiple items at once"""
+    await check_plan_limit(current_user, 'items')
     created = []
     errors = []
     
