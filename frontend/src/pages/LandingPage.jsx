@@ -92,7 +92,7 @@ export default function LandingPage() {
       {/* Features Section - MINIMAL GRID */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 border-t border-slate-200">
         <div className="mb-20">
-          <h2 className="text-5xl sm:text-6xl font-black text-slate-900 mb-6 leading-tight uppercase tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+          <h2 className="text-5xl sm:text-6xl font-black text-black mb-6 leading-tight uppercase tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans' }}>
             Todo lo que necesitas.<br/>
             <span className="text-slate-400">Nada que no.</span>
           </h2>
@@ -101,10 +101,10 @@ export default function LandingPage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
           {/* Feature 1 */}
           <div className="group">
-            <div className="h-12 w-12 rounded-xl bg-slate-900 flex items-center justify-center mb-6">
+            <div className="h-12 w-12 rounded-xl bg-black flex items-center justify-center mb-6">
               <Database className="h-6 w-6 text-white" />
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">
+            <h3 className="text-2xl font-bold text-black mb-4">
               Control Total de Inventario
             </h3>
             <p className="text-slate-600 text-lg leading-relaxed">
@@ -114,10 +114,10 @@ export default function LandingPage() {
 
           {/* Feature 2 */}
           <div className="group">
-            <div className="h-12 w-12 rounded-xl bg-slate-900 flex items-center justify-center mb-6">
+            <div className="h-12 w-12 rounded-xl bg-black flex items-center justify-center mb-6">
               <Users className="h-6 w-6 text-white" />
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">
+            <h3 className="text-2xl font-bold text-black mb-4">
               Base de Datos 360°
             </h3>
             <p className="text-slate-600 text-lg leading-relaxed">
@@ -127,10 +127,10 @@ export default function LandingPage() {
 
           {/* Feature 3 */}
           <div className="group">
-            <div className="h-12 w-12 rounded-xl bg-slate-900 flex items-center justify-center mb-6">
+            <div className="h-12 w-12 rounded-xl bg-black flex items-center justify-center mb-6">
               <Zap className="h-6 w-6 text-white" />
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">
+            <h3 className="text-2xl font-bold text-black mb-4">
               Packs Inteligentes
             </h3>
             <p className="text-slate-600 text-lg leading-relaxed">
@@ -140,10 +140,10 @@ export default function LandingPage() {
 
           {/* Feature 4 */}
           <div className="group">
-            <div className="h-12 w-12 rounded-xl bg-slate-900 flex items-center justify-center mb-6">
+            <div className="h-12 w-12 rounded-xl bg-black flex items-center justify-center mb-6">
               <Clock className="h-6 w-6 text-white" />
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">
+            <h3 className="text-2xl font-bold text-black mb-4">
               Proceso Turbo
             </h3>
             <p className="text-slate-600 text-lg leading-relaxed">
@@ -153,10 +153,10 @@ export default function LandingPage() {
 
           {/* Feature 5 */}
           <div className="group">
-            <div className="h-12 w-12 rounded-xl bg-slate-900 flex items-center justify-center mb-6">
+            <div className="h-12 w-12 rounded-xl bg-black flex items-center justify-center mb-6">
               <BarChart3 className="h-6 w-6 text-white" />
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">
+            <h3 className="text-2xl font-bold text-black mb-4">
               Análisis de Rentabilidad
             </h3>
             <p className="text-slate-600 text-lg leading-relaxed">
@@ -166,10 +166,10 @@ export default function LandingPage() {
 
           {/* Feature 6 */}
           <div className="group">
-            <div className="h-12 w-12 rounded-xl bg-slate-900 flex items-center justify-center mb-6">
+            <div className="h-12 w-12 rounded-xl bg-black flex items-center justify-center mb-6">
               <Shield className="h-6 w-6 text-white" />
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">
+            <h3 className="text-2xl font-bold text-black mb-4">
               Acceso Multiusuario
             </h3>
             <p className="text-slate-600 text-lg leading-relaxed">
@@ -180,7 +180,7 @@ export default function LandingPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="bg-slate-900 py-24">
+      <section className="bg-black py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-12 text-center">
             <div>
