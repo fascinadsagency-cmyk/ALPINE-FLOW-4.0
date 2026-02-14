@@ -63,27 +63,42 @@ export default function LandingPage() {
       <section className="min-h-[90vh] flex items-center relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #ec4899 100%)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="max-w-6xl">
-            {/* Subtítulo */}
-            <p className="text-white/80 text-sm sm:text-base uppercase tracking-[0.3em] mb-8 font-semibold">
-              EL SOFTWARE #1 PARA ALQUILER DE ESQUÍS
-            </p>
-            
-            {/* Título Principal - Estilo April Ford */}
-            <h1 className="text-6xl sm:text-7xl lg:text-8xl xl:text-9xl font-black text-white mb-12 leading-[0.95] tracking-tight uppercase" style={{ fontFamily: 'Plus Jakarta Sans', letterSpacing: '-0.02em' }}>
-              DEJA DE BUSCAR.<br/>
-              EMPIEZA A<br/>
-              <span className="inline-block">CRECER.</span>
+            {/* Título Principal */}
+            <h1 className="text-7xl sm:text-8xl lg:text-9xl font-black text-white mb-8 leading-[0.9] tracking-tighter uppercase" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+              Despacha en<br/>
+              <span className="italic font-black">segundos</span><br/>
+              no minutos
             </h1>
+            
+            <p className="text-xl sm:text-2xl text-white/90 mb-12 max-w-2xl font-medium leading-relaxed">
+              El software que elimina las colas y recupera el control de tu stock en tiempo real.
+            </p>
             
             {/* Botón CTA */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Button 
                 size="lg"
-                className="text-base px-10 py-7 bg-white text-black hover:bg-white/90 font-bold rounded-full shadow-2xl hover:shadow-white/30 transition-all uppercase tracking-wide"
+                className="text-lg px-12 py-8 bg-white text-black hover:bg-white/90 font-bold rounded-full shadow-2xl hover:shadow-white/30 transition-all"
                 onClick={() => navigate("/register")}
               >
                 EMPEZAR AHORA
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
+            </div>
+            
+            <div className="flex items-center gap-6 mt-12 text-sm text-white/80">
+              <span className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-white" />
+                Sin tarjeta
+              </span>
+              <span className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-white" />
+                15 días gratis
+              </span>
+              <span className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-white" />
+                Cancela cuando quieras
+              </span>
             </div>
           </div>
         </div>
