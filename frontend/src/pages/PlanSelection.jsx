@@ -210,20 +210,20 @@ export default function PlanSelection() {
 
         {/* Current Usage Alert */}
         {planStatus && (
-          <div className="mb-8 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
-            <h3 className="font-semibold text-slate-700 mb-2">Tu uso actual:</h3>
+          <div className="mb-8 p-6 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">
+            <h3 className="font-bold text-white mb-4 text-lg">Tu uso actual:</h3>
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <p className="text-2xl font-bold text-slate-900">{planStatus.current_items.toLocaleString()}</p>
-                <p className="text-sm text-slate-500">Artículos</p>
+                <p className="text-3xl font-black text-white">{planStatus.current_items.toLocaleString()}</p>
+                <p className="text-sm text-white/70">Artículos</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-900">{planStatus.current_customers.toLocaleString()}</p>
-                <p className="text-sm text-slate-500">Clientes</p>
+                <p className="text-3xl font-black text-white">{planStatus.current_customers.toLocaleString()}</p>
+                <p className="text-sm text-white/70">Clientes</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-900">{planStatus.current_users}</p>
-                <p className="text-sm text-slate-500">Usuarios</p>
+                <p className="text-3xl font-black text-white">{planStatus.current_users}</p>
+                <p className="text-sm text-white/70">Usuarios</p>
               </div>
             </div>
           </div>
@@ -231,22 +231,24 @@ export default function PlanSelection() {
 
         {/* Error Alert */}
         {error && (
-          <Alert variant="destructive" className="mb-8">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              <strong>{error.message}</strong>
-              {error.errors && (
-                <ul className="mt-2 list-disc list-inside">
-                  {error.errors.map((e, i) => (
-                    <li key={i}>{e}</li>
-                  ))}
-                </ul>
-              )}
-              {error.suggestion && (
-                <p className="mt-2 text-sm">{error.suggestion}</p>
-              )}
-            </AlertDescription>
-          </Alert>
+          <div className="mb-8 p-6 bg-red-500/20 backdrop-blur-md rounded-2xl border border-red-500/50">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-white flex-shrink-0 mt-0.5" />
+              <div className="text-white">
+                <strong className="block mb-2">{error.message}</strong>
+                {error.errors && (
+                  <ul className="list-disc list-inside space-y-1">
+                    {error.errors.map((e, i) => (
+                      <li key={i}>{e}</li>
+                    ))}
+                  </ul>
+                )}
+                {error.suggestion && (
+                  <p className="mt-2 text-sm text-white/80">{error.suggestion}</p>
+                )}
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Plans Grid */}
@@ -256,121 +258,158 @@ export default function PlanSelection() {
             const exceedsItems = plan.max_items !== -1 && planStatus?.current_items > plan.max_items;
             const exceedsCustomers = plan.max_customers !== -1 && planStatus?.current_customers > plan.max_customers;
             const canSelect = !exceedsItems && !exceedsCustomers;
+            const isPro = plan.id === "pro";
 
             return (
-              <Card 
-                key={plan.id}
-                className={`relative transition-all duration-200 ${getPlanColor(plan.id)} ${
-                  isCurrentPlan ? "ring-2 ring-green-500" : ""
-                }`}
-              >
-                {plan.recommended && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600">
-                    Recomendado
-                  </Badge>
+              <div key={plan.id} className="relative">
+                {/* Badge para plan recomendado o actual */}
+                {plan.recommended && !isCurrentPlan && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                    <Badge className="bg-white text-black font-bold px-4 py-1">POPULAR</Badge>
+                  </div>
                 )}
                 
                 {isCurrentPlan && (
-                  <Badge className="absolute -top-3 right-4 bg-green-600">
-                    Plan Actual
-                  </Badge>
+                  <div className="absolute -top-3 right-4 z-10">
+                    <Badge className="bg-green-500 text-white font-bold px-4 py-1">Plan Actual</Badge>
+                  </div>
                 )}
 
-                <CardHeader className="text-center pb-2">
-                  <div className={`mx-auto p-3 rounded-full ${
-                    plan.id === "basic" ? "bg-blue-100 text-blue-600" :
-                    plan.id === "pro" ? "bg-purple-100 text-purple-600" :
-                    "bg-amber-100 text-amber-600"
-                  } mb-4`}>
-                    {getPlanIcon(plan.id)}
-                  </div>
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                  <CardDescription>
-                    <span className="text-3xl font-bold text-slate-900">{plan.price}€</span>
-                    <span className="text-slate-500">/año</span>
-                  </CardDescription>
-                </CardHeader>
+                {/* Card con estilo landing */}
+                <div className={`relative rounded-2xl overflow-hidden transition-all duration-300 h-full ${
+                  isPro ? 'transform scale-105' : ''
+                }`}>
+                  {/* Fondo según plan */}
+                  <div className={`absolute inset-0 ${
+                    isPro ? 'bg-gradient-to-br from-black via-slate-900 to-black' : 'bg-white'
+                  }`}></div>
+                  
+                  {/* Contenido */}
+                  <div className={`relative p-8 h-full flex flex-col ${
+                    isPro ? 'border-4 border-purple-500/50' : 'border-2 border-slate-200'
+                  }`}>
+                    {/* Header */}
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className={`h-12 w-12 rounded-xl flex items-center justify-center shadow-lg ${
+                        isPro ? 'bg-gradient-to-br from-purple-500 to-pink-500' : 'bg-black'
+                      }`}>
+                        {getPlanIcon(plan.id) || <Rocket className="h-6 w-6 text-white" />}
+                      </div>
+                      <div>
+                        <h3 className={`text-xl font-bold ${isPro ? 'text-white' : 'text-black'}`}>
+                          {plan.name}
+                        </h3>
+                        <p className={`text-xs ${isPro ? 'text-slate-400' : 'text-slate-500'}`}>
+                          {isPro ? 'Más vendido' : 'Para empezar'}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Precio */}
+                    <div className="mb-8">
+                      <div className="flex items-baseline gap-2">
+                        <span className={`text-5xl font-black ${isPro ? 'text-white' : 'text-black'}`}>
+                          {plan.price} €
+                        </span>
+                      </div>
+                      <p className={`text-sm mt-2 font-medium ${isPro ? 'text-slate-400' : 'text-slate-600'}`}>
+                        Pago anual
+                      </p>
+                    </div>
 
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className={`flex items-center gap-2 ${
-                      exceedsItems ? "text-red-600" : "text-slate-700"
-                    }`}>
-                      {exceedsItems ? (
-                        <X className="h-5 w-5 text-red-500" />
+                    {/* Botón */}
+                    <Button
+                      className={`w-full mb-8 font-bold rounded-full py-6 ${
+                        isPro 
+                          ? 'bg-white text-black hover:bg-slate-100' 
+                          : 'bg-black text-white hover:bg-black/90'
+                      }`}
+                      disabled={isCurrentPlan || selecting === plan.id || !canSelect}
+                      onClick={() => handleSelectPlan(plan.id)}
+                    >
+                      {selecting === plan.id ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Procesando...
+                        </>
+                      ) : isCurrentPlan ? (
+                        "PLAN ACTUAL"
+                      ) : !canSelect ? (
+                        "SUPERA TUS DATOS"
                       ) : (
-                        <Check className="h-5 w-5 text-green-500" />
+                        isPro ? "CONTRATAR AHORA" : "CONTRATAR"
                       )}
-                      <span>
-                        <strong>{formatLimit(plan.max_items)}</strong> artículos
-                      </span>
-                    </div>
-                    
-                    <div className={`flex items-center gap-2 ${
-                      exceedsCustomers ? "text-red-600" : "text-slate-700"
-                    }`}>
-                      {exceedsCustomers ? (
-                        <X className="h-5 w-5 text-red-500" />
-                      ) : (
-                        <Check className="h-5 w-5 text-green-500" />
-                      )}
-                      <span>
-                        <strong>{formatLimit(plan.max_customers)}</strong> clientes
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-slate-700">
-                      <Check className="h-5 w-5 text-green-500" />
-                      <span>
-                        <strong>{plan.max_users}</strong> usuarios
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-slate-700">
-                      <Check className="h-5 w-5 text-green-500" />
-                      <span>Soporte técnico</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-slate-700">
-                      <Check className="h-5 w-5 text-green-500" />
-                      <span>Actualizaciones incluidas</span>
+                    </Button>
+
+                    {/* Features */}
+                    <div className="space-y-4 flex-grow">
+                      <div className={`flex items-start gap-3 text-sm ${
+                        exceedsItems ? 'opacity-50' : ''
+                      }`}>
+                        {exceedsItems ? (
+                          <X className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                        ) : (
+                          <Check className={`h-5 w-5 flex-shrink-0 mt-0.5 ${isPro ? 'text-white' : 'text-black'}`} />
+                        )}
+                        <span className={`font-medium ${isPro ? 'text-white' : 'text-slate-700'}`}>
+                          {formatLimit(plan.max_items)} artículos
+                        </span>
+                      </div>
+                      
+                      <div className={`flex items-start gap-3 text-sm ${
+                        exceedsCustomers ? 'opacity-50' : ''
+                      }`}>
+                        {exceedsCustomers ? (
+                          <X className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                        ) : (
+                          <Check className={`h-5 w-5 flex-shrink-0 mt-0.5 ${isPro ? 'text-white' : 'text-black'}`} />
+                        )}
+                        <span className={`font-medium ${isPro ? 'text-white' : 'text-slate-700'}`}>
+                          {formatLimit(plan.max_customers)} clientes
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-start gap-3 text-sm">
+                        <Check className={`h-5 w-5 flex-shrink-0 mt-0.5 ${isPro ? 'text-white' : 'text-black'}`} />
+                        <span className={`font-medium ${isPro ? 'text-white' : 'text-slate-700'}`}>
+                          Hasta {plan.max_users} usuarios
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-start gap-3 text-sm">
+                        <Check className={`h-5 w-5 flex-shrink-0 mt-0.5 ${isPro ? 'text-white' : 'text-black'}`} />
+                        <span className={`font-medium ${isPro ? 'text-white' : 'text-slate-700'}`}>
+                          Todas las funciones
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-start gap-3 text-sm">
+                        <Check className={`h-5 w-5 flex-shrink-0 mt-0.5 ${isPro ? 'text-white' : 'text-black'}`} />
+                        <span className={`font-medium ${isPro ? 'text-white' : 'text-slate-700'}`}>
+                          Soporte incluido
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-start gap-3 text-sm">
+                        <Check className={`h-5 w-5 flex-shrink-0 mt-0.5 ${isPro ? 'text-white' : 'text-black'}`} />
+                        <span className={`font-medium ${isPro ? 'text-white' : 'text-slate-700'}`}>
+                          Modo Offline
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </CardContent>
-
-                <CardFooter className="flex-col gap-2">
-                  <Button
-                    className={`w-full ${getPlanButtonColor(plan.id)} text-white`}
-                    disabled={isCurrentPlan || selecting === plan.id || !canSelect}
-                    onClick={() => handleSelectPlan(plan.id)}
-                  >
-                    {selecting === plan.id ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        Procesando...
-                      </>
-                    ) : isCurrentPlan ? (
-                      "Plan Actual"
-                    ) : !canSelect ? (
-                      "Supera tus datos"
-                    ) : (
-                      "Seleccionar Plan"
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
+                </div>
+              </div>
             );
           })}
         </div>
 
         {/* Footer */}
-        <div className="mt-12 text-center text-slate-500 text-sm">
-          <p>¿Tienes dudas? Contacta con nuestro equipo de soporte</p>
-          <p className="mt-2">
-            <a href="mailto:soporte@alpineflow.es" className="text-blue-600 hover:underline">
-              soporte@alpineflow.es
-            </a>
-          </p>
+        <div className="mt-16 text-center">
+          <p className="text-white/80 text-lg">¿Tienes dudas? Contacta con nuestro equipo de soporte</p>
+          <a href="mailto:soporte@alpineflow.es" className="text-white hover:underline font-semibold mt-2 inline-block">
+            soporte@alpineflow.es
+          </a>
         </div>
       </div>
     </div>
