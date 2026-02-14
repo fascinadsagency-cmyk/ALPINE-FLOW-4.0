@@ -1839,7 +1839,7 @@ export default function ActiveRentals() {
     const unpaidMethods = ['pending'];
     
     if (paidMethods.includes(method)) {
-      return 'bg-emerald-500/100/20 text-emerald-700 border-emerald-300';
+      return 'bg-emerald-500/20 text-emerald-700 border-emerald-300';
     } else if (method === 'pending') {
       return 'bg-red-100 text-red-700 border-red-300';
     }
@@ -1973,7 +1973,7 @@ export default function ActiveRentals() {
                 data-testid="smart-search-input"
               />
               {globalScannerActive && (
-                <div className="absolute -top-1 right-2 flex items-center gap-1.5 bg-emerald-500/100/100 text-white px-2 py-0.5 rounded-full text-xs font-medium">
+                <div className="absolute -top-1 right-2 flex items-center gap-1.5 bg-emerald-500 text-white px-2 py-0.5 rounded-full text-xs font-medium">
                   <Scan className="h-3 w-3 animate-pulse" />
                   Escáner Activo
                 </div>
@@ -2135,7 +2135,7 @@ export default function ActiveRentals() {
                         </TableCell>
                         
                         <TableCell className="text-center">
-                          <Badge className="bg-blue-500/100/20 text-blue-700">
+                          <Badge className="bg-blue-500/20 text-blue-700">
                             {rental.days}d
                           </Badge>
                         </TableCell>
@@ -2151,7 +2151,7 @@ export default function ActiveRentals() {
                           {/* Mostrar crédito pendiente si existe */}
                           {rental.pending_refund > 0 && (
                             <div className="mt-1">
-                              <Badge className="bg-amber-500/100/20 text-amber-700 border-amber-200 text-xs">
+                              <Badge className="bg-amber-500/20 text-amber-700 border-amber-200 text-xs">
                                 💳 -€{rental.pending_refund.toFixed(2)}
                               </Badge>
                             </div>
@@ -2184,7 +2184,7 @@ export default function ActiveRentals() {
                                 variant="default"
                                 size="sm"
                                 onClick={() => openQuickPaymentModal(rental)}
-                                className="gap-1 bg-amber-500/100 hover:bg-amber-600 text-white h-8"
+                                className="gap-1 bg-amber-500 hover:bg-amber-600 text-white h-8"
                                 data-testid={`quick-pay-btn-${rental.id}`}
                                 title={`Cobrar €${rental.pending_amount.toFixed(2)} pendiente`}
                               >
@@ -2251,7 +2251,7 @@ export default function ActiveRentals() {
                     {swapRental.customer_name}
                   </Badge>
                   <Badge variant="outline">{swapRental.customer_dni}</Badge>
-                  <Badge className="bg-blue-500/100/20 text-blue-700">
+                  <Badge className="bg-blue-500/20 text-blue-700">
                     {swapDaysRemaining} días restantes
                   </Badge>
                 </div>
@@ -2328,7 +2328,7 @@ export default function ActiveRentals() {
                       </div>
                       <Button
                         variant="outline"
-                        className="h-auto py-3 flex-col gap-1 border-2 border-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/100/20"
+                        className="h-auto py-3 flex-col gap-1 border-2 border-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20"
                         onClick={executeReturnOnly}
                         disabled={swapLoading}
                         data-testid="return-only-btn"
@@ -2364,7 +2364,7 @@ export default function ActiveRentals() {
                   </div>
 
                   {/* NEW ITEM (to receive) */}
-                  <div className="p-4 rounded-lg bg-emerald-500/100/10 border-2 border-green-200">
+                  <div className="p-4 rounded-lg bg-emerald-500/10 border-2 border-green-200">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-green-600 text-lg">✅</span>
                       <span className="font-bold text-green-700">RECIBE</span>
@@ -2407,7 +2407,7 @@ export default function ActiveRentals() {
                 <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-500/100/20 rounded-lg">
+                      <div className="p-2 bg-blue-500/20 rounded-lg">
                         <CalendarPlus className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
@@ -2466,7 +2466,7 @@ export default function ActiveRentals() {
                         
                         {dateDelta !== 0 && (
                           <div className={`mt-3 p-2 rounded text-center ${
-                            dateDelta > 0 ? 'bg-orange-100' : 'bg-emerald-500/100/20'
+                            dateDelta > 0 ? 'bg-orange-100' : 'bg-emerald-500/20'
                           }`}>
                             <p className="text-xs text-slate-600">
                               {dateDelta > 0 ? 'Suplemento por extensión' : 'Abono por reducción'}
@@ -2601,7 +2601,7 @@ export default function ActiveRentals() {
             /* SUCCESS STATE */
             <div className="text-center py-8">
               <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${
-                swapAction === 'return' ? 'bg-blue-500/100/20' : 'bg-emerald-500/100/20'
+                swapAction === 'return' ? 'bg-blue-500/20' : 'bg-emerald-500/20'
               }`}>
                 <CheckCircle className={`h-10 w-10 ${
                   swapAction === 'return' ? 'text-blue-600' : 'text-emerald-600'
@@ -2702,11 +2702,11 @@ export default function ActiveRentals() {
                   <div className="mt-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 overflow-hidden">
                     {/* HEADER - Always visible with summary */}
                     <div 
-                      className={`p-3 flex items-center justify-between cursor-pointer hover:bg-blue-500/100/20/50 transition-colors ${technicalDataExpanded ? 'border-b border-blue-200' : ''}`}
+                      className={`p-3 flex items-center justify-between cursor-pointer hover:bg-blue-500/20/50 transition-colors ${technicalDataExpanded ? 'border-b border-blue-200' : ''}`}
                       onClick={() => !editingTechnicalData && setTechnicalDataExpanded(!technicalDataExpanded)}
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="p-2 bg-blue-500/100/20 rounded-lg flex-shrink-0">
+                        <div className="p-2 bg-blue-500/20 rounded-lg flex-shrink-0">
                           <Mountain className="h-4 w-4 text-blue-600" />
                         </div>
                         
@@ -2731,7 +2731,7 @@ export default function ActiveRentals() {
                             </span>
                           )}
                           {selectedCustomer.ski_level && selectedCustomer.ski_level !== 'sin_especificar' && (
-                            <Badge className="bg-blue-500/100/20 text-blue-700 border-blue-300 capitalize text-xs">
+                            <Badge className="bg-blue-500/20 text-blue-700 border-blue-300 capitalize text-xs">
                               {selectedCustomer.ski_level}
                             </Badge>
                           )}
@@ -2745,7 +2745,7 @@ export default function ActiveRentals() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="gap-1 text-blue-600 hover:bg-blue-500/100/20 flex-shrink-0"
+                        className="gap-1 text-blue-600 hover:bg-blue-500/20 flex-shrink-0"
                         onClick={(e) => {
                           e.stopPropagation();
                           if (!editingTechnicalData) setTechnicalDataExpanded(!technicalDataExpanded);
@@ -2775,7 +2775,7 @@ export default function ActiveRentals() {
                               size="sm"
                               variant="outline"
                               onClick={startEditingTechnicalData}
-                              className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/100/20"
+                              className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/20"
                               data-testid="edit-technical-data-btn"
                             >
                               <Edit3 className="h-3 w-3" />
@@ -2929,7 +2929,7 @@ export default function ActiveRentals() {
 
                   {/* Current Rental Reference */}
                   {selectedCustomer.rental_id && (
-                    <div className="mt-4 p-3 rounded-lg bg-emerald-500/100/20 border border-emerald-300">
+                    <div className="mt-4 p-3 rounded-lg bg-emerald-500/20 border border-emerald-300">
                       <div className="flex items-center gap-2">
                         <Package className="h-4 w-4 text-emerald-700" />
                         <span className="text-sm font-semibold text-emerald-800">
@@ -2958,7 +2958,7 @@ export default function ActiveRentals() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-500/100/20"
+                            className="gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-500/20"
                             onClick={() => callPhone(selectedCustomer.phone)}
                           >
                             <Phone className="h-3 w-3" />
@@ -2990,7 +2990,7 @@ export default function ActiveRentals() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/100/20"
+                          className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/20"
                           onClick={() => sendEmail(selectedCustomer.email, selectedCustomer.name)}
                         >
                           <Mail className="h-3 w-3" />
@@ -3094,7 +3094,7 @@ export default function ActiveRentals() {
                             >
                               <div className="flex items-center gap-3">
                                 {tx.type === 'income' ? (
-                                  <div className="h-8 w-8 rounded-full bg-emerald-500/100/20 flex items-center justify-center">
+                                  <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
                                     <ArrowUpRight className="h-4 w-4 text-emerald-600" />
                                   </div>
                                 ) : (
@@ -3167,12 +3167,12 @@ export default function ActiveRentals() {
                                 {rental.days} {rental.days === 1 ? 'día' : 'días'}
                               </Badge>
                               {(rental.status === 'active' || rental.status === 'partial') && (
-                                <Badge className="bg-emerald-500/100/20 text-emerald-700 border-emerald-300">
+                                <Badge className="bg-emerald-500/20 text-emerald-700 border-emerald-300">
                                   Activo
                                 </Badge>
                               )}
                             </div>
-                            <Badge className="bg-emerald-500/100/20 text-emerald-700">
+                            <Badge className="bg-emerald-500/20 text-emerald-700">
                               <DollarSign className="h-3 w-3 mr-1" />
                               €{(rental.total_amount || 0).toFixed(2)}
                             </Badge>
@@ -3362,7 +3362,7 @@ export default function ActiveRentals() {
                     <p className="text-sm text-slate-500">{changeRental.customer_dni}</p>
                   </div>
                   <div className="text-right">
-                    <Badge className="bg-blue-500/100/20 text-blue-700 mb-1">
+                    <Badge className="bg-blue-500/20 text-blue-700 mb-1">
                       {changeDaysRemaining} días restantes
                     </Badge>
                     <p className="text-xs text-slate-500">Total: €{changeRental.total_amount?.toFixed(2) || '0.00'}</p>
@@ -3595,7 +3595,7 @@ export default function ActiveRentals() {
                       
                       {(changeDateDelta !== 0 || changeDiscountDays > 0) && (
                         <div className={`mt-3 p-2 rounded text-center ${
-                          changeDateDelta > 0 ? 'bg-orange-100' : 'bg-amber-500/100/20'
+                          changeDateDelta > 0 ? 'bg-orange-100' : 'bg-amber-500/20'
                         }`}>
                           <p className="text-xs text-slate-600">
                             {changeDateDelta > 0 ? 'Suplemento por extensión' : 
@@ -3660,7 +3660,7 @@ export default function ActiveRentals() {
                   </p>
                 </div>
                 {changeDiscountDays > 0 && (
-                  <p className="text-xs text-amber-700 mt-2 bg-amber-500/100/20 p-2 rounded">
+                  <p className="text-xs text-amber-700 mt-2 bg-amber-500/20 p-2 rounded">
                     ℹ️ El cliente tiene €{changeRefundAmount.toFixed(2)} a su favor por {changeDiscountDays} día(s) no disfrutado(s). 
                     Este crédito se descontará automáticamente en la devolución.
                   </p>
@@ -4190,7 +4190,7 @@ export default function ActiveRentals() {
             <Button
               onClick={processQuickPayment}
               disabled={quickPaymentProcessing || quickPaymentAmount <= 0}
-              className="bg-amber-500/100 hover:bg-amber-600 min-w-[140px]"
+              className="bg-amber-500 hover:bg-amber-600 min-w-[140px]"
               data-testid="quick-payment-confirm"
             >
               {quickPaymentProcessing ? (

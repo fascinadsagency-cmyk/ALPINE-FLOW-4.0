@@ -680,7 +680,7 @@ export default function CashRegister() {
 
   const getMovementTypeBadge = (type) => {
     switch(type) {
-      case 'income': return <Badge className="bg-emerald-500/100/20 text-emerald-700">Entrada</Badge>;
+      case 'income': return <Badge className="bg-emerald-500/20 text-emerald-700">Entrada</Badge>;
       case 'expense': return <Badge className="bg-red-100 text-red-700">Salida</Badge>;
       case 'refund': return <Badge className="bg-orange-100 text-orange-700">Devolución</Badge>;
       default: return <Badge variant="outline">{type}</Badge>;
@@ -740,7 +740,7 @@ export default function CashRegister() {
               variant="outline"
               size="sm"
               onClick={toggleAllVisibility}
-              className={`gap-2 ${allVisible ? 'bg-emerald-500/10 border-emerald-300 text-emerald-700 hover:bg-emerald-500/100/20' : ''}`}
+              className={`gap-2 ${allVisible ? 'bg-emerald-500/10 border-emerald-300 text-emerald-700 hover:bg-emerald-500/20' : ''}`}
               data-testid="toggle-all-visibility"
             >
               {allVisible ? (
@@ -772,7 +772,7 @@ export default function CashRegister() {
                         onClick={() => toggleMetricVisibility('ingresos')}
                         className={`p-1.5 rounded-md transition-all duration-200 ${
                           visibleMetrics.ingresos 
-                            ? 'bg-emerald-500/100/20 text-emerald-600 hover:bg-emerald-200' 
+                            ? 'bg-emerald-500/20 text-emerald-600 hover:bg-emerald-200' 
                             : `${darkMode ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-slate-200 text-slate-400'}`
                         }`}
                         title={visibleMetrics.ingresos ? 'Ocultar' : 'Mostrar'}
@@ -792,7 +792,7 @@ export default function CashRegister() {
                       )}
                     </p>
                   </div>
-                  <div className={`h-11 w-11 rounded-lg flex items-center justify-center ${darkMode ? 'bg-emerald-900/30' : 'bg-emerald-500/100/20'}`}>
+                  <div className={`h-11 w-11 rounded-lg flex items-center justify-center ${darkMode ? 'bg-emerald-900/30' : 'bg-emerald-500/20'}`}>
                     <TrendingUp className={`h-5 w-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
                   </div>
                 </div>
@@ -981,7 +981,7 @@ export default function CashRegister() {
                 </div>
 
                 {/* Session status */}
-                <div className={`p-3 rounded-lg ${activeSession ? 'bg-emerald-500/100/20 border border-emerald-300' : 'bg-amber-500/100/20 border border-amber-300'}`}>
+                <div className={`p-3 rounded-lg ${activeSession ? 'bg-emerald-500/20 border border-emerald-300' : 'bg-amber-500/20 border border-amber-300'}`}>
                   <p className={`text-xs font-medium ${activeSession ? 'text-emerald-700' : 'text-amber-700'}`}>
                     Estado
                   </p>
@@ -1310,12 +1310,12 @@ export default function CashRegister() {
                             </TableCell>
                             <TableCell>
                               {mov.payment_method === 'cash' ? (
-                                <Badge className="bg-emerald-500/100/20 text-emerald-700">
+                                <Badge className="bg-emerald-500/20 text-emerald-700">
                                   <Banknote className="h-3 w-3 mr-1" />
                                   Efectivo
                                 </Badge>
                               ) : (
-                                <Badge className="bg-purple-500/100/20 text-purple-700">
+                                <Badge className="bg-purple-500/20 text-purple-700">
                                   <CreditCard className="h-3 w-3 mr-1" />
                                   Tarjeta
                                 </Badge>
@@ -1675,7 +1675,7 @@ export default function CashRegister() {
                   <p className="text-xs text-slate-500">Salidas</p>
                   <p className="font-bold text-red-600">-€{(summary?.total_salidas || 0).toFixed(2)}</p>
                 </div>
-                <div className={`p-2 rounded-lg ${(summary?.balance_neto_dia || 0) >= 0 ? 'bg-emerald-500/100/20' : 'bg-red-100'}`}>
+                <div className={`p-2 rounded-lg ${(summary?.balance_neto_dia || 0) >= 0 ? 'bg-emerald-500/20' : 'bg-red-100'}`}>
                   <p className="text-xs text-slate-600">Balance Neto</p>
                   <p className={`font-bold text-lg ${(summary?.balance_neto_dia || 0) >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
                     €{(summary?.balance_neto_dia || 0).toFixed(2)}
@@ -1712,7 +1712,7 @@ export default function CashRegister() {
                   />
                 </div>
                 {arqueoForm.physical_cash !== "" && (
-                  <div className={`p-2 rounded-lg text-center ${disc.cash === 0 ? 'bg-emerald-500/100/20' : 'bg-red-100'}`}>
+                  <div className={`p-2 rounded-lg text-center ${disc.cash === 0 ? 'bg-emerald-500/20' : 'bg-red-100'}`}>
                     <span className={`font-bold ${disc.cash === 0 ? 'text-emerald-700' : 'text-red-700'}`}>
                       Descuadre: €{disc.cash.toFixed(2)}
                     </span>
@@ -1745,7 +1745,7 @@ export default function CashRegister() {
                   />
                 </div>
                 {arqueoForm.card_total !== "" && (
-                  <div className={`p-2 rounded-lg text-center ${disc.card === 0 ? 'bg-emerald-500/100/20' : 'bg-red-100'}`}>
+                  <div className={`p-2 rounded-lg text-center ${disc.card === 0 ? 'bg-emerald-500/20' : 'bg-red-100'}`}>
                     <span className={`font-bold ${disc.card === 0 ? 'text-emerald-700' : 'text-red-700'}`}>
                       Descuadre: €{disc.card.toFixed(2)}
                     </span>
@@ -1930,7 +1930,7 @@ export default function CashRegister() {
                   <p className={`text-2xl font-bold ${selectedHistoryMovement.type === 'expense' ? 'text-red-600' : 'text-emerald-600'}`}>
                     {selectedHistoryMovement.type === 'expense' ? '-' : '+'}€{(selectedHistoryMovement.amount || 0).toFixed(2)}
                   </p>
-                  <Badge className={selectedHistoryMovement.payment_method === 'cash' ? 'bg-emerald-500/100/20 text-emerald-700' : 'bg-purple-500/100/20 text-purple-700'}>
+                  <Badge className={selectedHistoryMovement.payment_method === 'cash' ? 'bg-emerald-500/20 text-emerald-700' : 'bg-purple-500/20 text-purple-700'}>
                     {selectedHistoryMovement.payment_method === 'cash' ? 'Efectivo' : 'Tarjeta'}
                   </Badge>
                 </div>

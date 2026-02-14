@@ -458,12 +458,12 @@ export default function Providers() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           {provider.discount_percent > 0 && (
-                            <Badge className="bg-emerald-500/100/20 text-emerald-700 text-xs">
+                            <Badge className="bg-emerald-500/20 text-emerald-700 text-xs">
                               -{provider.discount_percent}%
                             </Badge>
                           )}
                           {provider.commission_percent > 0 && (
-                            <Badge className="bg-blue-500/100/20 text-blue-700 text-xs">
+                            <Badge className="bg-blue-500/20 text-blue-700 text-xs">
                               +{provider.commission_percent}%
                             </Badge>
                           )}
@@ -475,9 +475,9 @@ export default function Providers() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <div className={`h-2 w-2 rounded-full ${
-                            provider.customer_count > 10 ? 'bg-emerald-500/100' :
-                            provider.customer_count > 5 ? 'bg-blue-500/100' :
-                            provider.customer_count > 0 ? 'bg-amber-500/100' : 'bg-slate-300'
+                            provider.customer_count > 10 ? 'bg-emerald-500' :
+                            provider.customer_count > 5 ? 'bg-blue-500' :
+                            provider.customer_count > 0 ? 'bg-amber-500' : 'bg-slate-300'
                           }`} />
                           <Users className="h-4 w-4 text-slate-400" />
                           <span className="font-medium">{provider.customer_count || 0}</span>
@@ -662,9 +662,9 @@ export default function Providers() {
                   <CardContent>
                     <div className="space-y-3">
                       {[
-                        { label: "Alta (10+)", count: providers.filter(p => p.customer_count > 10).length, color: "bg-emerald-500/100" },
-                        { label: "Media (5-10)", count: providers.filter(p => p.customer_count >= 5 && p.customer_count <= 10).length, color: "bg-blue-500/100" },
-                        { label: "Baja (1-4)", count: providers.filter(p => p.customer_count > 0 && p.customer_count < 5).length, color: "bg-amber-500/100" },
+                        { label: "Alta (10+)", count: providers.filter(p => p.customer_count > 10).length, color: "bg-emerald-500" },
+                        { label: "Media (5-10)", count: providers.filter(p => p.customer_count >= 5 && p.customer_count <= 10).length, color: "bg-blue-500" },
+                        { label: "Baja (1-4)", count: providers.filter(p => p.customer_count > 0 && p.customer_count < 5).length, color: "bg-amber-500" },
                         { label: "Sin clientes", count: providers.filter(p => p.customer_count === 0).length, color: "bg-slate-300" }
                       ].map((segment) => (
                         <div key={segment.label} className="flex items-center gap-3">
@@ -698,7 +698,7 @@ export default function Providers() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-500/10">
                         <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-lg bg-emerald-500/100/20 flex items-center justify-center">
+                          <div className="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
                             <TrendingUp className="h-4 w-4 text-emerald-600" />
                           </div>
                           <span className="text-sm font-medium text-slate-700">Con descuento</span>
@@ -713,7 +713,7 @@ export default function Providers() {
                       
                       <div className="flex items-center justify-between p-3 rounded-lg bg-amber-500/10">
                         <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-lg bg-amber-500/100/20 flex items-center justify-center">
+                          <div className="h-8 w-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
                             <DollarSign className="h-4 w-4 text-amber-600" />
                           </div>
                           <span className="text-sm font-medium text-slate-700">Con comisión</span>
@@ -728,7 +728,7 @@ export default function Providers() {
 
                       <div className="flex items-center justify-between p-3 rounded-lg bg-blue-500/10">
                         <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-lg bg-blue-500/100/20 flex items-center justify-center">
+                          <div className="h-8 w-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
                             <Building2 className="h-4 w-4 text-blue-600" />
                           </div>
                           <span className="text-sm font-medium text-slate-700">Activos</span>
@@ -1155,7 +1155,7 @@ export default function Providers() {
                                 {formatCurrency(rental.amount)}
                               </TableCell>
                               <TableCell className="text-right">
-                                <Badge className="bg-amber-500/100/20 text-amber-700">
+                                <Badge className="bg-amber-500/20 text-amber-700">
                                   {formatCurrency(rental.commission)}
                                 </Badge>
                               </TableCell>

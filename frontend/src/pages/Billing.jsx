@@ -340,7 +340,7 @@ export default function Billing() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-blue-500/100/20 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
               <Building2 className="h-5 w-5 text-blue-600" />
             </div>
             <div>
@@ -384,7 +384,7 @@ export default function Billing() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-emerald-500/100/20 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
               <Receipt className="h-5 w-5 text-emerald-600" />
             </div>
             <div>
@@ -420,9 +420,9 @@ export default function Billing() {
                     <TableCell className="text-right font-medium">{formatCurrency(payment.amount)}</TableCell>
                     <TableCell className="text-center">
                       {payment.status === "paid" ? (
-                        <Badge className="bg-emerald-500/100/20 text-emerald-700"><CheckCircle className="h-3 w-3 mr-1" />Pagado</Badge>
+                        <Badge className="bg-emerald-500/20 text-emerald-700"><CheckCircle className="h-3 w-3 mr-1" />Pagado</Badge>
                       ) : (
-                        <Badge className="bg-amber-500/100/20 text-amber-700"><Clock className="h-3 w-3 mr-1" />Pendiente</Badge>
+                        <Badge className="bg-amber-500/20 text-amber-700"><Clock className="h-3 w-3 mr-1" />Pendiente</Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-right">

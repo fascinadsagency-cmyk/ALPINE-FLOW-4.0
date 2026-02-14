@@ -171,15 +171,15 @@ export default function Dashboard() {
   const overdueAlerts = alerts.filter(a => a.type === 'overdue');
 
   const categoryColors = {
-    SUPERIOR: { bg: 'bg-purple-500/100/20', bar: 'bg-purple-600', text: 'text-purple-700', light: 'bg-purple-500/100/10' },
-    ALTA: { bg: 'bg-blue-500/100/20', bar: 'bg-blue-600', text: 'text-blue-700', light: 'bg-blue-500/100/10' },
-    MEDIA: { bg: 'bg-emerald-500/100/20', bar: 'bg-emerald-600', text: 'text-emerald-700', light: 'bg-emerald-500/100/10' }
+    SUPERIOR: { bg: 'bg-purple-500/20', bar: 'bg-purple-600', text: 'text-purple-700', light: 'bg-purple-500/10' },
+    ALTA: { bg: 'bg-blue-500/20', bar: 'bg-blue-600', text: 'text-blue-700', light: 'bg-blue-500/10' },
+    MEDIA: { bg: 'bg-emerald-500/20', bar: 'bg-emerald-600', text: 'text-emerald-700', light: 'bg-emerald-500/10' }
   };
 
   const getAvailabilityColor = (status) => {
     switch(status) {
-      case 'high': return 'bg-emerald-500/100';
-      case 'medium': return 'bg-amber-500/100';
+      case 'high': return 'bg-emerald-500';
+      case 'medium': return 'bg-amber-500';
       case 'low': return 'bg-red-500';
       default: return 'bg-slate-300';
     }
@@ -425,11 +425,11 @@ export default function Dashboard() {
             </CardTitle>
             <div className="flex items-center gap-2 text-xs">
               <span className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-emerald-500/100"></div>
+                <div className="w-3 h-3 rounded bg-emerald-500"></div>
                 Alta disp.
               </span>
               <span className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-amber-500/100"></div>
+                <div className="w-3 h-3 rounded bg-amber-500"></div>
                 Pocos
               </span>
               <span className="flex items-center gap-1">
@@ -655,7 +655,7 @@ export default function Dashboard() {
                         className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
                       >
                         <div className={`h-8 w-8 rounded-lg flex items-center justify-center font-bold text-white ${
-                          idx === 0 ? 'bg-amber-500/100' : idx === 1 ? 'bg-slate-400' : idx === 2 ? 'bg-amber-700' : 'bg-slate-300'
+                          idx === 0 ? 'bg-amber-500' : idx === 1 ? 'bg-slate-400' : idx === 2 ? 'bg-amber-700' : 'bg-slate-300'
                         }`}>
                           {idx + 1}
                         </div>
@@ -665,7 +665,7 @@ export default function Dashboard() {
                             {item.item_type} • Talla {item.size} • {item.category}
                           </p>
                         </div>
-                        <Badge className="bg-blue-500/100/20 text-blue-700">
+                        <Badge className="bg-blue-500/20 text-blue-700">
                           {item.rental_count} alquileres
                         </Badge>
                       </div>
@@ -688,7 +688,7 @@ export default function Dashboard() {
                         className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
                       >
                         <div className={`h-8 w-8 rounded-lg flex items-center justify-center font-bold text-white ${
-                          idx === 0 ? 'bg-emerald-500/100' : idx === 1 ? 'bg-slate-400' : idx === 2 ? 'bg-emerald-700' : 'bg-slate-300'
+                          idx === 0 ? 'bg-emerald-500' : idx === 1 ? 'bg-slate-400' : idx === 2 ? 'bg-emerald-700' : 'bg-slate-300'
                         }`}>
                           {idx + 1}
                         </div>
@@ -698,7 +698,7 @@ export default function Dashboard() {
                             {item.item_type} • Talla {item.size} • {item.category}
                           </p>
                         </div>
-                        <Badge className="bg-emerald-500/100/20 text-emerald-700">
+                        <Badge className="bg-emerald-500/20 text-emerald-700">
                           €{item.total_revenue.toFixed(2)}
                         </Badge>
                       </div>
@@ -786,7 +786,7 @@ export default function Dashboard() {
                         <Wrench className="h-4 w-4 text-amber-500" />
                         <span className="font-medium text-amber-800">Mantenimiento</span>
                       </div>
-                      <Badge className="bg-amber-500/100 text-white">
+                      <Badge className="bg-amber-500 text-white">
                         {maintenanceAlerts.reduce((sum, a) => sum + a.count, 0)}
                       </Badge>
                     </div>

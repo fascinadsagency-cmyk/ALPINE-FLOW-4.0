@@ -887,7 +887,7 @@ export default function Customers() {
               >
                 <Package className="h-4 w-4" />
                 Activos Hoy
-                <Badge className={`ml-1 ${selectedStatus === "active" ? "bg-emerald-800 text-white" : "bg-emerald-500/100/20 text-emerald-700"}`}>
+                <Badge className={`ml-1 ${selectedStatus === "active" ? "bg-emerald-800 text-white" : "bg-emerald-500/20 text-emerald-700"}`}>
                   {statusCounts.active}
                 </Badge>
               </Button>
@@ -961,7 +961,7 @@ export default function Customers() {
                   variant="ghost"
                   size="sm"
                   onClick={clearSelections}
-                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-500/100/20"
+                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-500/20"
                 >
                   <X className="h-4 w-4 mr-1" />
                   Deseleccionar
@@ -1052,7 +1052,7 @@ export default function Customers() {
                               {customer.name}
                             </button>
                             {customer.has_active_rental && (
-                              <Badge className="bg-emerald-500/100/20 text-emerald-700 border-emerald-200 text-xs">
+                              <Badge className="bg-emerald-500/20 text-emerald-700 border-emerald-200 text-xs">
                                 <Package className="h-3 w-3 mr-1" />
                                 Activo
                               </Badge>
@@ -1086,7 +1086,7 @@ export default function Customers() {
                                 {customer.source}
                               </Badge>
                               {discount > 0 && (
-                                <Badge className="bg-emerald-500/100/20 text-emerald-700">
+                                <Badge className="bg-emerald-500/20 text-emerald-700">
                                   -{discount}%
                                 </Badge>
                               )}
@@ -1200,11 +1200,11 @@ export default function Customers() {
                   <div className="mt-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 overflow-hidden">
                     {/* HEADER - Always visible with summary */}
                     <div 
-                      className={`p-3 flex items-center justify-between cursor-pointer hover:bg-blue-500/100/20/50 transition-colors ${technicalDataExpanded ? 'border-b border-blue-200' : ''}`}
+                      className={`p-3 flex items-center justify-between cursor-pointer hover:bg-blue-500/20/50 transition-colors ${technicalDataExpanded ? 'border-b border-blue-200' : ''}`}
                       onClick={() => !editingTechnicalData && setTechnicalDataExpanded(!technicalDataExpanded)}
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="p-2 bg-blue-500/100/20 rounded-lg flex-shrink-0">
+                        <div className="p-2 bg-blue-500/20 rounded-lg flex-shrink-0">
                           <Mountain className="h-4 w-4 text-blue-600" />
                         </div>
                         
@@ -1229,7 +1229,7 @@ export default function Customers() {
                             </span>
                           )}
                           {selectedCustomer.ski_level && selectedCustomer.ski_level !== 'sin_especificar' && (
-                            <Badge className="bg-blue-500/100/20 text-blue-700 border-blue-300 capitalize text-xs">
+                            <Badge className="bg-blue-500/20 text-blue-700 border-blue-300 capitalize text-xs">
                               {selectedCustomer.ski_level}
                             </Badge>
                           )}
@@ -1243,7 +1243,7 @@ export default function Customers() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="gap-1 text-blue-600 hover:bg-blue-500/100/20 flex-shrink-0"
+                        className="gap-1 text-blue-600 hover:bg-blue-500/20 flex-shrink-0"
                         onClick={(e) => {
                           e.stopPropagation();
                           if (!editingTechnicalData) setTechnicalDataExpanded(!technicalDataExpanded);
@@ -1273,7 +1273,7 @@ export default function Customers() {
                               size="sm"
                               variant="outline"
                               onClick={startEditingTechnicalData}
-                              className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/100/20"
+                              className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/20"
                               data-testid="edit-technical-data-btn"
                             >
                               <Edit3 className="h-3 w-3" />
@@ -1441,7 +1441,7 @@ export default function Customers() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-500/100/20"
+                            className="gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-500/20"
                             onClick={() => callPhone(selectedCustomer.phone)}
                           >
                             <Phone className="h-3 w-3" />
@@ -1473,7 +1473,7 @@ export default function Customers() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/100/20"
+                          className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/20"
                           onClick={() => sendEmail(selectedCustomer.email, selectedCustomer.name)}
                         >
                           <Mail className="h-3 w-3" />
@@ -1506,7 +1506,7 @@ export default function Customers() {
                           {selectedCustomer.source}
                         </Badge>
                         {getProviderDiscount(selectedCustomer.source) > 0 && (
-                          <Badge className="bg-emerald-500/100/20 text-emerald-700">
+                          <Badge className="bg-emerald-500/20 text-emerald-700">
                             Descuento: {getProviderDiscount(selectedCustomer.source)}%
                           </Badge>
                         )}
@@ -1582,7 +1582,7 @@ export default function Customers() {
                         >
                           <div className="flex items-center gap-3">
                             {tx.type === 'income' ? (
-                              <div className="h-8 w-8 rounded-full bg-emerald-500/100/20 flex items-center justify-center">
+                              <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
                                 <ArrowUpRight className="h-4 w-4 text-emerald-600" />
                               </div>
                             ) : (
@@ -1655,7 +1655,7 @@ export default function Customers() {
                                 {rental.days} {rental.days === 1 ? 'día' : 'días'}
                               </Badge>
                             </div>
-                            <Badge className="bg-emerald-500/100/20 text-emerald-700">
+                            <Badge className="bg-emerald-500/20 text-emerald-700">
                               <DollarSign className="h-3 w-3 mr-1" />
                               €{rental.total_amount.toFixed(2)}
                             </Badge>

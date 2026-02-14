@@ -225,7 +225,7 @@ export default function TeamManagement() {
                 >
                   <div className="flex items-center gap-4">
                     <div className={`p-3 rounded-full ${
-                      member.role === 'admin' ? 'bg-purple-500/100/20' : 'bg-blue-500/100/20'
+                      member.role === 'admin' ? 'bg-purple-500/20' : 'bg-blue-500/20'
                     }`}>
                       {member.role === 'admin' ? (
                         <Shield className="h-5 w-5 text-purple-600" />
@@ -239,8 +239,8 @@ export default function TeamManagement() {
                       <div className="flex items-center gap-3 mt-1 text-xs">
                         <span className={`px-2 py-0.5 rounded ${
                           member.role === 'admin' 
-                            ? 'bg-purple-500/100/20 text-purple-700' 
-                            : 'bg-blue-500/100/20 text-blue-700'
+                            ? 'bg-purple-500/20 text-purple-700' 
+                            : 'bg-blue-500/20 text-blue-700'
                         }`}>
                           {member.role === 'admin' ? 'Administrador' : 'Empleado'}
                         </span>

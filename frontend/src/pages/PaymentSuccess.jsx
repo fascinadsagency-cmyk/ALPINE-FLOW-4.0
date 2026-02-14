@@ -72,7 +72,7 @@ export default function PaymentSuccess() {
         <CardContent className="pt-8 pb-8 text-center">
           {status === "loading" && (
             <>
-              <div className="mx-auto w-16 h-16 bg-blue-500/100/20 rounded-full flex items-center justify-center mb-6">
+              <div className="mx-auto w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mb-6">
                 <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
               </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-2">
@@ -95,7 +95,7 @@ export default function PaymentSuccess() {
 
           {status === "success" && (
             <>
-              <div className="mx-auto w-16 h-16 bg-emerald-500/100/20 rounded-full flex items-center justify-center mb-6">
+              <div className="mx-auto w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6">
                 <CheckCircle2 className="h-8 w-8 text-emerald-600" />
               </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-2">

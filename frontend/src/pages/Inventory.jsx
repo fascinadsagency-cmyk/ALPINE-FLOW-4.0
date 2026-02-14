@@ -1123,9 +1123,9 @@ export default function Inventory() {
 
   const getStatusBadge = (status) => {
     const styles = {
-      available: "bg-emerald-500/100/20 text-emerald-700",
+      available: "bg-emerald-500/20 text-emerald-700",
       rented: "bg-red-100 text-red-700",
-      maintenance: "bg-amber-500/100/20 text-amber-700",
+      maintenance: "bg-amber-500/20 text-amber-700",
       retired: "bg-slate-100 text-slate-600"
     };
     const labels = {
@@ -1845,7 +1845,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                             
                             {/* ESTADO ROI */}
                             <TableCell className="text-center">
-                              <Badge className={isRentable ? 'bg-emerald-500/100/20 text-emerald-700 border-emerald-300' : 'bg-red-100 text-red-700 border-red-300'}>
+                              <Badge className={isRentable ? 'bg-emerald-500/20 text-emerald-700 border-emerald-300' : 'bg-red-100 text-red-700 border-red-300'}>
                                 {isRentable ? '✓ Rentable' : '⏳ Amortizando'}
                               </Badge>
                             </TableCell>
@@ -1916,7 +1916,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                           return null;
                         case 'status':
                           return item.is_generic ? (
-                            <Badge className={item.stock_available > 0 ? "bg-emerald-500/100/20 text-emerald-700" : "bg-red-100 text-red-700"}>
+                            <Badge className={item.stock_available > 0 ? "bg-emerald-500/20 text-emerald-700" : "bg-red-100 text-red-700"}>
                               {item.stock_available > 0 ? 'Disponible' : 'Agotado'}
                             </Badge>
                           ) : getStatusBadge(item.status);
@@ -2064,7 +2064,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
           {!newItem.is_generic && (
             <div className={`p-3 rounded-lg border transition-all duration-200 ${
               scannerMode 
-                ? 'bg-emerald-500/100/20 border-emerald-400' 
+                ? 'bg-emerald-500/20 border-emerald-400' 
                 : 'bg-slate-50 border-slate-200'
             }`}>
               <div className="flex items-center justify-between">
@@ -2926,19 +2926,19 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                     <SelectContent>
                       <SelectItem value="available">
                         <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500/100/100"></span>
+                          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                           Disponible
                         </div>
                       </SelectItem>
                       <SelectItem value="rented">
                         <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-blue-500/100"></span>
+                          <span className="w-2 h-2 rounded-full bg-blue-500"></span>
                           Alquilado
                         </div>
                       </SelectItem>
                       <SelectItem value="maintenance">
                         <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-yellow-500/100"></span>
+                          <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
                           Mantenimiento
                         </div>
                       </SelectItem>
@@ -3350,7 +3350,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                     Curva de Amortización
                   </h3>
                   {itemProfitData.is_amortized && (
-                    <Badge className="bg-emerald-500/100 text-white px-3 py-1 text-sm">
+                    <Badge className="bg-emerald-500 text-white px-3 py-1 text-sm">
                       ✓ AMORTIZADO
                     </Badge>
                   )}
