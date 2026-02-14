@@ -115,7 +115,11 @@ Sistema completo de gestión de alquileres para tiendas de equipos de esquí con
 - **NewRental.jsx**: Corregido botón cerrar pestaña inactiva: hover:text-slate-700
 - **Testing**: 10/10 tests pasados (Playwright hover+getComputedStyle)
 
-## Backlog / Tareas Futuras
+## Límites de Plan (14/02/2026) ✅
+- **Backend**: Función centralizada `check_plan_limit()` que valida límites en todos los endpoints de creación (items, customers, users, bulk, import-csv, import)
+- **Frontend**: `PlanLimitModal` integrado en Inventario, Clientes y Equipo. Muestra barra de progreso, sugerencia de upgrade y botón "Subir de Plan Ahora" → `/facturacion`
+- **Límites**: basic(1000 items, 5000 clientes, 5 users), pro(6000, 40000, 10), enterprise(ilimitado, ilimitado, 15)
+- **Testing**: Backend 100% pass (3/3), Frontend modal verificado con screenshot
 - Pop-up de intento de salida (Exit-Intent)
 - Refactorizar NewRental.jsx (archivo muy grande, +3000 líneas)
 - Dividir en componentes más pequeños
