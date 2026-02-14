@@ -83,9 +83,23 @@ Sistema completo de gestión de alquileres para tiendas de equipos de esquí con
 - `.ticket-container` forzado a 80mm de ancho
 - Archivos: `/app/frontend/src/lib/ticketGenerator.js`, `/app/frontend/src/App.css`
 
+## Corrección Auditoría Contraste Hover (14/02/2026) ✅
+- **CashRegister.jsx**: Corregidos 8 botones toggle de visibilidad (iconos ojo) con hover:text-* para garantizar contraste
+  - TARJETA: hover:text-purple-700 (era purple-400 sobre fondo purple-200)
+  - EFECTIVO: hover:text-blue-700 (era blue-400 sobre fondo blue-200)
+  - Fondo Inicial: hover:text-slate-600 (era slate-400 sobre fondo slate-200)
+  - Ingresos/Salidas: hover:text-slate-600 (light) / hover:text-slate-200 (dark)
+  - Balance Neto: hover:text-slate-700 (era slate-500 sobre fondo white/50)
+  - Estados activos: hover:text-emerald-800, hover:text-red-800
+- **NewRental.jsx**: Corregido botón cerrar pestaña inactiva: hover:text-slate-700
+- **Testing**: 10/10 tests pasados (Playwright hover+getComputedStyle)
+
 ## Backlog / Tareas Futuras
+- Implementar imágenes editables de usuario y tienda (fotos de perfil y logos)
+- Pop-up de intento de salida (Exit-Intent)
 - Refactorizar NewRental.jsx (archivo muy grande, +3000 líneas)
 - Dividir en componentes más pequeños
+- Crear componentes genéricos Badge/Button para centralizar estilos hover
 - Bug: Editar email/contraseña del admin desde Gestión de Equipo
 
 ## Funcionalidades Implementadas - Sesión 12/02/2026
