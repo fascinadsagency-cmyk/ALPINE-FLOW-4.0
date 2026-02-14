@@ -227,118 +227,170 @@ export default function Billing() {
         <p className="text-slate-500 mt-1">Gestiona tu plan, datos fiscales y facturas</p>
       </div>
 
-      {/* Current Plan */}
-      <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-xl bg-blue-600 flex items-center justify-center">
-                <Sparkles className="h-6 w-6 text-white" />
+      {/* Plans Section - Gradient Background */}
+      <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #ec4899 100%)' }}>
+        <div className="px-6 pt-8 pb-4">
+          {/* Current Plan Header */}
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-white">Tu Plan Actual</h2>
+            <p className="text-white/70 mt-1">
+              {planStatus?.is_trial 
+                ? `Trial - ${planStatus.trial_days_remaining > 0 
+                    ? `${planStatus.trial_days_remaining} días restantes` 
+                    : `${planStatus.trial_hours_remaining || 0} horas restantes`}`
+                : planStatus?.plan_name}
+            </p>
+          </div>
+
+          {/* Usage Stats */}
+          <div className="mb-8 p-5 bg-white/10 backdrop-blur-md rounded-xl border border-white/20">
+            <h3 className="font-bold text-white mb-4 text-sm text-center uppercase tracking-wider">Tu uso actual:</h3>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="text-3xl font-black text-white">{planStatus?.current_items?.toLocaleString() || 0}</p>
+                <p className="text-sm text-white/70">
+                  de {planStatus?.max_items >= 999999 ? '∞' : planStatus?.max_items?.toLocaleString()} artículos
+                </p>
               </div>
               <div>
-                <CardTitle className="text-xl">Tu Plan Actual</CardTitle>
-                <CardDescription>
-                  {planStatus?.is_trial 
-                    ? `Trial - ${planStatus.trial_days_remaining > 0 
-                        ? `${planStatus.trial_days_remaining} días restantes` 
-                        : `${planStatus.trial_hours_remaining || 0} horas restantes`}`
-                    : planStatus?.plan_name}
-                </CardDescription>
+                <p className="text-3xl font-black text-white">{planStatus?.current_customers?.toLocaleString() || 0}</p>
+                <p className="text-sm text-white/70">
+                  de {planStatus?.max_customers >= 999999 ? '∞' : planStatus?.max_customers?.toLocaleString()} clientes
+                </p>
+              </div>
+              <div>
+                <p className="text-3xl font-black text-white">{planStatus?.current_users || 1}</p>
+                <p className="text-sm text-white/70">
+                  de {planStatus?.max_users >= 999 ? '∞' : planStatus?.max_users} usuarios
+                </p>
               </div>
             </div>
-            <Badge variant="outline" className={`text-lg px-4 py-1 ${
-              planStatus?.is_trial ? 'border-amber-500 text-amber-600 bg-amber-500/10' : 'border-blue-500 text-blue-600 bg-blue-500/10'
-            }`}>
-              {planStatus?.is_trial ? 'Trial Gratuito' : planStatus?.plan_name}
-            </Badge>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-6 mt-2">
-            <div className="text-center p-4 bg-white rounded-lg border">
-              <Package className="h-6 w-6 mx-auto mb-2 text-blue-600" />
-              <p className="text-2xl font-bold">{planStatus?.current_items?.toLocaleString() || 0}</p>
-              <p className="text-sm text-slate-500">
-                de {planStatus?.max_items >= 999999 ? '∞' : planStatus?.max_items?.toLocaleString()} artículos
-              </p>
-            </div>
-            <div className="text-center p-4 bg-white rounded-lg border">
-              <Users className="h-6 w-6 mx-auto mb-2 text-emerald-600" />
-              <p className="text-2xl font-bold">{planStatus?.current_customers?.toLocaleString() || 0}</p>
-              <p className="text-sm text-slate-500">
-                de {planStatus?.max_customers >= 999999 ? '∞' : planStatus?.max_customers?.toLocaleString()} clientes
-              </p>
-            </div>
-            <div className="text-center p-4 bg-white rounded-lg border">
-              <UserPlus className="h-6 w-6 mx-auto mb-2 text-purple-600" />
-              <p className="text-2xl font-bold">{planStatus?.current_users || 1}</p>
-              <p className="text-sm text-slate-500">
-                de {planStatus?.max_users >= 999 ? '∞' : planStatus?.max_users} usuarios
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Available Plans */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Cambiar de Plan</CardTitle>
-          <CardDescription>Selecciona el plan que mejor se adapte a tus necesidades</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-3 gap-4">
-            {availablePlans.map((plan) => {
-              const planOrder = getPlanOrder(plan.id);
-              const isCurrentPlan = planStatus?.plan_type === plan.id;
-              const isUpgrade = planOrder > currentPlanOrder;
-              
-              return (
-                <div key={plan.id} className={`relative rounded-xl border-2 p-6 transition-all ${
-                  isCurrentPlan ? 'border-blue-500 bg-blue-500/10' 
-                  : plan.recommended ? 'border-emerald-300 bg-emerald-500/10/50' 
-                  : 'border-slate-200 hover:border-slate-300'
-                }`}>
-                  {plan.recommended && !isCurrentPlan && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-600">Recomendado</Badge>
-                  )}
-                  {isCurrentPlan && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600">Plan Actual</Badge>
-                  )}
-                  
-                  <h3 className="text-xl font-bold mt-2">{plan.name}</h3>
-                  <p className="text-3xl font-bold mt-2">
-                    {plan.price}€<span className="text-sm font-normal text-slate-500">/año</span>
-                  </p>
-                  
-                  <ul className="mt-4 space-y-2">
-                    {plan.features?.map((feature, idx) => (
-                      <li key={idx} className="flex items-center gap-2 text-sm text-slate-600">
-                        <CheckCircle className="h-4 w-4 text-emerald-500" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  
-                  <div className="mt-6">
-                    {isCurrentPlan ? (
-                      <Button disabled className="w-full" variant="secondary">Plan Actual</Button>
-                    ) : isUpgrade ? (
-                      <Button className="w-full bg-emerald-600 hover:bg-emerald-700" onClick={() => handleCalculatePlanChange(plan.id)}>
-                        <ArrowUpRight className="h-4 w-4 mr-2" />Subir de Nivel
-                      </Button>
-                    ) : (
-                      <Button variant="outline" className="w-full" onClick={() => handleCalculatePlanChange(plan.id)}>
-                        <ArrowDownRight className="h-4 w-4 mr-2" />Cambiar
-                      </Button>
+          {/* Plan Cards */}
+          <div className="pb-8">
+            <h3 className="text-lg font-bold text-white mb-1">Cambiar de Plan</h3>
+            <p className="text-white/60 text-sm mb-6">Selecciona el plan que mejor se adapte a tus necesidades</p>
+            
+            <div className="grid md:grid-cols-3 gap-6">
+              {availablePlans.map((plan) => {
+                const planOrder = getPlanOrder(plan.id);
+                const isCurrentPlan = planStatus?.plan_type === plan.id;
+                const isUpgrade = planOrder > currentPlanOrder;
+                const isPro = plan.id === "pro";
+
+                const getPlanIcon = (planId) => {
+                  switch (planId) {
+                    case "basic": return <Rocket className="h-6 w-6 text-white" />;
+                    case "pro": return <Crown className="h-6 w-6 text-white" />;
+                    case "enterprise": return <Building2 className="h-6 w-6 text-white" />;
+                    default: return <Rocket className="h-6 w-6 text-white" />;
+                  }
+                };
+
+                return (
+                  <div key={plan.id} className="relative" data-testid={`plan-card-${plan.id}`}>
+                    {plan.recommended && !isCurrentPlan && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                        <Badge className="bg-white text-black font-bold px-4 py-1">POPULAR</Badge>
+                      </div>
                     )}
+                    {isCurrentPlan && (
+                      <div className="absolute -top-3 right-4 z-10">
+                        <Badge className="bg-emerald-500 text-white font-bold px-4 py-1">Plan Actual</Badge>
+                      </div>
+                    )}
+
+                    <div className={`relative rounded-2xl overflow-hidden transition-all duration-300 h-full ${
+                      isPro ? 'transform scale-105' : ''
+                    }`}>
+                      <div className={`absolute inset-0 ${
+                        isPro ? 'bg-gradient-to-br from-black via-slate-900 to-black' : 'bg-white'
+                      }`}></div>
+                      
+                      <div className={`relative p-6 h-full flex flex-col ${
+                        isPro ? 'border-4 border-purple-500/50 rounded-2xl' : 'border-2 border-slate-200 rounded-2xl'
+                      }`}>
+                        {/* Header */}
+                        <div className="flex items-center gap-3 mb-5">
+                          <div className={`h-10 w-10 rounded-xl flex items-center justify-center shadow-lg ${
+                            isPro ? 'bg-gradient-to-br from-purple-500 to-pink-500' : 'bg-black'
+                          }`}>
+                            {getPlanIcon(plan.id)}
+                          </div>
+                          <div>
+                            <h3 className={`text-lg font-bold ${isPro ? 'text-white' : 'text-black'}`}>
+                              {plan.name}
+                            </h3>
+                            <p className={`text-xs ${isPro ? 'text-slate-400' : 'text-slate-500'}`}>
+                              {isPro ? 'Más vendido' : 'Para empezar'}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {/* Price */}
+                        <div className="mb-6">
+                          <span className={`text-4xl font-black ${isPro ? 'text-white' : 'text-black'}`}>
+                            {plan.price} €
+                          </span>
+                          <p className={`text-sm mt-1 font-medium ${isPro ? 'text-slate-400' : 'text-slate-600'}`}>
+                            Pago anual
+                          </p>
+                        </div>
+
+                        {/* Action Button */}
+                        <div className="mb-6">
+                          {isCurrentPlan ? (
+                            <Button disabled className={`w-full font-bold rounded-full py-5 ${
+                              isPro ? 'bg-white/20 text-white/60' : 'bg-slate-100 text-slate-400'
+                            }`}>
+                              PLAN ACTUAL
+                            </Button>
+                          ) : isUpgrade ? (
+                            <Button 
+                              className={`w-full font-bold rounded-full py-5 ${
+                                isPro 
+                                  ? 'bg-white text-black hover:bg-slate-100' 
+                                  : 'bg-black text-white hover:bg-black/90'
+                              }`}
+                              onClick={() => handleCalculatePlanChange(plan.id)}
+                            >
+                              SUBIR DE NIVEL
+                            </Button>
+                          ) : (
+                            <Button 
+                              className={`w-full font-bold rounded-full py-5 ${
+                                isPro 
+                                  ? 'bg-white text-black hover:bg-slate-100' 
+                                  : 'bg-black text-white hover:bg-black/90'
+                              }`}
+                              onClick={() => handleCalculatePlanChange(plan.id)}
+                            >
+                              CAMBIAR
+                            </Button>
+                          )}
+                        </div>
+
+                        {/* Features */}
+                        <div className="space-y-3 flex-grow">
+                          {plan.features?.map((feature, idx) => (
+                            <div key={idx} className="flex items-start gap-3 text-sm">
+                              <Check className={`h-4 w-4 flex-shrink-0 mt-0.5 ${isPro ? 'text-white' : 'text-black'}`} />
+                              <span className={`font-medium ${isPro ? 'text-white' : 'text-slate-700'}`}>
+                                {feature}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Billing Data */}
       <Card>
