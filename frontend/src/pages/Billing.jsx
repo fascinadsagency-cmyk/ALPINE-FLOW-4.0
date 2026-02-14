@@ -334,7 +334,7 @@ export default function Billing() {
                             {plan.price} €
                           </span>
                           <p className={`text-sm mt-1 font-medium ${isPro ? 'text-slate-400' : 'text-slate-600'}`}>
-                            Pago anual
+                            Pago anual <span className="text-xs opacity-70">+ IVA</span>
                           </p>
                         </div>
 
@@ -534,13 +534,13 @@ export default function Billing() {
                     <div className="text-center">
                       <p className="text-sm text-slate-500">Plan Actual</p>
                       <p className="font-bold">{changeCalculation.current_plan_name || changeCalculation.current_plan}</p>
-                      <p className="text-slate-600">{changeCalculation.current_price}€/año</p>
+                      <p className="text-slate-600">{changeCalculation.current_price}€/año <span className="text-xs text-slate-400">+ IVA</span></p>
                     </div>
                     <ArrowUpRight className={`h-6 w-6 ${changeCalculation.is_upgrade ? 'text-emerald-600' : 'text-slate-400'}`} />
                     <div className="text-center">
                       <p className="text-sm text-slate-500">Nuevo Plan</p>
                       <p className="font-bold text-emerald-600">{changeCalculation.new_plan_name || changeCalculation.new_plan}</p>
-                      <p className="text-slate-600">{changeCalculation.new_price}€/año</p>
+                      <p className="text-slate-600">{changeCalculation.new_price}€/año <span className="text-xs text-slate-400">+ IVA</span></p>
                     </div>
                   </div>
 
@@ -574,7 +574,7 @@ export default function Billing() {
                   {changeCalculation.current_plan === "trial" && (
                     <div className="p-4 bg-blue-500/10 rounded-lg">
                       <p className="font-medium text-blue-800">Activar Plan {changeCalculation.new_plan_name}</p>
-                      <p className="text-2xl font-bold text-blue-600 mt-1">{formatCurrency(changeCalculation.amount_to_pay)}</p>
+                      <p className="text-2xl font-bold text-blue-600 mt-1">{formatCurrency(changeCalculation.amount_to_pay)} <span className="text-sm font-normal text-blue-400">+ IVA</span></p>
                       <p className="text-sm text-blue-600 mt-1">Suscripción anual</p>
                     </div>
                   )}

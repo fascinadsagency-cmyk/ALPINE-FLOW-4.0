@@ -309,7 +309,7 @@ export default function PlanSelection() {
                         </span>
                       </div>
                       <p className={`text-sm mt-2 font-medium ${isPro ? 'text-slate-400' : 'text-slate-600'}`}>
-                        Pago anual
+                        Pago anual <span className="text-xs opacity-70">+ IVA</span>
                       </p>
                     </div>
 
