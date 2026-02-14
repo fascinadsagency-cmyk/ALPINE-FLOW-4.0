@@ -48,13 +48,16 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col relative">
       {/* Back button */}
-      <div className="p-4 absolute top-0 left-0 z-10">
+      <div className="p-4 absolute top-0 left-0 z-50">
         <Button 
           variant="ghost" 
-          onClick={() => navigate("/landing")}
-          className="gap-2 text-white hover:bg-white/10 lg:text-slate-700 lg:hover:bg-slate-100"
+          onClick={() => {
+            console.log('Navigating to landing...');
+            navigate("/landing");
+          }}
+          className="gap-2 text-white bg-black/40 hover:bg-black/60 backdrop-blur-sm"
         >
           <ArrowLeft className="h-4 w-4" />
           Volver al inicio

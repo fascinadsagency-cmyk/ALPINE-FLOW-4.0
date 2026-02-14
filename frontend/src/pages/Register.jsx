@@ -70,7 +70,7 @@ export default function Register() {
             console.log('Navigating to landing...');
             navigate("/landing");
           }}
-          className="gap-2 text-white hover:bg-white/10 lg:text-slate-700 lg:hover:bg-slate-100"
+          className="gap-2 text-white bg-black/40 hover:bg-black/60 backdrop-blur-sm"
         >
           <ArrowLeft className="h-4 w-4" />
           Volver al inicio
