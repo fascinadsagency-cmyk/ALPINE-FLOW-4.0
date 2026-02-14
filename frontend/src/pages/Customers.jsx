@@ -882,7 +882,7 @@ export default function Customers() {
                 variant={selectedStatus === "active" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedStatus("active")}
-                className={`gap-2 ${selectedStatus === "active" ? "bg-emerald-600 hover:bg-emerald-700" : "border-emerald-300 text-emerald-700 hover:bg-emerald-500/10"}`}
+                className={`gap-2 ${selectedStatus === "active" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "border-emerald-300 text-emerald-700 hover:bg-emerald-600 hover:text-white hover:border-emerald-600"}`}
                 data-testid="filter-active"
               >
                 <Package className="h-4 w-4" />
