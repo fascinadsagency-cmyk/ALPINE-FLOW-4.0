@@ -641,6 +641,9 @@ async def login(user: UserLogin):
         db_user.get("role", "employee"),
         db_user.get("store_id")  # Can be None for SUPER_ADMIN
     )
+    # Get store name
+    store = await db.stores.find_one({"store_id": db_user.get("store_id")}, {"_id": 0, "name": 1}) if db_user.get("store_id") else None
+    
     return TokenResponse(
         access_token=token,
         user=UserResponse(
@@ -648,7 +651,8 @@ async def login(user: UserLogin):
             username=db_user["username"],
             role=db_user.get("role", "employee"),
             email=db_user.get("email", db_user["username"]),
-            photo_url=db_user.get("photo_url", "")
+            photo_url=db_user.get("photo_url", ""),
+            store_name=store.get("name", "") if store else ""
         )
     )
 
@@ -656,12 +660,15 @@ async def login(user: UserLogin):
 async def get_me(current_user: CurrentUser = Depends(get_current_user)):
     # Get full user data including photo
     user_doc = await db.users.find_one({"id": current_user.user_id}, {"_id": 0, "password": 0, "hashed_password": 0})
+    # Get store name
+    store = await db.stores.find_one({"store_id": current_user.store_id}, {"_id": 0, "name": 1}) if current_user.store_id else None
     return {
         "id": current_user.user_id,
         "username": current_user.username,
         "role": current_user.role,
         "email": user_doc.get("email", current_user.username) if user_doc else current_user.username,
-        "photo_url": user_doc.get("photo_url", "") if user_doc else ""
+        "photo_url": user_doc.get("photo_url", "") if user_doc else "",
+        "store_name": store.get("name", "") if store else ""
     }
 
 
