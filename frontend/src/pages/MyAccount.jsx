@@ -36,7 +36,7 @@ import { toast } from "sonner";
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function MyAccount() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const { darkMode, t } = useSettings();
   const navigate = useNavigate();
   
