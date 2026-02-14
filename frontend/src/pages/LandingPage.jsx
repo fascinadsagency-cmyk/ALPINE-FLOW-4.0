@@ -109,13 +109,15 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Section - MINIMAL GRID */}
+      {/* Features Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 border-t border-slate-200">
         <div className="mb-20">
-          <h2 className="text-5xl sm:text-6xl font-black text-black mb-6 leading-tight uppercase tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans' }}>
-            Todo lo que necesitas.<br/>
-            <span className="text-slate-400">Nada que no.</span>
+          <h2 className="text-5xl sm:text-6xl font-black text-black mb-6 leading-tight tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+            El motor de tu rentabilidad
           </h2>
+          <p className="text-xl text-slate-600 max-w-3xl font-medium">
+            Menos clics, más alquileres. Diseñado para el ritmo real de la montaña.
+          </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
@@ -125,10 +127,10 @@ export default function LandingPage() {
               <Database className="h-6 w-6 text-white" />
             </div>
             <h3 className="text-2xl font-bold text-black mb-4">
-              Control Total de Inventario
+              Gestión de Inventario en Tiempo Real
             </h3>
-            <p className="text-slate-600 text-lg leading-relaxed">
-              Cada par de esquís, cada bota. Códigos internos y estados en tiempo real.
+            <p className="text-slate-600 text-base leading-relaxed">
+              Controla cada par de esquís y cada bota con códigos internos. Visualiza estados de disponibilidad al instante para que nunca prometas material que no tienes en el taller.
             </p>
           </div>
 
@@ -138,10 +140,10 @@ export default function LandingPage() {
               <Users className="h-6 w-6 text-white" />
             </div>
             <h3 className="text-2xl font-bold text-black mb-4">
-              Base de Datos 360°
+              Base de Datos de Clientes 360°
             </h3>
-            <p className="text-slate-600 text-lg leading-relaxed">
-              Historial completo de cada cliente. Recupera datos de años anteriores al instante.
+            <p className="text-slate-600 text-base leading-relaxed">
+              Acceso total al historial de alquileres y créditos pendientes. Recupera los datos de años anteriores en milisegundos para agilizar la ficha técnica y el ajuste de fijaciones.
             </p>
           </div>
 
@@ -151,10 +153,10 @@ export default function LandingPage() {
               <Zap className="h-6 w-6 text-white" />
             </div>
             <h3 className="text-2xl font-bold text-black mb-4">
-              Packs Inteligentes
+              Packs Inteligentes de Alta Velocidad
             </h3>
-            <p className="text-slate-600 text-lg leading-relaxed">
-              Configura packs de material. El sistema los detecta y aplica tarifas automáticamente.
+            <p className="text-slate-600 text-base leading-relaxed">
+              Configura packs de "Material + Casco + Botas". El sistema los detecta automáticamente al escanear, aplicando la tarifa correcta sin que tu staff tenga que calcular nada a mano.
             </p>
           </div>
 
@@ -164,10 +166,10 @@ export default function LandingPage() {
               <Clock className="h-6 w-6 text-white" />
             </div>
             <h3 className="text-2xl font-bold text-black mb-4">
-              Proceso Turbo
+              Proceso de Salida "Turbo"
             </h3>
-            <p className="text-slate-600 text-lg leading-relaxed">
-              Crea alquileres en segundos. Cierra el ticket antes de que se forme cola.
+            <p className="text-slate-600 text-base leading-relaxed">
+              Crea alquileres en segundos combinando el uso de códigos de barras, packs automáticos y precios dinámicos según la temporada. Cierra el ticket y pasa al siguiente cliente antes de que se forme cola.
             </p>
           </div>
 
@@ -177,10 +179,10 @@ export default function LandingPage() {
               <BarChart3 className="h-6 w-6 text-white" />
             </div>
             <h3 className="text-2xl font-bold text-black mb-4">
-              Análisis de Rentabilidad
+              Informes y Análisis de Rentabilidad
             </h3>
-            <p className="text-slate-600 text-lg leading-relaxed">
-              Identifica qué ítems generan más ingresos. Decisiones basadas en datos reales.
+            <p className="text-slate-600 text-base leading-relaxed">
+              Identifica qué ítems son los más alquilados y cuáles se quedan en el estante. Estadísticas completas para tomar decisiones basadas en datos reales, no en intuiciones.
             </p>
           </div>
 
@@ -190,10 +192,10 @@ export default function LandingPage() {
               <Shield className="h-6 w-6 text-white" />
             </div>
             <h3 className="text-2xl font-bold text-black mb-4">
-              Acceso Multiusuario
+              Acceso Multiusuario por Tienda
             </h3>
-            <p className="text-slate-600 text-lg leading-relaxed">
-              Gestiona tu local desde varios ordenadores. Cada empleado con su propio acceso.
+            <p className="text-slate-600 text-base leading-relaxed">
+              Gestiona tu local desde varios ordenadores simultáneamente. Crea perfiles de empleado independientes para que cada miembro del equipo tenga su propio acceso bajo una misma licencia.
             </p>
           </div>
         </div>
