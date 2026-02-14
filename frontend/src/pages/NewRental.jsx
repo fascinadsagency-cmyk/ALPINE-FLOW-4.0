@@ -2262,7 +2262,7 @@ export default function NewRental() {
                       ml-1 p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity
                       ${isActive 
                         ? 'hover:bg-white/20 text-white' 
-                        : 'hover:bg-slate-300 text-slate-500'
+                        : 'hover:bg-slate-300 text-slate-500 hover:text-slate-700'
                       }
                     `}
                     data-testid={`close-ticket-${index}`}

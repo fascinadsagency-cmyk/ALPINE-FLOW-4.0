@@ -773,7 +773,7 @@ export default function CashRegister() {
                         className={`p-1.5 rounded-md transition-all duration-200 ${
                           visibleMetrics.ingresos 
                             ? 'bg-emerald-500/20 text-emerald-600 hover:bg-emerald-200' 
-                            : `${darkMode ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-slate-200 text-slate-400'}`
+                            : `${darkMode ? 'hover:bg-slate-700 text-slate-400 hover:text-slate-200' : 'hover:bg-slate-200 text-slate-400 hover:text-slate-600'}`
                         }`}
                         title={visibleMetrics.ingresos ? 'Ocultar' : 'Mostrar'}
                       >
@@ -813,7 +813,7 @@ export default function CashRegister() {
                         className={`p-1.5 rounded-md transition-all duration-200 ${
                           visibleMetrics.gastos 
                             ? 'bg-red-100 text-red-600 hover:bg-red-200' 
-                            : `${darkMode ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-slate-200 text-slate-400'}`
+                            : `${darkMode ? 'hover:bg-slate-700 text-slate-400 hover:text-slate-200' : 'hover:bg-slate-200 text-slate-400 hover:text-slate-600'}`
                         }`}
                         title={visibleMetrics.gastos ? 'Ocultar' : 'Mostrar'}
                       >
