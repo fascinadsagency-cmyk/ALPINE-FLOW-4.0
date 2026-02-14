@@ -132,11 +132,11 @@ export default function PlanSelection() {
   const getPlanIcon = (planId) => {
     switch (planId) {
       case "basic":
-        return <Rocket className="h-8 w-8" />;
+        return <Rocket className="h-8 w-8 text-white" />;
       case "pro":
-        return <Crown className="h-8 w-8" />;
+        return <Crown className="h-8 w-8 text-white" />;
       case "enterprise":
-        return <Building2 className="h-8 w-8" />;
+        return <Building2 className="h-8 w-8 text-white" />;
       default:
         return null;
     }
