@@ -48,6 +48,7 @@ export default function Layout() {
     { to: "/caja", icon: Wallet, label: t('nav.cashRegister') },
     { to: "/mantenimiento", icon: Wrench, label: t('nav.maintenance') },
     { to: "/reportes", icon: BarChart3, label: t('nav.reports'), adminOnly: true },
+    { to: "/integraciones", icon: Settings, label: t('nav.integrations'), adminOnly: true },
     { to: "/configuracion", icon: Cog, label: t('nav.settings'), adminOnly: true },
   ];
 
