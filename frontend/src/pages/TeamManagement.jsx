@@ -109,7 +109,18 @@ export default function TeamManagement() {
       setEditingMember(null);
     } catch (error) {
       console.error("Error saving member:", error);
-      toast.error(error.response?.data?.detail || "Error al guardar miembro");
+      const detail = error.response?.data?.detail;
+      if (error.response?.status === 403 && typeof detail === 'object' && detail?.error === 'PLAN_LIMIT_EXCEEDED') {
+        setPlanLimitModal({
+          open: true,
+          limitType: detail.limit_type,
+          currentCount: detail.current_count,
+          maxCount: detail.max_allowed,
+          planType: detail.plan_name
+        });
+        return;
+      }
+      toast.error(typeof detail === 'string' ? detail : "Error al guardar miembro");
     } finally {
       setLoading(false);
     }
