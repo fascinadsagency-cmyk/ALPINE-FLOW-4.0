@@ -1,0 +1,105 @@
+{
+  "summary": "Plan Limits feature testing - Backend 100% PASS, Frontend partial - Upgrade button not showing due to planType mismatch bug",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "critical": [
+      {
+        "component": "PlanLimitModal.jsx",
+        "issue": "Upgrade button ('Subir de Plan Ahora') not visible because planType mismatch. Backend returns plan_name='Plan Básico' but UPGRADE_PATH expects planType='basic' (code). UPGRADE_PATH['Plan Básico'] returns undefined, so nextPlan=null and button is hidden.",
+        "selector": "[data-testid='upgrade-plan-btn']",
+        "priority": "HIGH",
+        "root_cause": "Line 370 in Customers.jsx passes detail.plan_name to planType prop, but PlanLimitModal.jsx line 78 uses UPGRADE_PATH[planType] which expects 'basic', 'pro', or 'enterprise' - not display names",
+        "fix_options": [
+          "Option 1: Backend adds plan_type field (code) alongside plan_name (display)",
+          "Option 2: Frontend maps plan_name to plan_type code before passing to modal"
+        ]
+      }
+    ],
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "features_tested": {
+    "backend_items_limit": {
+      "status": "PASS",
+      "endpoint": "POST /api/items",
+      "description": "Returns 403 with PLAN_LIMIT_EXCEEDED when store 3 (at max 2 items) tries to create new item"
+    },
+    "backend_customers_limit": {
+      "status": "PASS",
+      "endpoint": "POST /api/customers",
+      "description": "Returns 403 with PLAN_LIMIT_EXCEEDED when store 3 (at max 2 customers) tries to create new customer"
+    },
+    "backend_users_limit": {
+      "status": "PASS",
+      "endpoint": "POST /api/team/members",
+      "description": "Returns 403 with PLAN_LIMIT_EXCEEDED when store 3 (at max 2 users) tries to create new user"
+    },
+    "frontend_customers_modal": {
+      "status": "PARTIAL",
+      "component": "Customers.jsx",
+      "description": "PlanLimitModal DOES appear with correct content (title, progress bar 2/2, plan name). However upgrade button is HIDDEN due to planType bug."
+    },
+    "frontend_inventory_modal": {
+      "status": "NOT_FULLY_TESTED",
+      "component": "Inventory.jsx",
+      "description": "Form filling issues during test (requires Tipo, Marca, Talla). Backend already confirmed working via curl."
+    },
+    "frontend_upgrade_button_navigation": {
+      "status": "BLOCKED",
+      "component": "PlanLimitModal.jsx",
+      "description": "Cannot test navigation to /facturacion because upgrade button is not rendered due to planType bug"
+    }
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_plan_limits.py",
+    "/app/test_reports/pytest/pytest_plan_limits.xml"
+  ],
+  "action_items": [
+    "FIX: PlanLimitModal upgrade button not showing - need to pass plan_type code ('basic') instead of plan_name ('Plan Básico')",
+    "Suggested fix in backend server.py check_plan_limit(): Add 'plan_type' field with the code (basic/pro/enterprise) in addition to 'plan_name'",
+    "OR fix in frontend: Create mapping function to convert 'Plan Básico' -> 'basic' before passing to PlanLimitModal"
+  ],
+  "critical_code_review_comments": [
+    "server.py line 499: Returns plan_name (display) but frontend needs plan_type (code) for UPGRADE_PATH logic",
+    "Customers.jsx line 370: Passes plan_name as planType but PlanLimitModal expects code",
+    "Same issue exists in Inventory.jsx line 614 and TeamManagement.jsx"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_plan_limits.py"
+  ],
+  "success_rate": {
+    "backend": "100% (3/3 tests passed)",
+    "frontend": "60% (Modal appears but upgrade button hidden due to bug)"
+  },
+  "test_credentials": {
+    "admin_master": "admin_master / admin123 (super_admin)",
+    "store_3_impersonate": "PRUEBA 2 - basic plan with max 2 each (items, customers, users)"
+  },
+  "seed_data_creation": "None - store 3 already had test data at limits",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Plan limits backend fully working. Frontend PlanLimitModal appears correctly but 'Subir de Plan Ahora' button doesn't show because planType='Plan Básico' but UPGRADE_PATH expects 'basic'. Main agent needs to fix the plan_type/plan_name mismatch.",
+  "rca_of_the_issue": {
+    "bug": "Upgrade button not visible in PlanLimitModal",
+    "root_cause": "Data type mismatch: Backend returns 'plan_name' (display string like 'Plan Básico') but frontend UPGRADE_PATH map uses plan codes ('basic', 'pro', 'enterprise')",
+    "reproduction_steps": [
+      "1. Login as admin_master",
+      "2. Navigate to /tiendas, click 'Acceder' on PRUEBA 2 (store 3)",
+      "3. Navigate to /clientes",
+      "4. Click 'Nuevo Cliente', fill required fields, click 'Crear Cliente'",
+      "5. PlanLimitModal appears but 'Subir de Plan Ahora' button is MISSING"
+    ],
+    "affected_files": [
+      "backend/server.py (check_plan_limit function - returns plan_name)",
+      "frontend/src/pages/Customers.jsx (line 370)",
+      "frontend/src/pages/Inventory.jsx (line 614)", 
+      "frontend/src/pages/TeamManagement.jsx (similar line)",
+      "frontend/src/components/PlanLimitModal.jsx (UPGRADE_PATH expects codes)"
+    ],
+    "mitigation": "Backend should return both plan_name (for display) and plan_type (for logic). Frontend should pass plan_type to PlanLimitModal."
+  }
+}
