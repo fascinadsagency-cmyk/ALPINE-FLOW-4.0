@@ -506,6 +506,51 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+        <div className="text-center mb-16">
+          <h2 className="text-5xl sm:text-6xl font-black text-black mb-6 leading-tight tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+            Preguntas Frecuentes
+          </h2>
+          <p className="text-xl text-slate-600 font-medium">
+            Todo lo que necesitas saber sobre SkiFlow Rental
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {faqs.map((faq, index) => (
+            <div 
+              key={index}
+              className="bg-white border-2 border-slate-200 rounded-2xl overflow-hidden transition-all duration-300 hover:border-slate-300"
+            >
+              <button
+                onClick={() => toggleFaq(index)}
+                className="w-full px-8 py-6 flex items-center justify-between text-left transition-colors hover:bg-slate-50"
+              >
+                <span className="text-lg font-bold text-black pr-8">
+                  {faq.question}
+                </span>
+                <ChevronDown 
+                  className={`h-6 w-6 text-black flex-shrink-0 transition-transform duration-300 ${
+                    openFaq === index ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+              
+              <div 
+                className={`overflow-hidden transition-all duration-300 ${
+                  openFaq === index ? 'max-h-96' : 'max-h-0'
+                }`}
+              >
+                <div className="px-8 pb-6 text-slate-600 text-base leading-relaxed">
+                  {faq.answer}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="bg-black py-32">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
