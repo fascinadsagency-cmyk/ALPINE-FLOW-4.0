@@ -680,7 +680,7 @@ export default function CashRegister() {
 
   const getMovementTypeBadge = (type) => {
     switch(type) {
-      case 'income': return <Badge className="bg-emerald-500/20 text-emerald-700">Entrada</Badge>;
+      case 'income': return <Badge className="bg-emerald-500/100/20 text-emerald-700">Entrada</Badge>;
       case 'expense': return <Badge className="bg-red-100 text-red-700">Salida</Badge>;
       case 'refund': return <Badge className="bg-orange-100 text-orange-700">Devolución</Badge>;
       default: return <Badge variant="outline">{type}</Badge>;
@@ -740,7 +740,7 @@ export default function CashRegister() {
               variant="outline"
               size="sm"
               onClick={toggleAllVisibility}
-              className={`gap-2 ${allVisible ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-500/20' : ''}`}
+              className={`gap-2 ${allVisible ? 'bg-emerald-500/10 border-emerald-300 text-emerald-700 hover:bg-emerald-500/100/20' : ''}`}
               data-testid="toggle-all-visibility"
             >
               {allVisible ? (
@@ -772,7 +772,7 @@ export default function CashRegister() {
                         onClick={() => toggleMetricVisibility('ingresos')}
                         className={`p-1.5 rounded-md transition-all duration-200 ${
                           visibleMetrics.ingresos 
-                            ? 'bg-emerald-500/20 text-emerald-600 hover:bg-emerald-200' 
+                            ? 'bg-emerald-500/100/20 text-emerald-600 hover:bg-emerald-200' 
                             : `${darkMode ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-slate-200 text-slate-400'}`
                         }`}
                         title={visibleMetrics.ingresos ? 'Ocultar' : 'Mostrar'}
@@ -792,7 +792,7 @@ export default function CashRegister() {
                       )}
                     </p>
                   </div>
-                  <div className={`h-11 w-11 rounded-lg flex items-center justify-center ${darkMode ? 'bg-emerald-900/30' : 'bg-emerald-500/20'}`}>
+                  <div className={`h-11 w-11 rounded-lg flex items-center justify-center ${darkMode ? 'bg-emerald-900/30' : 'bg-emerald-500/100/20'}`}>
                     <TrendingUp className={`h-5 w-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
                   </div>
                 </div>
@@ -840,7 +840,7 @@ export default function CashRegister() {
             </Card>
 
             {/* KPI 3: Balance Neto del Día */}
-            <Card className={`border-2 ${(summary?.balance_neto_dia || 0) >= 0 ? 'border-emerald-300 bg-emerald-50' : 'border-red-300 bg-red-50'} ${darkMode ? 'bg-opacity-10' : ''} transition-all duration-200`} data-testid="kpi-balance">
+            <Card className={`border-2 ${(summary?.balance_neto_dia || 0) >= 0 ? 'border-emerald-300 bg-emerald-500/10' : 'border-red-300 bg-red-50'} ${darkMode ? 'bg-opacity-10' : ''} transition-all duration-200`} data-testid="kpi-balance">
               <CardContent className="py-4 px-5">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
@@ -917,7 +917,7 @@ export default function CashRegister() {
                 </div>
 
                 {/* Efectivo Esperado en Cajón */}
-                <div className={`p-3 rounded-lg border-2 transition-all duration-200 ${darkMode ? 'bg-blue-900/20 border-blue-700' : 'bg-blue-50 border-blue-200'}`}>
+                <div className={`p-3 rounded-lg border-2 transition-all duration-200 ${darkMode ? 'bg-blue-900/20 border-blue-700' : 'bg-blue-500/10 border-blue-200'}`}>
                   <div className="flex items-center gap-1.5">
                     <Banknote className={`h-3.5 w-3.5 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                     <p className={`text-xs font-bold ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
@@ -944,7 +944,7 @@ export default function CashRegister() {
                 </div>
 
                 {/* Total Tarjeta */}
-                <div className={`p-3 rounded-lg border-2 transition-all duration-200 ${darkMode ? 'bg-purple-900/20 border-purple-700' : 'bg-purple-50 border-purple-200'}`}>
+                <div className={`p-3 rounded-lg border-2 transition-all duration-200 ${darkMode ? 'bg-purple-900/20 border-purple-700' : 'bg-purple-500/10 border-purple-200'}`}>
                   <div className="flex items-center gap-1.5">
                     <CreditCard className={`h-3.5 w-3.5 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                     <p className={`text-xs font-bold ${darkMode ? 'text-purple-300' : 'text-purple-700'}`}>
@@ -981,7 +981,7 @@ export default function CashRegister() {
                 </div>
 
                 {/* Session status */}
-                <div className={`p-3 rounded-lg ${activeSession ? 'bg-emerald-500/20 border border-emerald-300' : 'bg-amber-500/20 border border-amber-300'}`}>
+                <div className={`p-3 rounded-lg ${activeSession ? 'bg-emerald-500/100/20 border border-emerald-300' : 'bg-amber-500/100/20 border border-amber-300'}`}>
                   <p className={`text-xs font-medium ${activeSession ? 'text-emerald-700' : 'text-amber-700'}`}>
                     Estado
                   </p>
@@ -995,7 +995,7 @@ export default function CashRegister() {
 
           {/* Session Status + Actions */}
           {!activeSession ? (
-            <Card className="border-2 border-amber-300 bg-amber-50">
+            <Card className="border-2 border-amber-300 bg-amber-500/10">
               <CardContent className="py-4">
                 <div className="flex items-center gap-3">
                   <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0" />
@@ -1018,7 +1018,7 @@ export default function CashRegister() {
               </CardContent>
             </Card>
           ) : (
-            <Card className={`border ${darkMode ? 'bg-emerald-900/20 border-emerald-700' : 'bg-emerald-50 border-emerald-200'}`}>
+            <Card className={`border ${darkMode ? 'bg-emerald-900/20 border-emerald-700' : 'bg-emerald-500/10 border-emerald-200'}`}>
               <CardContent className="pt-4 pb-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex items-center gap-3">
@@ -1310,12 +1310,12 @@ export default function CashRegister() {
                             </TableCell>
                             <TableCell>
                               {mov.payment_method === 'cash' ? (
-                                <Badge className="bg-emerald-500/20 text-emerald-700">
+                                <Badge className="bg-emerald-500/100/20 text-emerald-700">
                                   <Banknote className="h-3 w-3 mr-1" />
                                   Efectivo
                                 </Badge>
                               ) : (
-                                <Badge className="bg-purple-500/20 text-purple-700">
+                                <Badge className="bg-purple-500/100/20 text-purple-700">
                                   <CreditCard className="h-3 w-3 mr-1" />
                                   Tarjeta
                                 </Badge>
@@ -1675,7 +1675,7 @@ export default function CashRegister() {
                   <p className="text-xs text-slate-500">Salidas</p>
                   <p className="font-bold text-red-600">-€{(summary?.total_salidas || 0).toFixed(2)}</p>
                 </div>
-                <div className={`p-2 rounded-lg ${(summary?.balance_neto_dia || 0) >= 0 ? 'bg-emerald-500/20' : 'bg-red-100'}`}>
+                <div className={`p-2 rounded-lg ${(summary?.balance_neto_dia || 0) >= 0 ? 'bg-emerald-500/100/20' : 'bg-red-100'}`}>
                   <p className="text-xs text-slate-600">Balance Neto</p>
                   <p className={`font-bold text-lg ${(summary?.balance_neto_dia || 0) >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
                     €{(summary?.balance_neto_dia || 0).toFixed(2)}
@@ -1685,7 +1685,7 @@ export default function CashRegister() {
             </div>
 
             {/* Arqueo Efectivo */}
-            <div className={`p-4 rounded-xl border-2 ${darkMode ? 'bg-blue-900/20 border-blue-700' : 'bg-blue-50 border-blue-200'}`}>
+            <div className={`p-4 rounded-xl border-2 ${darkMode ? 'bg-blue-900/20 border-blue-700' : 'bg-blue-500/10 border-blue-200'}`}>
               <div className="flex items-center gap-2 mb-3">
                 <Banknote className="h-5 w-5 text-blue-600" />
                 <p className="font-bold text-blue-800">EFECTIVO</p>
@@ -1712,7 +1712,7 @@ export default function CashRegister() {
                   />
                 </div>
                 {arqueoForm.physical_cash !== "" && (
-                  <div className={`p-2 rounded-lg text-center ${disc.cash === 0 ? 'bg-emerald-500/20' : 'bg-red-100'}`}>
+                  <div className={`p-2 rounded-lg text-center ${disc.cash === 0 ? 'bg-emerald-500/100/20' : 'bg-red-100'}`}>
                     <span className={`font-bold ${disc.cash === 0 ? 'text-emerald-700' : 'text-red-700'}`}>
                       Descuadre: €{disc.cash.toFixed(2)}
                     </span>
@@ -1722,7 +1722,7 @@ export default function CashRegister() {
             </div>
 
             {/* Arqueo Tarjeta */}
-            <div className={`p-4 rounded-xl border-2 ${darkMode ? 'bg-purple-900/20 border-purple-700' : 'bg-purple-50 border-purple-200'}`}>
+            <div className={`p-4 rounded-xl border-2 ${darkMode ? 'bg-purple-900/20 border-purple-700' : 'bg-purple-500/10 border-purple-200'}`}>
               <div className="flex items-center gap-2 mb-3">
                 <CreditCard className="h-5 w-5 text-purple-600" />
                 <p className="font-bold text-purple-800">TARJETA</p>
@@ -1745,7 +1745,7 @@ export default function CashRegister() {
                   />
                 </div>
                 {arqueoForm.card_total !== "" && (
-                  <div className={`p-2 rounded-lg text-center ${disc.card === 0 ? 'bg-emerald-500/20' : 'bg-red-100'}`}>
+                  <div className={`p-2 rounded-lg text-center ${disc.card === 0 ? 'bg-emerald-500/100/20' : 'bg-red-100'}`}>
                     <span className={`font-bold ${disc.card === 0 ? 'text-emerald-700' : 'text-red-700'}`}>
                       Descuadre: €{disc.card.toFixed(2)}
                     </span>
@@ -1847,7 +1847,7 @@ export default function CashRegister() {
                 </div>
                 <div className={`p-3 rounded-lg border-2 ${
                   newPaymentMethod !== editingMovement.payment_method 
-                    ? 'border-blue-500 bg-blue-50' 
+                    ? 'border-blue-500 bg-blue-500/10' 
                     : darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'
                 }`}>
                   <Label className="text-xs text-slate-500">Nuevo Método</Label>
@@ -1874,7 +1874,7 @@ export default function CashRegister() {
               </div>
 
               {newPaymentMethod !== editingMovement.payment_method && (
-                <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-200">
                   <p className="text-sm text-amber-800">
                     ⚠️ Este cambio afectará al desglose por método de pago en el arqueo de caja.
                   </p>
@@ -1925,12 +1925,12 @@ export default function CashRegister() {
                     {new Date(selectedHistoryMovement.created_at).toLocaleTimeString('es-ES')}
                   </p>
                 </div>
-                <div className={`p-3 rounded-lg ${selectedHistoryMovement.type === 'expense' ? 'bg-red-50' : 'bg-emerald-50'}`}>
+                <div className={`p-3 rounded-lg ${selectedHistoryMovement.type === 'expense' ? 'bg-red-50' : 'bg-emerald-500/10'}`}>
                   <p className="text-xs text-slate-500">Importe</p>
                   <p className={`text-2xl font-bold ${selectedHistoryMovement.type === 'expense' ? 'text-red-600' : 'text-emerald-600'}`}>
                     {selectedHistoryMovement.type === 'expense' ? '-' : '+'}€{(selectedHistoryMovement.amount || 0).toFixed(2)}
                   </p>
-                  <Badge className={selectedHistoryMovement.payment_method === 'cash' ? 'bg-emerald-500/20 text-emerald-700' : 'bg-purple-500/20 text-purple-700'}>
+                  <Badge className={selectedHistoryMovement.payment_method === 'cash' ? 'bg-emerald-500/100/20 text-emerald-700' : 'bg-purple-500/100/20 text-purple-700'}>
                     {selectedHistoryMovement.payment_method === 'cash' ? 'Efectivo' : 'Tarjeta'}
                   </Badge>
                 </div>
@@ -1938,7 +1938,7 @@ export default function CashRegister() {
 
               {/* Cliente */}
               {selectedHistoryMovement.customer_name && (
-                <div className="p-3 rounded-lg bg-blue-50 border border-blue-100">
+                <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-100">
                   <p className="text-xs text-blue-600 font-medium">Cliente</p>
                   <p className="font-bold text-blue-900">{selectedHistoryMovement.customer_name}</p>
                   {selectedHistoryMovement.customer_dni && (
@@ -1970,7 +1970,7 @@ export default function CashRegister() {
 
               {/* Notas */}
               {selectedHistoryMovement.notes && (
-                <div className="p-3 rounded-lg bg-amber-50 border border-amber-100">
+                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-100">
                   <p className="text-xs text-amber-600">Notas</p>
                   <p className="text-sm">{selectedHistoryMovement.notes}</p>
                 </div>

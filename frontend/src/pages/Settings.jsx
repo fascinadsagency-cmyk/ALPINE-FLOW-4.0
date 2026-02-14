@@ -294,7 +294,7 @@ export default function Settings() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-lg ${darkMode ? 'bg-emerald-500/20' : 'bg-emerald-500/20'}`}>
+                    <div className={`p-3 rounded-lg ${darkMode ? 'bg-emerald-500/100/20' : 'bg-emerald-500/100/20'}`}>
                       <CreditCard className="h-6 w-6 text-emerald-600" />
                     </div>
                     <div>
@@ -320,7 +320,7 @@ export default function Settings() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-lg ${darkMode ? 'bg-purple-500/20' : 'bg-purple-500/15 border border-purple-500/20'}`}>
+                    <div className={`p-3 rounded-lg ${darkMode ? 'bg-purple-500/100/20' : 'bg-purple-500/100/15 border border-purple-500/20'}`}>
                       <Building2 className="h-6 w-6 text-purple-600" />
                     </div>
                     <div>
@@ -339,11 +339,11 @@ export default function Settings() {
                       </Badge>
                     ) : (
                       <>
-                        <Badge className={storeInfo.status === "active" ? "bg-emerald-500/20 text-emerald-700 border border-emerald-500/30" : "bg-red-500/20 text-red-700 border border-red-500/30"}>
+                        <Badge className={storeInfo.status === "active" ? "bg-emerald-500/100/20 text-emerald-700 border border-emerald-500/30" : "bg-red-500/20 text-red-700 border border-red-500/30"}>
                           {storeInfo.status === "active" ? "✓ Activa" : "✗ Inactiva"}
                         </Badge>
                         {storeInfo.plan && (
-                          <Badge className="bg-purple-500/20 text-purple-700 border border-purple-500/30">
+                          <Badge className="bg-purple-500/100/20 text-purple-700 border border-purple-500/30">
                             Plan: {storeInfo.plan.toUpperCase()}
                           </Badge>
                         )}
@@ -375,7 +375,7 @@ export default function Settings() {
               {/* Logo Upload */}
               <div className={`p-4 rounded-xl border-2 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
                 <div className="flex items-start gap-4">
-                  <div className={`p-3 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-purple-500/15 border border-purple-500/20'}`}>
+                  <div className={`p-3 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-purple-500/100/15 border border-purple-500/20'}`}>
                     <ImageIcon className={`h-6 w-6 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                   </div>
                   <div className="flex-1">
@@ -406,7 +406,7 @@ export default function Settings() {
                         className={`mt-4 p-6 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${
                           darkMode 
                             ? 'border-slate-600 hover:border-purple-500 hover:bg-slate-700/50' 
-                            : 'border-slate-300 hover:border-purple-400 hover:bg-purple-50'
+                            : 'border-slate-300 hover:border-purple-400 hover:bg-purple-500/10'
                         }`}
                         onClick={() => fileInputRef.current?.click()}
                       >
@@ -435,7 +435,7 @@ export default function Settings() {
               {/* Language Selector */}
               <div className={`flex items-start justify-between p-4 rounded-xl border-2 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
                 <div className="flex items-start gap-4">
-                  <div className={`p-3 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-blue-500/15 border border-blue-500/20'}`}>
+                  <div className={`p-3 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-blue-500/100/15 border border-blue-500/20'}`}>
                     <Globe className={`h-6 w-6 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                   </div>
                   <div className="flex-1">
@@ -676,11 +676,11 @@ export default function Settings() {
             <CardContent className="pt-6">
               <div className={`flex items-center justify-between p-4 rounded-xl border-2 ${
                 autoPrint 
-                  ? (darkMode ? 'border-cyan-500/50 bg-cyan-500/10' : 'border-cyan-300 bg-cyan-50')
+                  ? (darkMode ? 'border-cyan-500/50 bg-cyan-500/100/10' : 'border-cyan-300 bg-cyan-500/10')
                   : (darkMode ? 'border-slate-700' : 'border-slate-200')
               }`}>
                 <div className="flex items-start gap-4">
-                  <div className={`p-3 rounded-xl ${autoPrint ? 'bg-cyan-500/20' : (darkMode ? 'bg-slate-700' : 'bg-slate-100')}`}>
+                  <div className={`p-3 rounded-xl ${autoPrint ? 'bg-cyan-500/100/20' : (darkMode ? 'bg-slate-700' : 'bg-slate-100')}`}>
                     <Printer className={`h-6 w-6 ${autoPrint ? 'text-cyan-500' : (darkMode ? 'text-slate-400' : 'text-slate-500')}`} />
                   </div>
                   <div className="flex-1 pr-4">
@@ -695,7 +695,7 @@ export default function Settings() {
                 <Switch 
                   checked={autoPrint} 
                   onCheckedChange={handleAutoPrintChange}
-                  className="data-[state=checked]:bg-cyan-500"
+                  className="data-[state=checked]:bg-cyan-500/100"
                 />
               </div>
             </CardContent>
@@ -754,7 +754,7 @@ export default function Settings() {
               {/* ===== SECCIÓN B: IMPRESORA ===== */}
               <div className={`p-4 rounded-xl border-2 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className={`p-2 rounded-lg ${darkMode ? 'bg-cyan-500/20' : 'bg-cyan-500/20'}`}>
+                  <div className={`p-2 rounded-lg ${darkMode ? 'bg-cyan-500/100/20' : 'bg-cyan-500/100/20'}`}>
                     <Printer className={`h-5 w-5 ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
                   </div>
                   <h3 className={`font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
@@ -794,7 +794,7 @@ export default function Settings() {
                   {/* Auto-Imprimir */}
                   <div className={`flex items-center justify-between p-3 rounded-lg ${
                     autoPrintOnPayment 
-                      ? (darkMode ? 'bg-cyan-500/10 border border-cyan-500/30' : 'bg-cyan-50 border border-cyan-200')
+                      ? (darkMode ? 'bg-cyan-500/100/10 border border-cyan-500/30' : 'bg-cyan-500/10 border border-cyan-200')
                       : (darkMode ? 'bg-slate-700/50' : 'bg-slate-50')
                   }`}>
                     <div className="flex-1 pr-4">
@@ -808,7 +808,7 @@ export default function Settings() {
                     <Switch 
                       checked={autoPrintOnPayment} 
                       onCheckedChange={(value) => { setAutoPrintOnPayment(value); setHasChanges(true); }}
-                      className="data-[state=checked]:bg-cyan-500"
+                      className="data-[state=checked]:bg-cyan-500/100"
                       data-testid="auto-print-on-payment-switch"
                     />
                   </div>
@@ -816,7 +816,7 @@ export default function Settings() {
                   {/* Imprimir Doble Copia */}
                   <div className={`flex items-center justify-between p-3 rounded-lg ${
                     printDoubleCopy 
-                      ? (darkMode ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-amber-50 border border-amber-200')
+                      ? (darkMode ? 'bg-amber-500/100/10 border border-amber-500/30' : 'bg-amber-500/10 border border-amber-200')
                       : (darkMode ? 'bg-slate-700/50' : 'bg-slate-50')
                   }`}>
                     <div className="flex items-start gap-3 flex-1 pr-4">
@@ -833,15 +833,15 @@ export default function Settings() {
                     <Switch 
                       checked={printDoubleCopy} 
                       onCheckedChange={(value) => { setPrintDoubleCopy(value); setHasChanges(true); }}
-                      className="data-[state=checked]:bg-amber-500"
+                      className="data-[state=checked]:bg-amber-500/100"
                       data-testid="print-double-copy-switch"
                     />
                   </div>
 
                   {/* Instrucciones de Configuración */}
-                  <div className={`p-4 rounded-lg border-2 border-dashed ${darkMode ? 'bg-slate-700/30 border-slate-600' : 'bg-blue-50 border-blue-200'}`}>
+                  <div className={`p-4 rounded-lg border-2 border-dashed ${darkMode ? 'bg-slate-700/30 border-slate-600' : 'bg-blue-500/10 border-blue-200'}`}>
                     <div className="flex items-start gap-3">
-                      <div className={`p-1.5 rounded-full ${darkMode ? 'bg-blue-500/20' : 'bg-blue-500/15'}`}>
+                      <div className={`p-1.5 rounded-full ${darkMode ? 'bg-blue-500/100/20' : 'bg-blue-500/100/15'}`}>
                         <AlertCircle className={`h-4 w-4 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                       </div>
                       <div>

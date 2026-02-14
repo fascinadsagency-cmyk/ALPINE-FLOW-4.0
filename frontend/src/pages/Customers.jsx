@@ -882,12 +882,12 @@ export default function Customers() {
                 variant={selectedStatus === "active" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedStatus("active")}
-                className={`gap-2 ${selectedStatus === "active" ? "bg-emerald-600 hover:bg-emerald-700" : "border-emerald-300 text-emerald-700 hover:bg-emerald-50"}`}
+                className={`gap-2 ${selectedStatus === "active" ? "bg-emerald-600 hover:bg-emerald-700" : "border-emerald-300 text-emerald-700 hover:bg-emerald-500/10"}`}
                 data-testid="filter-active"
               >
                 <Package className="h-4 w-4" />
                 Activos Hoy
-                <Badge className={`ml-1 ${selectedStatus === "active" ? "bg-emerald-800 text-white" : "bg-emerald-500/20 text-emerald-700"}`}>
+                <Badge className={`ml-1 ${selectedStatus === "active" ? "bg-emerald-800 text-white" : "bg-emerald-500/100/20 text-emerald-700"}`}>
                   {statusCounts.active}
                 </Badge>
               </Button>
@@ -948,7 +948,7 @@ export default function Customers() {
         <CardContent>
           {/* Barra de acciones masivas - solo visible cuando hay selección */}
           {selectedCustomers.size > 0 && (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between animate-in slide-in-from-top-2 duration-200">
+            <div className="mb-4 p-3 bg-blue-500/10 border border-blue-200 rounded-lg flex items-center justify-between animate-in slide-in-from-top-2 duration-200">
               <div className="flex items-center gap-3">
                 <Checkbox
                   checked={selectedCustomers.size === customers.length}
@@ -961,7 +961,7 @@ export default function Customers() {
                   variant="ghost"
                   size="sm"
                   onClick={clearSelections}
-                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-500/20"
+                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-500/100/20"
                 >
                   <X className="h-4 w-4 mr-1" />
                   Deseleccionar
@@ -972,7 +972,7 @@ export default function Customers() {
                   variant="outline"
                   size="sm"
                   onClick={exportSelectedCustomers}
-                  className="gap-2 bg-white hover:bg-blue-50"
+                  className="gap-2 bg-white hover:bg-blue-500/10"
                   data-testid="export-selected-customers-btn"
                 >
                   <Download className="h-4 w-4" />
@@ -1031,7 +1031,7 @@ export default function Customers() {
                     return (
                       <TableRow 
                         key={customer.id} 
-                        className={`hover:bg-slate-50 ${customer.has_active_rental ? 'bg-emerald-50/30' : ''} ${isSelected ? 'bg-blue-50' : ''}`}
+                        className={`hover:bg-slate-50 ${customer.has_active_rental ? 'bg-emerald-500/10/30' : ''} ${isSelected ? 'bg-blue-500/10' : ''}`}
                       >
                         <TableCell className="w-12">
                           <Checkbox
@@ -1052,7 +1052,7 @@ export default function Customers() {
                               {customer.name}
                             </button>
                             {customer.has_active_rental && (
-                              <Badge className="bg-emerald-500/20 text-emerald-700 border-emerald-200 text-xs">
+                              <Badge className="bg-emerald-500/100/20 text-emerald-700 border-emerald-200 text-xs">
                                 <Package className="h-3 w-3 mr-1" />
                                 Activo
                               </Badge>
@@ -1082,11 +1082,11 @@ export default function Customers() {
                         <TableCell>
                           {customer.source ? (
                             <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                              <Badge variant="outline" className="bg-blue-500/10 text-blue-700 border-blue-200">
                                 {customer.source}
                               </Badge>
                               {discount > 0 && (
-                                <Badge className="bg-emerald-500/20 text-emerald-700">
+                                <Badge className="bg-emerald-500/100/20 text-emerald-700">
                                   -{discount}%
                                 </Badge>
                               )}
@@ -1200,11 +1200,11 @@ export default function Customers() {
                   <div className="mt-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 overflow-hidden">
                     {/* HEADER - Always visible with summary */}
                     <div 
-                      className={`p-3 flex items-center justify-between cursor-pointer hover:bg-blue-500/20/50 transition-colors ${technicalDataExpanded ? 'border-b border-blue-200' : ''}`}
+                      className={`p-3 flex items-center justify-between cursor-pointer hover:bg-blue-500/100/20/50 transition-colors ${technicalDataExpanded ? 'border-b border-blue-200' : ''}`}
                       onClick={() => !editingTechnicalData && setTechnicalDataExpanded(!technicalDataExpanded)}
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="p-2 bg-blue-500/20 rounded-lg flex-shrink-0">
+                        <div className="p-2 bg-blue-500/100/20 rounded-lg flex-shrink-0">
                           <Mountain className="h-4 w-4 text-blue-600" />
                         </div>
                         
@@ -1229,7 +1229,7 @@ export default function Customers() {
                             </span>
                           )}
                           {selectedCustomer.ski_level && selectedCustomer.ski_level !== 'sin_especificar' && (
-                            <Badge className="bg-blue-500/20 text-blue-700 border-blue-300 capitalize text-xs">
+                            <Badge className="bg-blue-500/100/20 text-blue-700 border-blue-300 capitalize text-xs">
                               {selectedCustomer.ski_level}
                             </Badge>
                           )}
@@ -1243,7 +1243,7 @@ export default function Customers() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="gap-1 text-blue-600 hover:bg-blue-500/20 flex-shrink-0"
+                        className="gap-1 text-blue-600 hover:bg-blue-500/100/20 flex-shrink-0"
                         onClick={(e) => {
                           e.stopPropagation();
                           if (!editingTechnicalData) setTechnicalDataExpanded(!technicalDataExpanded);
@@ -1273,7 +1273,7 @@ export default function Customers() {
                               size="sm"
                               variant="outline"
                               onClick={startEditingTechnicalData}
-                              className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/20"
+                              className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/100/20"
                               data-testid="edit-technical-data-btn"
                             >
                               <Edit3 className="h-3 w-3" />
@@ -1428,7 +1428,7 @@ export default function Customers() {
                   {/* Contact Actions */}
                   <div className="mt-4 pt-4 border-t border-slate-200 space-y-3">
                     {/* Phone */}
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-500/10 border border-emerald-200">
                       <div className="flex items-center gap-3">
                         <Phone className="h-5 w-5 text-emerald-600" />
                         <div>
@@ -1441,7 +1441,7 @@ export default function Customers() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-500/20"
+                            className="gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-500/100/20"
                             onClick={() => callPhone(selectedCustomer.phone)}
                           >
                             <Phone className="h-3 w-3" />
@@ -1462,7 +1462,7 @@ export default function Customers() {
 
                     {/* Email (if exists) */}
                     {selectedCustomer.email && (
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200">
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-blue-500/10 border border-blue-200">
                         <div className="flex items-center gap-3">
                           <Mail className="h-5 w-5 text-blue-600" />
                           <div>
@@ -1473,7 +1473,7 @@ export default function Customers() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/20"
+                          className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/100/20"
                           onClick={() => sendEmail(selectedCustomer.email, selectedCustomer.name)}
                         >
                           <Mail className="h-3 w-3" />
@@ -1483,7 +1483,7 @@ export default function Customers() {
                     )}
 
                     {/* Address/Hotel */}
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-purple-50 border border-purple-200">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-purple-500/10 border border-purple-200">
                       <div className="flex items-center gap-3">
                         <MapPin className="h-5 w-5 text-purple-600" />
                         <div>
@@ -1502,11 +1502,11 @@ export default function Customers() {
                     <div className="mt-4 pt-4 border-t border-slate-200">
                       <Label className="text-xs text-slate-500">Colaborador/Proveedor</Label>
                       <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        <Badge variant="outline" className="bg-blue-500/10 text-blue-700 border-blue-200">
                           {selectedCustomer.source}
                         </Badge>
                         {getProviderDiscount(selectedCustomer.source) > 0 && (
-                          <Badge className="bg-emerald-500/20 text-emerald-700">
+                          <Badge className="bg-emerald-500/100/20 text-emerald-700">
                             Descuento: {getProviderDiscount(selectedCustomer.source)}%
                           </Badge>
                         )}
@@ -1522,7 +1522,7 @@ export default function Customers() {
 
                   {/* Observaciones */}
                   {selectedCustomer.notes && (
-                    <div className="mt-4 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                    <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-200">
                       <Label className="text-xs text-amber-700 font-semibold flex items-center gap-1">
                         <FileText className="h-3 w-3" />
                         Observaciones Internas
@@ -1576,13 +1576,13 @@ export default function Customers() {
                           key={idx}
                           className={`flex items-center justify-between p-3 rounded-lg border ${
                             tx.type === 'income' 
-                              ? 'bg-emerald-50 border-emerald-200' 
+                              ? 'bg-emerald-500/10 border-emerald-200' 
                               : 'bg-orange-50 border-orange-200'
                           }`}
                         >
                           <div className="flex items-center gap-3">
                             {tx.type === 'income' ? (
-                              <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                              <div className="h-8 w-8 rounded-full bg-emerald-500/100/20 flex items-center justify-center">
                                 <ArrowUpRight className="h-4 w-4 text-emerald-600" />
                               </div>
                             ) : (
@@ -1655,7 +1655,7 @@ export default function Customers() {
                                 {rental.days} {rental.days === 1 ? 'día' : 'días'}
                               </Badge>
                             </div>
-                            <Badge className="bg-emerald-500/20 text-emerald-700">
+                            <Badge className="bg-emerald-500/100/20 text-emerald-700">
                               <DollarSign className="h-3 w-3 mr-1" />
                               €{rental.total_amount.toFixed(2)}
                             </Badge>
@@ -1939,7 +1939,7 @@ export default function Customers() {
                 )}
               </div>
               
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="mt-6 p-4 bg-blue-500/10 rounded-lg border border-blue-200">
                 <p className="text-sm text-blue-800 font-medium mb-2">💡 Consejos para la importación:</p>
                 <ul className="text-sm text-blue-700 space-y-1">
                   <li>• La primera fila debe contener los nombres de las columnas</li>
@@ -1953,7 +1953,7 @@ export default function Customers() {
           {/* Step 2: Column Mapping */}
           {importStep === 2 && (
             <div className="py-4 space-y-4">
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="p-3 bg-amber-500/10 border border-amber-200 rounded-lg">
                 <p className="text-sm text-amber-800">
                   <strong>📄 Archivo:</strong> {importFile?.name} ({importData.length} registros)
                 </p>
@@ -2010,7 +2010,7 @@ export default function Customers() {
           {/* Step 3: Preview */}
           {importStep === 3 && (
             <div className="py-4 space-y-4">
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <div className="p-3 bg-emerald-500/10 border border-emerald-200 rounded-lg">
                 <p className="text-sm text-emerald-800">
                   <strong>✅ Vista previa:</strong> Mostrando las primeras 5 filas de {importData.length} registros
                 </p>
@@ -2041,7 +2041,7 @@ export default function Customers() {
                 </Table>
               </div>
 
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="p-3 bg-blue-500/10 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800">
                   <strong>📊 Resumen:</strong> Se importarán {importData.length} clientes. 
                   Los duplicados por DNI serán omitidos automáticamente.
@@ -2089,13 +2089,13 @@ export default function Customers() {
               </div>
 
               <div className="grid grid-cols-3 gap-4">
-                <Card className="border-emerald-200 bg-emerald-50">
+                <Card className="border-emerald-200 bg-emerald-500/10">
                   <CardContent className="pt-6 text-center">
                     <p className="text-3xl font-bold text-emerald-600">{importResult.imported}</p>
                     <p className="text-sm text-emerald-700 mt-1">Importados</p>
                   </CardContent>
                 </Card>
-                <Card className="border-amber-200 bg-amber-50">
+                <Card className="border-amber-200 bg-amber-500/10">
                   <CardContent className="pt-6 text-center">
                     <p className="text-3xl font-bold text-amber-600">{importResult.duplicates}</p>
                     <p className="text-sm text-amber-700 mt-1">Duplicados (omitidos)</p>
@@ -2110,7 +2110,7 @@ export default function Customers() {
               </div>
 
               {importResult.duplicate_dnis && importResult.duplicate_dnis.length > 0 && (
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="p-4 bg-amber-500/10 border border-amber-200 rounded-lg">
                   <p className="text-sm font-medium text-amber-800 mb-2">DNIs duplicados omitidos:</p>
                   <div className="flex flex-wrap gap-2">
                     {importResult.duplicate_dnis.slice(0, 10).map((dni, idx) => (
@@ -2162,7 +2162,7 @@ export default function Customers() {
             
             {/* Advertencia de clientes con alquileres activos */}
             {customersWithActiveRentals.length > 0 && (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="p-3 bg-amber-500/10 border border-amber-200 rounded-lg">
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
                   <div>

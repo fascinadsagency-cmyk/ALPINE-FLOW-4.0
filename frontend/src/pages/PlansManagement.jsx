@@ -24,10 +24,10 @@ import { useAuth } from "@/contexts/AuthContext";
 const API = process.env.REACT_APP_BACKEND_URL;
 
 const PLAN_ICONS = {
-  trial: { icon: Sparkles, color: "text-yellow-600", bg: "bg-yellow-50" },
+  trial: { icon: Sparkles, color: "text-yellow-600", bg: "bg-yellow-500/10" },
   basic: { icon: Package, color: "text-gray-600", bg: "bg-gray-50" },
-  pro: { icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
-  enterprise: { icon: ShoppingCart, color: "text-purple-600", bg: "bg-purple-50" }
+  pro: { icon: Users, color: "text-blue-600", bg: "bg-blue-500/10" },
+  enterprise: { icon: ShoppingCart, color: "text-purple-600", bg: "bg-purple-500/10" }
 };
 
 export default function PlansManagement() {
@@ -150,7 +150,7 @@ export default function PlansManagement() {
         </div>
         
         {source === "custom" && (
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+          <Badge variant="outline" className="bg-blue-500/10 text-blue-700 border-blue-200">
             <Info className="h-3 w-3 mr-1" />
             Configuración personalizada activa
           </Badge>
@@ -185,7 +185,7 @@ export default function PlansManagement() {
                       {planType}
                     </Badge>
                     {customizedPlans.includes(planType) && (
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+                      <Badge variant="outline" className="bg-blue-500/10 text-blue-700 border-blue-200 text-xs">
                         Personalizado
                       </Badge>
                     )}
@@ -319,7 +319,7 @@ export default function PlansManagement() {
       </div>
 
       {/* Info Card */}
-      <Card className={`${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-blue-50 border-blue-200'}`}>
+      <Card className={`${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-blue-500/10 border-blue-200'}`}>
         <CardContent className="py-4">
           <div className="flex items-start gap-3">
             <Info className={`h-5 w-5 mt-0.5 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />

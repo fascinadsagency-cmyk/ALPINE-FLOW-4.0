@@ -72,7 +72,7 @@ export default function PaymentSuccess() {
         <CardContent className="pt-8 pb-8 text-center">
           {status === "loading" && (
             <>
-              <div className="mx-auto w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mb-6">
+              <div className="mx-auto w-16 h-16 bg-blue-500/100/20 rounded-full flex items-center justify-center mb-6">
                 <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
               </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-2">
@@ -95,7 +95,7 @@ export default function PaymentSuccess() {
 
           {status === "success" && (
             <>
-              <div className="mx-auto w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6">
+              <div className="mx-auto w-16 h-16 bg-emerald-500/100/20 rounded-full flex items-center justify-center mb-6">
                 <CheckCircle2 className="h-8 w-8 text-emerald-600" />
               </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-2">
@@ -104,7 +104,7 @@ export default function PaymentSuccess() {
               <p className="text-slate-600 mb-4">
                 Tu plan <strong>{paymentInfo?.plan_name}</strong> ha sido activado correctamente.
               </p>
-              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-6">
+              <div className="bg-emerald-500/10 border border-emerald-200 rounded-lg p-4 mb-6">
                 <p className="text-sm text-emerald-700">
                   Tu suscripción está activa por 1 año. Recibirás un email con los detalles de tu factura.
                 </p>

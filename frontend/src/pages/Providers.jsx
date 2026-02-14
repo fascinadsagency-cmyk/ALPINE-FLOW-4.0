@@ -458,12 +458,12 @@ export default function Providers() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           {provider.discount_percent > 0 && (
-                            <Badge className="bg-emerald-500/20 text-emerald-700 text-xs">
+                            <Badge className="bg-emerald-500/100/20 text-emerald-700 text-xs">
                               -{provider.discount_percent}%
                             </Badge>
                           )}
                           {provider.commission_percent > 0 && (
-                            <Badge className="bg-blue-500/20 text-blue-700 text-xs">
+                            <Badge className="bg-blue-500/100/20 text-blue-700 text-xs">
                               +{provider.commission_percent}%
                             </Badge>
                           )}
@@ -475,9 +475,9 @@ export default function Providers() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <div className={`h-2 w-2 rounded-full ${
-                            provider.customer_count > 10 ? 'bg-emerald-500' :
-                            provider.customer_count > 5 ? 'bg-blue-500' :
-                            provider.customer_count > 0 ? 'bg-amber-500' : 'bg-slate-300'
+                            provider.customer_count > 10 ? 'bg-emerald-500/100' :
+                            provider.customer_count > 5 ? 'bg-blue-500/100' :
+                            provider.customer_count > 0 ? 'bg-amber-500/100' : 'bg-slate-300'
                           }`} />
                           <Users className="h-4 w-4 text-slate-400" />
                           <span className="font-medium">{provider.customer_count || 0}</span>
@@ -515,7 +515,7 @@ export default function Providers() {
                             variant="ghost"
                             size="icon"
                             onClick={() => openStatistics(provider)}
-                            className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-500/10"
                             title="Ver estadísticas"
                           >
                             <BarChart3 className="h-4 w-4" />
@@ -582,7 +582,7 @@ export default function Providers() {
                 </Card>
 
                 {/* Total Customers */}
-                <Card className="bg-blue-50 border-blue-200 hover:shadow-md transition-shadow">
+                <Card className="bg-blue-500/10 border-blue-200 hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 text-blue-600 text-xs mb-2">
                       <Users className="h-3.5 w-3.5" />
@@ -596,7 +596,7 @@ export default function Providers() {
                 </Card>
 
                 {/* Avg Discount */}
-                <Card className="bg-emerald-50 border-emerald-200 hover:shadow-md transition-shadow">
+                <Card className="bg-emerald-500/10 border-emerald-200 hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 text-emerald-600 text-xs mb-2">
                       <TrendingUp className="h-3.5 w-3.5" />
@@ -612,7 +612,7 @@ export default function Providers() {
                 </Card>
 
                 {/* Avg Commission */}
-                <Card className="bg-amber-50 border-amber-200 hover:shadow-md transition-shadow">
+                <Card className="bg-amber-500/10 border-amber-200 hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 text-amber-600 text-xs mb-2">
                       <DollarSign className="h-3.5 w-3.5" />
@@ -628,7 +628,7 @@ export default function Providers() {
                 </Card>
 
                 {/* Best Provider */}
-                <Card className="bg-purple-50 border-purple-200 hover:shadow-md transition-shadow col-span-2 md:col-span-2 lg:col-span-3">
+                <Card className="bg-purple-500/10 border-purple-200 hover:shadow-md transition-shadow col-span-2 md:col-span-2 lg:col-span-3">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 text-purple-600 text-xs mb-2">
                       <Trophy className="h-3.5 w-3.5" />
@@ -662,9 +662,9 @@ export default function Providers() {
                   <CardContent>
                     <div className="space-y-3">
                       {[
-                        { label: "Alta (10+)", count: providers.filter(p => p.customer_count > 10).length, color: "bg-emerald-500" },
-                        { label: "Media (5-10)", count: providers.filter(p => p.customer_count >= 5 && p.customer_count <= 10).length, color: "bg-blue-500" },
-                        { label: "Baja (1-4)", count: providers.filter(p => p.customer_count > 0 && p.customer_count < 5).length, color: "bg-amber-500" },
+                        { label: "Alta (10+)", count: providers.filter(p => p.customer_count > 10).length, color: "bg-emerald-500/100" },
+                        { label: "Media (5-10)", count: providers.filter(p => p.customer_count >= 5 && p.customer_count <= 10).length, color: "bg-blue-500/100" },
+                        { label: "Baja (1-4)", count: providers.filter(p => p.customer_count > 0 && p.customer_count < 5).length, color: "bg-amber-500/100" },
                         { label: "Sin clientes", count: providers.filter(p => p.customer_count === 0).length, color: "bg-slate-300" }
                       ].map((segment) => (
                         <div key={segment.label} className="flex items-center gap-3">
@@ -696,9 +696,9 @@ export default function Providers() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50">
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-500/10">
                         <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                          <div className="h-8 w-8 rounded-lg bg-emerald-500/100/20 flex items-center justify-center">
                             <TrendingUp className="h-4 w-4 text-emerald-600" />
                           </div>
                           <span className="text-sm font-medium text-slate-700">Con descuento</span>
@@ -711,9 +711,9 @@ export default function Providers() {
                         </div>
                       </div>
                       
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-amber-50">
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-amber-500/10">
                         <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                          <div className="h-8 w-8 rounded-lg bg-amber-500/100/20 flex items-center justify-center">
                             <DollarSign className="h-4 w-4 text-amber-600" />
                           </div>
                           <span className="text-sm font-medium text-slate-700">Con comisión</span>
@@ -726,9 +726,9 @@ export default function Providers() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50">
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-blue-500/10">
                         <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                          <div className="h-8 w-8 rounded-lg bg-blue-500/100/20 flex items-center justify-center">
                             <Building2 className="h-4 w-4 text-blue-600" />
                           </div>
                           <span className="text-sm font-medium text-slate-700">Activos</span>
@@ -938,7 +938,7 @@ export default function Providers() {
 
                   {/* Artículos asociados */}
                   {deleteCheckResult.items > 0 && (
-                    <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
+                    <div className="mt-4 p-3 bg-amber-500/10 border border-amber-200 rounded-lg flex items-start gap-3">
                       <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="font-medium text-amber-800">
@@ -954,7 +954,7 @@ export default function Providers() {
 
                   {/* Todo OK */}
                   {deleteCheckResult.canDelete && (
-                    <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-start gap-3">
+                    <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-200 rounded-lg flex items-start gap-3">
                       <AlertCircle className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="font-medium text-emerald-800">
@@ -1069,7 +1069,7 @@ export default function Providers() {
             <div className="space-y-6 py-4" ref={printRef}>
               {/* Metrics Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <Card className="bg-blue-50 border-blue-200">
+                <Card className="bg-blue-500/10 border-blue-200">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 text-blue-600 text-sm mb-1">
                       <Users className="h-4 w-4" />
@@ -1079,7 +1079,7 @@ export default function Providers() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-emerald-50 border-emerald-200">
+                <Card className="bg-emerald-500/10 border-emerald-200">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 text-emerald-600 text-sm mb-1">
                       <TrendingUp className="h-4 w-4" />
@@ -1091,7 +1091,7 @@ export default function Providers() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-purple-50 border-purple-200">
+                <Card className="bg-purple-500/10 border-purple-200">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 text-purple-600 text-sm mb-1">
                       <BarChart3 className="h-4 w-4" />
@@ -1103,7 +1103,7 @@ export default function Providers() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-amber-50 border-amber-200">
+                <Card className="bg-amber-500/10 border-amber-200">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 text-amber-600 text-sm mb-1">
                       <DollarSign className="h-4 w-4" />
@@ -1155,7 +1155,7 @@ export default function Providers() {
                                 {formatCurrency(rental.amount)}
                               </TableCell>
                               <TableCell className="text-right">
-                                <Badge className="bg-amber-500/20 text-amber-700">
+                                <Badge className="bg-amber-500/100/20 text-amber-700">
                                   {formatCurrency(rental.commission)}
                                 </Badge>
                               </TableCell>

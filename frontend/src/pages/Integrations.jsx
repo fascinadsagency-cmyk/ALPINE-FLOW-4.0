@@ -223,7 +223,7 @@ export default function Integrations() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                  <div className="h-10 w-10 rounded-lg bg-emerald-500/100/20 flex items-center justify-center">
                     <MessageSquare className="h-5 w-5 text-emerald-600" />
                   </div>
                   <div>
@@ -332,7 +332,7 @@ export default function Integrations() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                  <div className="h-10 w-10 rounded-lg bg-blue-500/100/20 flex items-center justify-center">
                     <CreditCard className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
@@ -469,7 +469,7 @@ export default function Integrations() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
+              <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-200">
                 <p className="text-sm text-amber-800">
                   <strong>Nota:</strong> VeriFactu es obligatorio para ciertas empresas según normativa AEAT. 
                   Consulta con tu asesor fiscal para determinar si aplica a tu negocio.
@@ -557,7 +557,7 @@ export default function Integrations() {
                 </div>
               </div>
 
-              <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+              <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-200">
                 <h4 className="text-sm font-semibold text-blue-900 mb-2">Estado de la integración</h4>
                 <ul className="text-sm text-blue-800 space-y-1">
                   <li>✓ Estructura de configuración preparada</li>
@@ -615,7 +615,7 @@ export default function Integrations() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+              <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-200">
                 <p className="text-sm text-blue-800 mb-2">
                   <strong>Proveedores recomendados:</strong>
                 </p>

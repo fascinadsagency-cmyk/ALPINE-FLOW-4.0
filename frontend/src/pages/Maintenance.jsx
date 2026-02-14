@@ -36,8 +36,8 @@ import { toast } from "sonner";
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const PRIORITY_OPTIONS = [
-  { value: "normal", label: "Normal", color: "bg-emerald-500", border: "border-emerald-400" },
-  { value: "priority", label: "Prioritario", color: "bg-amber-500", border: "border-amber-400" },
+  { value: "normal", label: "Normal", color: "bg-emerald-500/100", border: "border-emerald-400" },
+  { value: "priority", label: "Prioritario", color: "bg-amber-500/100", border: "border-amber-400" },
   { value: "urgent", label: "Urgente", color: "bg-red-500", border: "border-red-400" },
 ];
 
@@ -423,7 +423,7 @@ export default function Maintenance() {
           className={`relative p-6 rounded-2xl border-3 transition-all duration-300 ${
             viewMode === "fleet"
               ? "bg-gradient-to-br from-blue-500 to-blue-600 border-blue-400 shadow-xl shadow-blue-500/30 scale-[1.02]"
-              : "bg-white border-slate-200 hover:border-blue-300 hover:bg-blue-50"
+              : "bg-white border-slate-200 hover:border-blue-300 hover:bg-blue-500/10"
           }`}
           data-testid="mode-fleet-btn"
         >
@@ -579,7 +579,7 @@ export default function Maintenance() {
                     >
                       <div className="flex items-start gap-4">
                         {/* Icon */}
-                        <div className="h-10 w-10 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                        <div className="h-10 w-10 rounded-lg bg-amber-500/100/20 flex items-center justify-center flex-shrink-0">
                           <Clock className="h-5 w-5 text-amber-600" />
                         </div>
                         
@@ -635,7 +635,7 @@ export default function Maintenance() {
           {/* Empty state */}
           {alertItems.length === 0 && upcomingItems.length === 0 && (
             <div className="text-center py-16">
-              <div className="h-24 w-24 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+              <div className="h-24 w-24 rounded-full bg-emerald-500/100/20 flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="h-12 w-12 text-emerald-600" />
               </div>
               <h3 className="text-xl font-bold text-slate-800 mb-2">¡Todo en orden!</h3>
@@ -686,7 +686,7 @@ export default function Maintenance() {
                           <div className="flex items-center gap-3 mb-3">
                             <span className="text-lg font-bold text-slate-900">{repair.customer_name}</span>
                             {repair.status === 'completed' && (
-                              <Badge className="bg-emerald-500 text-white">✓ LISTO</Badge>
+                              <Badge className="bg-emerald-500/100 text-white">✓ LISTO</Badge>
                             )}
                             {overdue && (
                               <Badge className="bg-red-500 text-white animate-pulse">⚠ ATRASADO</Badge>
@@ -695,7 +695,7 @@ export default function Maintenance() {
                               <Badge className="bg-red-500 text-white">URGENTE</Badge>
                             )}
                             {repair.priority === 'priority' && repair.status !== 'completed' && (
-                              <Badge className="bg-amber-500 text-white">PRIORITARIO</Badge>
+                              <Badge className="bg-amber-500/100 text-white">PRIORITARIO</Badge>
                             )}
                           </div>
                           
@@ -743,7 +743,7 @@ export default function Maintenance() {
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-10 w-10 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                                className="h-10 w-10 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10"
                                 onClick={() => sendWhatsAppReminder(repair)}
                                 title="Enviar WhatsApp"
                               >
@@ -1062,7 +1062,7 @@ export default function Maintenance() {
                       onClick={() => setDeliveryPaymentMethod(m.value)}
                       className={`p-4 rounded-xl border-2 transition-all font-semibold ${
                         deliveryPaymentMethod === m.value
-                          ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                          ? 'border-emerald-500 bg-emerald-500/10 text-emerald-700'
                           : 'border-slate-200 hover:border-slate-300'
                       }`}
                     >

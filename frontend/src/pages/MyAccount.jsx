@@ -565,7 +565,7 @@ export default function MyAccount() {
       <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
         <DialogContent className="sm:max-w-md" data-testid="relogin-dialog">
           <DialogHeader>
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/20 mb-4">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/100/20 mb-4">
               <AlertTriangle className="h-6 w-6 text-amber-600" />
             </div>
             <DialogTitle className="text-center">

@@ -267,7 +267,7 @@ export default function PlanSelection() {
                 
                 {isCurrentPlan && (
                   <div className="absolute -top-3 right-4 z-10">
-                    <Badge className="bg-green-500 text-white font-bold px-4 py-1">Plan Actual</Badge>
+                    <Badge className="bg-emerald-500/100/100 text-white font-bold px-4 py-1">Plan Actual</Badge>
                   </div>
                 )}
 

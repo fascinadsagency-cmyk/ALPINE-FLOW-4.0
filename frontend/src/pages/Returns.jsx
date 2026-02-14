@@ -1537,9 +1537,9 @@ export default function Returns() {
                 value={barcodeInput}
                 onChange={(e) => setBarcodeInput(e.target.value)}
                 onKeyDown={handleBarcodeScan}
-                className={`h-16 pl-14 pr-14 text-xl font-mono text-center bg-emerald-50 border-2 focus:ring-emerald-200 rounded-2xl shadow-inner transition-all ${
+                className={`h-16 pl-14 pr-14 text-xl font-mono text-center bg-emerald-500/10 border-2 focus:ring-emerald-200 rounded-2xl shadow-inner transition-all ${
                   globalScannerActive 
-                    ? 'border-emerald-500 ring-2 ring-emerald-300 bg-emerald-500/20' 
+                    ? 'border-emerald-500 ring-2 ring-emerald-300 bg-emerald-500/100/20' 
                     : 'border-emerald-200 focus:border-emerald-500'
                 }`}
                 data-testid="return-barcode-input"
@@ -1569,7 +1569,7 @@ export default function Returns() {
                   <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm h-full">
                     <div className="flex items-start gap-4">
                       <Avatar className="h-16 w-16 border-2 border-emerald-200">
-                        <AvatarFallback className="bg-emerald-500/20 text-emerald-700 text-xl font-bold">
+                        <AvatarFallback className="bg-emerald-500/100/20 text-emerald-700 text-xl font-bold">
                           {rental.customer_name?.split(' ').map(n => n[0]).join('').substring(0, 2)}
                         </AvatarFallback>
                       </Avatar>
@@ -1582,14 +1582,14 @@ export default function Returns() {
                           {rental.customer_name}
                         </h3>
                         <p className="text-sm text-slate-500 font-mono">{rental.customer_dni}</p>
-                        <Badge variant="outline" className="mt-2 bg-emerald-50 text-emerald-700 border-emerald-200">
+                        <Badge variant="outline" className="mt-2 bg-emerald-500/10 text-emerald-700 border-emerald-200">
                           Contrato #{rental.id?.substring(0, 8)}
                         </Badge>
                       </div>
                     </div>
                     
                     {/* Fechas del Contrato */}
-                    <div className="mt-4 p-3 rounded-lg bg-blue-50 border border-blue-100">
+                    <div className="mt-4 p-3 rounded-lg bg-blue-500/10 border border-blue-100">
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-blue-500" />
@@ -1644,7 +1644,7 @@ export default function Returns() {
                         <span className="font-bold">Artículos del Contrato</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <Badge className="bg-emerald-500">
+                        <Badge className="bg-emerald-500/100">
                           {toReturnUnitsCount} unidades listas
                         </Badge>
                         <Badge className="bg-slate-600">
@@ -1691,14 +1691,14 @@ export default function Returns() {
                             onClick={handleToggle}
                             className={`px-4 py-3 ${!isPartialItem ? 'cursor-pointer' : ''} transition-all duration-200 flex items-center gap-4 ${
                               isScanned 
-                                ? 'bg-emerald-50 border-l-4 border-l-emerald-500' 
+                                ? 'bg-emerald-500/10 border-l-4 border-l-emerald-500' 
                                 : 'bg-white hover:bg-slate-50 border-l-4 border-l-transparent'
                             }`}
                           >
                             {/* Icono de Estado */}
                             <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
                               isScanned 
-                                ? 'bg-emerald-500 text-white' 
+                                ? 'bg-emerald-500/100 text-white' 
                                 : 'bg-slate-100 text-slate-400'
                             }`}>
                               {isScanned ? <Check className="h-5 w-5" /> : <Package className="h-5 w-5" />}
@@ -1725,7 +1725,7 @@ export default function Returns() {
                             {/* Código */}
                             <div className="flex-shrink-0 w-32 text-center">
                               <span className={`font-mono text-sm px-2 py-1 rounded ${
-                                isScanned ? 'bg-emerald-500/20 text-emerald-700' : 'bg-slate-100 text-slate-600'
+                                isScanned ? 'bg-emerald-500/100/20 text-emerald-700' : 'bg-slate-100 text-slate-600'
                               }`}>
                                 {item.internal_code || item.barcode?.substring(0, 12) || '-'}
                               </span>
@@ -1807,7 +1807,7 @@ export default function Returns() {
                   variant="outline" 
                   size="lg"
                   onClick={markAllForReturn}
-                  className="h-14 px-6 border-2 border-blue-300 text-blue-700 hover:bg-blue-50 font-semibold"
+                  className="h-14 px-6 border-2 border-blue-300 text-blue-700 hover:bg-blue-500/10 font-semibold"
                   disabled={pendingItems.length === 0}
                 >
                   <CheckCheck className="h-5 w-5 mr-2" />
@@ -1971,7 +1971,7 @@ export default function Returns() {
                           <Badge variant="outline" className={`${
                             isOverdue 
                               ? 'bg-red-100 text-red-700 border-red-300' 
-                              : 'bg-blue-50 text-blue-700 border-blue-200'
+                              : 'bg-blue-500/10 text-blue-700 border-blue-200'
                           }`}>
                             {isOverdue ? '⚠️ ATRASADO' : formatDate(r.end_date)}
                           </Badge>
@@ -2113,7 +2113,7 @@ export default function Returns() {
                   </div>
                   <Lock className="h-4 w-4 text-slate-400" />
                 </div>
-                <div className="mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200">
+                <div className="mt-2 p-2 rounded-lg bg-amber-500/10 border border-amber-200">
                   <p className="text-xs text-amber-800 flex items-center gap-1">
                     <AlertCircle className="h-3 w-3 flex-shrink-0" />
                     <span>Por seguridad, la devolución se realiza al mismo método de pago original.</span>
@@ -2211,7 +2211,7 @@ export default function Returns() {
               {/* Contact Info */}
               <div className="space-y-3">
                 {/* Phone */}
-                <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-500/10 border border-emerald-200">
                   <div className="flex items-center gap-3">
                     <Phone className="h-5 w-5 text-emerald-600" />
                     <div>
@@ -2224,7 +2224,7 @@ export default function Returns() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-500/20"
+                        className="gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-500/100/20"
                         onClick={() => callPhone(selectedCustomer.phone)}
                       >
                         <Phone className="h-3 w-3" />
@@ -2244,7 +2244,7 @@ export default function Returns() {
                 </div>
 
                 {/* Email */}
-                <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-blue-500/10 border border-blue-200">
                   <div className="flex items-center gap-3">
                     <Mail className="h-5 w-5 text-blue-600" />
                     <div>
@@ -2256,7 +2256,7 @@ export default function Returns() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/20"
+                      className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/100/20"
                       onClick={() => sendEmail(selectedCustomer.email, selectedCustomer.name)}
                     >
                       <Mail className="h-3 w-3" />
@@ -2266,7 +2266,7 @@ export default function Returns() {
                 </div>
 
                 {/* Hotel/Address */}
-                <div className="flex items-center justify-between p-3 rounded-lg bg-purple-50 border border-purple-200">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-purple-500/10 border border-purple-200">
                   <div className="flex items-center gap-3">
                     <MapPin className="h-5 w-5 text-purple-600" />
                     <div>
@@ -2279,7 +2279,7 @@ export default function Returns() {
 
               {/* Pending Items */}
               {selectedCustomer.pending_items && selectedCustomer.pending_items.length > 0 && (
-                <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-200">
                   <div className="flex items-center gap-2 mb-3">
                     <Package className="h-5 w-5 text-amber-600" />
                     <p className="font-semibold text-amber-800">Material Pendiente de Devolver</p>
@@ -2357,7 +2357,7 @@ export default function Returns() {
                     <p className="text-sm text-slate-500">{changeRental.customer_dni}</p>
                   </div>
                   <div className="text-right">
-                    <Badge className="bg-blue-500/20 text-blue-700 mb-1">
+                    <Badge className="bg-blue-500/100/20 text-blue-700 mb-1">
                       {changeDaysRemaining} días restantes
                     </Badge>
                     <p className="text-xs text-slate-500">Total: €{changeRental.total_amount?.toFixed(2) || '0.00'}</p>
@@ -2380,7 +2380,7 @@ export default function Returns() {
                         item.isSwapping 
                           ? 'bg-orange-50 border-orange-300' 
                           : activeSwapIndex === index
-                          ? 'bg-blue-50 border-blue-300'
+                          ? 'bg-blue-500/10 border-blue-300'
                           : 'bg-white border-slate-200 hover:border-slate-300'
                       }`}
                     >
@@ -2485,7 +2485,7 @@ export default function Returns() {
               </div>
 
               {/* DATE ADJUSTMENT - Allows both extension and early return */}
-              <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+              <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-200">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <CalendarPlus className="h-5 w-5 text-blue-600" />
@@ -2549,7 +2549,7 @@ export default function Returns() {
                       {/* Economic difference */}
                       {changeDateDelta !== 0 && (
                         <div className={`mt-3 p-2 rounded text-center ${
-                          changeDateDelta > 0 ? 'bg-orange-100' : 'bg-emerald-500/20'
+                          changeDateDelta > 0 ? 'bg-orange-100' : 'bg-emerald-500/100/20'
                         }`}>
                           <p className="text-xs text-slate-600">
                             {changeDateDelta > 0 ? 'Suplemento por extensión' : 'Abono por devolución anticipada'}
@@ -2571,7 +2571,7 @@ export default function Returns() {
                 changeTotalDelta > 0 
                   ? 'bg-orange-50 border-orange-300' 
                   : changeTotalDelta < 0 
-                  ? 'bg-emerald-50 border-emerald-300'
+                  ? 'bg-emerald-500/10 border-emerald-300'
                   : 'bg-slate-50 border-slate-200'
               }`}>
                 <div className="flex items-center justify-between">
@@ -2644,7 +2644,7 @@ export default function Returns() {
                         </div>
                         <Lock className="h-4 w-4 text-slate-400" />
                       </div>
-                      <div className="p-2 rounded-lg bg-amber-50 border border-amber-200 max-w-md">
+                      <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-200 max-w-md">
                         <p className="text-xs text-amber-800 flex items-center gap-1">
                           <AlertCircle className="h-3 w-3 flex-shrink-0" />
                           <span>Por seguridad, el abono se realiza al mismo método de pago original.</span>
@@ -2832,8 +2832,8 @@ export default function Returns() {
             <div className={`rounded-lg p-4 text-center ${
               fullRefundOverride ? 'bg-red-100 border-2 border-red-300' :
               settlementData.balance > 0 ? 'bg-orange-50 border-2 border-orange-200' :
-              settlementData.balance < 0 ? 'bg-emerald-50 border-2 border-emerald-200' :
-              'bg-blue-50 border-2 border-blue-200'
+              settlementData.balance < 0 ? 'bg-emerald-500/10 border-2 border-emerald-200' :
+              'bg-blue-500/10 border-2 border-blue-200'
             }`}>
               <p className="text-sm text-slate-600 mb-1">
                 {fullRefundOverride ? '⚠️ DEVOLUCIÓN TOTAL (Excepción):' :
@@ -2992,7 +2992,7 @@ export default function Returns() {
             
             <div className={`p-4 rounded-lg border ${
               depositAction === "return" 
-                ? "bg-green-50 border-green-200" 
+                ? "bg-emerald-500/100/10 border-green-200" 
                 : "bg-red-50 border-red-200"
             }`}>
               <div className="text-sm font-medium">

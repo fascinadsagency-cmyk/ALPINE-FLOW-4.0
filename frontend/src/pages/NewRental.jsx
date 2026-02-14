@@ -2233,7 +2233,7 @@ export default function NewRental() {
               >
                 {/* Indicador de contenido */}
                 {(hasItems || hasCustomer) && !isActive && (
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-500/100 flex-shrink-0" />
                 )}
                 
                 {/* Nombre del ticket */}
@@ -2456,7 +2456,7 @@ export default function NewRental() {
                         variant="ghost"
                         size="sm"
                         onClick={() => setShowCustomerTechData(!showCustomerTechData)}
-                        className={`h-9 px-3 gap-1.5 ${showCustomerTechData ? 'bg-blue-500/20 text-blue-700' : 'text-slate-500 hover:text-blue-600'}`}
+                        className={`h-9 px-3 gap-1.5 ${showCustomerTechData ? 'bg-blue-500/100/20 text-blue-700' : 'text-slate-500 hover:text-blue-600'}`}
                         title={showCustomerTechData ? "Ocultar datos" : "Ver datos técnicos"}
                         data-testid="toggle-tech-data-btn"
                       >
@@ -2507,7 +2507,7 @@ export default function NewRental() {
                           </span>
                         )}
                         {customer.source && (
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          <Badge variant="outline" className="bg-blue-500/10 text-blue-700 border-blue-200">
                             {customer.source}
                             {getProviderDiscount() > 0 && (
                               <span className="ml-1 font-bold">-{getProviderDiscount()}%</span>
@@ -2518,7 +2518,7 @@ export default function NewRental() {
                       
                       {/* Technical Data Summary */}
                       {(customer.height || customer.weight || customer.boot_size || customer.ski_level) && (
-                        <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+                        <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-200">
                           <p className="text-xs font-semibold text-blue-900 mb-2 flex items-center gap-1">
                             <Mountain className="h-3 w-3" /> Datos Técnicos
                           </p>
@@ -2542,7 +2542,7 @@ export default function NewRental() {
                               </span>
                             )}
                             {customer.ski_level && customer.ski_level !== 'sin_especificar' && (
-                              <Badge className="bg-blue-500/20 text-blue-700 border-blue-300 capitalize text-xs">
+                              <Badge className="bg-blue-500/100/20 text-blue-700 border-blue-300 capitalize text-xs">
                                 {customer.ski_level}
                               </Badge>
                             )}
@@ -2569,7 +2569,7 @@ export default function NewRental() {
 
                       {/* Customer Notes */}
                       {customer.notes && (
-                        <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+                        <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-200">
                           <p className="text-xs font-semibold text-amber-900 mb-1 flex items-center gap-1">
                             📝 Observaciones
                           </p>
@@ -2579,13 +2579,13 @@ export default function NewRental() {
 
                       {/* Preferred Sizes from History */}
                       {customerHistory?.preferred_sizes && Object.keys(customerHistory.preferred_sizes).length > 0 && (
-                        <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                        <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-200">
                           <p className="text-xs font-semibold text-emerald-900 mb-2 flex items-center gap-1">
                             <History className="h-3 w-3" /> Tallas Habituales
                           </p>
                           <div className="flex flex-wrap gap-2">
                             {Object.entries(customerHistory.preferred_sizes).map(([type, sizes]) => (
-                              <Badge key={type} className="bg-emerald-500/20 text-emerald-800 border-emerald-300 text-xs">
+                              <Badge key={type} className="bg-emerald-500/100/20 text-emerald-800 border-emerald-300 text-xs">
                                 <strong>{type}:</strong>&nbsp;{sizes.join(", ")}
                               </Badge>
                             ))}
@@ -2752,7 +2752,7 @@ export default function NewRental() {
                   tabIndex={1}
                   className={`h-9 pl-8 text-sm font-mono transition-all ${
                     globalScannerActive 
-                      ? 'border-emerald-400 ring-1 ring-emerald-200 bg-emerald-50' 
+                      ? 'border-emerald-400 ring-1 ring-emerald-200 bg-emerald-500/10' 
                       : ''
                   }`}
                   data-testid="barcode-input"
@@ -2774,7 +2774,7 @@ export default function NewRental() {
               
               {/* Indicador */}
               {hasCartData && (
-                <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-300 bg-emerald-50 w-full justify-center">
+                <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-300 bg-emerald-500/10 w-full justify-center">
                   <CheckCircle className="h-3 w-3 mr-1" />
                   {items.length} guardado{items.length !== 1 ? 's' : ''}
                 </Badge>
@@ -2857,7 +2857,7 @@ export default function NewRental() {
                                     min="1"
                                     step="1"
                                     defaultValue={group.days}
-                                    className="h-8 w-20 text-center text-sm font-bold mx-auto border-2 border-amber-500 bg-amber-50"
+                                    className="h-8 w-20 text-center text-sm font-bold mx-auto border-2 border-amber-500 bg-amber-500/10"
                                     autoFocus
                                     onClick={(e) => e.stopPropagation()}
                                     onKeyDown={(e) => {
@@ -2876,7 +2876,7 @@ export default function NewRental() {
                                   />
                                 ) : (
                                   <Badge 
-                                    className="cursor-pointer bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm px-4 py-1"
+                                    className="cursor-pointer bg-amber-500/100 hover:bg-amber-600 text-white font-bold text-sm px-4 py-1"
                                     onClick={() => setEditingItemDays(group.packId)}
                                   >
                                     {group.days} días <Edit2 className="h-3 w-3 ml-1 inline" />
@@ -2912,7 +2912,7 @@ export default function NewRental() {
                                   />
                                 ) : (
                                   <div 
-                                    className="cursor-pointer hover:bg-amber-500/20 rounded px-2 py-1 inline-block"
+                                    className="cursor-pointer hover:bg-amber-500/100/20 rounded px-2 py-1 inline-block"
                                     onClick={() => setEditingPackPrice(group.packId)}
                                   >
                                     <p className={`text-xl font-bold ${group.isEdited ? 'text-orange-600' : 'text-amber-700'}`}>
@@ -2955,7 +2955,7 @@ export default function NewRental() {
                             
                             {/* COMPONENTES INTERNOS (Expandibles) */}
                             {isExpanded && (
-                              <div className="border-t border-amber-300 bg-amber-50/50 px-3 py-2 space-y-2">
+                              <div className="border-t border-amber-300 bg-amber-500/10/50 px-3 py-2 space-y-2">
                                 <p className="text-xs text-amber-700 font-semibold uppercase mb-2">
                                   Componentes del Pack (edita la etiqueta para el ticket)
                                 </p>
@@ -3033,7 +3033,7 @@ export default function NewRental() {
                           <div 
                             key={item.id || item.barcode}
                             className={`grid grid-cols-12 gap-2 items-center py-2 px-3 rounded-xl transition-colors animate-fade-in ${
-                              item.is_generic ? 'bg-emerald-50 hover:bg-emerald-500/20' : 'bg-slate-50 hover:bg-slate-100'
+                              item.is_generic ? 'bg-emerald-500/10 hover:bg-emerald-500/100/20' : 'bg-slate-50 hover:bg-slate-100'
                             }`}
                           >
                             {/* Nombre/Código */}
@@ -3094,7 +3094,7 @@ export default function NewRental() {
                                   min="1"
                                   step="1"
                                   defaultValue={days}
-                                  className="h-6 w-14 text-center text-sm font-bold mx-auto border-2 border-blue-500 bg-blue-50"
+                                  className="h-6 w-14 text-center text-sm font-bold mx-auto border-2 border-blue-500 bg-blue-500/10"
                                   autoFocus
                                   onClick={(e) => e.stopPropagation()}
                                   onKeyDown={(e) => {
@@ -3114,7 +3114,7 @@ export default function NewRental() {
                               ) : (
                                 <Badge 
                                   variant="outline" 
-                                  className="cursor-pointer hover:bg-blue-500/20 font-bold text-blue-700 border-blue-300 text-xs"
+                                  className="cursor-pointer hover:bg-blue-500/100/20 font-bold text-blue-700 border-blue-300 text-xs"
                                   onClick={() => setEditingItemDays(item.id || item.barcode)}
                                 >
                                   {days}d <Edit2 className="h-2.5 w-2.5 ml-0.5 inline" />
@@ -3205,7 +3205,7 @@ export default function NewRental() {
                         variant="outline"
                         size="sm"
                         onClick={() => quickAddItem(item)}
-                        className="h-8 px-3 text-sm whitespace-nowrap hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700 flex-shrink-0"
+                        className="h-8 px-3 text-sm whitespace-nowrap hover:bg-emerald-500/10 hover:border-emerald-300 hover:text-emerald-700 flex-shrink-0"
                         data-testid={`quick-add-${item.id}`}
                         disabled={item.is_generic ? item.stock_available < 1 : item.status !== 'available'}
                       >
@@ -3252,7 +3252,7 @@ export default function NewRental() {
           <div className="flex items-center gap-3">
             {/* Descuento de Proveedor */}
             {customer?.source && getProviderDiscount() > 0 && (
-              <div className="flex-shrink-0 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-blue-50 border border-blue-200">
+              <div className="flex-shrink-0 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-blue-500/10 border border-blue-200">
                 <span className="text-xs text-blue-700">{customer.source}</span>
                 <Badge className="bg-blue-600 text-white text-xs px-1.5 py-0">
                   -{getProviderDiscount()}%
@@ -3601,7 +3601,7 @@ export default function NewRental() {
           
           <div className="space-y-5 py-4">
             {/* Alert Info */}
-            <div className="p-4 rounded-lg bg-amber-50 border-2 border-amber-300">
+            <div className="p-4 rounded-lg bg-amber-500/10 border-2 border-amber-300">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
                 <div>
@@ -3652,7 +3652,7 @@ export default function NewRental() {
             )}
 
             {/* Info box */}
-            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+            <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-200">
               <p className="text-xs text-blue-800">
                 💡 <strong>Nota:</strong> Este proceso solo ocurre una vez al día. Las siguientes ventas se procesarán automáticamente.
               </p>
@@ -3797,7 +3797,7 @@ export default function NewRental() {
 
                 {/* Change Display */}
                 {cashGiven && parseFloat(cashGiven) >= (parseFloat(paidAmount) || 0) && (
-                  <div className="p-3 rounded-lg bg-blue-50 border border-blue-300">
+                  <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-300">
                     <p className="text-xs font-medium text-blue-700">Cambio a Devolver</p>
                     <p className="text-2xl font-black text-blue-900">
                       €{(parseFloat(cashGiven) - (parseFloat(paidAmount) || 0)).toFixed(2)}
@@ -3809,17 +3809,17 @@ export default function NewRental() {
 
             {/* Info boxes - compact */}
             {paymentMethodSelected === "card" && (
-              <div className="p-2 rounded-lg bg-blue-50 border border-blue-200">
+              <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-200">
                 <p className="text-xs text-blue-800">✅ Procesa el pago con el datáfono antes de continuar.</p>
               </div>
             )}
             {paymentMethodSelected === "pending" && (
-              <div className="p-2 rounded-lg bg-amber-50 border border-amber-200">
+              <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-200">
                 <p className="text-xs text-amber-800">⏳ Se guardará con 0€ pagados.</p>
               </div>
             )}
             {paymentMethodSelected === "pago_online" && (
-              <div className="p-2 rounded-lg bg-purple-50 border border-purple-200">
+              <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-200">
                 <p className="text-xs text-purple-800">🌐 Marcado como "Origen Web".</p>
               </div>
             )}
@@ -3832,7 +3832,7 @@ export default function NewRental() {
               
               return (
                 <div className={`p-3 rounded-lg border ${
-                  remaining > 0 ? 'bg-red-50 border-red-300' : 'bg-emerald-50 border-emerald-300'
+                  remaining > 0 ? 'bg-red-50 border-red-300' : 'bg-emerald-500/10 border-emerald-300'
                 }`}>
                   {remaining > 0 ? (
                     <p className="text-lg font-bold text-red-700">
@@ -3893,7 +3893,7 @@ export default function NewRental() {
           </DialogHeader>
           
           <div className="py-6 space-y-4">
-            <div className="p-4 rounded-lg bg-emerald-50 border-2 border-emerald-200 w-full max-w-full box-border">
+            <div className="p-4 rounded-lg bg-emerald-500/10 border-2 border-emerald-200 w-full max-w-full box-border">
               <p className="text-sm font-semibold text-emerald-900 break-words">
                 <strong>Cliente:</strong> {completedRental?.customer_name}
               </p>

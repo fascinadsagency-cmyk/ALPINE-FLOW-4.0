@@ -278,7 +278,7 @@ export default function Reports() {
                     <p className="text-sm font-medium text-slate-500">Total Ingresos</p>
                     <p className="text-2xl font-bold text-slate-900">{formatCurrency(report.total_revenue)}</p>
                   </div>
-                  <div className="h-12 w-12 rounded-xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                  <div className="h-12 w-12 rounded-xl bg-emerald-500/100/20 flex items-center justify-center flex-shrink-0">
                     <DollarSign className="h-6 w-6 text-emerald-600" />
                   </div>
                 </div>
@@ -314,7 +314,7 @@ export default function Reports() {
                     <p className="text-sm font-medium text-slate-500">Nuevos Alquileres</p>
                     <p className="text-2xl font-bold text-slate-900">{report.new_rentals}</p>
                   </div>
-                  <div className="h-12 w-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                  <div className="h-12 w-12 rounded-xl bg-blue-500/100/20 flex items-center justify-center flex-shrink-0">
                     <TrendingUp className="h-6 w-6 text-blue-600" />
                   </div>
                 </div>
@@ -350,7 +350,7 @@ export default function Reports() {
                     <p className="text-sm font-medium text-slate-500">Devoluciones</p>
                     <p className="text-2xl font-bold text-slate-900">{report.returns}</p>
                   </div>
-                  <div className="h-12 w-12 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                  <div className="h-12 w-12 rounded-xl bg-purple-500/100/20 flex items-center justify-center flex-shrink-0">
                     <Clock className="h-6 w-6 text-purple-600" />
                   </div>
                 </div>
@@ -386,7 +386,7 @@ export default function Reports() {
                     <p className="text-sm font-medium text-slate-500">Reparaciones</p>
                     <p className="text-2xl font-bold text-slate-900">{formatCurrency(report.repairs_revenue)}</p>
                   </div>
-                  <div className="h-12 w-12 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                  <div className="h-12 w-12 rounded-xl bg-amber-500/100/20 flex items-center justify-center flex-shrink-0">
                     <Wrench className="h-6 w-6 text-amber-600" />
                   </div>
                 </div>
@@ -481,7 +481,7 @@ export default function Reports() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="p-4 rounded-xl bg-emerald-50 text-center">
+                <div className="p-4 rounded-xl bg-emerald-500/10 text-center">
                   <Banknote className="h-8 w-8 mx-auto mb-2 text-emerald-600" />
                   <p className="text-2xl font-bold text-emerald-700">{formatCurrency(report.cash_revenue)}</p>
                   <p className="text-sm text-slate-600">Efectivo</p>
@@ -494,7 +494,7 @@ export default function Reports() {
                     </p>
                   )}
                 </div>
-                <div className="p-4 rounded-xl bg-blue-50 text-center">
+                <div className="p-4 rounded-xl bg-blue-500/10 text-center">
                   <CreditCard className="h-8 w-8 mx-auto mb-2 text-blue-600" />
                   <p className="text-2xl font-bold text-blue-700">{formatCurrency(report.card_revenue)}</p>
                   <p className="text-sm text-slate-600">Tarjeta</p>
@@ -507,7 +507,7 @@ export default function Reports() {
                     </p>
                   )}
                 </div>
-                <div className="p-4 rounded-xl bg-purple-50 text-center">
+                <div className="p-4 rounded-xl bg-purple-500/10 text-center">
                   <Globe className="h-8 w-8 mx-auto mb-2 text-purple-600" />
                   <p className="text-2xl font-bold text-purple-700">{formatCurrency(report.online_revenue)}</p>
                   <p className="text-sm text-slate-600">Online</p>
@@ -567,7 +567,7 @@ export default function Reports() {
                   <div className="bg-white rounded-lg border border-amber-200 overflow-hidden">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-amber-50">
+                        <TableRow className="bg-amber-500/10">
                           <TableHead>Proveedor</TableHead>
                           <TableHead className="text-center">Clientes</TableHead>
                           <TableHead className="text-center">% Comisión</TableHead>
@@ -581,7 +581,7 @@ export default function Reports() {
                             <TableCell className="font-medium">{comm.provider_name}</TableCell>
                             <TableCell className="text-center">{comm.customer_count}</TableCell>
                             <TableCell className="text-center">
-                              <Badge className="bg-amber-500/20 text-amber-700">
+                              <Badge className="bg-amber-500/100/20 text-amber-700">
                                 {comm.commission_percent}%
                               </Badge>
                             </TableCell>

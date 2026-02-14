@@ -1123,9 +1123,9 @@ export default function Inventory() {
 
   const getStatusBadge = (status) => {
     const styles = {
-      available: "bg-emerald-500/20 text-emerald-700",
+      available: "bg-emerald-500/100/20 text-emerald-700",
       rented: "bg-red-100 text-red-700",
-      maintenance: "bg-amber-500/20 text-amber-700",
+      maintenance: "bg-amber-500/100/20 text-amber-700",
       retired: "bg-slate-100 text-slate-600"
     };
     const labels = {
@@ -1632,7 +1632,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                     placeholder="Buscar por código, marca o modelo..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className={`h-11 pr-10 ${globalScannerActive ? 'ring-2 ring-emerald-400 bg-emerald-50' : ''}`}
+                    className={`h-11 pr-10 ${globalScannerActive ? 'ring-2 ring-emerald-400 bg-emerald-500/10' : ''}`}
                     data-testid="inventory-search"
                   />
                   {globalScannerActive && (
@@ -1845,7 +1845,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                             
                             {/* ESTADO ROI */}
                             <TableCell className="text-center">
-                              <Badge className={isRentable ? 'bg-emerald-500/20 text-emerald-700 border-emerald-300' : 'bg-red-100 text-red-700 border-red-300'}>
+                              <Badge className={isRentable ? 'bg-emerald-500/100/20 text-emerald-700 border-emerald-300' : 'bg-red-100 text-red-700 border-red-300'}>
                                 {isRentable ? '✓ Rentable' : '⏳ Amortizando'}
                               </Badge>
                             </TableCell>
@@ -1892,7 +1892,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                           return item.is_generic ? (
                             <div>
                               <span className="font-semibold text-emerald-700">{item.name}</span>
-                              <Badge variant="outline" className="ml-2 text-xs bg-amber-50 text-amber-700">Genérico</Badge>
+                              <Badge variant="outline" className="ml-2 text-xs bg-amber-500/10 text-amber-700">Genérico</Badge>
                             </div>
                           ) : (
                             <span className="font-mono text-sm font-bold text-primary">{item.internal_code || '-'}</span>
@@ -1916,7 +1916,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                           return null;
                         case 'status':
                           return item.is_generic ? (
-                            <Badge className={item.stock_available > 0 ? "bg-emerald-500/20 text-emerald-700" : "bg-red-100 text-red-700"}>
+                            <Badge className={item.stock_available > 0 ? "bg-emerald-500/100/20 text-emerald-700" : "bg-red-100 text-red-700"}>
                               {item.stock_available > 0 ? 'Disponible' : 'Agotado'}
                             </Badge>
                           ) : getStatusBadge(item.status);
@@ -1935,7 +1935,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                           return item.is_generic ? <span className="text-slate-400">N/A</span> : needsMaintenance ? (
                             <Badge variant="destructive" className="animate-pulse"><AlertCircle className="h-3 w-3 mr-1" />¡MANT!</Badge>
                           ) : (
-                            <Badge variant="outline" className="bg-emerald-50 text-emerald-700">{usesRemaining} usos</Badge>
+                            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700">{usesRemaining} usos</Badge>
                           );
                         case 'purchase_price':
                           return <span className="font-mono">€{(item.purchase_price || 0).toFixed(0)}</span>;
@@ -1951,7 +1951,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                     };
                     
                     return (
-                      <TableRow key={item.id} className={`hover:bg-slate-50 ${isSelected ? 'bg-blue-50' : ''}`}>
+                      <TableRow key={item.id} className={`hover:bg-slate-50 ${isSelected ? 'bg-blue-500/10' : ''}`}>
                         {/* CHECKBOX */}
                         <TableCell className="text-center">
                           <Checkbox 
@@ -1970,7 +1970,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                               variant="ghost"
                               size="icon"
                               onClick={() => loadItemProfitability(item)}
-                              className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                              className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10"
                               title="Ver Rentabilidad"
                               data-testid={`profit-btn-${item.id}`}
                             >
@@ -2043,8 +2043,8 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
         }
       }}>
         <DialogContent className={`sm:max-w-lg max-h-[90vh] overflow-y-auto transition-all duration-300 ${
-          scannerFeedback === 'success' ? 'ring-4 ring-emerald-400 bg-emerald-50/50' : 
-          scannerFeedback === 'duplicate' ? 'ring-4 ring-amber-400 bg-amber-50/50' : 
+          scannerFeedback === 'success' ? 'ring-4 ring-emerald-400 bg-emerald-500/10/50' : 
+          scannerFeedback === 'duplicate' ? 'ring-4 ring-amber-400 bg-amber-500/10/50' : 
           scannerFeedback === 'error' ? 'ring-4 ring-red-400 bg-red-50/50' : ''
         }`}>
           <DialogHeader>
@@ -2064,7 +2064,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
           {!newItem.is_generic && (
             <div className={`p-3 rounded-lg border transition-all duration-200 ${
               scannerMode 
-                ? 'bg-emerald-500/20 border-emerald-400' 
+                ? 'bg-emerald-500/100/20 border-emerald-400' 
                 : 'bg-slate-50 border-slate-200'
             }`}>
               <div className="flex items-center justify-between">
@@ -2112,7 +2112,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
           
           <div className="space-y-4 py-4">
             {/* Toggle: Generic vs Traceable */}
-            <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+            <div className="p-3 bg-amber-500/10 rounded-lg border border-amber-200">
               <div className="flex items-center gap-3">
                 <Checkbox
                   id="is_generic"
@@ -2144,7 +2144,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
             {/* Generic Item Fields */}
             {newItem.is_generic ? (
               <>
-                <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                <div className="p-3 bg-emerald-500/10 rounded-lg border border-emerald-200">
                   <p className="text-xs font-semibold text-emerald-700 uppercase mb-3">Datos del Artículo Genérico</p>
                   <div className="space-y-3">
                     <div>
@@ -2248,7 +2248,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
               <>
                 {/* Regular Item Fields (with traceability) */}
                 <div className={`p-3 rounded-lg border transition-all duration-200 ${
-                  scannerMode ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-slate-200'
+                  scannerMode ? 'bg-emerald-500/10 border-emerald-300' : 'bg-slate-50 border-slate-200'
                 }`}>
                   <p className="text-xs font-semibold text-slate-500 uppercase mb-3 flex items-center gap-2">
                     Identificación
@@ -2463,7 +2463,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
             {/* Scanner mode info */}
             {scannerMode && savedCount > 0 && (
               <div className="flex-1 text-left">
-                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300">
+                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-300">
                   <Check className="h-3 w-3 mr-1" />
                   {savedCount} artículo{savedCount !== 1 ? 's' : ''} guardado{savedCount !== 1 ? 's' : ''} en esta sesión
                 </Badge>
@@ -2553,7 +2553,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                 )}
               </div>
               
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="mt-6 p-4 bg-blue-500/10 rounded-lg border border-blue-200">
                 <p className="text-sm text-blue-800 font-medium mb-2">💡 Consejos para la importación:</p>
                 <ul className="text-sm text-blue-700 space-y-1">
                   <li>• La primera fila debe contener los nombres de las columnas</li>
@@ -2574,7 +2574,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
           {/* Step 2: Column Mapping */}
           {importStep === 2 && (
             <div className="py-4 space-y-4">
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="p-3 bg-amber-500/10 border border-amber-200 rounded-lg">
                 <p className="text-sm text-amber-800">
                   <strong>📄 Archivo:</strong> {importFile?.name} ({importData.length} registros)
                 </p>
@@ -2631,7 +2631,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
           {/* Step 3: Preview */}
           {importStep === 3 && (
             <div className="py-4 space-y-4">
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <div className="p-3 bg-emerald-500/10 border border-emerald-200 rounded-lg">
                 <p className="text-sm text-emerald-800">
                   <strong>✅ Vista previa:</strong> Mostrando las primeras 5 filas de {importData.length} registros
                 </p>
@@ -2662,7 +2662,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                 </Table>
               </div>
 
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="p-3 bg-blue-500/10 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800">
                   <strong>📊 Resumen:</strong> Se importarán {importData.length} artículos. 
                   Los duplicados por código interno serán omitidos automáticamente.
@@ -2710,13 +2710,13 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
               </div>
 
               <div className="grid grid-cols-3 gap-4">
-                <Card className="border-emerald-200 bg-emerald-50">
+                <Card className="border-emerald-200 bg-emerald-500/10">
                   <CardContent className="pt-6 text-center">
                     <p className="text-3xl font-bold text-emerald-600">{importResult.imported || 0}</p>
                     <p className="text-sm text-emerald-700 mt-1">Importados</p>
                   </CardContent>
                 </Card>
-                <Card className="border-amber-200 bg-amber-50">
+                <Card className="border-amber-200 bg-amber-500/10">
                   <CardContent className="pt-6 text-center">
                     <p className="text-3xl font-bold text-amber-600">{importResult.duplicates || 0}</p>
                     <p className="text-sm text-amber-700 mt-1">Duplicados (omitidos)</p>
@@ -2731,7 +2731,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
               </div>
 
               {importResult.duplicate_codes && importResult.duplicate_codes.length > 0 && (
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="p-4 bg-amber-500/10 border border-amber-200 rounded-lg">
                   <p className="text-sm font-medium text-amber-800 mb-2">Códigos duplicados omitidos:</p>
                   <div className="flex flex-wrap gap-2">
                     {importResult.duplicate_codes.slice(0, 10).map((code, idx) => (
@@ -2926,19 +2926,19 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                     <SelectContent>
                       <SelectItem value="available">
                         <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                          <span className="w-2 h-2 rounded-full bg-emerald-500/100/100"></span>
                           Disponible
                         </div>
                       </SelectItem>
                       <SelectItem value="rented">
                         <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                          <span className="w-2 h-2 rounded-full bg-blue-500/100"></span>
                           Alquilado
                         </div>
                       </SelectItem>
                       <SelectItem value="maintenance">
                         <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                          <span className="w-2 h-2 rounded-full bg-yellow-500/100"></span>
                           Mantenimiento
                         </div>
                       </SelectItem>
@@ -3023,7 +3023,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
               </div>
               
               {/* Quick Add Toggle */}
-              <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-blue-500/10 border border-blue-200 rounded-lg">
                 <div className="flex items-center gap-2">
                   <Zap className="h-5 w-5 text-blue-600" />
                   <div>
@@ -3119,7 +3119,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
               <p className="text-3xl font-bold text-red-600 mb-2">{selectedItems.size}</p>
               <p className="text-sm text-red-700">artículo{selectedItems.size !== 1 ? 's' : ''} seleccionado{selectedItems.size !== 1 ? 's' : ''}</p>
             </div>
-            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="mt-4 p-3 bg-amber-500/10 border border-amber-200 rounded-lg">
               <p className="text-xs text-amber-800">
                 <strong>Nota:</strong> Los artículos con historial de alquileres serán dados de baja (no eliminados) para mantener las estadísticas.
               </p>
@@ -3185,7 +3185,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
               </p>
             </div>
 
-            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+            <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-200">
               <p className="text-sm text-blue-700">
                 <strong>💡 Consejo:</strong> Usa nombres descriptivos y únicos para facilitar la identificación
               </p>
@@ -3266,7 +3266,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
             <div className="space-y-6 py-4">
               {/* Warning if no purchase price */}
               {!itemProfitData.has_purchase_price && (
-                <div className="p-4 bg-amber-50 border-2 border-amber-300 rounded-xl flex items-start gap-3">
+                <div className="p-4 bg-amber-500/10 border-2 border-amber-300 rounded-xl flex items-start gap-3">
                   <AlertTriangle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="text-base font-semibold text-amber-800">⚠️ Coste de compra no registrado</p>
@@ -3350,7 +3350,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                     Curva de Amortización
                   </h3>
                   {itemProfitData.is_amortized && (
-                    <Badge className="bg-emerald-500 text-white px-3 py-1 text-sm">
+                    <Badge className="bg-emerald-500/100 text-white px-3 py-1 text-sm">
                       ✓ AMORTIZADO
                     </Badge>
                   )}
@@ -3520,7 +3520,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
               {/* ========== USAGE RATIO ========== */}
               <div className="grid grid-cols-2 gap-4">
                 {/* Rental Stats */}
-                <div className="p-4 rounded-xl bg-blue-50 border-2 border-blue-200">
+                <div className="p-4 rounded-xl bg-blue-500/10 border-2 border-blue-200">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-5 w-5 text-blue-600" />

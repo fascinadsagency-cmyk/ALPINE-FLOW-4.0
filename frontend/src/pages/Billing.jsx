@@ -243,7 +243,7 @@ export default function Billing() {
               </div>
             </div>
             <Badge variant="outline" className={`text-lg px-4 py-1 ${
-              planStatus?.is_trial ? 'border-amber-500 text-amber-600 bg-amber-50' : 'border-blue-500 text-blue-600 bg-blue-50'
+              planStatus?.is_trial ? 'border-amber-500 text-amber-600 bg-amber-500/10' : 'border-blue-500 text-blue-600 bg-blue-500/10'
             }`}>
               {planStatus?.is_trial ? 'Trial Gratuito' : planStatus?.plan_name}
             </Badge>
@@ -291,8 +291,8 @@ export default function Billing() {
               
               return (
                 <div key={plan.id} className={`relative rounded-xl border-2 p-6 transition-all ${
-                  isCurrentPlan ? 'border-blue-500 bg-blue-50' 
-                  : plan.recommended ? 'border-emerald-300 bg-emerald-50/50' 
+                  isCurrentPlan ? 'border-blue-500 bg-blue-500/10' 
+                  : plan.recommended ? 'border-emerald-300 bg-emerald-500/10/50' 
                   : 'border-slate-200 hover:border-slate-300'
                 }`}>
                   {plan.recommended && !isCurrentPlan && (
@@ -340,7 +340,7 @@ export default function Billing() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-lg bg-blue-500/100/20 flex items-center justify-center">
               <Building2 className="h-5 w-5 text-blue-600" />
             </div>
             <div>
@@ -384,7 +384,7 @@ export default function Billing() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-lg bg-emerald-500/100/20 flex items-center justify-center">
               <Receipt className="h-5 w-5 text-emerald-600" />
             </div>
             <div>
@@ -420,9 +420,9 @@ export default function Billing() {
                     <TableCell className="text-right font-medium">{formatCurrency(payment.amount)}</TableCell>
                     <TableCell className="text-center">
                       {payment.status === "paid" ? (
-                        <Badge className="bg-emerald-500/20 text-emerald-700"><CheckCircle className="h-3 w-3 mr-1" />Pagado</Badge>
+                        <Badge className="bg-emerald-500/100/20 text-emerald-700"><CheckCircle className="h-3 w-3 mr-1" />Pagado</Badge>
                       ) : (
-                        <Badge className="bg-amber-500/20 text-amber-700"><Clock className="h-3 w-3 mr-1" />Pendiente</Badge>
+                        <Badge className="bg-amber-500/100/20 text-amber-700"><Clock className="h-3 w-3 mr-1" />Pendiente</Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -516,7 +516,7 @@ export default function Billing() {
                   )}
 
                   {changeCalculation.current_plan === "trial" && (
-                    <div className="p-4 bg-blue-50 rounded-lg">
+                    <div className="p-4 bg-blue-500/10 rounded-lg">
                       <p className="font-medium text-blue-800">Activar Plan {changeCalculation.new_plan_name}</p>
                       <p className="text-2xl font-bold text-blue-600 mt-1">{formatCurrency(changeCalculation.amount_to_pay)}</p>
                       <p className="text-sm text-blue-600 mt-1">Suscripción anual</p>

@@ -39,7 +39,7 @@ export default function Support() {
           <Card className="hover:shadow-2xl transition-all duration-300 border-2 border-emerald-200 hover:border-emerald-400 group">
             <CardContent className="p-8 text-center">
               <div className="mb-6 flex justify-center">
-                <div className="p-6 bg-emerald-500/20 rounded-full group-hover:bg-emerald-200 transition-colors">
+                <div className="p-6 bg-emerald-500/100/20 rounded-full group-hover:bg-emerald-200 transition-colors">
                   <MessageSquare className="h-12 w-12 text-emerald-600" />
                 </div>
               </div>
@@ -69,7 +69,7 @@ export default function Support() {
           <Card className="hover:shadow-2xl transition-all duration-300 border-2 border-blue-200 hover:border-blue-400 group">
             <CardContent className="p-8 text-center">
               <div className="mb-6 flex justify-center">
-                <div className="p-6 bg-blue-500/20 rounded-full group-hover:bg-blue-200 transition-colors">
+                <div className="p-6 bg-blue-500/100/20 rounded-full group-hover:bg-blue-200 transition-colors">
                   <Mail className="h-12 w-12 text-blue-600" />
                 </div>
               </div>

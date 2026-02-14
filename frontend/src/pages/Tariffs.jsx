@@ -417,10 +417,10 @@ export default function Tariffs() {
                       Estas tarifas pertenecen a tipos de artículos que ya no existen. Puedes eliminarlas.
                     </p>
                     {Object.keys(tariffs).filter(key => isOrphanedTariff(key)).map((tariffKey) => (
-                      <div key={tariffKey} className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                      <div key={tariffKey} className="mb-4 p-4 bg-amber-500/10 border border-amber-200 rounded-lg">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="bg-amber-500/20 text-amber-800 border-amber-300">
+                            <Badge variant="outline" className="bg-amber-500/100/20 text-amber-800 border-amber-300">
                               OBSOLETA
                             </Badge>
                             <h4 className="font-semibold text-amber-900">{tariffKey}</h4>

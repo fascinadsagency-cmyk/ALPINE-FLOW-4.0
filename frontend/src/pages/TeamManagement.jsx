@@ -184,7 +184,7 @@ export default function TeamManagement() {
       </div>
 
       {/* Team Count Info */}
-      <Card className={teamCount.can_add_more ? "bg-blue-50 border-blue-200" : "bg-amber-50 border-amber-200"}>
+      <Card className={teamCount.can_add_more ? "bg-blue-500/10 border-blue-200" : "bg-amber-500/10 border-amber-200"}>
         <CardContent className="py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Users className={`h-6 w-6 ${teamCount.can_add_more ? "text-blue-600" : "text-amber-600"}`} />
@@ -225,7 +225,7 @@ export default function TeamManagement() {
                 >
                   <div className="flex items-center gap-4">
                     <div className={`p-3 rounded-full ${
-                      member.role === 'admin' ? 'bg-purple-500/20' : 'bg-blue-500/20'
+                      member.role === 'admin' ? 'bg-purple-500/100/20' : 'bg-blue-500/100/20'
                     }`}>
                       {member.role === 'admin' ? (
                         <Shield className="h-5 w-5 text-purple-600" />
@@ -239,8 +239,8 @@ export default function TeamManagement() {
                       <div className="flex items-center gap-3 mt-1 text-xs">
                         <span className={`px-2 py-0.5 rounded ${
                           member.role === 'admin' 
-                            ? 'bg-purple-500/20 text-purple-700' 
-                            : 'bg-blue-500/20 text-blue-700'
+                            ? 'bg-purple-500/100/20 text-purple-700' 
+                            : 'bg-blue-500/100/20 text-blue-700'
                         }`}>
                           {member.role === 'admin' ? 'Administrador' : 'Empleado'}
                         </span>

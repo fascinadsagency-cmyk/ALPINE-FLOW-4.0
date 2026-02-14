@@ -1839,7 +1839,7 @@ export default function ActiveRentals() {
     const unpaidMethods = ['pending'];
     
     if (paidMethods.includes(method)) {
-      return 'bg-emerald-500/20 text-emerald-700 border-emerald-300';
+      return 'bg-emerald-500/100/20 text-emerald-700 border-emerald-300';
     } else if (method === 'pending') {
       return 'bg-red-100 text-red-700 border-red-300';
     }
@@ -1973,7 +1973,7 @@ export default function ActiveRentals() {
                 data-testid="smart-search-input"
               />
               {globalScannerActive && (
-                <div className="absolute -top-1 right-2 flex items-center gap-1.5 bg-green-500 text-white px-2 py-0.5 rounded-full text-xs font-medium">
+                <div className="absolute -top-1 right-2 flex items-center gap-1.5 bg-emerald-500/100/100 text-white px-2 py-0.5 rounded-full text-xs font-medium">
                   <Scan className="h-3 w-3 animate-pulse" />
                   Escáner Activo
                 </div>
@@ -2135,7 +2135,7 @@ export default function ActiveRentals() {
                         </TableCell>
                         
                         <TableCell className="text-center">
-                          <Badge className="bg-blue-500/20 text-blue-700">
+                          <Badge className="bg-blue-500/100/20 text-blue-700">
                             {rental.days}d
                           </Badge>
                         </TableCell>
@@ -2151,7 +2151,7 @@ export default function ActiveRentals() {
                           {/* Mostrar crédito pendiente si existe */}
                           {rental.pending_refund > 0 && (
                             <div className="mt-1">
-                              <Badge className="bg-amber-500/20 text-amber-700 border-amber-200 text-xs">
+                              <Badge className="bg-amber-500/100/20 text-amber-700 border-amber-200 text-xs">
                                 💳 -€{rental.pending_refund.toFixed(2)}
                               </Badge>
                             </div>
@@ -2184,7 +2184,7 @@ export default function ActiveRentals() {
                                 variant="default"
                                 size="sm"
                                 onClick={() => openQuickPaymentModal(rental)}
-                                className="gap-1 bg-amber-500 hover:bg-amber-600 text-white h-8"
+                                className="gap-1 bg-amber-500/100 hover:bg-amber-600 text-white h-8"
                                 data-testid={`quick-pay-btn-${rental.id}`}
                                 title={`Cobrar €${rental.pending_amount.toFixed(2)} pendiente`}
                               >
@@ -2196,7 +2196,7 @@ export default function ActiveRentals() {
                               variant="outline"
                               size="sm"
                               onClick={() => openChangeModal(rental)}
-                              className="gap-1 text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-400 h-8"
+                              className="gap-1 text-blue-600 border-blue-200 hover:bg-blue-500/10 hover:border-blue-400 h-8"
                               data-testid={`change-btn-${rental.id}`}
                               title="Gestionar cambios del contrato"
                             >
@@ -2207,7 +2207,7 @@ export default function ActiveRentals() {
                               variant="outline"
                               size="sm"
                               onClick={() => openAddItemsModal(rental)}
-                              className="gap-1 text-emerald-600 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-400 h-8"
+                              className="gap-1 text-emerald-600 border-emerald-200 hover:bg-emerald-500/10 hover:border-emerald-400 h-8"
                               title="Añadir artículos al alquiler"
                             >
                               <Plus className="h-3.5 w-3.5" />
@@ -2251,7 +2251,7 @@ export default function ActiveRentals() {
                     {swapRental.customer_name}
                   </Badge>
                   <Badge variant="outline">{swapRental.customer_dni}</Badge>
-                  <Badge className="bg-blue-500/20 text-blue-700">
+                  <Badge className="bg-blue-500/100/20 text-blue-700">
                     {swapDaysRemaining} días restantes
                   </Badge>
                 </div>
@@ -2305,7 +2305,7 @@ export default function ActiveRentals() {
 
               {/* Show identified customer when rental is set */}
               {swapRental && swapOldItem && !swapNewItem && (
-                <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-200">
                   <p className="text-sm text-blue-700 font-semibold mb-2">✓ Cliente y artículo identificados</p>
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-red-100 rounded-lg">
@@ -2328,7 +2328,7 @@ export default function ActiveRentals() {
                       </div>
                       <Button
                         variant="outline"
-                        className="h-auto py-3 flex-col gap-1 border-2 border-emerald-300 bg-emerald-50 hover:bg-emerald-500/20"
+                        className="h-auto py-3 flex-col gap-1 border-2 border-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/100/20"
                         onClick={executeReturnOnly}
                         disabled={swapLoading}
                         data-testid="return-only-btn"
@@ -2364,7 +2364,7 @@ export default function ActiveRentals() {
                   </div>
 
                   {/* NEW ITEM (to receive) */}
-                  <div className="p-4 rounded-lg bg-green-50 border-2 border-green-200">
+                  <div className="p-4 rounded-lg bg-emerald-500/100/10 border-2 border-green-200">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-green-600 text-lg">✅</span>
                       <span className="font-bold text-green-700">RECIBE</span>
@@ -2381,7 +2381,7 @@ export default function ActiveRentals() {
 
               {/* Manual selection if no match found */}
               {swapNewItem && !swapOldItem && swapRental && (
-                <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
+                <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-200">
                   <p className="font-semibold text-amber-800 mb-2">
                     <AlertCircle className="h-4 w-4 inline mr-1" />
                     Selecciona el artículo a reemplazar:
@@ -2407,7 +2407,7 @@ export default function ActiveRentals() {
                 <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-500/20 rounded-lg">
+                      <div className="p-2 bg-blue-500/100/20 rounded-lg">
                         <CalendarPlus className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
@@ -2466,7 +2466,7 @@ export default function ActiveRentals() {
                         
                         {dateDelta !== 0 && (
                           <div className={`mt-3 p-2 rounded text-center ${
-                            dateDelta > 0 ? 'bg-orange-100' : 'bg-emerald-500/20'
+                            dateDelta > 0 ? 'bg-orange-100' : 'bg-emerald-500/100/20'
                           }`}>
                             <p className="text-xs text-slate-600">
                               {dateDelta > 0 ? 'Suplemento por extensión' : 'Abono por reducción'}
@@ -2487,7 +2487,7 @@ export default function ActiveRentals() {
               {/* ============ MATERIAL DELTA (if swap active) ============ */}
               {swapDelta && swapNewItem && swapOldItem && (
                 <div className={`p-4 rounded-xl border-2 ${
-                  swapDelta.isUpgrade ? 'bg-emerald-50 border-emerald-300' :
+                  swapDelta.isUpgrade ? 'bg-emerald-500/10 border-emerald-300' :
                   swapDelta.isDowngrade ? 'bg-red-50 border-red-300' :
                   'bg-slate-50 border-slate-300'
                 }`}>
@@ -2511,7 +2511,7 @@ export default function ActiveRentals() {
               {(combinedDelta !== 0 || (swapDelta && swapDelta.delta !== 0) || dateDelta !== 0) && (
                 <div className={`p-5 rounded-xl border-2 ${
                   combinedDelta > 0 ? 'bg-orange-50 border-orange-300' :
-                  combinedDelta < 0 ? 'bg-emerald-50 border-emerald-300' :
+                  combinedDelta < 0 ? 'bg-emerald-500/10 border-emerald-300' :
                   'bg-slate-50 border-slate-200'
                 }`}>
                   <div className="flex items-center justify-between">
@@ -2584,7 +2584,7 @@ export default function ActiveRentals() {
                             </div>
                             <Lock className="h-4 w-4 text-slate-400" />
                           </div>
-                          <div className="mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200">
+                          <div className="mt-2 p-2 rounded-lg bg-amber-500/10 border border-amber-200">
                             <p className="text-xs text-amber-800 flex items-center gap-1">
                               <AlertCircle className="h-3 w-3 flex-shrink-0" />
                               <span>Por seguridad, el abono se realiza al mismo método de pago original.</span>
@@ -2601,7 +2601,7 @@ export default function ActiveRentals() {
             /* SUCCESS STATE */
             <div className="text-center py-8">
               <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${
-                swapAction === 'return' ? 'bg-blue-500/20' : 'bg-emerald-500/20'
+                swapAction === 'return' ? 'bg-blue-500/100/20' : 'bg-emerald-500/100/20'
               }`}>
                 <CheckCircle className={`h-10 w-10 ${
                   swapAction === 'return' ? 'text-blue-600' : 'text-emerald-600'
@@ -2702,11 +2702,11 @@ export default function ActiveRentals() {
                   <div className="mt-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 overflow-hidden">
                     {/* HEADER - Always visible with summary */}
                     <div 
-                      className={`p-3 flex items-center justify-between cursor-pointer hover:bg-blue-500/20/50 transition-colors ${technicalDataExpanded ? 'border-b border-blue-200' : ''}`}
+                      className={`p-3 flex items-center justify-between cursor-pointer hover:bg-blue-500/100/20/50 transition-colors ${technicalDataExpanded ? 'border-b border-blue-200' : ''}`}
                       onClick={() => !editingTechnicalData && setTechnicalDataExpanded(!technicalDataExpanded)}
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="p-2 bg-blue-500/20 rounded-lg flex-shrink-0">
+                        <div className="p-2 bg-blue-500/100/20 rounded-lg flex-shrink-0">
                           <Mountain className="h-4 w-4 text-blue-600" />
                         </div>
                         
@@ -2731,7 +2731,7 @@ export default function ActiveRentals() {
                             </span>
                           )}
                           {selectedCustomer.ski_level && selectedCustomer.ski_level !== 'sin_especificar' && (
-                            <Badge className="bg-blue-500/20 text-blue-700 border-blue-300 capitalize text-xs">
+                            <Badge className="bg-blue-500/100/20 text-blue-700 border-blue-300 capitalize text-xs">
                               {selectedCustomer.ski_level}
                             </Badge>
                           )}
@@ -2745,7 +2745,7 @@ export default function ActiveRentals() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="gap-1 text-blue-600 hover:bg-blue-500/20 flex-shrink-0"
+                        className="gap-1 text-blue-600 hover:bg-blue-500/100/20 flex-shrink-0"
                         onClick={(e) => {
                           e.stopPropagation();
                           if (!editingTechnicalData) setTechnicalDataExpanded(!technicalDataExpanded);
@@ -2775,7 +2775,7 @@ export default function ActiveRentals() {
                               size="sm"
                               variant="outline"
                               onClick={startEditingTechnicalData}
-                              className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/20"
+                              className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/100/20"
                               data-testid="edit-technical-data-btn"
                             >
                               <Edit3 className="h-3 w-3" />
@@ -2929,7 +2929,7 @@ export default function ActiveRentals() {
 
                   {/* Current Rental Reference */}
                   {selectedCustomer.rental_id && (
-                    <div className="mt-4 p-3 rounded-lg bg-emerald-500/20 border border-emerald-300">
+                    <div className="mt-4 p-3 rounded-lg bg-emerald-500/100/20 border border-emerald-300">
                       <div className="flex items-center gap-2">
                         <Package className="h-4 w-4 text-emerald-700" />
                         <span className="text-sm font-semibold text-emerald-800">
@@ -2945,7 +2945,7 @@ export default function ActiveRentals() {
                   {/* ===== CONTACT ACTIONS ===== */}
                   <div className="mt-4 pt-4 border-t border-slate-200 space-y-3">
                     {/* Phone */}
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-500/10 border border-emerald-200">
                       <div className="flex items-center gap-3">
                         <Phone className="h-5 w-5 text-emerald-600" />
                         <div>
@@ -2958,7 +2958,7 @@ export default function ActiveRentals() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-500/20"
+                            className="gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-500/100/20"
                             onClick={() => callPhone(selectedCustomer.phone)}
                           >
                             <Phone className="h-3 w-3" />
@@ -2979,7 +2979,7 @@ export default function ActiveRentals() {
 
                     {/* Email */}
                     {selectedCustomer.email && (
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200">
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-blue-500/10 border border-blue-200">
                         <div className="flex items-center gap-3">
                           <Mail className="h-5 w-5 text-blue-600" />
                           <div>
@@ -2990,7 +2990,7 @@ export default function ActiveRentals() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/20"
+                          className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/100/20"
                           onClick={() => sendEmail(selectedCustomer.email, selectedCustomer.name)}
                         >
                           <Mail className="h-3 w-3" />
@@ -3001,7 +3001,7 @@ export default function ActiveRentals() {
 
                     {/* Address/Hotel/City */}
                     {(selectedCustomer.hotel || selectedCustomer.address || selectedCustomer.city) && (
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-purple-50 border border-purple-200">
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-purple-500/10 border border-purple-200">
                         <div className="flex items-center gap-3">
                           <MapPin className="h-5 w-5 text-purple-600" />
                           <div>
@@ -3031,7 +3031,7 @@ export default function ActiveRentals() {
 
               {/* ===== SECTION 2: NOTES & ALERTS ===== */}
               {selectedCustomer.notes && (
-                <Card className="border-amber-200 bg-amber-50">
+                <Card className="border-amber-200 bg-amber-500/10">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base flex items-center gap-2 text-amber-800">
                       <AlertTriangle className="h-5 w-5" />
@@ -3088,13 +3088,13 @@ export default function ActiveRentals() {
                               key={idx}
                               className={`flex items-center justify-between p-3 rounded-lg border ${
                                 tx.type === 'income' 
-                                  ? 'bg-emerald-50 border-emerald-200' 
+                                  ? 'bg-emerald-500/10 border-emerald-200' 
                                   : 'bg-orange-50 border-orange-200'
                               }`}
                             >
                               <div className="flex items-center gap-3">
                                 {tx.type === 'income' ? (
-                                  <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                                  <div className="h-8 w-8 rounded-full bg-emerald-500/100/20 flex items-center justify-center">
                                     <ArrowUpRight className="h-4 w-4 text-emerald-600" />
                                   </div>
                                 ) : (
@@ -3151,7 +3151,7 @@ export default function ActiveRentals() {
                           key={rental.id || idx}
                           className={`p-4 rounded-lg border hover:bg-slate-50/50 transition-colors ${
                             rental.status === 'active' || rental.status === 'partial'
-                              ? 'border-emerald-300 bg-emerald-50/30'
+                              ? 'border-emerald-300 bg-emerald-500/10/30'
                               : 'border-slate-200'
                           }`}
                         >
@@ -3167,12 +3167,12 @@ export default function ActiveRentals() {
                                 {rental.days} {rental.days === 1 ? 'día' : 'días'}
                               </Badge>
                               {(rental.status === 'active' || rental.status === 'partial') && (
-                                <Badge className="bg-emerald-500/20 text-emerald-700 border-emerald-300">
+                                <Badge className="bg-emerald-500/100/20 text-emerald-700 border-emerald-300">
                                   Activo
                                 </Badge>
                               )}
                             </div>
-                            <Badge className="bg-emerald-500/20 text-emerald-700">
+                            <Badge className="bg-emerald-500/100/20 text-emerald-700">
                               <DollarSign className="h-3 w-3 mr-1" />
                               €{(rental.total_amount || 0).toFixed(2)}
                             </Badge>
@@ -3301,7 +3301,7 @@ export default function ActiveRentals() {
               </div>
 
               {/* Info Alert */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800">
+              <div className="bg-blue-500/10 border border-blue-200 rounded-lg p-3 text-xs text-blue-800">
                 <p className="font-semibold mb-1">💡 Reconciliación Automática:</p>
                 <p>• De ingreso a ingreso: Mueve entre cajas</p>
                 <p>• De ingreso a deuda: Resta de la caja</p>
@@ -3362,7 +3362,7 @@ export default function ActiveRentals() {
                     <p className="text-sm text-slate-500">{changeRental.customer_dni}</p>
                   </div>
                   <div className="text-right">
-                    <Badge className="bg-blue-500/20 text-blue-700 mb-1">
+                    <Badge className="bg-blue-500/100/20 text-blue-700 mb-1">
                       {changeDaysRemaining} días restantes
                     </Badge>
                     <p className="text-xs text-slate-500">Total: €{changeRental.total_amount?.toFixed(2) || '0.00'}</p>
@@ -3385,7 +3385,7 @@ export default function ActiveRentals() {
                         item.isSwapping 
                           ? 'bg-orange-50 border-orange-300' 
                           : activeSwapIndex === index
-                          ? 'bg-blue-50 border-blue-300'
+                          ? 'bg-blue-500/10 border-blue-300'
                           : 'bg-white border-slate-200 hover:border-slate-300'
                       }`}
                     >
@@ -3490,7 +3490,7 @@ export default function ActiveRentals() {
               </div>
 
               {/* DATE ADJUSTMENT */}
-              <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+              <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-200">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <CalendarPlus className="h-5 w-5 text-blue-600" />
@@ -3550,7 +3550,7 @@ export default function ActiveRentals() {
                       </div>
                       
                       {/* Días a descontar (no facturables) */}
-                      <div className="mt-4 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                      <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-200">
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-sm font-medium text-amber-800">Días a descontar (No facturables)</p>
@@ -3595,7 +3595,7 @@ export default function ActiveRentals() {
                       
                       {(changeDateDelta !== 0 || changeDiscountDays > 0) && (
                         <div className={`mt-3 p-2 rounded text-center ${
-                          changeDateDelta > 0 ? 'bg-orange-100' : 'bg-amber-500/20'
+                          changeDateDelta > 0 ? 'bg-orange-100' : 'bg-amber-500/100/20'
                         }`}>
                           <p className="text-xs text-slate-600">
                             {changeDateDelta > 0 ? 'Suplemento por extensión' : 
@@ -3622,11 +3622,11 @@ export default function ActiveRentals() {
               {/* TOTAL DELTA SUMMARY */}
               <div className={`p-5 rounded-xl border-2 ${
                 changeDiscountDays > 0
-                  ? 'bg-amber-50 border-amber-300'
+                  ? 'bg-amber-500/10 border-amber-300'
                   : changeTotalDelta > 0 
                   ? 'bg-orange-50 border-orange-300' 
                   : changeTotalDelta < 0 
-                  ? 'bg-emerald-50 border-emerald-300'
+                  ? 'bg-emerald-500/10 border-emerald-300'
                   : 'bg-slate-50 border-slate-200'
               }`}>
                 <div className="flex items-center justify-between">
@@ -3660,7 +3660,7 @@ export default function ActiveRentals() {
                   </p>
                 </div>
                 {changeDiscountDays > 0 && (
-                  <p className="text-xs text-amber-700 mt-2 bg-amber-500/20 p-2 rounded">
+                  <p className="text-xs text-amber-700 mt-2 bg-amber-500/100/20 p-2 rounded">
                     ℹ️ El cliente tiene €{changeRefundAmount.toFixed(2)} a su favor por {changeDiscountDays} día(s) no disfrutado(s). 
                     Este crédito se descontará automáticamente en la devolución.
                   </p>
@@ -3711,7 +3711,7 @@ export default function ActiveRentals() {
                         </div>
                         <Lock className="h-4 w-4 text-slate-400" />
                       </div>
-                      <div className="p-2 rounded-lg bg-amber-50 border border-amber-200 max-w-md">
+                      <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-200 max-w-md">
                         <p className="text-xs text-amber-800 flex items-center gap-1">
                           <AlertCircle className="h-3 w-3 flex-shrink-0" />
                           <span>Por seguridad, el abono se realiza al mismo método de pago original.</span>
@@ -3738,7 +3738,7 @@ export default function ActiveRentals() {
                 {changeAdjustDate && changeDateDelta !== 0 && 'ajuste de fecha aplicado'}
               </p>
               {changeDiscountDays > 0 && (
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4 max-w-md mx-auto">
+                <div className="bg-amber-500/10 border border-amber-200 rounded-lg p-4 mb-4 max-w-md mx-auto">
                   <p className="text-amber-800 font-medium">
                     💳 Crédito pendiente: €{changeRefundAmount.toFixed(2)}
                   </p>
@@ -3896,7 +3896,7 @@ export default function ActiveRentals() {
                         <span className="text-xs text-slate-400">
                           €{getAddItemsTariffPrice(item.item_type, addItemsDays).toFixed(2)}
                         </span>
-                        <Button size="sm" variant="ghost" className="shrink-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50">
+                        <Button size="sm" variant="ghost" className="shrink-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10">
                           <Plus className="h-4 w-4" />
                         </Button>
                       </div>
@@ -3920,7 +3920,7 @@ export default function ActiveRentals() {
               if (detectedPacks.length === 0) return null;
               
               return (
-                <div className="bg-purple-50 border-2 border-purple-300 rounded-lg p-3">
+                <div className="bg-purple-500/10 border-2 border-purple-300 rounded-lg p-3">
                   <p className="text-sm font-semibold text-purple-800 mb-2 flex items-center gap-2">
                     <Package className="h-4 w-4" />
                     Packs detectados:
@@ -3953,7 +3953,7 @@ export default function ActiveRentals() {
             
             {/* Artículos seleccionados para añadir */}
             {addItemsSelected.length > 0 && (
-              <div className="border-2 border-emerald-300 rounded-lg p-3 bg-emerald-50" data-testid="add-items-selected-list">
+              <div className="border-2 border-emerald-300 rounded-lg p-3 bg-emerald-500/10" data-testid="add-items-selected-list">
                 <p className="text-sm font-semibold mb-2 text-emerald-800">
                   Artículos a añadir ({addItemsSelected.length}):
                 </p>
@@ -4190,7 +4190,7 @@ export default function ActiveRentals() {
             <Button
               onClick={processQuickPayment}
               disabled={quickPaymentProcessing || quickPaymentAmount <= 0}
-              className="bg-amber-500 hover:bg-amber-600 min-w-[140px]"
+              className="bg-amber-500/100 hover:bg-amber-600 min-w-[140px]"
               data-testid="quick-payment-confirm"
             >
               {quickPaymentProcessing ? (
