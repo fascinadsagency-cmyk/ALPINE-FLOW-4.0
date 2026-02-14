@@ -497,6 +497,7 @@ async def check_plan_limit(current_user, limit_type: str):
                 "current_count": current_count,
                 "max_allowed": max_val,
                 "plan_name": plan_info["name"],
+                "plan_type": plan_type,
                 "message": f"Límite de {limit_type} alcanzado ({max_val}). Actualiza tu plan para añadir más."
             }
         )
