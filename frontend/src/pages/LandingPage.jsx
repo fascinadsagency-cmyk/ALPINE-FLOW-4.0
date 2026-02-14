@@ -202,7 +202,7 @@ export default function LandingPage() {
       {/* Pricing Section - MODERN CARDS */}
       <section id="pricing" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
         <div className="mb-20">
-          <h2 className="text-5xl sm:text-6xl font-black text-slate-900 mb-6 leading-tight uppercase tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+          <h2 className="text-5xl sm:text-6xl font-black text-black mb-6 leading-tight uppercase tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans' }}>
             Planes que<br/>
             <span className="text-slate-400">escalan contigo</span>
           </h2>
@@ -222,14 +222,14 @@ export default function LandingPage() {
                   <Package className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900">Trial</h3>
+                  <h3 className="text-xl font-bold text-black">Trial</h3>
                   <p className="text-xs text-slate-500">Prueba gratuita</p>
                 </div>
               </div>
               
               <div className="mb-8">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-black text-slate-900">0 €</span>
+                  <span className="text-5xl font-black text-black">0 €</span>
                 </div>
                 <p className="text-sm text-slate-600 mt-2 font-medium">15 días gratis</p>
               </div>
@@ -237,26 +237,26 @@ export default function LandingPage() {
               <Button 
                 onClick={() => navigate("/register")} 
                 variant="outline" 
-                className="w-full mb-8 font-bold border-2 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white rounded-full py-6"
+                className="w-full mb-8 font-bold border-2 border-slate-900 text-black hover:bg-slate-900 hover:text-white rounded-full py-6"
               >
                 PROBAR GRATIS
               </Button>
 
               <div className="space-y-4">
                 <div className="flex items-start gap-3 text-sm">
-                  <Check className="h-5 w-5 text-slate-900 flex-shrink-0 mt-0.5" />
+                  <Check className="h-5 w-5 text-black flex-shrink-0 mt-0.5" />
                   <span className="text-slate-700 font-medium">50 productos</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
-                  <Check className="h-5 w-5 text-slate-900 flex-shrink-0 mt-0.5" />
+                  <Check className="h-5 w-5 text-black flex-shrink-0 mt-0.5" />
                   <span className="text-slate-700 font-medium">100 clientes</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
-                  <Check className="h-5 w-5 text-slate-900 flex-shrink-0 mt-0.5" />
+                  <Check className="h-5 w-5 text-black flex-shrink-0 mt-0.5" />
                   <span className="text-slate-700 font-medium">1 tienda</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
-                  <Check className="h-5 w-5 text-slate-900 flex-shrink-0 mt-0.5" />
+                  <Check className="h-5 w-5 text-black flex-shrink-0 mt-0.5" />
                   <span className="text-slate-700 font-medium">Todas las funciones</span>
                 </div>
               </div>
@@ -272,14 +272,14 @@ export default function LandingPage() {
                   <Zap className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900">Basic</h3>
+                  <h3 className="text-xl font-bold text-black">Basic</h3>
                   <p className="text-xs text-slate-500">Para empezar</p>
                 </div>
               </div>
               
               <div className="mb-8">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-black text-slate-900">950 €</span>
+                  <span className="text-5xl font-black text-black">950 €</span>
                 </div>
                 <p className="text-sm text-slate-600 mt-2 font-medium">79 €/mes · anual</p>
               </div>
@@ -287,26 +287,26 @@ export default function LandingPage() {
               <Button 
                 onClick={() => navigate("/register")} 
                 variant="outline" 
-                className="w-full mb-8 font-bold border-2 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white rounded-full py-6"
+                className="w-full mb-8 font-bold border-2 border-slate-900 text-black hover:bg-slate-900 hover:text-white rounded-full py-6"
               >
                 CONTRATAR
               </Button>
 
               <div className="space-y-4">
                 <div className="flex items-start gap-3 text-sm">
-                  <Check className="h-5 w-5 text-slate-900 flex-shrink-0 mt-0.5" />
+                  <Check className="h-5 w-5 text-black flex-shrink-0 mt-0.5" />
                   <span className="text-slate-700 font-medium">200 productos</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
-                  <Check className="h-5 w-5 text-slate-900 flex-shrink-0 mt-0.5" />
+                  <Check className="h-5 w-5 text-black flex-shrink-0 mt-0.5" />
                   <span className="text-slate-700 font-medium">500 clientes</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
-                  <Check className="h-5 w-5 text-slate-900 flex-shrink-0 mt-0.5" />
+                  <Check className="h-5 w-5 text-black flex-shrink-0 mt-0.5" />
                   <span className="text-slate-700 font-medium">1 tienda</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
-                  <Check className="h-5 w-5 text-slate-900 flex-shrink-0 mt-0.5" />
+                  <Check className="h-5 w-5 text-black flex-shrink-0 mt-0.5" />
                   <span className="text-slate-700 font-medium">Todas las funciones</span>
                 </div>
               </div>
@@ -318,7 +318,7 @@ export default function LandingPage() {
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl opacity-100 blur-sm"></div>
             <div className="relative bg-slate-900 rounded-2xl p-8 shadow-2xl">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                <Badge className="bg-white text-slate-900 font-black px-4 py-1.5 shadow-lg text-xs uppercase tracking-wider">
+                <Badge className="bg-white text-black font-black px-4 py-1.5 shadow-lg text-xs uppercase tracking-wider">
                   Popular
                 </Badge>
               </div>
@@ -342,7 +342,7 @@ export default function LandingPage() {
 
               <Button 
                 onClick={() => navigate("/register")} 
-                className="w-full mb-8 bg-white text-slate-900 hover:bg-slate-100 font-black rounded-full py-6 shadow-lg hover:shadow-xl transition-all"
+                className="w-full mb-8 bg-white text-black hover:bg-slate-100 font-black rounded-full py-6 shadow-lg hover:shadow-xl transition-all"
               >
                 CONTRATAR AHORA
               </Button>
@@ -377,14 +377,14 @@ export default function LandingPage() {
                   <Crown className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900">Enterprise</h3>
+                  <h3 className="text-xl font-bold text-black">Enterprise</h3>
                   <p className="text-xs text-slate-500">Sin límites</p>
                 </div>
               </div>
               
               <div className="mb-8">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-black text-slate-900">1.950 €</span>
+                  <span className="text-5xl font-black text-black">1.950 €</span>
                 </div>
                 <p className="text-sm text-slate-600 mt-2 font-medium">163 €/mes · anual</p>
               </div>
@@ -392,26 +392,26 @@ export default function LandingPage() {
               <Button 
                 onClick={() => navigate("/register")} 
                 variant="outline" 
-                className="w-full mb-8 font-bold border-2 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white rounded-full py-6"
+                className="w-full mb-8 font-bold border-2 border-slate-900 text-black hover:bg-slate-900 hover:text-white rounded-full py-6"
               >
                 CONTACTAR
               </Button>
 
               <div className="space-y-4">
                 <div className="flex items-start gap-3 text-sm">
-                  <Check className="h-5 w-5 text-slate-900 flex-shrink-0 mt-0.5" />
+                  <Check className="h-5 w-5 text-black flex-shrink-0 mt-0.5" />
                   <span className="text-slate-700 font-medium">Productos ilimitados</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
-                  <Check className="h-5 w-5 text-slate-900 flex-shrink-0 mt-0.5" />
+                  <Check className="h-5 w-5 text-black flex-shrink-0 mt-0.5" />
                   <span className="text-slate-700 font-medium">Clientes ilimitados</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
-                  <Check className="h-5 w-5 text-slate-900 flex-shrink-0 mt-0.5" />
+                  <Check className="h-5 w-5 text-black flex-shrink-0 mt-0.5" />
                   <span className="text-slate-700 font-medium">Tiendas ilimitadas</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
-                  <Check className="h-5 w-5 text-slate-900 flex-shrink-0 mt-0.5" />
+                  <Check className="h-5 w-5 text-black flex-shrink-0 mt-0.5" />
                   <span className="text-slate-700 font-medium">Todas las funciones</span>
                 </div>
               </div>
@@ -433,7 +433,7 @@ export default function LandingPage() {
           </p>
           <Button 
             size="lg"
-            className="bg-white text-slate-900 hover:bg-slate-100 text-lg px-12 py-8 font-black rounded-full shadow-2xl hover:shadow-white/20 transition-all uppercase"
+            className="bg-white text-black hover:bg-slate-100 text-lg px-12 py-8 font-black rounded-full shadow-2xl hover:shadow-white/20 transition-all uppercase"
             onClick={() => navigate("/register")}
           >
             Empezar Ahora
@@ -456,21 +456,21 @@ export default function LandingPage() {
 
             {/* Producto */}
             <div>
-              <h3 className="font-bold mb-4 text-slate-900">Producto</h3>
+              <h3 className="font-bold mb-4 text-black">Producto</h3>
               <ul className="space-y-3 text-slate-600">
-                <li><button onClick={() => navigate("/register")} className="hover:text-slate-900 transition-colors">Funcionalidades</button></li>
-                <li><button onClick={() => navigate("/landing#pricing")} className="hover:text-slate-900 transition-colors">Precios</button></li>
-                <li><button onClick={() => navigate("/login")} className="hover:text-slate-900 transition-colors">Demo</button></li>
+                <li><button onClick={() => navigate("/register")} className="hover:text-black transition-colors">Funcionalidades</button></li>
+                <li><button onClick={() => navigate("/landing#pricing")} className="hover:text-black transition-colors">Precios</button></li>
+                <li><button onClick={() => navigate("/login")} className="hover:text-black transition-colors">Demo</button></li>
               </ul>
             </div>
 
             {/* Legal */}
             <div>
-              <h3 className="font-bold mb-4 text-slate-900">Legal</h3>
+              <h3 className="font-bold mb-4 text-black">Legal</h3>
               <ul className="space-y-3 text-slate-600">
-                <li><a href="#" className="hover:text-slate-900 transition-colors">Privacidad</a></li>
-                <li><a href="#" className="hover:text-slate-900 transition-colors">Términos</a></li>
-                <li><a href="#" className="hover:text-slate-900 transition-colors">Contacto</a></li>
+                <li><a href="#" className="hover:text-black transition-colors">Privacidad</a></li>
+                <li><a href="#" className="hover:text-black transition-colors">Términos</a></li>
+                <li><a href="#" className="hover:text-black transition-colors">Contacto</a></li>
               </ul>
             </div>
           </div>
