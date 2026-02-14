@@ -48,7 +48,6 @@ export default function Layout() {
     { to: "/caja", icon: Wallet, label: t('nav.cashRegister') },
     { to: "/mantenimiento", icon: Wrench, label: t('nav.maintenance') },
     { to: "/reportes", icon: BarChart3, label: t('nav.reports'), adminOnly: true },
-    { to: "/integraciones", icon: Settings, label: t('nav.integrations'), adminOnly: true },
     { to: "/configuracion", icon: Cog, label: t('nav.settings'), adminOnly: true },
   ];
 
@@ -62,7 +61,7 @@ export default function Layout() {
     });
   }
 
-  // Add store management for SUPER_ADMIN only
+  // Add store management for SUPER_ADMIN only - placed right after main items
   if (user?.role === "super_admin") {
     navItems.push({ to: "/tiendas", icon: Building2, labelKey: "nav.storeManagement", superAdmin: true });
     navItems.push({ to: "/planes", icon: DollarSign, label: "Planes", superAdmin: true });
