@@ -642,7 +642,13 @@ async def login(user: UserLogin):
     )
     return TokenResponse(
         access_token=token,
-        user=UserResponse(id=db_user["id"], username=db_user["username"], role=db_user.get("role", "employee"))
+        user=UserResponse(
+            id=db_user["id"],
+            username=db_user["username"],
+            role=db_user.get("role", "employee"),
+            email=db_user.get("email", db_user["username"]),
+            photo_url=db_user.get("photo_url", "")
+        )
     )
 
 @api_router.get("/auth/me", response_model=UserResponse)
