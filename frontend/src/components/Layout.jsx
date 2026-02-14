@@ -30,7 +30,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 export default function Layout() {
-  const { user, logout } = useAuth();
+  const { user, logout, returnToSuperAdmin, isImpersonating } = useAuth();
   const { darkMode, t } = useSettings();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
