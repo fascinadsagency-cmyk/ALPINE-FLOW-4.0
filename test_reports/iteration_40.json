@@ -1,0 +1,129 @@
+{
+  "summary": "Data isolation fix verified. admin_master (store_id=4) now correctly isolated to 'Gestión Central Pruebas' store with 0 customers/items. EL ENEBRO data preserved. All 9 backend tests passed, all frontend tests passed.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "features_tested": {
+    "1_admin_master_login_store_name": {
+      "status": "PASS",
+      "endpoint": "POST /api/auth/login",
+      "description": "Login returns store_name='Gestión Central Pruebas' for admin_master"
+    },
+    "2_admin_master_auth_me_store_name": {
+      "status": "PASS",
+      "endpoint": "GET /api/auth/me",
+      "description": "Auth/me returns store_name='Gestión Central Pruebas'"
+    },
+    "3_admin_master_customers_empty": {
+      "status": "PASS",
+      "endpoint": "GET /api/customers",
+      "description": "Returns 0 customers for admin_master (data isolation working)"
+    },
+    "4_admin_master_items_empty": {
+      "status": "PASS",
+      "endpoint": "GET /api/items",
+      "description": "Returns 0 items for admin_master (data isolation working)"
+    },
+    "5_admin_master_dashboard_zero": {
+      "status": "PASS",
+      "endpoint": "GET /api/dashboard",
+      "description": "Dashboard shows 0 active rentals and 0 customers for admin_master"
+    },
+    "6_admin_enebro_login_store_name": {
+      "status": "PASS",
+      "endpoint": "POST /api/auth/login",
+      "description": "Login returns store_name='EL ENEBRO' for admin.enebro"
+    },
+    "7_admin_enebro_customers_preserved": {
+      "status": "PASS",
+      "endpoint": "GET /api/customers",
+      "description": "EL ENEBRO customers not lost - data preserved"
+    },
+    "8_admin_master_stores_access": {
+      "status": "PASS",
+      "endpoint": "GET /api/stores",
+      "description": "admin_master (super_admin) can see all stores including EL ENEBRO"
+    },
+    "9_frontend_sidebar_store_name": {
+      "status": "PASS",
+      "component": "Layout.jsx sidebar",
+      "description": "Sidebar shows 'Gestión Central Pruebas' after admin_master login"
+    },
+    "10_frontend_customers_page_empty": {
+      "status": "PASS",
+      "page": "/clientes",
+      "description": "Customers page shows 'Lista de Clientes (0 de 0)' and empty state"
+    },
+    "11_frontend_dashboard_kpis_zero": {
+      "status": "PASS",
+      "page": "/",
+      "description": "Dashboard KPIs show 0 for Alquileres Activos, Clientes del Día"
+    },
+    "12_frontend_store_management_access": {
+      "status": "PASS",
+      "page": "/tiendas",
+      "description": "Store Management shows all 4 stores including EL ENEBRO and Gestión Central Pruebas"
+    }
+  },
+  "bug_fix_verification": {
+    "root_cause": "admin_master was sharing store_id=1 with EL ENEBRO store, causing data mixing",
+    "fix_applied": [
+      "Created new store 'Gestión Central Pruebas' with store_id=4 in MongoDB",
+      "Updated admin_master's store_id from 1 to 4",
+      "Added store_name to UserResponse model (server.py line 104)",
+      "Login endpoint now returns store_name from stores collection (lines 645-656)",
+      "/auth/me endpoint returns store_name (lines 664-671)",
+      "Layout.jsx sidebar reads user?.store_name (line 122)"
+    ],
+    "database_changes": {
+      "stores_collection": "New store added: {store_id: 4, name: 'Gestión Central Pruebas'}",
+      "users_collection": "admin_master updated: store_id changed from 1 to 4"
+    }
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_data_isolation.py",
+    "/app/test_reports/pytest/pytest_data_isolation.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Data isolation is now correctly enforced through get_store_filter() in multitenant.py",
+    "ALL users (including super_admin) are now filtered by store_id for operational data",
+    "Super_admin privileges only grant management access (create stores, manage users), not cross-store data access"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_data_isolation.py"
+  ],
+  "success_rate": {
+    "backend": "100% (9/9 tests passed)",
+    "frontend": "100% (4/4 UI tests passed)"
+  },
+  "test_credentials": {
+    "admin_master": "admin_master / admin123 (store_id=4, Gestión Central Pruebas)",
+    "admin_enebro": "admin.enebro@test.com / admin123 (store_id=1, EL ENEBRO)"
+  },
+  "seed_data_creation": "None - verified existing data and new store configuration",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Data isolation fix verified. admin_master now has store_id=4 (Gestión Central Pruebas) - an empty store separate from EL ENEBRO. All store_name fields working correctly in login, auth/me, and frontend sidebar. Store management page correctly shows all stores for super_admin.",
+  "verification_evidence": {
+    "database_state": {
+      "admin_master_store_id": 4,
+      "admin_master_store_name": "Gestión Central Pruebas",
+      "store_4_customers": 0,
+      "store_4_items": 0,
+      "store_1_customers": "17594 (preserved)",
+      "store_1_items": "1952 (preserved)"
+    },
+    "frontend_screenshots": {
+      "customers_page": "Shows 'Lista de Clientes (0 de 0)' with empty state message",
+      "dashboard": "All KPIs show 0 (Alquileres Activos, Devoluciones, Ocupación Stock, Clientes del Día)",
+      "store_management": "Shows all 4 stores with correct data counts"
+    }
+  }
+}
