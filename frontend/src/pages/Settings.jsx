@@ -320,7 +320,7 @@ export default function Settings() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-lg ${darkMode ? 'bg-purple-500/20' : 'bg-purple-100'}`}>
+                    <div className={`p-3 rounded-lg ${darkMode ? 'bg-purple-500/20' : 'bg-purple-500/15 border border-purple-500/20'}`}>
                       <Building2 className="h-6 w-6 text-purple-600" />
                     </div>
                     <div>
@@ -375,7 +375,7 @@ export default function Settings() {
               {/* Logo Upload */}
               <div className={`p-4 rounded-xl border-2 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
                 <div className="flex items-start gap-4">
-                  <div className={`p-3 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-purple-100'}`}>
+                  <div className={`p-3 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-purple-500/15 border border-purple-500/20'}`}>
                     <ImageIcon className={`h-6 w-6 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                   </div>
                   <div className="flex-1">
@@ -435,7 +435,7 @@ export default function Settings() {
               {/* Language Selector */}
               <div className={`flex items-start justify-between p-4 rounded-xl border-2 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
                 <div className="flex items-start gap-4">
-                  <div className={`p-3 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-blue-100'}`}>
+                  <div className={`p-3 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-blue-500/15 border border-blue-500/20'}`}>
                     <Globe className={`h-6 w-6 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                   </div>
                   <div className="flex-1">
@@ -841,7 +841,7 @@ export default function Settings() {
                   {/* Instrucciones de Configuración */}
                   <div className={`p-4 rounded-lg border-2 border-dashed ${darkMode ? 'bg-slate-700/30 border-slate-600' : 'bg-blue-50 border-blue-200'}`}>
                     <div className="flex items-start gap-3">
-                      <div className={`p-1.5 rounded-full ${darkMode ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
+                      <div className={`p-1.5 rounded-full ${darkMode ? 'bg-blue-500/20' : 'bg-blue-500/15'}`}>
                         <AlertCircle className={`h-4 w-4 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                       </div>
                       <div>
