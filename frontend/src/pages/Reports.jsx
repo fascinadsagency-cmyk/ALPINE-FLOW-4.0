@@ -581,7 +581,7 @@ export default function Reports() {
                             <TableCell className="font-medium">{comm.provider_name}</TableCell>
                             <TableCell className="text-center">{comm.customer_count}</TableCell>
                             <TableCell className="text-center">
-                              <Badge className="bg-amber-500/20 text-amber-700">
+                              <Badge className="bg-amber-600 text-white border-0">
                                 {comm.commission_percent}%
                               </Badge>
                             </TableCell>

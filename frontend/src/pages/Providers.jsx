@@ -1155,7 +1155,7 @@ export default function Providers() {
                                 {formatCurrency(rental.amount)}
                               </TableCell>
                               <TableCell className="text-right">
-                                <Badge className="bg-amber-500/20 text-amber-700">
+                                <Badge className="bg-amber-600 text-white border-0">
                                   {formatCurrency(rental.commission)}
                                 </Badge>
                               </TableCell>

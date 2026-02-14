@@ -2542,7 +2542,7 @@ export default function NewRental() {
                               </span>
                             )}
                             {customer.ski_level && customer.ski_level !== 'sin_especificar' && (
-                              <Badge className="bg-blue-500/20 text-blue-700 border-blue-300 capitalize text-xs">
+                              <Badge className="bg-blue-600 text-white border-0 capitalize text-xs">
                                 {customer.ski_level}
                               </Badge>
                             )}
