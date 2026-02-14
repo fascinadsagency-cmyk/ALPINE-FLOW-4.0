@@ -2151,7 +2151,7 @@ export default function ActiveRentals() {
                           {/* Mostrar crédito pendiente si existe */}
                           {rental.pending_refund > 0 && (
                             <div className="mt-1">
-                              <Badge className="bg-amber-500/20 text-amber-700 border-amber-200 text-xs">
+                              <Badge className="bg-amber-600 text-white border-0 text-xs">
                                 💳 -€{rental.pending_refund.toFixed(2)}
                               </Badge>
                             </div>
@@ -2251,7 +2251,7 @@ export default function ActiveRentals() {
                     {swapRental.customer_name}
                   </Badge>
                   <Badge variant="outline">{swapRental.customer_dni}</Badge>
-                  <Badge className="bg-blue-500/20 text-blue-700">
+                  <Badge className="bg-blue-600 text-white border-0">
                     {swapDaysRemaining} días restantes
                   </Badge>
                 </div>
@@ -2731,7 +2731,7 @@ export default function ActiveRentals() {
                             </span>
                           )}
                           {selectedCustomer.ski_level && selectedCustomer.ski_level !== 'sin_especificar' && (
-                            <Badge className="bg-blue-500/20 text-blue-700 border-blue-300 capitalize text-xs">
+                            <Badge className="bg-blue-600 text-white border-0 capitalize text-xs">
                               {selectedCustomer.ski_level}
                             </Badge>
                           )}
