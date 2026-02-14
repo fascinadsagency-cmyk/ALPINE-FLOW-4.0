@@ -83,6 +83,14 @@ Sistema completo de gestión de alquileres para tiendas de equipos de esquí con
 - `.ticket-container` forzado a 80mm de ancho
 - Archivos: `/app/frontend/src/lib/ticketGenerator.js`, `/app/frontend/src/App.css`
 
+## Feature: Logo de Tienda en Sidebar (14/02/2026) ✅
+- Backend: `POST /settings` ahora sincroniza `company_logo` con la colección `stores`
+- Backend: `GET /auth/me` y login devuelven `store_logo` del store
+- Backend: `GET /settings` ahora filtra por `store_id` (aislamiento multi-tenant)
+- Frontend: `Settings.jsx` ya NO hace fake save — llama al backend real
+- Frontend: Tras guardar logo, actualiza AuthContext → sidebar muestra logo al instante
+- Testing: Verificado E2E vía curl y screenshot
+
 ## Fix Aislamiento de Datos admin_master (14/02/2026) ✅
 - **Causa raíz**: admin_master compartía `store_id=1` con "EL ENEBRO" → veía todos sus clientes, alquileres, inventario
 - **Fix**: Creada tienda independiente "Gestión Central Pruebas" (`store_id=4`) para admin_master
