@@ -100,18 +100,18 @@ async def migrate_to_multitenant():
             "username": "admin_master",
             "password": hashed.decode('utf-8'),
             "role": "super_admin",
-            "store_id": None,  # SUPER_ADMIN has no store_id (access to all)
+            "store_id": 1,  # FIXED: SUPER_ADMIN also has their own store (Store 1 - HQ)
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.users.insert_one(super_admin)
-        print("  ✅ SUPER_ADMIN user 'admin_master' created (password: admin123)")
+        print("  ✅ SUPER_ADMIN user 'admin_master' created (password: admin123) - Store 1 (HQ)")
     else:
-        # Update existing to super_admin role
+        # Update existing to super_admin role WITH store_id = 1
         await db.users.update_one(
             {"username": "admin_master"},
-            {"$set": {"role": "super_admin", "store_id": None}}
+            {"$set": {"role": "super_admin", "store_id": 1}}
         )
-        print("  ✅ User 'admin_master' updated to SUPER_ADMIN")
+        print("  ✅ User 'admin_master' updated to SUPER_ADMIN - Store 1 (HQ)")
     
     # ========== STEP 4: Create Compound Indexes ==========
     print("\n🔍 STEP 4: Creating Compound Indexes (for performance)...")
