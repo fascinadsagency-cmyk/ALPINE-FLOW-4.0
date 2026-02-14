@@ -116,7 +116,6 @@ Sistema completo de gestión de alquileres para tiendas de equipos de esquí con
 - **Testing**: 10/10 tests pasados (Playwright hover+getComputedStyle)
 
 ## Backlog / Tareas Futuras
-- Implementar imágenes editables de usuario y tienda (fotos de perfil y logos)
 - Pop-up de intento de salida (Exit-Intent)
 - Refactorizar NewRental.jsx (archivo muy grande, +3000 líneas)
 - Dividir en componentes más pequeños
