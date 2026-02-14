@@ -9581,18 +9581,32 @@ async def delete_store(store_id: int, current_user: CurrentUser = Depends(requir
 @api_router.post("/stores/{store_id}/impersonate")
 async def impersonate_store(store_id: int, current_user: CurrentUser = Depends(require_super_admin)):
     """Impersonate a store - SUPER_ADMIN only - Access as that store's admin"""
-    # Find any admin user of that store
-    admin_user = await db.users.find_one({"store_id": store_id, "role": "admin"})
+    # Verify the store exists
+    store = await db.stores.find_one({"store_id": store_id})
+    if not store:
+        raise HTTPException(status_code=404, detail="Store not found")
+    
+    # Find any admin or super_admin user of that store
+    admin_user = await db.users.find_one({"store_id": store_id, "role": {"$in": ["admin", "super_admin"]}})
     
     if not admin_user:
-        # Create a temporary admin for impersonation
-        raise HTTPException(status_code=404, detail="No admin user found for this store")
+        # No admin found - impersonate as current super_admin with target store_id
+        token = create_token(
+            current_user.user_id,
+            current_user.username,
+            "admin",
+            store_id
+        )
+        return {
+            "access_token": token,
+            "message": f"Impersonating store {store_id} as {current_user.username}"
+        }
     
-    # Create token for that user
+    # Create token for that user with the target store_id
     token = create_token(
         admin_user["id"],
         admin_user["username"],
-        admin_user["role"],
+        "admin",
         store_id
     )
     
