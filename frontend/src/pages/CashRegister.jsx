@@ -853,7 +853,7 @@ export default function CashRegister() {
                         className={`p-1.5 rounded-md transition-all duration-200 ${
                           visibleMetrics.balance 
                             ? `${(summary?.balance_neto_dia || 0) >= 0 ? 'bg-emerald-200 text-emerald-700' : 'bg-red-200 text-red-700'} hover:opacity-80` 
-                            : 'hover:bg-white/50 text-slate-500'
+                            : 'hover:bg-white/50 text-slate-500 hover:text-slate-700'
                         }`}
                         title={visibleMetrics.balance ? 'Ocultar' : 'Mostrar'}
                       >
@@ -901,7 +901,7 @@ export default function CashRegister() {
                       className={`p-1 rounded-md transition-all duration-200 ${
                         visibleMetrics.fondo 
                           ? 'bg-slate-200 text-slate-600' 
-                          : 'hover:bg-slate-200/50 text-slate-400'
+                          : 'hover:bg-slate-200/50 text-slate-400 hover:text-slate-600'
                       }`}
                     >
                       {visibleMetrics.fondo ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
@@ -928,7 +928,7 @@ export default function CashRegister() {
                       className={`p-1 rounded-md transition-all duration-200 ${
                         visibleMetrics.efectivo 
                           ? 'bg-blue-200 text-blue-600' 
-                          : 'hover:bg-blue-200/50 text-blue-400'
+                          : 'hover:bg-blue-200/50 text-blue-400 hover:text-blue-700'
                       }`}
                     >
                       {visibleMetrics.efectivo ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
@@ -955,7 +955,7 @@ export default function CashRegister() {
                       className={`p-1 rounded-md transition-all duration-200 ${
                         visibleMetrics.tarjeta 
                           ? 'bg-purple-200 text-purple-600' 
-                          : 'hover:bg-purple-200/50 text-purple-400'
+                          : 'hover:bg-purple-200/50 text-purple-400 hover:text-purple-700'
                       }`}
                     >
                       {visibleMetrics.tarjeta ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
