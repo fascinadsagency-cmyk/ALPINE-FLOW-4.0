@@ -99,6 +99,8 @@ class UserResponse(BaseModel):
     id: str
     username: str
     role: str
+    email: Optional[str] = ""
+    photo_url: Optional[str] = ""
 
 class TokenResponse(BaseModel):
     access_token: str
