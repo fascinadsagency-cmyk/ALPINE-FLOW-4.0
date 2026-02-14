@@ -367,7 +367,7 @@ export default function Customers() {
           limitType: detail.limit_type,
           currentCount: detail.current_count,
           maxCount: detail.max_allowed,
-          planType: detail.plan_name
+          planType: detail.plan_type || detail.plan_name
         });
         return;
       }
