@@ -149,3 +149,11 @@ Sistema completo de gestión de alquileres para tiendas de equipos de esquí con
   - Botón cambia a "Registrar Crédito €X.XX"
 - **Pendiente**: Testing completo del flujo
 
+## Bug Fix: Impersonación de Tiendas P0 (14/02/2026) ✅
+- **Causa raíz**: El endpoint `/stores/{store_id}/impersonate` solo buscaba usuarios con `role: "admin"`, pero store 4 (Gestión Central Pruebas) solo tenía un usuario `super_admin` (admin_master) → retornaba 404
+- **Fix backend**: Cambiada query a `role: {"$in": ["admin", "super_admin"]}`, con fallback que genera token para el super_admin actual si no encuentra admin en la tienda
+- **Fix frontend**: Añadido banner de impersonación (amber) con botón "Volver a Super Admin" que restaura el token original
+- **Mejora UX**: Se guarda token original en localStorage como `super_admin_token`, se restaura al hacer clic en "Volver"
+- **Fix Layout**: Añadido `useNavigate` faltante en Layout.jsx (causaba error al clickear avatar)
+- **Testing**: 9/9 tests pasados (5 backend API + 4 frontend E2E)
+
