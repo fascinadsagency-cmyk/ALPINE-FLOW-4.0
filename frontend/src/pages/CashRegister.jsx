@@ -680,9 +680,9 @@ export default function CashRegister() {
 
   const getMovementTypeBadge = (type) => {
     switch(type) {
-      case 'income': return <Badge className="bg-emerald-500/20 text-emerald-700">Entrada</Badge>;
-      case 'expense': return <Badge className="bg-red-100 text-red-700">Salida</Badge>;
-      case 'refund': return <Badge className="bg-orange-100 text-orange-700">Devolución</Badge>;
+      case 'income': return <Badge className="bg-emerald-600 text-white border-0">Entrada</Badge>;
+      case 'expense': return <Badge className="bg-red-500 text-white border-0">Salida</Badge>;
+      case 'refund': return <Badge className="bg-orange-600 text-white border-0">Devolución</Badge>;
       default: return <Badge variant="outline">{type}</Badge>;
     }
   };
@@ -1310,12 +1310,12 @@ export default function CashRegister() {
                             </TableCell>
                             <TableCell>
                               {mov.payment_method === 'cash' ? (
-                                <Badge className="bg-emerald-500/20 text-emerald-700">
+                                <Badge className="bg-emerald-600 text-white border-0">
                                   <Banknote className="h-3 w-3 mr-1" />
                                   Efectivo
                                 </Badge>
                               ) : (
-                                <Badge className="bg-purple-500/20 text-purple-700">
+                                <Badge className="bg-purple-600 text-white border-0">
                                   <CreditCard className="h-3 w-3 mr-1" />
                                   Tarjeta
                                 </Badge>
@@ -1930,7 +1930,7 @@ export default function CashRegister() {
                   <p className={`text-2xl font-bold ${selectedHistoryMovement.type === 'expense' ? 'text-red-600' : 'text-emerald-600'}`}>
                     {selectedHistoryMovement.type === 'expense' ? '-' : '+'}€{(selectedHistoryMovement.amount || 0).toFixed(2)}
                   </p>
-                  <Badge className={selectedHistoryMovement.payment_method === 'cash' ? 'bg-emerald-500/20 text-emerald-700' : 'bg-purple-500/20 text-purple-700'}>
+                  <Badge className={selectedHistoryMovement.payment_method === 'cash' ? 'bg-emerald-600 text-white border-0' : 'bg-purple-600 text-white border-0'}>
                     {selectedHistoryMovement.payment_method === 'cash' ? 'Efectivo' : 'Tarjeta'}
                   </Badge>
                 </div>
