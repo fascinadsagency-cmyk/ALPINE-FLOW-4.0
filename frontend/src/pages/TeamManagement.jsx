@@ -27,6 +27,7 @@ export default function TeamManagement() {
   const [teamMembers, setTeamMembers] = useState([]);
   const [teamCount, setTeamCount] = useState({ total: 0, staff: 0, admin: 0, max_users: 15, max_staff: 10, can_add_more: true, plan_name: "Plan Enterprise" });
   const [showDialog, setShowDialog] = useState(false);
+  const [planLimitModal, setPlanLimitModal] = useState({ open: false, limitType: '', currentCount: 0, maxCount: 0, planType: '' });
   const [editingMember, setEditingMember] = useState(null);
   const [loading, setLoading] = useState(false);
 
