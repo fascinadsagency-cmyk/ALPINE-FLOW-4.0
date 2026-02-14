@@ -895,7 +895,7 @@ export default function Customers() {
                 variant={selectedStatus === "inactive" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedStatus("inactive")}
-                className={`gap-2 ${selectedStatus === "inactive" ? "bg-slate-600 hover:bg-slate-700" : "border-slate-300 text-slate-600 hover:bg-slate-50"}`}
+                className={`gap-2 ${selectedStatus === "inactive" ? "bg-slate-600 hover:bg-slate-700 text-white" : "border-slate-300 text-slate-700 hover:bg-slate-600 hover:text-white hover:border-slate-600"}`}
                 data-testid="filter-inactive"
               >
                 <History className="h-4 w-4" />
