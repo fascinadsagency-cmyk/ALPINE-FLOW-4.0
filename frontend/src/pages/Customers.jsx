@@ -887,7 +887,7 @@ export default function Customers() {
               >
                 <Package className="h-4 w-4" />
                 Activos Hoy
-                <Badge className={`ml-1 ${selectedStatus === "active" ? "bg-emerald-800 text-white" : "bg-emerald-500/20 text-emerald-700"}`}>
+                <Badge className={`ml-1 ${selectedStatus === "active" ? "bg-emerald-800 text-white" : "bg-emerald-600 text-white border-0"}`}>
                   {statusCounts.active}
                 </Badge>
               </Button>
