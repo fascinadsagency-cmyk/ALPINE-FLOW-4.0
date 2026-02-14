@@ -33,6 +33,7 @@ export default function Layout() {
   const { user, logout, returnToSuperAdmin, isImpersonating } = useAuth();
   const { darkMode, t } = useSettings();
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
