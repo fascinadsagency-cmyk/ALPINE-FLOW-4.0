@@ -38,6 +38,7 @@ export default function Customers() {
   const [customerHistory, setCustomerHistory] = useState(null);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [showNewCustomerDialog, setShowNewCustomerDialog] = useState(false);
+  const [planLimitModal, setPlanLimitModal] = useState({ open: false, limitType: '', currentCount: 0, maxCount: 0, planType: '' });
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
