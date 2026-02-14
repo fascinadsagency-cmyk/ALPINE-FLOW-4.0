@@ -387,19 +387,27 @@ export default function LandingPage() {
               <div className="space-y-4">
                 <div className="flex items-start gap-3 text-sm">
                   <Check className="h-5 w-5 text-white flex-shrink-0 mt-0.5" />
-                  <span className="text-white font-semibold">500 productos</span>
+                  <span className="text-white font-semibold">Hasta 3.000 artículos</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
                   <Check className="h-5 w-5 text-white flex-shrink-0 mt-0.5" />
-                  <span className="text-white font-semibold">2.000 clientes</span>
+                  <span className="text-white font-semibold">Hasta 40.000 clientes</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
                   <Check className="h-5 w-5 text-white flex-shrink-0 mt-0.5" />
-                  <span className="text-white font-semibold">3 tiendas</span>
+                  <span className="text-white font-semibold">Hasta 10 usuarios</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
                   <Check className="h-5 w-5 text-white flex-shrink-0 mt-0.5" />
                   <span className="text-white font-semibold">Todas las funciones</span>
+                </div>
+                <div className="flex items-start gap-3 text-sm">
+                  <Check className="h-5 w-5 text-white flex-shrink-0 mt-0.5" />
+                  <span className="text-white font-semibold">Soporte incluido</span>
+                </div>
+                <div className="flex items-start gap-3 text-sm">
+                  <Check className="h-5 w-5 text-white flex-shrink-0 mt-0.5" />
+                  <span className="text-white font-semibold">Modo Offline</span>
                 </div>
               </div>
             </div>
