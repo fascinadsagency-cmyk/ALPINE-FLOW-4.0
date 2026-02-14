@@ -8142,7 +8142,7 @@ class FAQCreate(BaseModel):
 @api_router.get("/settings")
 async def get_settings(current_user: CurrentUser = Depends(get_current_user)):
     """Get business settings from database, including store-level hardware settings"""
-    settings = await db.settings.find_one({"type": "business"}, {"_id": 0})
+    settings = await db.settings.find_one({"type": "business", "store_id": current_user.store_id}, {"_id": 0})
     
     # Base defaults
     result = {
