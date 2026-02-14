@@ -1839,9 +1839,9 @@ export default function ActiveRentals() {
     const unpaidMethods = ['pending'];
     
     if (paidMethods.includes(method)) {
-      return 'bg-emerald-500/20 text-emerald-700 border-emerald-300';
+      return 'bg-emerald-600 text-white border-0';
     } else if (method === 'pending') {
-      return 'bg-red-100 text-red-700 border-red-300';
+      return 'bg-red-500 text-white border-0';
     }
     
     return 'bg-slate-100 text-slate-700 border-slate-300';
@@ -2128,14 +2128,14 @@ export default function ActiveRentals() {
                             <span>{formatDate(rental.end_date)}</span>
                           </div>
                           {isOverdue(rental.end_date) && (
-                            <Badge className="bg-red-100 text-red-700 border-red-200 text-xs mt-1">
+                            <Badge className="bg-red-500 text-white border-0 text-xs mt-1">
                               Retrasado {Math.abs(getDaysRemaining(rental.end_date))}d
                             </Badge>
                           )}
                         </TableCell>
                         
                         <TableCell className="text-center">
-                          <Badge className="bg-blue-500/20 text-blue-700">
+                          <Badge className="bg-blue-600 text-white border-0">
                             {rental.days}d
                           </Badge>
                         </TableCell>
@@ -2145,7 +2145,7 @@ export default function ActiveRentals() {
                         </TableCell>
                         
                         <TableCell className="text-right">
-                          <span className={`font-medium ${rental.pending_amount > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                          <span className={`font-medium ${rental.pending_amount > 0 ? 'text-red-600' : 'text-emerald-700'}`}>
                             €{rental.pending_amount.toFixed(2)}
                           </span>
                           {/* Mostrar crédito pendiente si existe */}
