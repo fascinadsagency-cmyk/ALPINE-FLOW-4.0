@@ -491,7 +491,7 @@ export default function Dashboard() {
                   {(day.deliveries > 0 || day.returns > 0) && (
                     <div className="flex items-center justify-center gap-2 mt-2 pt-2 border-t border-slate-100">
                       {day.deliveries > 0 && (
-                        <span className="flex items-center text-[10px] text-emerald-600">
+                        <span className="flex items-center text-[10px] text-cyan-600">
                           <ArrowUp className="h-3 w-3" />
                           {day.deliveries}
                         </span>
@@ -525,8 +525,8 @@ export default function Dashboard() {
                     <div className="text-center p-3 rounded-lg bg-white border border-slate-200">
                       <p className="text-xs text-slate-500 mb-1">Entregas</p>
                       <div className="flex items-center justify-center gap-1">
-                        <ArrowUp className="h-5 w-5 text-emerald-500" />
-                        <span className="text-2xl font-bold text-emerald-600">{dayData.deliveries}</span>
+                        <ArrowUp className="h-5 w-5 text-cyan-500" />
+                        <span className="text-2xl font-bold text-cyan-600">{dayData.deliveries}</span>
                       </div>
                     </div>
                     <div className="text-center p-3 rounded-lg bg-white border border-slate-200">
@@ -557,7 +557,7 @@ export default function Dashboard() {
           <CardHeader className="pb-3">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-amber-500" />
+                <Trophy className="h-5 w-5 text-purple-500" />
                 Rendimiento de Inventario
               </CardTitle>
               
@@ -655,7 +655,7 @@ export default function Dashboard() {
                         className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
                       >
                         <div className={`h-8 w-8 rounded-lg flex items-center justify-center font-bold text-white ${
-                          idx === 0 ? 'bg-amber-500' : idx === 1 ? 'bg-slate-400' : idx === 2 ? 'bg-amber-700' : 'bg-slate-300'
+                          idx === 0 ? 'bg-gradient-to-br from-purple-500 to-pink-500' : idx === 1 ? 'bg-slate-400' : idx === 2 ? 'bg-gradient-to-br from-purple-600 to-pink-600' : 'bg-slate-300'
                         }`}>
                           {idx + 1}
                         </div>
@@ -688,7 +688,7 @@ export default function Dashboard() {
                         className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
                       >
                         <div className={`h-8 w-8 rounded-lg flex items-center justify-center font-bold text-white ${
-                          idx === 0 ? 'bg-emerald-500' : idx === 1 ? 'bg-slate-400' : idx === 2 ? 'bg-emerald-700' : 'bg-slate-300'
+                          idx === 0 ? 'bg-gradient-to-br from-cyan-500 to-blue-500' : idx === 1 ? 'bg-slate-400' : idx === 2 ? 'bg-gradient-to-br from-cyan-600 to-blue-600' : 'bg-slate-300'
                         }`}>
                           {idx + 1}
                         </div>
@@ -698,7 +698,7 @@ export default function Dashboard() {
                             {item.item_type} • Talla {item.size} • {item.category}
                           </p>
                         </div>
-                        <Badge className="bg-emerald-500/20 text-emerald-700">
+                        <Badge className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-0">
                           €{item.total_revenue.toFixed(2)}
                         </Badge>
                       </div>
