@@ -54,7 +54,7 @@ export default function Login() {
         <Button 
           variant="ghost" 
           onClick={() => navigate("/landing")}
-          className="gap-2 text-white lg:text-slate-700"
+          className="gap-2 text-white hover:bg-white/10 lg:text-slate-700 lg:hover:bg-slate-100"
         >
           <ArrowLeft className="h-4 w-4" />
           Volver al inicio
@@ -174,7 +174,7 @@ export default function Login() {
               </div>
               <Button 
                 type="submit" 
-                className="w-full h-11 font-semibold"
+                className="w-full h-11 font-semibold bg-black hover:bg-black/90 text-white"
                 disabled={loading}
                 data-testid="login-submit-btn"
                 tabIndex={4}
