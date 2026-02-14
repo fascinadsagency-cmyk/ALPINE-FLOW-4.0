@@ -7,6 +7,8 @@ import {
   CreditCard, 
   Loader2,
   CheckCircle,
+  Check,
+  X,
   Clock,
   Save,
   Receipt,
@@ -16,7 +18,9 @@ import {
   Sparkles,
   Package,
   Users,
-  UserPlus
+  UserPlus,
+  Crown,
+  Rocket
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
