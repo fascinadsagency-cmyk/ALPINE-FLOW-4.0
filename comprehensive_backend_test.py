@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
 class ComprehensiveAlpineFlowTester:
-    def __init__(self, base_url: str = "https://minimalist-landing.preview.emergentagent.com"):
+    def __init__(self, base_url: str = "https://skiflow-ui-refresh.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.token = None

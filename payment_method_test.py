@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 import sys
 
 # Configuration
-BACKEND_URL = "https://minimalist-landing.preview.emergentagent.com/api"
+BACKEND_URL = "https://skiflow-ui-refresh.preview.emergentagent.com/api"
 TEST_DATE = "2026-02-04"
 
 class PaymentMethodTester:
