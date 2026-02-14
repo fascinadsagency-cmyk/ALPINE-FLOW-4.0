@@ -3167,12 +3167,12 @@ export default function ActiveRentals() {
                                 {rental.days} {rental.days === 1 ? 'día' : 'días'}
                               </Badge>
                               {(rental.status === 'active' || rental.status === 'partial') && (
-                                <Badge className="bg-emerald-500/20 text-emerald-700 border-emerald-300">
+                                <Badge className="bg-emerald-600 text-white border-0">
                                   Activo
                                 </Badge>
                               )}
                             </div>
-                            <Badge className="bg-emerald-500/20 text-emerald-700">
+                            <Badge className="bg-emerald-600 text-white border-0">
                               <DollarSign className="h-3 w-3 mr-1" />
                               €{(rental.total_amount || 0).toFixed(2)}
                             </Badge>
@@ -3362,7 +3362,7 @@ export default function ActiveRentals() {
                     <p className="text-sm text-slate-500">{changeRental.customer_dni}</p>
                   </div>
                   <div className="text-right">
-                    <Badge className="bg-blue-500/20 text-blue-700 mb-1">
+                    <Badge className="bg-blue-600 text-white border-0 mb-1">
                       {changeDaysRemaining} días restantes
                     </Badge>
                     <p className="text-xs text-slate-500">Total: €{changeRental.total_amount?.toFixed(2) || '0.00'}</p>
