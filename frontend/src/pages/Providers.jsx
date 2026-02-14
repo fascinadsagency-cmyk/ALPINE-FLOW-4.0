@@ -458,12 +458,12 @@ export default function Providers() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           {provider.discount_percent > 0 && (
-                            <Badge className="bg-emerald-500/20 text-emerald-700 text-xs">
+                            <Badge className="bg-emerald-600 text-white border-0 text-xs font-semibold">
                               -{provider.discount_percent}%
                             </Badge>
                           )}
                           {provider.commission_percent > 0 && (
-                            <Badge className="bg-blue-500/20 text-blue-700 text-xs">
+                            <Badge className="bg-blue-600 text-white border-0 text-xs font-semibold">
                               +{provider.commission_percent}%
                             </Badge>
                           )}
