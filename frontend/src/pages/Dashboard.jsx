@@ -173,23 +173,23 @@ export default function Dashboard() {
   const categoryColors = {
     SUPERIOR: { bg: 'bg-purple-500/20', bar: 'bg-purple-600', text: 'text-purple-700', light: 'bg-purple-500/10' },
     ALTA: { bg: 'bg-blue-500/20', bar: 'bg-blue-600', text: 'text-blue-700', light: 'bg-blue-500/10' },
-    MEDIA: { bg: 'bg-emerald-500/20', bar: 'bg-emerald-600', text: 'text-emerald-700', light: 'bg-emerald-500/10' }
+    MEDIA: { bg: 'bg-cyan-500/20', bar: 'bg-cyan-600', text: 'text-cyan-700', light: 'bg-cyan-500/10' }
   };
 
   const getAvailabilityColor = (status) => {
     switch(status) {
-      case 'high': return 'bg-emerald-500';
-      case 'medium': return 'bg-amber-500';
-      case 'low': return 'bg-red-500';
+      case 'high': return 'bg-cyan-500';
+      case 'medium': return 'bg-purple-500';
+      case 'low': return 'bg-pink-500';
       default: return 'bg-slate-300';
     }
   };
 
   const getAvailabilityBg = (status) => {
     switch(status) {
-      case 'high': return 'bg-emerald-500/10 border-emerald-200';
-      case 'medium': return 'bg-amber-500/10 border-amber-200';
-      case 'low': return 'bg-red-50 border-red-200';
+      case 'high': return 'bg-cyan-500/10 border-cyan-200';
+      case 'medium': return 'bg-purple-500/10 border-purple-200';
+      case 'low': return 'bg-pink-500/10 border-pink-200';
       default: return 'bg-slate-50 border-slate-200';
     }
   };
@@ -425,15 +425,15 @@ export default function Dashboard() {
             </CardTitle>
             <div className="flex items-center gap-2 text-xs">
               <span className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-emerald-500"></div>
+                <div className="w-3 h-3 rounded bg-cyan-500"></div>
                 Alta disp.
               </span>
               <span className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-amber-500"></div>
+                <div className="w-3 h-3 rounded bg-purple-500"></div>
                 Pocos
               </span>
               <span className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-red-500"></div>
+                <div className="w-3 h-3 rounded bg-pink-500"></div>
                 Crítico
               </span>
             </div>
