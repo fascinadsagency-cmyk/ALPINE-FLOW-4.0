@@ -203,10 +203,6 @@ export default function PlanSelection() {
               : "Sin letras pequeñas. Todos los planes incluyen TODAS las funciones."}
           </p>
         </div>
-              ? "Selecciona un plan para continuar gestionando tu tienda de alquiler de esquí"
-              : "Todos los planes incluyen soporte técnico, actualizaciones y acceso completo a la aplicación"}
-          </p>
-        </div>
 
         {/* Current Usage Alert */}
         {planStatus && (
