@@ -452,6 +452,55 @@ def get_plan_limits(store: dict) -> dict:
     
     return plan_info
 
+async def check_plan_limit(current_user, limit_type: str):
+    """
+    Reusable plan limit checker. Raises HTTPException(403) if limit exceeded.
+    limit_type: 'items', 'customers', or 'users'
+    """
+    store = await db.stores.find_one({"store_id": current_user.store_id})
+    if not store:
+        return  # No store = no limits to check
+    
+    plan_info = get_plan_limits(store)
+    plan_type = store.get("plan") or store.get("plan_type", "trial")
+    
+    # Check trial expiration
+    if plan_type == "trial":
+        trial_start = store.get("trial_start_date")
+        if trial_start:
+            if isinstance(trial_start, str):
+                trial_start_dt = datetime.fromisoformat(trial_start.replace('Z', '+00:00'))
+            else:
+                trial_start_dt = trial_start
+            if (datetime.now(timezone.utc) - trial_start_dt).days > 15:
+                raise HTTPException(status_code=403, detail="Tu período de prueba ha expirado. Por favor, selecciona un plan para continuar.")
+    
+    store_filter = current_user.get_store_filter()
+    limit_map = {
+        'items': ('max_items', 999999, db.items),
+        'customers': ('max_customers', 999999, db.customers),
+        'users': ('max_users', 999, db.users),
+    }
+    
+    key, unlimited_val, collection = limit_map[limit_type]
+    max_val = plan_info[key]
+    if max_val >= unlimited_val:
+        return  # Unlimited
+    
+    current_count = await collection.count_documents(store_filter)
+    if current_count >= max_val:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "PLAN_LIMIT_EXCEEDED",
+                "limit_type": limit_type,
+                "current_count": current_count,
+                "max_allowed": max_val,
+                "plan_name": plan_info["name"],
+                "message": f"Límite de {limit_type} alcanzado ({max_val}). Actualiza tu plan para añadir más."
+            }
+        )
+
 # ==================== AUTH ROUTES ====================
 
 class PublicRegisterRequest(BaseModel):
