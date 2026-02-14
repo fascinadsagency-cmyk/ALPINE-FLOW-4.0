@@ -221,15 +221,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing Section - MODERN CARDS */}
+      {/* Pricing Section */}
       <section id="pricing" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
-        <div className="mb-20">
-          <h2 className="text-5xl sm:text-6xl font-black text-black mb-6 leading-tight uppercase tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans' }}>
-            Planes que<br/>
-            <span className="text-slate-400">escalan contigo</span>
+        <div className="mb-20 text-center">
+          <h2 className="text-5xl sm:text-6xl font-black text-black mb-6 leading-tight tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans' }}>
+            Planes que escalan con tu inventario
           </h2>
-          <p className="text-xl text-slate-600 max-w-2xl font-medium">
-            Sin letras pequeñas. Todas las funciones en todos los planes.
+          <p className="text-xl text-slate-600 max-w-2xl mx-auto font-medium">
+            Sin letras pequeñas. Todos los planes incluyen TODAS las funciones.
           </p>
         </div>
 
