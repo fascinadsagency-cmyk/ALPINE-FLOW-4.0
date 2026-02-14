@@ -579,7 +579,7 @@ export default function Maintenance() {
                     >
                       <div className="flex items-start gap-4">
                         {/* Icon */}
-                        <div className="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                        <div className="h-10 w-10 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
                           <Clock className="h-5 w-5 text-amber-600" />
                         </div>
                         
@@ -635,7 +635,7 @@ export default function Maintenance() {
           {/* Empty state */}
           {alertItems.length === 0 && upcomingItems.length === 0 && (
             <div className="text-center py-16">
-              <div className="h-24 w-24 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+              <div className="h-24 w-24 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="h-12 w-12 text-emerald-600" />
               </div>
               <h3 className="text-xl font-bold text-slate-800 mb-2">¡Todo en orden!</h3>

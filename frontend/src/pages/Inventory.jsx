@@ -1123,9 +1123,9 @@ export default function Inventory() {
 
   const getStatusBadge = (status) => {
     const styles = {
-      available: "bg-emerald-100 text-emerald-700",
+      available: "bg-emerald-500/20 text-emerald-700",
       rented: "bg-red-100 text-red-700",
-      maintenance: "bg-amber-100 text-amber-700",
+      maintenance: "bg-amber-500/20 text-amber-700",
       retired: "bg-slate-100 text-slate-600"
     };
     const labels = {
@@ -1845,7 +1845,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                             
                             {/* ESTADO ROI */}
                             <TableCell className="text-center">
-                              <Badge className={isRentable ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-red-100 text-red-700 border-red-300'}>
+                              <Badge className={isRentable ? 'bg-emerald-500/20 text-emerald-700 border-emerald-300' : 'bg-red-100 text-red-700 border-red-300'}>
                                 {isRentable ? '✓ Rentable' : '⏳ Amortizando'}
                               </Badge>
                             </TableCell>
@@ -1916,7 +1916,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                           return null;
                         case 'status':
                           return item.is_generic ? (
-                            <Badge className={item.stock_available > 0 ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}>
+                            <Badge className={item.stock_available > 0 ? "bg-emerald-500/20 text-emerald-700" : "bg-red-100 text-red-700"}>
                               {item.stock_available > 0 ? 'Disponible' : 'Agotado'}
                             </Badge>
                           ) : getStatusBadge(item.status);
@@ -2064,7 +2064,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
           {!newItem.is_generic && (
             <div className={`p-3 rounded-lg border transition-all duration-200 ${
               scannerMode 
-                ? 'bg-emerald-100 border-emerald-400' 
+                ? 'bg-emerald-500/20 border-emerald-400' 
                 : 'bg-slate-50 border-slate-200'
             }`}>
               <div className="flex items-center justify-between">

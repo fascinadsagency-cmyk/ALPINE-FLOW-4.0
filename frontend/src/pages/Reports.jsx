@@ -278,7 +278,7 @@ export default function Reports() {
                     <p className="text-sm font-medium text-slate-500">Total Ingresos</p>
                     <p className="text-2xl font-bold text-slate-900">{formatCurrency(report.total_revenue)}</p>
                   </div>
-                  <div className="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                  <div className="h-12 w-12 rounded-xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
                     <DollarSign className="h-6 w-6 text-emerald-600" />
                   </div>
                 </div>
@@ -314,7 +314,7 @@ export default function Reports() {
                     <p className="text-sm font-medium text-slate-500">Nuevos Alquileres</p>
                     <p className="text-2xl font-bold text-slate-900">{report.new_rentals}</p>
                   </div>
-                  <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <div className="h-12 w-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0">
                     <TrendingUp className="h-6 w-6 text-blue-600" />
                   </div>
                 </div>
@@ -350,7 +350,7 @@ export default function Reports() {
                     <p className="text-sm font-medium text-slate-500">Devoluciones</p>
                     <p className="text-2xl font-bold text-slate-900">{report.returns}</p>
                   </div>
-                  <div className="h-12 w-12 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
+                  <div className="h-12 w-12 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
                     <Clock className="h-6 w-6 text-purple-600" />
                   </div>
                 </div>
@@ -386,7 +386,7 @@ export default function Reports() {
                     <p className="text-sm font-medium text-slate-500">Reparaciones</p>
                     <p className="text-2xl font-bold text-slate-900">{formatCurrency(report.repairs_revenue)}</p>
                   </div>
-                  <div className="h-12 w-12 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                  <div className="h-12 w-12 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
                     <Wrench className="h-6 w-6 text-amber-600" />
                   </div>
                 </div>
@@ -581,7 +581,7 @@ export default function Reports() {
                             <TableCell className="font-medium">{comm.provider_name}</TableCell>
                             <TableCell className="text-center">{comm.customer_count}</TableCell>
                             <TableCell className="text-center">
-                              <Badge className="bg-amber-100 text-amber-700">
+                              <Badge className="bg-amber-500/20 text-amber-700">
                                 {comm.commission_percent}%
                               </Badge>
                             </TableCell>

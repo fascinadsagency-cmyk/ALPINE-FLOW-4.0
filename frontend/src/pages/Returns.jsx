@@ -1539,7 +1539,7 @@ export default function Returns() {
                 onKeyDown={handleBarcodeScan}
                 className={`h-16 pl-14 pr-14 text-xl font-mono text-center bg-emerald-50 border-2 focus:ring-emerald-200 rounded-2xl shadow-inner transition-all ${
                   globalScannerActive 
-                    ? 'border-emerald-500 ring-2 ring-emerald-300 bg-emerald-100' 
+                    ? 'border-emerald-500 ring-2 ring-emerald-300 bg-emerald-500/20' 
                     : 'border-emerald-200 focus:border-emerald-500'
                 }`}
                 data-testid="return-barcode-input"
@@ -1569,7 +1569,7 @@ export default function Returns() {
                   <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm h-full">
                     <div className="flex items-start gap-4">
                       <Avatar className="h-16 w-16 border-2 border-emerald-200">
-                        <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xl font-bold">
+                        <AvatarFallback className="bg-emerald-500/20 text-emerald-700 text-xl font-bold">
                           {rental.customer_name?.split(' ').map(n => n[0]).join('').substring(0, 2)}
                         </AvatarFallback>
                       </Avatar>
@@ -1725,7 +1725,7 @@ export default function Returns() {
                             {/* Código */}
                             <div className="flex-shrink-0 w-32 text-center">
                               <span className={`font-mono text-sm px-2 py-1 rounded ${
-                                isScanned ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
+                                isScanned ? 'bg-emerald-500/20 text-emerald-700' : 'bg-slate-100 text-slate-600'
                               }`}>
                                 {item.internal_code || item.barcode?.substring(0, 12) || '-'}
                               </span>
@@ -2224,7 +2224,7 @@ export default function Returns() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-100"
+                        className="gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-500/20"
                         onClick={() => callPhone(selectedCustomer.phone)}
                       >
                         <Phone className="h-3 w-3" />
@@ -2256,7 +2256,7 @@ export default function Returns() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-100"
+                      className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-500/20"
                       onClick={() => sendEmail(selectedCustomer.email, selectedCustomer.name)}
                     >
                       <Mail className="h-3 w-3" />
@@ -2357,7 +2357,7 @@ export default function Returns() {
                     <p className="text-sm text-slate-500">{changeRental.customer_dni}</p>
                   </div>
                   <div className="text-right">
-                    <Badge className="bg-blue-100 text-blue-700 mb-1">
+                    <Badge className="bg-blue-500/20 text-blue-700 mb-1">
                       {changeDaysRemaining} días restantes
                     </Badge>
                     <p className="text-xs text-slate-500">Total: €{changeRental.total_amount?.toFixed(2) || '0.00'}</p>
@@ -2549,7 +2549,7 @@ export default function Returns() {
                       {/* Economic difference */}
                       {changeDateDelta !== 0 && (
                         <div className={`mt-3 p-2 rounded text-center ${
-                          changeDateDelta > 0 ? 'bg-orange-100' : 'bg-emerald-100'
+                          changeDateDelta > 0 ? 'bg-orange-100' : 'bg-emerald-500/20'
                         }`}>
                           <p className="text-xs text-slate-600">
                             {changeDateDelta > 0 ? 'Suplemento por extensión' : 'Abono por devolución anticipada'}

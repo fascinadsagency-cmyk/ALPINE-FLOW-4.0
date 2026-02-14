@@ -294,7 +294,7 @@ export default function Settings() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-lg ${darkMode ? 'bg-emerald-500/20' : 'bg-emerald-100'}`}>
+                    <div className={`p-3 rounded-lg ${darkMode ? 'bg-emerald-500/20' : 'bg-emerald-500/20'}`}>
                       <CreditCard className="h-6 w-6 text-emerald-600" />
                     </div>
                     <div>
@@ -471,7 +471,7 @@ export default function Settings() {
               {/* Dark Mode Toggle */}
               <div className={`flex items-start justify-between p-4 rounded-xl border-2 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
                 <div className="flex items-start gap-4">
-                  <div className={`p-3 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-indigo-100'}`}>
+                  <div className={`p-3 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-indigo-500/20'}`}>
                     {darkMode ? (
                       <Moon className="h-6 w-6 text-indigo-400" />
                     ) : (
@@ -754,7 +754,7 @@ export default function Settings() {
               {/* ===== SECCIÓN B: IMPRESORA ===== */}
               <div className={`p-4 rounded-xl border-2 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className={`p-2 rounded-lg ${darkMode ? 'bg-cyan-500/20' : 'bg-cyan-100'}`}>
+                  <div className={`p-2 rounded-lg ${darkMode ? 'bg-cyan-500/20' : 'bg-cyan-500/20'}`}>
                     <Printer className={`h-5 w-5 ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
                   </div>
                   <h3 className={`font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
