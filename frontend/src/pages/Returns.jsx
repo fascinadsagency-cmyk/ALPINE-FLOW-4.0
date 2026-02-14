@@ -1849,7 +1849,7 @@ export default function Returns() {
                   variant="ghost" 
                   size="lg"
                   onClick={resetForm}
-                  className="h-14 px-6 text-slate-500 hover:text-slate-700"
+                  className="h-14 px-6 text-slate-500 hover:text-white hover:bg-slate-600"
                 >
                   <X className="h-5 w-5 mr-2" />
                   Cancelar
