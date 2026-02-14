@@ -9772,48 +9772,10 @@ async def create_team_member(
 ):
     """Create new team member (STAFF) - ADMIN ONLY. Respects plan limits."""
     
+    # PLAN LIMIT VALIDATION
+    await check_plan_limit(current_user, 'users')
+    
     store_filter = current_user.get_store_filter()
-    
-    # Get store and plan info for limit validation
-    store = await db.stores.find_one({"store_id": current_user.store_id})
-    if not store:
-        raise HTTPException(status_code=404, detail="Tienda no encontrada")
-    
-    plan_info = get_plan_limits(store)
-    max_users = plan_info["max_users"]
-    plan_name = store.get("plan") or store.get("plan_type", "trial")
-    
-    # Check if trial expired (only applies to trial plans, not paid plans)
-    if plan_name == "trial" and store:
-        trial_start = store.get("trial_start_date")
-        if trial_start:
-            if isinstance(trial_start, str):
-                trial_start_dt = datetime.fromisoformat(trial_start.replace('Z', '+00:00'))
-            else:
-                trial_start_dt = trial_start
-            days_since_start = (datetime.now(timezone.utc) - trial_start_dt).days
-            if days_since_start > 15:
-                raise HTTPException(
-                    status_code=403,
-                    detail="Tu período de prueba ha expirado. Por favor, selecciona un plan para continuar."
-                )
-    
-    # VALIDATION: Count existing users in this store
-    current_users_count = await db.users.count_documents(store_filter)
-    
-    # PLAN LIMIT: Check max_users from plan
-    if max_users != 999 and current_users_count >= max_users:
-        raise HTTPException(
-            status_code=403,
-            detail={
-                "error": "PLAN_LIMIT_EXCEEDED",
-                "limit_type": "users",
-                "current_count": current_users_count,
-                "max_allowed": max_users,
-                "plan_name": plan_info["name"],
-                "message": f"Límite de usuarios alcanzado ({max_users}). Actualiza tu plan para añadir más."
-            }
-        )
     
     # SECURITY: Check if username already exists globally
     existing_user = await db.users.find_one({"username": member.username})
