@@ -229,45 +229,45 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
         {/* Card 1: Alquileres Activos */}
         <Card 
-          className="relative overflow-hidden cursor-pointer group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-blue-50"
+          className="relative overflow-hidden cursor-pointer group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-blue-500 to-indigo-600"
           onClick={() => navigate('/alquileres-activos')}
         >
           {/* Gradient accent bar */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-purple-600"></div>
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 to-purple-400"></div>
           
           <CardContent className="p-3 relative">
             <div className="flex items-start justify-between mb-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+              <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
                 <ShoppingCart className="h-4 w-4 text-white" />
               </div>
-              <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+              <ChevronRight className="h-3.5 w-3.5 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" />
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Alquileres Activos</p>
-              <p className="text-2xl font-black text-slate-900 mb-0.5">{stats.active_rentals || 0}</p>
-              <p className="text-[10px] text-slate-600">En curso ahora mismo</p>
+              <p className="text-[10px] font-bold text-white/80 uppercase tracking-wide mb-0.5">Alquileres Activos</p>
+              <p className="text-2xl font-black text-white mb-0.5">{stats.active_rentals || 0}</p>
+              <p className="text-[10px] text-white/70">En curso ahora mismo</p>
             </div>
           </CardContent>
         </Card>
 
         {/* Card 2: Devoluciones Pendientes */}
         <Card 
-          className="relative overflow-hidden cursor-pointer group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-purple-50"
+          className="relative overflow-hidden cursor-pointer group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-purple-500 to-pink-600"
           onClick={() => navigate('/devoluciones')}
         >
           {/* Gradient accent bar */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-pink-600"></div>
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-400 to-pink-400"></div>
           
           <CardContent className="p-3 relative">
             <div className="flex items-start justify-between mb-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+              <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
                 <RotateCcw className="h-4 w-4 text-white" />
               </div>
-              <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
+              <ChevronRight className="h-3.5 w-3.5 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" />
             </div>
             <div className="flex-1">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Devoluciones Pendientes</p>
-              <p className="text-2xl font-black text-slate-900 mb-0.5">{stats.pending_returns || 0}</p>
+              <p className="text-[10px] font-bold text-white/80 uppercase tracking-wide mb-0.5">Devoluciones Pendientes</p>
+              <p className="text-2xl font-black text-white mb-0.5">{stats.pending_returns || 0}</p>
               <div className="flex items-center gap-2 mt-0.5">
                 {stats.overdue_returns > 0 && (
                   <Badge variant="destructive" className="text-[10px] font-semibold px-1 py-0">
@@ -275,7 +275,7 @@ export default function Dashboard() {
                     {stats.overdue_returns}
                   </Badge>
                 )}
-                <p className="text-[10px] text-slate-600">
+                <p className="text-[10px] text-white/70">
                   {stats.overdue_returns === 0 && stats.pending_returns > 0 
                     ? "Todas para hoy" 
                     : stats.pending_returns === 0 
@@ -289,46 +289,46 @@ export default function Dashboard() {
 
         {/* Card 3: Ocupación Stock */}
         <Card 
-          className="relative overflow-hidden cursor-pointer group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-cyan-50"
+          className="relative overflow-hidden cursor-pointer group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-cyan-500 to-blue-600"
           onClick={() => navigate('/inventario')}
         >
           {/* Gradient accent bar */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-600 to-blue-600"></div>
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 to-blue-400"></div>
           
           <CardContent className="p-3 relative">
             <div className="flex items-start justify-between mb-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan-600 to-blue-600 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+              <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
                 <Package className="h-4 w-4 text-white" />
               </div>
-              <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-cyan-600 group-hover:translate-x-1 transition-all" />
+              <ChevronRight className="h-3.5 w-3.5 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" />
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Ocupación Stock</p>
-              <p className="text-2xl font-black text-slate-900 mb-0.5">{inventory.occupancy_percent || 0}%</p>
-              <p className="text-[10px] text-slate-600">Material alquilado</p>
+              <p className="text-[10px] font-bold text-white/80 uppercase tracking-wide mb-0.5">Ocupación Stock</p>
+              <p className="text-2xl font-black text-white mb-0.5">{inventory.occupancy_percent || 0}%</p>
+              <p className="text-[10px] text-white/70">Material alquilado</p>
             </div>
           </CardContent>
         </Card>
 
         {/* Card 4: Clientes del Día */}
         <Card 
-          className="relative overflow-hidden cursor-pointer group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-indigo-50"
+          className="relative overflow-hidden cursor-pointer group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-indigo-500 to-purple-600"
           onClick={() => navigate('/clientes')}
         >
           {/* Gradient accent bar */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-600 to-purple-600"></div>
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 to-purple-400"></div>
           
           <CardContent className="p-3 relative">
             <div className="flex items-start justify-between mb-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+              <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
                 <Users className="h-4 w-4 text-white" />
               </div>
-              <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+              <ChevronRight className="h-3.5 w-3.5 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" />
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Clientes del Día</p>
-              <p className="text-2xl font-black text-slate-900 mb-0.5">{stats.customers_today ?? 0}</p>
-              <p className="text-[10px] text-slate-600">Clientes únicos atendidos</p>
+              <p className="text-[10px] font-bold text-white/80 uppercase tracking-wide mb-0.5">Clientes del Día</p>
+              <p className="text-2xl font-black text-white mb-0.5">{stats.customers_today ?? 0}</p>
+              <p className="text-[10px] text-white/70">Clientes únicos atendidos</p>
             </div>
           </CardContent>
         </Card>
