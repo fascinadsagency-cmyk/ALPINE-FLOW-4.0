@@ -1229,7 +1229,7 @@ export default function Customers() {
                             </span>
                           )}
                           {selectedCustomer.ski_level && selectedCustomer.ski_level !== 'sin_especificar' && (
-                            <Badge className="bg-blue-500/20 text-blue-700 border-blue-300 capitalize text-xs">
+                            <Badge className="bg-blue-600 text-white border-0 capitalize text-xs">
                               {selectedCustomer.ski_level}
                             </Badge>
                           )}
@@ -1506,7 +1506,7 @@ export default function Customers() {
                           {selectedCustomer.source}
                         </Badge>
                         {getProviderDiscount(selectedCustomer.source) > 0 && (
-                          <Badge className="bg-emerald-500/20 text-emerald-700">
+                          <Badge className="bg-emerald-600 text-white border-0">
                             Descuento: {getProviderDiscount(selectedCustomer.source)}%
                           </Badge>
                         )}
@@ -1655,7 +1655,7 @@ export default function Customers() {
                                 {rental.days} {rental.days === 1 ? 'día' : 'días'}
                               </Badge>
                             </div>
-                            <Badge className="bg-emerald-500/20 text-emerald-700">
+                            <Badge className="bg-emerald-600 text-white border-0">
                               <DollarSign className="h-3 w-3 mr-1" />
                               €{rental.total_amount.toFixed(2)}
                             </Badge>
