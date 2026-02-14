@@ -3226,6 +3226,7 @@ class ItemImportRequest(BaseModel):
 @api_router.post("/items/import")
 async def import_items(request: ItemImportRequest, current_user: CurrentUser = Depends(get_current_user)):
     """Import items with field mapping support, automatic type creation and tariff assignment"""
+    await check_plan_limit(current_user, 'items')
     imported = 0
     duplicates = 0
     errors = 0
