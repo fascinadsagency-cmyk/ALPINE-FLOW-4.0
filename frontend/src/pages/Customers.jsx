@@ -360,7 +360,18 @@ export default function Customers() {
       resetNewCustomerForm();
       loadCustomersWithStatus();
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Error al crear cliente");
+      const detail = error.response?.data?.detail;
+      if (error.response?.status === 403 && typeof detail === 'object' && detail?.error === 'PLAN_LIMIT_EXCEEDED') {
+        setPlanLimitModal({
+          open: true,
+          limitType: detail.limit_type,
+          currentCount: detail.current_count,
+          maxCount: detail.max_allowed,
+          planType: detail.plan_name
+        });
+        return;
+      }
+      toast.error(typeof detail === 'string' ? detail : "Error al crear cliente");
     }
   };
 
