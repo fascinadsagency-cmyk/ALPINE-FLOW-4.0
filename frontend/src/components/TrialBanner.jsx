@@ -63,7 +63,12 @@ export default function TrialBanner() {
 
   return (
     <div 
-      className={`${isUrgent ? 'bg-amber-500' : 'bg-blue-500'} text-white px-4 py-2 flex items-center justify-between`}
+      className="text-white px-4 py-2 flex items-center justify-between"
+      style={{ 
+        background: isUrgent 
+          ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
+          : 'linear-gradient(135deg, hsl(240, 100%, 60%) 0%, hsl(280, 100%, 65%) 100%)'
+      }}
       data-testid="trial-banner"
     >
       <div className="flex items-center gap-3">
