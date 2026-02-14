@@ -85,7 +85,7 @@ export default function Register() {
             background: 'linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #ec4899 100%)'
           }}
         >
-          <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full">
+          <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full pt-24">
             {/* Logo y título arriba */}
             <div>
               <img src="/logo-white.png" alt="SkiFlow Rental" className="h-16 w-auto object-contain mb-8" />
