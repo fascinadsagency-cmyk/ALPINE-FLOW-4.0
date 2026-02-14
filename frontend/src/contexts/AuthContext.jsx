@@ -70,12 +70,24 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("super_admin_token");
     // Limpiar el carrito persistido al cerrar sesión
     clearPersistedCart();
     delete axios.defaults.headers.common["Authorization"];
     setToken(null);
     setUser(null);
   };
+
+  const returnToSuperAdmin = () => {
+    const superToken = localStorage.getItem("super_admin_token");
+    if (superToken) {
+      localStorage.setItem("token", superToken);
+      localStorage.removeItem("super_admin_token");
+      window.location.href = "/tiendas";
+    }
+  };
+
+  const isImpersonating = !!localStorage.getItem("super_admin_token");
 
   const updateUser = (userData) => {
     setUser(prev => ({ ...prev, ...userData }));
