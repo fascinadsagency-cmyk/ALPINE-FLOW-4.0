@@ -218,7 +218,7 @@ export default function LandingPage() {
             <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl opacity-0 group-hover:opacity-100 blur transition duration-500"></div>
             <div className="relative bg-white rounded-2xl border-2 border-slate-200 p-8 hover:border-transparent transition-all duration-300">
               <div className="flex items-center gap-3 mb-6">
-                <div className="h-12 w-12 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg">
+                <div className="h-12 w-12 rounded-xl bg-black flex items-center justify-center shadow-lg">
                   <Package className="h-6 w-6 text-white" />
                 </div>
                 <div>
@@ -237,7 +237,7 @@ export default function LandingPage() {
               <Button 
                 onClick={() => navigate("/register")} 
                 variant="outline" 
-                className="w-full mb-8 font-bold border-2 border-slate-900 text-black hover:bg-slate-900 hover:text-white rounded-full py-6"
+                className="w-full mb-8 font-bold border-2 border-slate-900 text-black hover:bg-black hover:text-white rounded-full py-6"
               >
                 PROBAR GRATIS
               </Button>
@@ -268,7 +268,7 @@ export default function LandingPage() {
             <div className="absolute -inset-0.5 bg-gradient-to-r from-slate-700 to-slate-900 rounded-2xl opacity-0 group-hover:opacity-100 blur transition duration-500"></div>
             <div className="relative bg-white rounded-2xl border-2 border-slate-200 p-8 hover:border-transparent transition-all duration-300">
               <div className="flex items-center gap-3 mb-6">
-                <div className="h-12 w-12 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg">
+                <div className="h-12 w-12 rounded-xl bg-black flex items-center justify-center shadow-lg">
                   <Zap className="h-6 w-6 text-white" />
                 </div>
                 <div>
@@ -287,7 +287,7 @@ export default function LandingPage() {
               <Button 
                 onClick={() => navigate("/register")} 
                 variant="outline" 
-                className="w-full mb-8 font-bold border-2 border-slate-900 text-black hover:bg-slate-900 hover:text-white rounded-full py-6"
+                className="w-full mb-8 font-bold border-2 border-slate-900 text-black hover:bg-black hover:text-white rounded-full py-6"
               >
                 CONTRATAR
               </Button>
@@ -316,7 +316,7 @@ export default function LandingPage() {
           {/* Pro Plan - DESTACADO */}
           <div className="relative group lg:scale-105">
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl opacity-100 blur-sm"></div>
-            <div className="relative bg-slate-900 rounded-2xl p-8 shadow-2xl">
+            <div className="relative bg-black rounded-2xl p-8 shadow-2xl">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                 <Badge className="bg-white text-black font-black px-4 py-1.5 shadow-lg text-xs uppercase tracking-wider">
                   Popular
@@ -373,7 +373,7 @@ export default function LandingPage() {
             <div className="absolute -inset-0.5 bg-gradient-to-r from-slate-700 to-slate-900 rounded-2xl opacity-0 group-hover:opacity-100 blur transition duration-500"></div>
             <div className="relative bg-white rounded-2xl border-2 border-slate-200 p-8 hover:border-transparent transition-all duration-300">
               <div className="flex items-center gap-3 mb-6">
-                <div className="h-12 w-12 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg">
+                <div className="h-12 w-12 rounded-xl bg-black flex items-center justify-center shadow-lg">
                   <Crown className="h-6 w-6 text-white" />
                 </div>
                 <div>
@@ -392,7 +392,7 @@ export default function LandingPage() {
               <Button 
                 onClick={() => navigate("/register")} 
                 variant="outline" 
-                className="w-full mb-8 font-bold border-2 border-slate-900 text-black hover:bg-slate-900 hover:text-white rounded-full py-6"
+                className="w-full mb-8 font-bold border-2 border-slate-900 text-black hover:bg-black hover:text-white rounded-full py-6"
               >
                 CONTACTAR
               </Button>
@@ -421,7 +421,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section - BOLD */}
-      <section className="bg-slate-900 py-32">
+      <section className="bg-black py-32">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-6xl sm:text-7xl font-black text-white mb-8 leading-tight uppercase tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans' }}>
             Recupera el<br/>
