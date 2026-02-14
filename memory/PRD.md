@@ -83,6 +83,13 @@ Sistema completo de gestión de alquileres para tiendas de equipos de esquí con
 - `.ticket-container` forzado a 80mm de ancho
 - Archivos: `/app/frontend/src/lib/ticketGenerator.js`, `/app/frontend/src/App.css`
 
+## Fix Aislamiento de Datos admin_master (14/02/2026) ✅
+- **Causa raíz**: admin_master compartía `store_id=1` con "EL ENEBRO" → veía todos sus clientes, alquileres, inventario
+- **Fix**: Creada tienda independiente "Gestión Central Pruebas" (`store_id=4`) para admin_master
+- **Extras**: Añadido `store_name` al modelo `UserResponse` → sidebar muestra nombre real de la tienda
+- **Testing**: 12/12 tests pasados (9 backend + 4 frontend). EL ENEBRO mantiene sus 17.594 clientes intactos
+- **Acceso cross-store**: admin_master sigue pudiendo ver todas las tiendas desde "Gestión de Tiendas"
+
 ## Bug Fix: Persistencia de Foto de Perfil (14/02/2026) ✅
 - **Causa raíz**: `UserResponse` (Pydantic model) solo tenía `id`, `username`, `role` → FastAPI filtraba `photo_url` y `email` de las respuestas de `/auth/login` y `/auth/me`
 - **Fix backend**: Añadidos campos `email` y `photo_url` a `UserResponse`; login endpoint ahora devuelve `photo_url` desde la DB
