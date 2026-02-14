@@ -207,7 +207,7 @@ export default function PlanSelection() {
         {/* Current Usage Alert */}
         {planStatus && (
           <div className="mb-8 p-6 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">
-            <h3 className="font-bold text-white mb-4 text-lg">Tu uso actual:</h3>
+            <h3 className="font-bold text-white mb-4 text-lg text-center uppercase">Tu uso actual:</h3>
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
                 <p className="text-3xl font-black text-white">{planStatus.current_items.toLocaleString()}</p>
