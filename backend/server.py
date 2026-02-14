@@ -101,6 +101,7 @@ class UserResponse(BaseModel):
     role: str
     email: Optional[str] = ""
     photo_url: Optional[str] = ""
+    store_name: Optional[str] = ""
 
 class TokenResponse(BaseModel):
     access_token: str
