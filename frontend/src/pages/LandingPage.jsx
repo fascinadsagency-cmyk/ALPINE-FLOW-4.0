@@ -237,7 +237,7 @@ export default function LandingPage() {
               <Button 
                 onClick={() => navigate("/register")} 
                 variant="outline" 
-                className="w-full mb-8 font-bold border-2 border-slate-900 text-black hover:bg-black hover:text-white rounded-full py-6"
+                className="w-full mb-8 font-bold border-2 border-black text-black hover:bg-black hover:text-white rounded-full py-6"
               >
                 PROBAR GRATIS
               </Button>
@@ -287,7 +287,7 @@ export default function LandingPage() {
               <Button 
                 onClick={() => navigate("/register")} 
                 variant="outline" 
-                className="w-full mb-8 font-bold border-2 border-slate-900 text-black hover:bg-black hover:text-white rounded-full py-6"
+                className="w-full mb-8 font-bold border-2 border-black text-black hover:bg-black hover:text-white rounded-full py-6"
               >
                 CONTRATAR
               </Button>
@@ -392,7 +392,7 @@ export default function LandingPage() {
               <Button 
                 onClick={() => navigate("/register")} 
                 variant="outline" 
-                className="w-full mb-8 font-bold border-2 border-slate-900 text-black hover:bg-black hover:text-white rounded-full py-6"
+                className="w-full mb-8 font-bold border-2 border-black text-black hover:bg-black hover:text-white rounded-full py-6"
               >
                 CONTACTAR
               </Button>
