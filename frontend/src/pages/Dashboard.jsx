@@ -171,9 +171,9 @@ export default function Dashboard() {
   const overdueAlerts = alerts.filter(a => a.type === 'overdue');
 
   const categoryColors = {
-    SUPERIOR: { bg: 'bg-purple-100', bar: 'bg-purple-500', text: 'text-purple-700', light: 'bg-purple-50' },
-    ALTA: { bg: 'bg-blue-100', bar: 'bg-blue-500', text: 'text-blue-700', light: 'bg-blue-50' },
-    MEDIA: { bg: 'bg-emerald-100', bar: 'bg-emerald-500', text: 'text-emerald-700', light: 'bg-emerald-50' }
+    SUPERIOR: { bg: 'bg-purple-500/20', bar: 'bg-purple-600', text: 'text-purple-700', light: 'bg-purple-500/10' },
+    ALTA: { bg: 'bg-blue-500/20', bar: 'bg-blue-600', text: 'text-blue-700', light: 'bg-blue-500/10' },
+    MEDIA: { bg: 'bg-emerald-500/20', bar: 'bg-emerald-600', text: 'text-emerald-700', light: 'bg-emerald-500/10' }
   };
 
   const getAvailabilityColor = (status) => {
