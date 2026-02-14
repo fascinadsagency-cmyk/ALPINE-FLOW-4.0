@@ -665,7 +665,7 @@ export default function Dashboard() {
                             {item.item_type} • Talla {item.size} • {item.category}
                           </p>
                         </div>
-                        <Badge className="bg-blue-500/20 text-blue-700">
+                        <Badge className="bg-blue-600 text-white border-0">
                           {item.rental_count} alquileres
                         </Badge>
                       </div>

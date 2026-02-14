@@ -1845,7 +1845,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                             
                             {/* ESTADO ROI */}
                             <TableCell className="text-center">
-                              <Badge className={isRentable ? 'bg-emerald-500/20 text-emerald-700 border-emerald-300' : 'bg-red-100 text-red-700 border-red-300'}>
+                              <Badge className={isRentable ? 'bg-emerald-600 text-white border-0' : 'bg-red-500 text-white border-0'}>
                                 {isRentable ? '✓ Rentable' : '⏳ Amortizando'}
                               </Badge>
                             </TableCell>
@@ -1916,7 +1916,7 @@ SKI003,helmet,Giro,Neo,M,80,2024-01-15,Estante C1,100`;
                           return null;
                         case 'status':
                           return item.is_generic ? (
-                            <Badge className={item.stock_available > 0 ? "bg-emerald-500/20 text-emerald-700" : "bg-red-100 text-red-700"}>
+                            <Badge className={item.stock_available > 0 ? "bg-emerald-600 text-white border-0" : "bg-red-500 text-white border-0"}>
                               {item.stock_available > 0 ? 'Disponible' : 'Agotado'}
                             </Badge>
                           ) : getStatusBadge(item.status);
